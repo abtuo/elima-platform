@@ -39,7 +39,16 @@ export async function GET(
     riskLevel: metric.riskLevel,
   });
 
-  return new NextResponse(pdfBytes, {
+  // NextResponse expects a `BodyInit`.
+  // With TS' newer typed-array generics, `Uint8Array<ArrayBufferLike>` may be seen
+  // as potentially backed by a `SharedArrayBuffer`, which then fails `BodyInit`
+  // and `BlobPart` type checks.
+  //
+  // We force a copy into a fresh `Uint8Array` backed by a regular `ArrayBuffer`.
+  const safePdfBytes = new Uint8Array(pdfBytes);
+  const pdfBlob = new Blob([safePdfBytes], { type: "application/pdf" });
+
+  return new NextResponse(pdfBlob, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="bulletin-${student.id}.pdf"`,
