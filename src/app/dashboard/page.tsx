@@ -1,5 +1,6 @@
 import { AlertTriangle, BarChart3, BookOpen, CheckCircle2, MessageCircleMore, School } from "lucide-react";
 import { demoMetrics, demoStudents } from "@/lib/demo-data";
+import { ReportsPanel } from "./ReportsPanel";
 
 export default function DashboardPage() {
   const highRisk = demoMetrics.filter((m) => m.riskLevel === "HIGH").length;
@@ -71,6 +72,10 @@ export default function DashboardPage() {
             <li className="flex items-center gap-2"><BarChart3 size={16} className="text-[var(--primary)]" /> Intelligence académique (risk_level / trend)</li>
           </ul>
         </article>
+      </section>
+
+      <section className="grid gap-4">
+        <ReportsPanel />
       </section>
     </main>
   );

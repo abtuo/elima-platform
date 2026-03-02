@@ -84,10 +84,10 @@ export default function Home() {
                 Commencer maintenant <ArrowRight size={16} />
               </Link>
               <Link
-                href="/api/reports/stu-001"
+                href="/tarifs"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
               >
-                Voir un bulletin PDF <FileText size={16} />
+                Voir nos tarifs <Ticket size={16} />
               </Link>
             </div>
 
@@ -105,8 +105,6 @@ export default function Home() {
                 ),
               )}
             </div>
-
-            <p className="text-sm font-semibold text-[var(--primary)]">“Apprendre. Connecter. Réussir.”</p>
           </Reveal>
 
           <Reveal className="relative" delayMs={140}>
@@ -313,7 +311,7 @@ export default function Home() {
                     <Image src="/logo_elima.png" alt="Logo Elima" width={30} height={30} className="rounded-md" />
                     <p className="text-base font-bold text-[var(--accent)]">Elima</p>
                   </div>
-                  <p className="text-sm text-slate-600">Apprendre. Connecter. Réussir.</p>
+                  <p className="text-sm text-slate-600">Plateforme de gestion scolaire intelligente.</p>
                   <div className="space-y-2 text-sm">
                     <p className="flex items-center gap-2"><Ticket size={16} className="text-[var(--primary)]" /> Support : support@elima.tech</p>
                     <p className="flex items-center gap-2"><Phone size={16} className="text-[var(--primary)]" /> +225 01 23 45 67 89</p>
