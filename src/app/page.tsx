@@ -36,7 +36,7 @@ export default function Home() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Link href="/" className="flex items-center gap-2">
               <Image
-                src="/logo_e-lima-with-text-removebg-preview.png"
+                src="/logo_e-lima-with-text_wo_bg.png"
                 alt="Logo Elima"
                 width={190}
                 height={56}
