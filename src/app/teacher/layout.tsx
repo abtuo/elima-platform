@@ -17,7 +17,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
       <div className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 md:grid-cols-[260px_1fr] md:px-8 md:py-10">
         <aside className="sticky top-6 h-fit rounded-3xl border border-slate-200/70 bg-white/70 p-4 shadow-sm backdrop-blur">
           <div className="flex items-center gap-3">
-            <Image src="/logo_elima.png" alt="Logo Elima" width={36} height={36} className="rounded-lg" />
+            <Image src="/logo_e-lima.png" alt="Logo Elima" width={36} height={36} className="rounded-full" />
             <div>
               <p className="text-sm font-bold text-[var(--accent)]">Espace Enseignant</p>
               <p className="text-xs text-slate-600">M. Traoré</p>

@@ -13,7 +13,7 @@ export async function GET(
   const student = demoStudents.find((s) => s.id === studentId) ?? demoStudents[0];
   const metric = demoMetrics.find((m) => m.studentId === student.id) ?? demoMetrics[0];
 
-  const logoPath = path.join(process.cwd(), "public", "logo_elima.png");
+  const logoPath = path.join(process.cwd(), "public", "logo_e-lima.png");
   const logoPngBytes = new Uint8Array(await readFile(logoPath));
   const stampPath = path.join(process.cwd(), "public", "tampon.jpg");
   const stampJpgBytes = new Uint8Array(await readFile(stampPath));

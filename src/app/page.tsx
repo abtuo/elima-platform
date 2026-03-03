@@ -34,7 +34,14 @@ export default function Home() {
         <nav className="sticky top-4 z-20 rounded-2xl border border-slate-200/60 bg-white/70 px-4 py-3 shadow-sm backdrop-blur">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo_elima.png" alt="Logo Elima" width={44} height={44} className="rounded-xl" />
+              <Image
+                src="/logo_e-lima-with-text.png"
+                alt="Logo Elima"
+                width={140}
+                height={44}
+                className="h-11 w-auto"
+                priority
+              />
             </Link>
 
             <div className="hidden items-center gap-1 text-sm md:flex">
@@ -308,7 +315,7 @@ export default function Home() {
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Image src="/logo_elima.png" alt="Logo Elima" width={30} height={30} className="rounded-md" />
+                    <Image src="/logo_e-lima.png" alt="Logo Elima" width={30} height={30} className="rounded-full" />
                     <p className="text-base font-bold text-[var(--accent)]">Elima</p>
                   </div>
                   <p className="text-sm text-slate-600">Plateforme de gestion scolaire intelligente.</p>
