@@ -100,7 +100,7 @@ export default function Home() {
             </div>
 
             <div className="grid gap-4 pt-4 sm:grid-cols-3">
-              {[{ k: "5–20", v: "Écoles pilotes" }, { k: "48h", v: "Mise en place" }, { k: "Parents", v: "Communication" }].map(
+              {[{ k: "10+", v: "Écoles pilotes" }, { k: "48h", v: "Mise en place" }, { k: "-30%", v: "Temps admin économisé" }].map(
                 (stat) => (
                   <Reveal
                     key={stat.v}
