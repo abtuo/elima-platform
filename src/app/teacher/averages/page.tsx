@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ProgressHeader } from "@/components/ui/ProgressHeader";
+import { useTeacherContext } from "../TeacherContext";
+import { EditableTable } from "@/components/ui/EditableTable";
 
 type Row = { id: string; name: string; avg: number; appreciationAuto: string; appreciationOverride?: string };
 
@@ -21,67 +24,85 @@ const demo: Record<string, Row[]> = {
 };
 
 export default function TeacherAveragesPage() {
-  const [className, setClassName] = useState<keyof typeof demo>("6e A");
-  const [term, setTerm] = useState("Trimestre 1");
   const [overrides, setOverrides] = useState<Record<string, string>>({});
 
-  const rows = useMemo(() => [...demo[className]].sort((a, b) => a.name.localeCompare(b.name)), [className]);
+  const { selectedClass, selectedTerm } = useTeacherContext();
+
+  const rows = useMemo(() => {
+    const base = demo[selectedClass as keyof typeof demo] ?? [];
+    return [...base]
+      .map((r) => ({
+        ...r,
+        appreciationAuto: autoAppreciation(r.avg),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [selectedClass, selectedTerm]);
+
+  function autoAppreciation(avg: number) {
+    if (avg >= 16) return "Excellent trimestre. Continuez ainsi.";
+    if (avg >= 14) return "Très bon trimestre.";
+    if (avg >= 12) return "Bon trimestre.";
+    if (avg >= 10) return "Trimestre moyen, peut mieux faire.";
+    return "Trimestre insuffisant, efforts à intensifier.";
+  }
 
   return (
     <div className="space-y-6">
-      <header className="elima-card">
-        <h1 className="text-2xl font-bold text-[var(--accent)]">Moyennes & appréciations</h1>
-        <p className="mt-1 text-sm text-slate-600">Moyennes calculées automatiquement. Appréciations éditables.</p>
-      </header>
+      <ProgressHeader
+        title="Moyennes"
+        subtitle="Moyennes calculées automatiquement + appréciations auto, avec override éditable."
+      />
 
       <section className="elima-card space-y-4">
-        <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-semibold">Classe</label>
-            <select value={className} onChange={(e) => setClassName(e.target.value as keyof typeof demo)} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">
-              {Object.keys(demo).map((c) => (<option key={c} value={c}>{c}</option>))}
-            </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-semibold">Période</label>
-            <select value={term} onChange={(e) => setTerm(e.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">
-              {["Trimestre 1", "Trimestre 2", "Trimestre 3"].map((t) => (<option key={t} value={t}>{t}</option>))}
-            </select>
-          </div>
-          <div className="ml-auto rounded-full bg-[var(--secondary)]/25 px-3 py-1 text-xs font-semibold text-[var(--accent)]">
-            {term}
-          </div>
-        </div>
-
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs text-slate-600">
-              <tr>
-                <th className="px-4 py-3">Élève</th>
-                <th className="px-4 py-3">Moyenne</th>
-                <th className="px-4 py-3">Appréciation (auto)</th>
-                <th className="px-4 py-3">Appréciation (édition)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} className="border-t border-slate-200">
-                  <td className="px-4 py-3 font-semibold">{r.name}</td>
-                  <td className="px-4 py-3">{r.avg.toFixed(1)}/20</td>
-                  <td className="px-4 py-3 text-slate-700">{r.appreciationAuto}</td>
-                  <td className="px-4 py-3">
+        <EditableTable
+          rows={rows}
+          rowKey={(r) => r.id}
+          columns={[
+            {
+              key: "student",
+              header: "Élève",
+              cell: (r) => <span className="font-semibold">{r.name}</span>,
+            },
+            {
+              key: "avg",
+              header: "Moyenne",
+              cell: (r) => `${r.avg.toFixed(1)}/20`,
+              className: "whitespace-nowrap",
+            },
+            {
+              key: "auto",
+              header: "Appréciation (auto)",
+              cell: (r) => <span className="text-slate-700">{r.appreciationAuto}</span>,
+            },
+            {
+              key: "override",
+              header: "Override",
+              cell: (r) => {
+                const override = overrides[r.id] ?? "";
+                const isOverrideActive = override.trim().length > 0;
+                return (
+                  <div className="space-y-2">
                     <input
-                      value={overrides[r.id] ?? ""}
+                      value={override}
                       onChange={(e) => setOverrides((o) => ({ ...o, [r.id]: e.target.value }))}
                       placeholder="Optionnel"
                       className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
                     />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    {isOverrideActive ? (
+                      <span className="inline-flex rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">
+                        Override actif
+                      </span>
+                    ) : (
+                      <span className="inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
+                        Auto
+                      </span>
+                    )}
+                  </div>
+                );
+              },
+            },
+          ]}
+        />
       </section>
     </div>
   );
