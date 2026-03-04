@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { useTeacherContext } from "../TeacherContext";
 import { EditableTable } from "@/components/ui/EditableTable";
@@ -26,9 +26,9 @@ const demo: Record<string, Row[]> = {
 export default function TeacherAveragesPage() {
   const [overrides, setOverrides] = useState<Record<string, string>>({});
 
-  const { selectedClass, selectedTerm } = useTeacherContext();
+  const { selectedClass } = useTeacherContext();
 
-  const rows = useMemo(() => {
+  const rows = (() => {
     const base = demo[selectedClass as keyof typeof demo] ?? [];
     return [...base]
       .map((r) => ({
@@ -36,7 +36,7 @@ export default function TeacherAveragesPage() {
         appreciationAuto: autoAppreciation(r.avg),
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [selectedClass, selectedTerm]);
+  })();
 
   function autoAppreciation(avg: number) {
     if (avg >= 16) return "Excellent trimestre. Continuez ainsi.";

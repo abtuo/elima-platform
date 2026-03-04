@@ -10,8 +10,9 @@ import {
 } from "@/lib/student/demo";
 import { AlertTriangle, BarChart3, CalendarDays, ClipboardCheck, FileText } from "lucide-react";
 
-export default async function StudentOverviewPage({ params }: { params: { studentId: string } }) {
-  const profile = getStudentProfile(params.studentId);
+export default async function StudentOverviewPage({ params }: { params: Promise<{ studentId: string }> }) {
+  const { studentId } = await params;
+  const profile = getStudentProfile(studentId);
 
   const term = "Trimestre 1";
   const grades = demoStudentGrades.filter((g) => g.studentId === profile.id && g.term === term);

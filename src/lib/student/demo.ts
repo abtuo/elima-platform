@@ -1,4 +1,4 @@
-import { demoClasses, demoStudents, demoSubjects, demoTerms } from "@/lib/teacher/demo";
+import { demoClasses, demoSubjects, demoTerms } from "@/lib/teacher/demo";
 
 export { demoSubjects, demoTerms, demoClasses };
 
@@ -116,7 +116,7 @@ export const demoStudentHomework: StudentHomework[] = [
     subject: "Mathématiques",
     dueDateISO: "2026-03-08",
     title: "Exercices fractions (p. 32)",
-    description: "Faire les exercices 1 à 6."
+    description: "Faire les exercices 1 à 6.",
   },
   {
     id: "h-002",

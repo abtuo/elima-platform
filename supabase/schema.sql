@@ -200,3 +200,125 @@ stable
 as $$
   select school_id from public.users where id = auth.uid();
 $$;
+
+-- =====================
+-- Minimal RLS policies (Parent / Student read-only)
+-- =====================
+
+-- Users: each user can read its own profile.
+drop policy if exists "Users can read own profile" on public.users;
+create policy "Users can read own profile"
+on public.users
+for select
+to authenticated
+using (id = auth.uid());
+
+-- Parents: a parent can read its own parent record.
+drop policy if exists "Parents can read own row" on public.parents;
+create policy "Parents can read own row"
+on public.parents
+for select
+to authenticated
+using (user_id = auth.uid());
+
+-- Student-Parents link: parent can read links for their parent_id.
+drop policy if exists "Parents can read their links" on public.student_parents;
+create policy "Parents can read their links"
+on public.student_parents
+for select
+to authenticated
+using (
+  parent_id in (select id from public.parents where user_id = auth.uid())
+);
+
+-- Students: parent can read students linked to them.
+drop policy if exists "Parents can read linked students" on public.students;
+create policy "Parents can read linked students"
+on public.students
+for select
+to authenticated
+using (
+  id in (
+    select sp.student_id
+    from public.student_parents sp
+    join public.parents p on p.id = sp.parent_id
+    where p.user_id = auth.uid()
+  )
+);
+
+-- Classes: parent can read class of linked students.
+drop policy if exists "Parents can read linked classes" on public.classes;
+create policy "Parents can read linked classes"
+on public.classes
+for select
+to authenticated
+using (
+  id in (
+    select s.class_id
+    from public.students s
+    join public.student_parents sp on sp.student_id = s.id
+    join public.parents p on p.id = sp.parent_id
+    where p.user_id = auth.uid()
+  )
+);
+
+-- Attendance: parent can read attendance of linked students.
+drop policy if exists "Parents can read linked attendance" on public.attendance;
+create policy "Parents can read linked attendance"
+on public.attendance
+for select
+to authenticated
+using (
+  student_id in (
+    select sp.student_id
+    from public.student_parents sp
+    join public.parents p on p.id = sp.parent_id
+    where p.user_id = auth.uid()
+  )
+);
+
+-- Grades: parent can read grades of linked students.
+drop policy if exists "Parents can read linked grades" on public.grades;
+create policy "Parents can read linked grades"
+on public.grades
+for select
+to authenticated
+using (
+  student_id in (
+    select sp.student_id
+    from public.student_parents sp
+    join public.parents p on p.id = sp.parent_id
+    where p.user_id = auth.uid()
+  )
+);
+
+-- Evaluations: parent can read evaluations for classes of linked students.
+drop policy if exists "Parents can read linked evaluations" on public.evaluations;
+create policy "Parents can read linked evaluations"
+on public.evaluations
+for select
+to authenticated
+using (
+  class_id in (
+    select s.class_id
+    from public.students s
+    join public.student_parents sp on sp.student_id = s.id
+    join public.parents p on p.id = sp.parent_id
+    where p.user_id = auth.uid()
+  )
+);
+
+-- Reports: parent can read reports of linked students.
+drop policy if exists "Parents can read linked reports" on public.reports;
+create policy "Parents can read linked reports"
+on public.reports
+for select
+to authenticated
+using (
+  student_id in (
+    select sp.student_id
+    from public.student_parents sp
+    join public.parents p on p.id = sp.parent_id
+    where p.user_id = auth.uid()
+  )
+);

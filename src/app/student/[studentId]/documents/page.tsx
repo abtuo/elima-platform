@@ -3,8 +3,9 @@ import { StudentHeader } from "@/components/ui/StudentHeader";
 import { EditableTable } from "@/components/ui/EditableTable";
 import { demoStudentDocuments, getStudentProfile } from "@/lib/student/demo";
 
-export default async function StudentDocumentsPage({ params }: { params: { studentId: string } }) {
-  const profile = getStudentProfile(params.studentId);
+export default async function StudentDocumentsPage({ params }: { params: Promise<{ studentId: string }> }) {
+  const { studentId } = await params;
+  const profile = getStudentProfile(studentId);
   const term = "Trimestre 1";
   const docs = demoStudentDocuments
     .filter((d) => d.studentId === profile.id)

@@ -20,10 +20,11 @@ export default async function StudentAveragesPage({
   params,
   searchParams,
 }: {
-  params: { studentId: string };
+  params: Promise<{ studentId: string }>;
   searchParams: Promise<{ term?: string }>;
 }) {
-  const profile = getStudentProfile(params.studentId);
+  const { studentId } = await params;
+  const profile = getStudentProfile(studentId);
   const sp = await searchParams;
   const term = (sp.term as (typeof demoTerms)[number]) ?? "Trimestre 1";
 

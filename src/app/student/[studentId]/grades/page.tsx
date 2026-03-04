@@ -6,10 +6,11 @@ export default async function StudentGradesPage({
   params,
   searchParams,
 }: {
-  params: { studentId: string };
+  params: Promise<{ studentId: string }>;
   searchParams: Promise<{ subject?: string; term?: string }>;
 }) {
-  const profile = getStudentProfile(params.studentId);
+  const { studentId } = await params;
+  const profile = getStudentProfile(studentId);
   const sp = await searchParams;
 
   const selectedTerm = (sp.term as (typeof demoTerms)[number]) ?? "Trimestre 1";

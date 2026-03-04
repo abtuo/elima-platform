@@ -1,12 +1,19 @@
 import { z } from "zod";
 
+function optionalNonEmptyString() {
+  return z.preprocess(
+    (val) => (typeof val === "string" && val.trim() === "" ? undefined : val),
+    z.string().min(1).optional(),
+  );
+}
+
 const envSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-  TWILIO_ACCOUNT_SID: z.string().min(1).optional(),
-  TWILIO_AUTH_TOKEN: z.string().min(1).optional(),
-  TWILIO_WHATSAPP_FROM: z.string().min(1).optional(),
+  NEXT_PUBLIC_SUPABASE_URL: optionalNonEmptyString().pipe(z.string().url().optional()),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: optionalNonEmptyString(),
+  SUPABASE_SERVICE_ROLE_KEY: optionalNonEmptyString(),
+  TWILIO_ACCOUNT_SID: optionalNonEmptyString(),
+  TWILIO_AUTH_TOKEN: optionalNonEmptyString(),
+  TWILIO_WHATSAPP_FROM: optionalNonEmptyString(),
   APP_BASE_URL: z.string().url().default("http://localhost:3000"),
 });
 

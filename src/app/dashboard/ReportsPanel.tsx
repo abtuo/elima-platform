@@ -22,12 +22,9 @@ export function ReportsPanel() {
 
   // Keep a valid student selected when the class changes.
   useEffect(() => {
-    if (studentsInClass.length === 0) {
-      setSelectedStudentId("");
-      return;
-    }
-
+    if (studentsInClass.length === 0) return;
     if (!studentsInClass.some((s) => s.id === selectedStudentId)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedStudentId(studentsInClass[0].id);
     }
   }, [studentsInClass, selectedStudentId]);

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { use, useMemo, useState } from "react";
 import {
   BarChart3,
   CalendarDays,
@@ -63,10 +63,11 @@ export default function StudentLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { studentId: string };
+  params: Promise<{ studentId: string }>;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const profile = getStudentProfile(params.studentId);
+  const { studentId } = use(params);
+  const profile = getStudentProfile(studentId);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

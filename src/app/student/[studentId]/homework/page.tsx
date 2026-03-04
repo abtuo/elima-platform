@@ -2,8 +2,9 @@ import { StudentHeader } from "@/components/ui/StudentHeader";
 import { getStudentProfile } from "@/lib/student/demo";
 import { HomeworkClient } from "./HomeworkClient";
 
-export default async function StudentHomeworkPage({ params }: { params: { studentId: string } }) {
-  const profile = getStudentProfile(params.studentId);
+export default async function StudentHomeworkPage({ params }: { params: Promise<{ studentId: string }> }) {
+  const { studentId } = await params;
+  const profile = getStudentProfile(studentId);
   const term = "Trimestre 1";
 
   return (

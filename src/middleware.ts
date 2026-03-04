@@ -23,6 +23,12 @@ export function middleware(request: NextRequest) {
 
   if (!needsAuth) return NextResponse.next();
 
+  // Parent space uses Supabase Auth (phone OTP) and will handle auth server-side.
+  // We therefore don't block it based on the demo `elima_role` cookie.
+  if (pathname.startsWith("/parent")) {
+    return NextResponse.next();
+  }
+
   // Allow public access for demo PDF reports
   if (pathname.startsWith("/api/reports")) {
     return NextResponse.next();

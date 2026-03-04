@@ -1,21 +1,25 @@
-import { StudentHeader } from "@/components/ui/StudentHeader";
+import { ChildSwitcher } from "@/components/ui/ChildSwitcher";
 import { Timeline } from "@/components/ui/Timeline";
-import { getStudentProfile } from "@/lib/student/demo";
+import { getParentChildren } from "@/lib/parent/queries";
 
-export default async function StudentTimetablePage({ params }: { params: Promise<{ studentId: string }> }) {
-  const { studentId } = await params;
-  const profile = getStudentProfile(studentId);
-  const term = "Trimestre 1";
+export default async function ParentTimetablePage({ searchParams }: { searchParams: Promise<{ child?: string }> }) {
+  const sp = await searchParams;
+  const { children } = await getParentChildren();
+
+  if (!children.length) {
+    return (
+      <div className="elima-card">
+        <h1 className="text-2xl font-bold text-[var(--accent)]">Emploi du temps</h1>
+        <p className="mt-2 text-sm text-slate-600">Aucun enfant associé.</p>
+      </div>
+    );
+  }
+
+  const selectedId = sp.child ?? children[0].student_id;
 
   return (
     <div className="space-y-6">
-      <StudentHeader
-        title="Emploi du temps"
-        subtitle="Lecture seule (vue jour/semaine à venir)."
-        studentName={profile.fullName}
-        className={profile.className}
-        term={term}
-      />
+      <ChildSwitcher childrenList={children} selectedStudentId={selectedId} basePath="/parent/timetable" />
 
       <section className="elima-card">
         <div className="flex flex-wrap items-center gap-2">

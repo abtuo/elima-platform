@@ -1,21 +1,29 @@
-import { StudentHeader } from "@/components/ui/StudentHeader";
+import { ChildSwitcher } from "@/components/ui/ChildSwitcher";
 import { EditableTable } from "@/components/ui/EditableTable";
-import { demoStudentAttendance, getStudentProfile } from "@/lib/student/demo";
+import { getParentChildren, getStudentAttendance } from "@/lib/parent/queries";
 
-function label(status: "PRESENT" | "ABSENT" | "LATE") {
+function label(status: string) {
   if (status === "PRESENT") return "Présent";
   if (status === "ABSENT") return "Absent";
-  return "Retard";
+  if (status === "LATE") return "Retard";
+  return status;
 }
 
-export default async function StudentAttendancePage({ params }: { params: Promise<{ studentId: string }> }) {
-  const { studentId } = await params;
-  const profile = getStudentProfile(studentId);
-  const term = "Trimestre 1";
-  const rows = demoStudentAttendance
-    .filter((a) => a.studentId === profile.id)
-    .sort((a, b) => b.dateISO.localeCompare(a.dateISO));
+export default async function ParentAttendancePage({ searchParams }: { searchParams: Promise<{ child?: string }> }) {
+  const sp = await searchParams;
+  const { children } = await getParentChildren();
 
+  if (!children.length) {
+    return (
+      <div className="elima-card">
+        <h1 className="text-2xl font-bold text-[var(--accent)]">Présences</h1>
+        <p className="mt-2 text-sm text-slate-600">Aucun enfant associé.</p>
+      </div>
+    );
+  }
+
+  const selectedId = sp.child ?? children[0].student_id;
+  const rows = await getStudentAttendance(selectedId);
   const totals = {
     absent: rows.filter((r) => r.status === "ABSENT").length,
     late: rows.filter((r) => r.status === "LATE").length,
@@ -23,13 +31,7 @@ export default async function StudentAttendancePage({ params }: { params: Promis
 
   return (
     <div className="space-y-6">
-      <StudentHeader
-        title="Présences"
-        subtitle="Lecture seule — historique absences et retards."
-        studentName={profile.fullName}
-        className={profile.className}
-        term={term}
-      />
+      <ChildSwitcher childrenList={children} selectedStudentId={selectedId} basePath="/parent/attendance" />
 
       <section className="grid gap-4 sm:grid-cols-2">
         <article className="elima-card">
@@ -48,9 +50,8 @@ export default async function StudentAttendancePage({ params }: { params: Promis
           rows={rows}
           rowKey={(r) => r.id}
           columns={[
-            { key: "date", header: "Date", cell: (r) => <span className="font-semibold">{r.dateISO}</span> },
+            { key: "date", header: "Date", cell: (r) => <span className="font-semibold">{String(r.date)}</span>, className: "whitespace-nowrap" },
             { key: "status", header: "Statut", cell: (r) => label(r.status), className: "whitespace-nowrap" },
-            { key: "note", header: "Note", cell: (r) => r.note ?? "—" },
           ]}
         />
       </section>

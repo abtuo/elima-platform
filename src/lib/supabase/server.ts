@@ -2,6 +2,24 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { env, requireServerEnv } from "@/lib/env";
 
+export async function createSupabaseAdminServerClient() {
+  // Service role client used only in trusted server-side contexts (seed, admin tasks).
+  return createServerClient(
+    requireServerEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requireServerEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    {
+      cookies: {
+        getAll() {
+          return [];
+        },
+        setAll() {
+          // noop
+        },
+      },
+    },
+  );
+}
+
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
 
