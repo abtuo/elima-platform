@@ -17,14 +17,15 @@ order by s.name;
 
 -- 3) Parent -> number of children distribution (top 20)
 select
-  u.email,
+  au.email,
   p.school_id,
   count(sp.student_id) as children_count
 from public.parents p
 join public.users u on u.id = p.user_id
+join auth.users au on au.id = u.id
 left join public.student_parents sp on sp.parent_id = p.id
-group by u.email, p.school_id
-order by children_count desc, u.email
+group by au.email, p.school_id
+order by children_count desc, au.email
 limit 20;
 
 -- 4) Cross-school parents: parents that have children in BOTH schools
@@ -37,24 +38,25 @@ with parent_children_schools as (
   join public.student_parents sp on sp.parent_id = p.id
   join public.students st on st.id = sp.student_id
   group by p.id, p.school_id, st.school_id
-), cross as (
+), cross_school_parents as (
   select parent_id
   from parent_children_schools
   group by parent_id
   having count(distinct child_school_id) >= 2
 )
 select
-  u.email,
+  au.email,
   p.school_id as parent_school,
   count(distinct st.school_id) as child_schools,
   count(sp.student_id) as total_children
-from cross c
+from cross_school_parents c
 join public.parents p on p.id = c.parent_id
 join public.users u on u.id = p.user_id
+join auth.users au on au.id = u.id
 join public.student_parents sp on sp.parent_id = p.id
 join public.students st on st.id = sp.student_id
-group by u.email, p.school_id
-order by total_children desc, u.email
+group by au.email, p.school_id
+order by total_children desc, au.email
 limit 50;
 
 -- 5) Quick check conversation/messages

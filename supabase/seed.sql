@@ -11,14 +11,21 @@ begin;
 -- Helpers
 -- --------------------------------------------------
 
--- We need the auth.instance_id to insert into auth.users.
+-- We need an auth.instance_id to insert into auth.users.
+-- Depending on Supabase version, `auth.instances` can be empty. We therefore try:
+-- 1) existing auth.users.instance_id
+-- 2) auth.instances.id (fallback)
+-- If both are empty, create 1 user manually in Supabase Dashboard → Auth → Users, then re-run.
 do $$
 declare
   inst uuid;
 begin
-  select id into inst from auth.instances limit 1;
+  select instance_id into inst from auth.users where instance_id is not null limit 1;
   if inst is null then
-    raise exception 'auth.instances is empty (unexpected on Supabase)';
+    select id into inst from auth.instances limit 1;
+  end if;
+  if inst is null then
+    raise exception 'Cannot resolve auth.instance_id. Create 1 user in Supabase Dashboard → Authentication → Users, then re-run seed.';
   end if;
 
   -- Make it available for the rest of the script.
@@ -27,6 +34,51 @@ end$$;
 
 -- Small helper: deterministic-ish email prefix
 -- (keep it simple and unique)
+
+-- Reusable seed datasets (temporary tables)
+create temp table if not exists seed_admins (
+  school_id uuid not null,
+  email text not null,
+  full_name text not null
+) on commit drop;
+
+truncate table seed_admins;
+insert into seed_admins (school_id, email, full_name)
+values
+  ('11111111-1111-1111-1111-111111111111'::uuid, 'admin.yakro@elima.demo', 'Admin Yakro'),
+  ('22222222-2222-2222-2222-222222222222'::uuid, 'admin.cocody@elima.demo', 'Admin Cocody');
+
+create temp table if not exists seed_teachers (
+  school_id uuid not null,
+  email text not null,
+  full_name text not null,
+  phone text
+) on commit drop;
+
+truncate table seed_teachers;
+insert into seed_teachers (school_id, email, full_name, phone)
+select
+  case when gs <= 74 then '11111111-1111-1111-1111-111111111111'::uuid else '22222222-2222-2222-2222-222222222222'::uuid end as school_id,
+  format('teacher%04s@elima.demo', gs) as email,
+  format('Enseignant %s', gs) as full_name,
+  format('+225%09s', 100000000 + gs) as phone
+from generate_series(1, 134) gs;
+
+create temp table if not exists seed_parents (
+  school_id uuid not null,
+  email text not null,
+  full_name text not null,
+  phone text
+) on commit drop;
+
+truncate table seed_parents;
+insert into seed_parents (school_id, email, full_name, phone)
+select
+  case when gs <= 950 then '11111111-1111-1111-1111-111111111111'::uuid else '22222222-2222-2222-2222-222222222222'::uuid end as school_id,
+  format('parent%04s@elima.demo', gs) as email,
+  format('Parent %s', gs) as full_name,
+  format('+225%09s', 200000000 + gs) as phone
+from generate_series(1, 1550) gs;
 
 -- --------------------------------------------------
 -- Schools
@@ -137,73 +189,55 @@ from gen;
 -- --------------------------------------------------
 
 -- Create 2 admins (one per school)
-with admins as (
-  select * from (values
-    ('11111111-1111-1111-1111-111111111111'::uuid, 'admin.yakro@elima.demo', 'Admin Yakro'),
-    ('22222222-2222-2222-2222-222222222222'::uuid, 'admin.cocody@elima.demo', 'Admin Cocody')
-  ) as t(school_id, email, full_name)
-), ins_auth as (
-  insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
-  select
-    gen_random_uuid(),
-    current_setting('elima.instance_id')::uuid,
-    'authenticated',
-    'authenticated',
-    email,
-    crypt('Password123!', gen_salt('bf')),
-    now(),
-    '{"provider":"email","providers":["email"]}'::jsonb,
-    '{}'::jsonb,
-    now(),
-    now()
-  from admins
-  on conflict (email) do update set updated_at = excluded.updated_at
-  returning id, email
-)
+
+insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+select
+  gen_random_uuid(),
+  current_setting('elima.instance_id')::uuid,
+  'authenticated',
+  'authenticated',
+  a.email,
+  crypt('Password123!', gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{}'::jsonb,
+  now(),
+  now()
+from seed_admins a
+where not exists (select 1 from auth.users au where lower(au.email) = lower(a.email));
+
 insert into public.users (id, school_id, role, full_name, phone)
-select a.id, ad.school_id, 'SCHOOL_ADMIN', ad.full_name, null
-from ins_auth a
-join admins ad on ad.email = a.email
+select au.id, a.school_id, 'SCHOOL_ADMIN', a.full_name, null
+from seed_admins a
+join auth.users au on lower(au.email) = lower(a.email)
 on conflict (id) do update set
   school_id = excluded.school_id,
   role = excluded.role,
-  full_name = excluded.full_name;
+  full_name = excluded.full_name,
+  phone = excluded.phone;
 
 -- Teachers: 74 for school1, 60 for school2 = 134
-with teacher_plan as (
-  select
-    case when gs <= 74 then '11111111-1111-1111-1111-111111111111'::uuid else '22222222-2222-2222-2222-222222222222'::uuid end as school_id,
-    gs as seq
-  from generate_series(1, 134) gs
-), teacher_rows as (
-  select
-    school_id,
-    format('teacher%04s@elima.demo', seq) as email,
-    format('Enseignant %s', seq) as full_name,
-    format('+225%09s', 100000000 + seq) as phone
-  from teacher_plan
-), ins_auth as (
-  insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
-  select
-    gen_random_uuid(),
-    current_setting('elima.instance_id')::uuid,
-    'authenticated',
-    'authenticated',
-    email,
-    crypt('Password123!', gen_salt('bf')),
-    now(),
-    '{"provider":"email","providers":["email"]}'::jsonb,
-    '{}'::jsonb,
-    now(),
-    now()
-  from teacher_rows
-  on conflict (email) do update set updated_at = excluded.updated_at
-  returning id, email
-)
+
+insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+select
+  gen_random_uuid(),
+  current_setting('elima.instance_id')::uuid,
+  'authenticated',
+  'authenticated',
+  t.email,
+  crypt('Password123!', gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{}'::jsonb,
+  now(),
+  now()
+from seed_teachers t
+where not exists (select 1 from auth.users au where lower(au.email) = lower(t.email));
+
 insert into public.users (id, school_id, role, full_name, phone)
-select a.id, tr.school_id, 'TEACHER', tr.full_name, tr.phone
-from ins_auth a
-join teacher_rows tr on tr.email = a.email
+select au.id, t.school_id, 'TEACHER', t.full_name, t.phone
+from seed_teachers t
+join auth.users au on lower(au.email) = lower(t.email)
 on conflict (id) do update set
   school_id = excluded.school_id,
   role = excluded.role,
@@ -221,43 +255,27 @@ on conflict (user_id) do nothing;
 -- - 600 parents for school2 (1 parent = 1-2 élèves)
 -- - 50 cross-school parents (primary in school1, also linked to 1-2 students in school2)
 
-with parent_plan as (
-  select
-    case
-      when gs <= 950 then '11111111-1111-1111-1111-111111111111'::uuid
-      else '22222222-2222-2222-2222-222222222222'::uuid
-    end as school_id,
-    gs as seq
-  from generate_series(1, 1550) gs
-), parent_rows as (
-  select
-    school_id,
-    format('parent%04s@elima.demo', seq) as email,
-    format('Parent %s', seq) as full_name,
-    format('+225%09s', 200000000 + seq) as phone
-  from parent_plan
-), ins_auth as (
-  insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
-  select
-    gen_random_uuid(),
-    current_setting('elima.instance_id')::uuid,
-    'authenticated',
-    'authenticated',
-    email,
-    crypt('Password123!', gen_salt('bf')),
-    now(),
-    '{"provider":"email","providers":["email"]}'::jsonb,
-    '{}'::jsonb,
-    now(),
-    now()
-  from parent_rows
-  on conflict (email) do update set updated_at = excluded.updated_at
-  returning id, email
-)
+
+insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+select
+  gen_random_uuid(),
+  current_setting('elima.instance_id')::uuid,
+  'authenticated',
+  'authenticated',
+  p.email,
+  crypt('Password123!', gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{}'::jsonb,
+  now(),
+  now()
+from seed_parents p
+where not exists (select 1 from auth.users au where lower(au.email) = lower(p.email));
+
 insert into public.users (id, school_id, role, full_name, phone)
-select a.id, pr.school_id, 'PARENT', pr.full_name, pr.phone
-from ins_auth a
-join parent_rows pr on pr.email = a.email
+select au.id, p.school_id, 'PARENT', p.full_name, p.phone
+from seed_parents p
+join auth.users au on lower(au.email) = lower(p.email)
 on conflict (id) do update set
   school_id = excluded.school_id,
   role = excluded.role,
