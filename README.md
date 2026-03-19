@@ -48,3 +48,42 @@ npm run dev
 ## Déploiement
 
 Déploiement recommandé sur Vercel. Ajouter les variables d’environnement dans Project Settings > Environment Variables.
+
+## Database (Supabase) – schema & seed
+
+### Apply schema
+Le schéma PostgreSQL complet (MVP) est dans :
+
+- `supabase/schema.sql`
+
+Pour l’appliquer sur **Supabase Cloud** :
+1. Supabase project → **SQL Editor**
+2. Colle `supabase/schema.sql`
+3. Run.
+
+### Seed (dataset réaliste Côte d’Ivoire)
+
+- `supabase/seed.sql`
+
+Ce seed génère :
+- 2 écoles (Yakro + Cocody)
+- ~68 classes
+- ~2400 élèves (sans compte Auth requis)
+- 134 enseignants (Auth users + `public.users` + `public.teachers`)
+- ~1550 parents (Auth users + `public.users` + `public.parents`)
+- liens parent↔élève, incluant des **parents cross-school**
+- 1 conversation de démo + 2 messages
+
+Exécution :
+1. Supabase project → **SQL Editor**
+2. Colle `supabase/seed.sql`
+3. Run.
+
+Mot de passe par défaut pour les comptes créés dans `auth.users` :
+- `Password123!`
+
+Comptes exemples :
+- `admin.yakro@elima.demo`
+- `admin.cocody@elima.demo`
+- `teacher0001@elima.demo`
+- `parent0001@elima.demo`
