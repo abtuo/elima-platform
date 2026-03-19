@@ -1,15 +1,26 @@
-import { AlertTriangle, BarChart3, BookOpen, CheckCircle2, MessageCircleMore, School } from "lucide-react";
-import { demoMetrics, demoStudents } from "@/lib/demo-data";
+import {
+  BarChart3,
+  BookOpen,
+  CheckCircle2,
+  ClipboardCheck,
+  FileText,
+  MessageCircleMore,
+  School,
+  Users,
+} from "lucide-react";
+import { getDashboardStatsForCurrentUserSchool } from "@/lib/dashboard/queries";
 import { ReportsPanel } from "./ReportsPanel";
 
-export default function DashboardPage() {
-  const highRisk = demoMetrics.filter((m) => m.riskLevel === "HIGH").length;
+export default async function DashboardPage() {
+  const stats = await getDashboardStatsForCurrentUserSchool();
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-8">
       <header className="elima-card">
-        <h1 className="text-2xl font-bold text-[var(--accent)]">Dashboard Direction</h1>
-        <p className="text-sm text-slate-600">Suivi des performances, élèves à risque, et opérations académiques.</p>
+        <h1 className="text-2xl font-bold text-[var(--accent)]">Dashboard — {stats.schoolName}</h1>
+        <p className="text-sm text-slate-600">
+          Statistiques réelles (Supabase) pour ton établissement.
+        </p>
         <form action="/api/auth/logout" method="POST" className="mt-3">
           <button className="rounded-lg border border-slate-300 px-3 py-1 text-xs">Se déconnecter</button>
         </form>
@@ -17,10 +28,42 @@ export default function DashboardPage() {
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Écoles pilotes", value: 12, icon: School },
-          { label: "Élèves suivis", value: 1320, icon: BookOpen },
-          { label: "Notifications envoyées", value: 486, icon: MessageCircleMore },
-          { label: "Élèves à risque élevé", value: highRisk, icon: AlertTriangle },
+          { label: "École", value: 1, icon: School },
+          { label: "Classes", value: stats.classesCount, icon: Users },
+          { label: "Élèves", value: stats.studentsCount, icon: BookOpen },
+          { label: "Enseignants", value: stats.teachersCount, icon: Users },
+        ].map((kpi) => (
+          <article className="elima-card" key={kpi.label}>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-500">{kpi.label}</p>
+              <kpi.icon size={18} className="text-[var(--primary)]" />
+            </div>
+            <p className="mt-2 text-2xl font-bold">{kpi.value}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "Parents", value: stats.parentsCount, icon: Users },
+          { label: "Évaluations", value: stats.evaluationsCount, icon: FileText },
+          { label: "Notes", value: stats.gradesCount, icon: BarChart3 },
+          { label: "Présences (enregistrements)", value: stats.attendanceRecordsCount, icon: ClipboardCheck },
+        ].map((kpi) => (
+          <article className="elima-card" key={kpi.label}>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-500">{kpi.label}</p>
+              <kpi.icon size={18} className="text-[var(--primary)]" />
+            </div>
+            <p className="mt-2 text-2xl font-bold">{kpi.value}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "Conversations", value: stats.conversationsCount, icon: MessageCircleMore },
+          { label: "Messages", value: stats.messagesCount, icon: MessageCircleMore },
         ].map((kpi) => (
           <article className="elima-card" key={kpi.label}>
             <div className="flex items-center justify-between">
@@ -34,33 +77,11 @@ export default function DashboardPage() {
 
       <section className="grid gap-4 lg:grid-cols-2">
         <article className="elima-card">
-          <h2 className="mb-3 text-lg font-semibold">Élèves à risque</h2>
-          <div className="space-y-3">
-            {demoStudents.map((student) => {
-              const metric = demoMetrics.find((m) => m.studentId === student.id);
-              return (
-                <div key={student.id} className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
-                  <div>
-                    <p className="font-medium">{student.fullName}</p>
-                    <p className="text-xs text-slate-500">
-                      {student.className} • Moy: {student.average}/20 • Présence: {student.attendanceRate}%
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                      metric?.riskLevel === "HIGH"
-                        ? "bg-red-100 text-red-700"
-                        : metric?.riskLevel === "MEDIUM"
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-emerald-100 text-emerald-700"
-                    }`}
-                  >
-                    {metric?.riskLevel}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          <h2 className="mb-3 text-lg font-semibold">Communication (MVP)</h2>
+          <p className="text-sm text-slate-600">
+            Tu peux déjà tester la messagerie (enseignant ↔ parent) via les tables
+            <span className="font-mono"> conversations</span>, <span className="font-mono">conversation_participants</span> et <span className="font-mono">messages</span>.
+          </p>
         </article>
 
         <article className="elima-card">

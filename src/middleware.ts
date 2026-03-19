@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { canAccessRole, isValidRole } from "@/lib/rbac";
-import type { AppRole } from "@/lib/types";
 
 const protectedPrefixes = ["/dashboard", "/teacher", "/api"];
 
-const pageRoleRules: Array<{ prefix: string; role: AppRole }> = [
-  { prefix: "/dashboard", role: "SCHOOL_ADMIN" },
-  { prefix: "/teacher", role: "TEACHER" },
-];
+function hasSupabaseSessionCookie(request: NextRequest) {
+  // Supabase SSR stores the session across multiple cookies.
+  // Cookie names look like: sb-<project-ref>-auth-token (and chunked variants).
+  // We keep this check intentionally simple so it works on Edge.
+  return request.cookies.getAll().some((c) => c.name.startsWith("sb-") && Boolean(c.value));
+}
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  if (pathname.startsWith("/api/auth/login") || pathname.startsWith("/api/auth/logout")) {
+  if (
+    pathname.startsWith("/api/auth/login") ||
+    pathname.startsWith("/api/auth/logout") ||
+    pathname.startsWith("/api/auth/email/login")
+  ) {
     return NextResponse.next();
   }
 
@@ -26,22 +30,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const role = request.cookies.get("elima_role")?.value;
-  if (!role || !isValidRole(role)) {
+  // Supabase Auth (mode 2): we only check session presence here.
+  // Role-based authorization is enforced inside server components / API routes.
+  const hasSession = hasSupabaseSessionCookie(request);
+  if (!hasSession) {
     if (pathname.startsWith("/api")) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  const pageRule = pageRoleRules.find((rule) => pathname.startsWith(rule.prefix));
-  if (pageRule && !canAccessRole(role, pageRule.role)) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  const requiredRole = pathname.startsWith("/api/notifications") ? "TEACHER" : "SCHOOL_ADMIN";
-  if (pathname.startsWith("/api") && !canAccessRole(role, requiredRole)) {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
   return NextResponse.next();
