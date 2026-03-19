@@ -45,16 +45,25 @@ export async function getParentChildren() {
 
   type LinkRow = {
     student_id: string;
-    students: null | {
-      id: string;
-      full_name: string;
-      class_id: string;
-      classes: null | { id: string; name: string };
-    };
+    // Depending on the PostgREST relationship shape, `students` can come back as an object or a single-item array.
+    students:
+      | null
+      | {
+          id: string;
+          full_name: string;
+          class_id: string;
+          classes: null | { id: string; name: string };
+        }
+      | Array<{
+          id: string;
+          full_name: string;
+          class_id: string;
+          classes: null | { id: string; name: string };
+        }>;
   };
 
-  const children: ParentChild[] = (links as LinkRow[] | null | undefined ?? []).flatMap((l) => {
-    const s = l.students;
+  const children: ParentChild[] = ((links as unknown as LinkRow[] | null | undefined) ?? []).flatMap((l) => {
+    const s = Array.isArray(l.students) ? l.students[0] : l.students;
     if (!s) return [];
     return [
       {

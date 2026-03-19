@@ -3,13 +3,11 @@ import type { NextRequest } from "next/server";
 import { canAccessRole, isValidRole } from "@/lib/rbac";
 import type { AppRole } from "@/lib/types";
 
-const protectedPrefixes = ["/dashboard", "/teacher", "/parent", "/student", "/api"];
+const protectedPrefixes = ["/dashboard", "/teacher", "/api"];
 
 const pageRoleRules: Array<{ prefix: string; role: AppRole }> = [
   { prefix: "/dashboard", role: "SCHOOL_ADMIN" },
   { prefix: "/teacher", role: "TEACHER" },
-  { prefix: "/parent", role: "PARENT" },
-  { prefix: "/student", role: "STUDENT" },
 ];
 
 export function middleware(request: NextRequest) {
@@ -22,12 +20,6 @@ export function middleware(request: NextRequest) {
   const needsAuth = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
 
   if (!needsAuth) return NextResponse.next();
-
-  // Parent space uses Supabase Auth (phone OTP) and will handle auth server-side.
-  // We therefore don't block it based on the demo `elima_role` cookie.
-  if (pathname.startsWith("/parent")) {
-    return NextResponse.next();
-  }
 
   // Allow public access for demo PDF reports
   if (pathname.startsWith("/api/reports")) {
@@ -56,5 +48,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/teacher/:path*", "/parent/:path*", "/student/:path*", "/api/:path*"],
+  matcher: ["/dashboard/:path*", "/teacher/:path*", "/api/:path*"],
 };

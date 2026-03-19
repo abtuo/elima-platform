@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function PhoneLoginPage() {
+function PhoneLoginInner() {
   const router = useRouter();
   const sp = useSearchParams();
-  const redirectTo = sp.get("redirect") ?? "/parent";
+  const redirectTo = sp.get("redirect") ?? "/dashboard";
 
   const [step, setStep] = useState<"PHONE" | "OTP">("PHONE");
   const [phone, setPhone] = useState("+225");
@@ -132,5 +132,13 @@ export default function PhoneLoginPage() {
         )}
       </section>
     </main>
+  );
+}
+
+export default function PhoneLoginPage() {
+  return (
+    <Suspense>
+      <PhoneLoginInner />
+    </Suspense>
   );
 }

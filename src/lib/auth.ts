@@ -22,10 +22,6 @@ export function getRoleHomePath(role: AppRole) {
       return "/dashboard";
     case "TEACHER":
       return "/teacher";
-    case "PARENT":
-      return "/parent";
-    case "STUDENT":
-      return "/student";
     default:
       return "/";
   }

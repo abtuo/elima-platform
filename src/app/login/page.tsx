@@ -3,8 +3,6 @@ import Link from "next/link";
 const roles = [
   { value: "SCHOOL_ADMIN", label: "Directeur / Admin école" },
   { value: "TEACHER", label: "Enseignant" },
-  { value: "PARENT", label: "Parent" },
-  { value: "STUDENT", label: "Élève" },
 ];
 
 export default function LoginPage() {
