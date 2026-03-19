@@ -79,6 +79,15 @@ Exécution :
 2. Colle `supabase/seed.sql`
 3. Run.
 
+### Sanity check (après seed)
+
+- `supabase/sanity-check.sql`
+
+Exécution :
+1. Supabase project → **SQL Editor**
+2. Colle `supabase/sanity-check.sql`
+3. Run.
+
 Mot de passe par défaut pour les comptes créés dans `auth.users` :
 - `Password123!`
 
