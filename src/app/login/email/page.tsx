@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function EmailLoginInner() {
@@ -12,14 +12,6 @@ function EmailLoginInner() {
   const [password, setPassword] = useState("Password123!");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const hint = useMemo(
-    () =>
-      email.includes("teacher")
-        ? "Astuce: les enseignants peuvent aller sur /teacher après connexion."
-        : "Astuce: les admins école vont sur /dashboard après connexion.",
-    [email],
-  );
 
   async function submit() {
     setLoading(true);
@@ -49,10 +41,8 @@ function EmailLoginInner() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-5xl items-center px-4 py-8 md:px-8">
       <section className="elima-card mx-auto w-full max-w-lg space-y-5">
-        <h1 className="text-2xl font-bold">Connexion (Supabase)</h1>
-        <p className="text-sm text-slate-600">
-          Connecte-toi avec un compte créé dans Supabase Auth (email + mot de passe).
-        </p>
+        <h1 className="text-2xl font-bold">Connexion</h1>
+        <p className="text-sm text-slate-600">Saisissez vos identifiants.</p>
 
         <div className="space-y-3">
           <label className="block text-sm font-medium text-slate-700">Email</label>
@@ -80,7 +70,6 @@ function EmailLoginInner() {
           >
             {loading ? "Connexion…" : "Se connecter"}
           </button>
-          <p className="text-xs text-slate-500">{hint}</p>
         </div>
       </section>
     </main>

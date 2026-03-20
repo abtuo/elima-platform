@@ -18,9 +18,7 @@ export default async function DashboardPage() {
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-8">
       <header className="elima-card">
         <h1 className="text-2xl font-bold text-[var(--accent)]">Dashboard — {stats.schoolName}</h1>
-        <p className="text-sm text-slate-600">
-          Statistiques réelles (Supabase) pour ton établissement.
-        </p>
+        <p className="text-sm text-slate-600">Vue d’ensemble de votre établissement.</p>
         <form action="/api/auth/logout" method="POST" className="mt-3">
           <button className="rounded-lg border border-slate-300 px-3 py-1 text-xs">Se déconnecter</button>
         </form>
@@ -77,15 +75,14 @@ export default async function DashboardPage() {
 
       <section className="grid gap-4 lg:grid-cols-2">
         <article className="elima-card">
-          <h2 className="mb-3 text-lg font-semibold">Communication (MVP)</h2>
+          <h2 className="mb-3 text-lg font-semibold">Communication</h2>
           <p className="text-sm text-slate-600">
-            Tu peux déjà tester la messagerie (enseignant ↔ parent) via les tables
-            <span className="font-mono"> conversations</span>, <span className="font-mono">conversation_participants</span> et <span className="font-mono">messages</span>.
+            Un espace de communication est disponible pour faciliter les échanges.
           </p>
         </article>
 
         <article className="elima-card">
-          <h2 className="mb-3 text-lg font-semibold">Suivi opérations MVP</h2>
+          <h2 className="mb-3 text-lg font-semibold">Fonctionnalités</h2>
           <ul className="space-y-2 text-sm">
             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-600" /> Présences quotidiennes</li>
             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-600" /> Saisie notes & calcul moyennes</li>
