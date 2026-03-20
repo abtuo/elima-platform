@@ -15,7 +15,23 @@ export async function POST(request: Request) {
 
   // We need to resolve which Supabase Auth identity (email) corresponds to that phone.
   // This lookup must bypass RLS -> service role.
-  const admin = await createSupabaseAdminServerClient();
+  let admin: Awaited<ReturnType<typeof createSupabaseAdminServerClient>>;
+  try {
+    admin = await createSupabaseAdminServerClient();
+  } catch (e) {
+    // Avoid crashing the whole app on Vercel (Digest error page).
+    // Return a clear message so we can diagnose missing env vars quickly.
+    const message = e instanceof Error ? e.message : "Server misconfiguration";
+    return NextResponse.json(
+      {
+        message:
+          message.includes("SUPABASE_SERVICE_ROLE_KEY")
+            ? "Configuration serveur incomplète (SUPABASE_SERVICE_ROLE_KEY manquante)."
+            : message,
+      },
+      { status: 500 },
+    );
+  }
   const { data: profile, error: profileErr } = await admin
     .from("users")
     .select("email, role")
