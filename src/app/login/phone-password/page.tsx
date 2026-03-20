@@ -33,17 +33,18 @@ function PhonePasswordLoginInner() {
       setError(message || "Erreur");
       return;
     }
-    router.replace(redirectTo);
+    const body = (await res.json().catch(() => null)) as unknown;
+    const apiRedirectTo =
+      body && typeof body === "object" && "redirectTo" in body ? String((body as { redirectTo?: unknown }).redirectTo ?? "") : "";
+    router.replace(apiRedirectTo || redirectTo);
     router.refresh();
   }
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-5xl items-center px-4 py-8 md:px-8">
       <section className="elima-card mx-auto w-full max-w-lg space-y-5">
-        <h1 className="text-2xl font-bold">Connexion Parent (téléphone + mot de passe)</h1>
-        <p className="text-sm text-slate-600">
-          Mode test. Le SMS/WhatsApp OTP sera activé plus tard.
-        </p>
+        <h1 className="text-2xl font-bold">Connexion</h1>
+        <p className="text-sm text-slate-600">Saisissez votre numéro et votre mot de passe.</p>
 
         <div className="flex gap-2">
           <button

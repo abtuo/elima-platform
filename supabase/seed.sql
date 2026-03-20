@@ -250,6 +250,31 @@ from public.users u
 where u.role = 'TEACHER'
 on conflict (user_id) do nothing;
 
+-- IMPORTANT: allow login by phone+password.
+-- We create an additional auth identity using the deterministic email mapping: <phone>@phone.elima
+-- The user will then login with phone+password via the app, which maps phone -> email.
+insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+select
+  au.id,
+  au.instance_id,
+  au.aud,
+  au.role,
+  (t.phone || '@phone.elima') as email,
+  au.encrypted_password,
+  au.email_confirmed_at,
+  au.raw_app_meta_data,
+  coalesce(au.raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('phone', t.phone),
+  au.created_at,
+  now()
+from seed_teachers t
+join auth.users au on lower(au.email) = lower(t.email)
+where t.phone is not null
+  and not exists (
+    select 1
+    from auth.users u2
+    where lower(u2.email) = lower(t.phone || '@phone.elima')
+  );
+
 -- Parents: target ~1550
 -- - 900 parents for school1 (1 parent = 1 élève)
 -- - 600 parents for school2 (1 parent = 1-2 élèves)
@@ -287,6 +312,29 @@ select u.school_id, u.id
 from public.users u
 where u.role = 'PARENT'
 on conflict (user_id) do nothing;
+
+-- Same phone+password identity for parents (optional, but useful for messaging tests)
+insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+select
+  au.id,
+  au.instance_id,
+  au.aud,
+  au.role,
+  (p.phone || '@phone.elima') as email,
+  au.encrypted_password,
+  au.email_confirmed_at,
+  au.raw_app_meta_data,
+  coalesce(au.raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('phone', p.phone),
+  au.created_at,
+  now()
+from seed_parents p
+join auth.users au on lower(au.email) = lower(p.email)
+where p.phone is not null
+  and not exists (
+    select 1
+    from auth.users u2
+    where lower(u2.email) = lower(p.phone || '@phone.elima')
+  );
 
 -- --------------------------------------------------
 -- Students: ~2400 (900 in school1, 1500 in school2)
