@@ -1,8 +1,11 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type DashboardStats = {
   schoolId: string;
   schoolName: string;
+  schoolCity?: string | null;
+  schoolCountry?: string | null;
+  schoolStatus?: string | null;
   classesCount: number;
   studentsCount: number;
   teachersCount: number;
@@ -25,13 +28,15 @@ async function countByTable(supabase: Awaited<ReturnType<typeof createSupabaseSe
 
 export async function getDashboardStatsForCurrentUserSchool(): Promise<DashboardStats> {
   const supabase = await createSupabaseServerClient();
+  const admin = await createSupabaseAdminServerClient();
 
   const { data: authData, error: authErr } = await supabase.auth.getUser();
   if (authErr) throw authErr;
   const userId = authData.user?.id;
   if (!userId) throw new Error("Not authenticated");
 
-  const { data: userRow, error: userErr } = await supabase
+  // Resolve current school via service role (bypass RLS).
+  const { data: userRow, error: userErr } = await admin
     .from("users")
     .select("school_id, role")
     .eq("id", userId)
@@ -40,9 +45,9 @@ export async function getDashboardStatsForCurrentUserSchool(): Promise<Dashboard
   if (!userRow?.school_id) throw new Error("Missing school_id for current user");
 
   const schoolId = String(userRow.school_id);
-  const { data: school, error: schoolErr } = await supabase
+  const { data: school, error: schoolErr } = await admin
     .from("schools")
-    .select("id, name")
+    .select("id, name, city, country, status")
     .eq("id", schoolId)
     .maybeSingle();
   if (schoolErr) throw schoolErr;
@@ -59,24 +64,24 @@ export async function getDashboardStatsForCurrentUserSchool(): Promise<Dashboard
     conversationsCount,
     messagesCount,
   ] = await Promise.all([
-    countByTable(supabase, "classes", schoolId),
-    countByTable(supabase, "students", schoolId),
-    countByTable(supabase, "teachers", schoolId),
-    countByTable(supabase, "parents", schoolId),
-    countByTable(supabase, "evaluations", schoolId),
-    countByTable(supabase, "grades", schoolId),
-    countByTable(supabase, "attendance", schoolId),
-    countByTable(supabase, "conversations", schoolId),
+    countByTable(admin, "classes", schoolId),
+    countByTable(admin, "students", schoolId),
+    countByTable(admin, "teachers", schoolId),
+    countByTable(admin, "parents", schoolId),
+    countByTable(admin, "evaluations", schoolId),
+    countByTable(admin, "grades", schoolId),
+    countByTable(admin, "attendance", schoolId),
+    countByTable(admin, "conversations", schoolId),
     // messages doesn't have school_id; we approximate by joining via conversations
     (async () => {
-      const { data: convIds, error } = await supabase
+      const { data: convIds, error } = await admin
         .from("conversations")
         .select("id")
         .eq("school_id", schoolId);
       if (error) throw error;
       const ids = (convIds ?? []).map((c) => c.id);
       if (ids.length === 0) return 0;
-      const { count, error: msgErr } = await supabase
+      const { count, error: msgErr } = await admin
         .from("messages")
         .select("id", { count: "exact", head: true })
         .in("conversation_id", ids);
@@ -88,6 +93,9 @@ export async function getDashboardStatsForCurrentUserSchool(): Promise<Dashboard
   return {
     schoolId,
     schoolName: String(school?.name ?? "École"),
+    schoolCity: school?.city ?? null,
+    schoolCountry: school?.country ?? null,
+    schoolStatus: (school as { status?: string | null } | null)?.status ?? null,
     classesCount,
     studentsCount,
     teachersCount,
