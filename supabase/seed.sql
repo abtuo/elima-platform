@@ -259,7 +259,7 @@ select
   au.instance_id,
   au.aud,
   au.role,
-  (t.phone || '@phone.elima') as email,
+  (regexp_replace(t.phone, '[\\s\\-().]', '', 'g') || '@phone.elima') as email,
   au.encrypted_password,
   au.email_confirmed_at,
   au.raw_app_meta_data,
@@ -272,7 +272,7 @@ where t.phone is not null
   and not exists (
     select 1
     from auth.users u2
-    where lower(u2.email) = lower(t.phone || '@phone.elima')
+    where lower(u2.email) = lower(regexp_replace(t.phone, '[\\s\\-().]', '', 'g') || '@phone.elima')
   );
 
 -- Parents: target ~1550
@@ -320,7 +320,7 @@ select
   au.instance_id,
   au.aud,
   au.role,
-  (p.phone || '@phone.elima') as email,
+  (regexp_replace(p.phone, '[\\s\\-().]', '', 'g') || '@phone.elima') as email,
   au.encrypted_password,
   au.email_confirmed_at,
   au.raw_app_meta_data,
@@ -333,7 +333,7 @@ where p.phone is not null
   and not exists (
     select 1
     from auth.users u2
-    where lower(u2.email) = lower(p.phone || '@phone.elima')
+    where lower(u2.email) = lower(regexp_replace(p.phone, '[\\s\\-().]', '', 'g') || '@phone.elima')
   );
 
 -- --------------------------------------------------

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { phoneToEmail } from "@/lib/phone-auth";
+import { normalizePhone, phoneToEmail } from "@/lib/phone-auth";
 import { getRoleHomePath } from "@/lib/auth";
 import { isValidRole } from "@/lib/rbac";
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as null | { phone?: string; password?: string };
-  const phone = String(body?.phone ?? "").trim();
+  const phone = normalizePhone(String(body?.phone ?? ""));
   const password = String(body?.password ?? "");
 
   if (!phone || !password) {
