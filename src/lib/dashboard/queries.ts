@@ -42,7 +42,27 @@ export async function getDashboardStatsForCurrentUserSchool(): Promise<Dashboard
     .eq("id", userId)
     .maybeSingle();
   if (userErr) throw userErr;
-  if (!userRow?.school_id) throw new Error("Missing school_id for current user");
+  // NOTE: In some environments / datasets, a user can exist without being attached to a school yet.
+  // Throwing here crashes the whole dashboard on Vercel (Digest error page).
+  // Instead, return safe defaults and let the UI guide the user to configure/attach the school.
+  if (!userRow?.school_id) {
+    return {
+      schoolId: "",
+      schoolName: "École (à configurer)",
+      schoolCity: null,
+      schoolCountry: null,
+      schoolStatus: null,
+      classesCount: 0,
+      studentsCount: 0,
+      teachersCount: 0,
+      parentsCount: 0,
+      evaluationsCount: 0,
+      gradesCount: 0,
+      attendanceRecordsCount: 0,
+      conversationsCount: 0,
+      messagesCount: 0,
+    };
+  }
 
   const schoolId = String(userRow.school_id);
   const { data: school, error: schoolErr } = await admin

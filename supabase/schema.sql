@@ -3,26 +3,94 @@
 
 create extension if not exists pgcrypto;
 
-create type public.app_role as enum (
-  'SUPER_ADMIN',
-  'SCHOOL_ADMIN',
-  'TEACHER',
-  'PARENT',
-  'STUDENT'
-);
+-- Enums
+-- (Supabase SQL editor may run this file multiple times; enums must therefore be created conditionally.)
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_type t
+    join pg_namespace n on n.oid = t.typnamespace
+    where t.typname = 'app_role' and n.nspname = 'public'
+  ) then
+    create type public.app_role as enum (
+      'SUPER_ADMIN',
+      'SCHOOL_ADMIN',
+      'TEACHER',
+      'PARENT',
+      'STUDENT'
+    );
+  end if;
+end$$;
 
-create type public.attendance_status as enum ('PRESENT', 'ABSENT', 'LATE');
-create type public.notification_status as enum ('PENDING', 'SENT', 'FAILED');
-create type public.risk_level as enum ('LOW', 'MEDIUM', 'HIGH');
+do $$
+begin
+  if not exists (
+    select 1 from pg_type t
+    join pg_namespace n on n.oid = t.typnamespace
+    where t.typname = 'attendance_status' and n.nspname = 'public'
+  ) then
+    create type public.attendance_status as enum ('PRESENT', 'ABSENT', 'LATE');
+  end if;
+end$$;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_type t
+    join pg_namespace n on n.oid = t.typnamespace
+    where t.typname = 'notification_status' and n.nspname = 'public'
+  ) then
+    create type public.notification_status as enum ('PENDING', 'SENT', 'FAILED');
+  end if;
+end$$;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_type t
+    join pg_namespace n on n.oid = t.typnamespace
+    where t.typname = 'risk_level' and n.nspname = 'public'
+  ) then
+    create type public.risk_level as enum ('LOW', 'MEDIUM', 'HIGH');
+  end if;
+end$$;
 
 -- Communication / messaging
-create type public.conversation_participant_type as enum ('USER', 'CLASS');
+do $$
+begin
+  if not exists (
+    select 1 from pg_type t
+    join pg_namespace n on n.oid = t.typnamespace
+    where t.typname = 'conversation_participant_type' and n.nspname = 'public'
+  ) then
+    create type public.conversation_participant_type as enum ('USER', 'CLASS');
+  end if;
+end$$;
 
 -- School status (from spec)
-create type public.school_status as enum ('public', 'private');
+do $$
+begin
+  if not exists (
+    select 1 from pg_type t
+    join pg_namespace n on n.oid = t.typnamespace
+    where t.typname = 'school_status' and n.nspname = 'public'
+  ) then
+    create type public.school_status as enum ('public', 'private');
+  end if;
+end$$;
 
 -- Teacher personal
-create type public.todo_status as enum ('OPEN', 'DONE');
+do $$
+begin
+  if not exists (
+    select 1 from pg_type t
+    join pg_namespace n on n.oid = t.typnamespace
+    where t.typname = 'todo_status' and n.nspname = 'public'
+  ) then
+    create type public.todo_status as enum ('OPEN', 'DONE');
+  end if;
+end$$;
 
 create table if not exists public.schools (
   id uuid primary key default gen_random_uuid(),
@@ -84,7 +152,12 @@ create table if not exists public.teachers (
 create table if not exists public.parents (
   id uuid primary key default gen_random_uuid(),
   school_id uuid not null references public.schools(id) on delete cascade,
-  user_id uuid not null unique references public.users(id) on delete cascade,
+  -- Parent accounts can exist without an Auth user.
+  -- If you later decide to allow parent login, you can attach a public.users row here.
+  user_id uuid unique references public.users(id) on delete set null,
+  email text,
+  full_name text not null,
+  phone text,
   created_at timestamptz not null default now()
 );
 
@@ -307,6 +380,18 @@ create table if not exists public.notifications (
   created_at timestamptz not null default now()
 );
 
+-- Demo requests (landing)
+create table if not exists public.demo_requests (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  school text not null,
+  city text,
+  email text not null,
+  phone text,
+  message text,
+  created_at timestamptz not null default now()
+);
+
 create index if not exists idx_users_school_role on public.users(school_id, role);
 create index if not exists idx_students_school_class on public.students(school_id, class_id);
 create index if not exists idx_attendance_student_date on public.attendance(student_id, date);
@@ -349,6 +434,7 @@ alter table public.messages enable row level security;
 alter table public.teacher_todos enable row level security;
 alter table public.teacher_memos enable row level security;
 alter table public.audit_logs enable row level security;
+alter table public.demo_requests enable row level security;
 
 create or replace function public.current_user_role()
 returns public.app_role
@@ -365,6 +451,96 @@ stable
 as $$
   select school_id from public.users where id = auth.uid();
 $$;
+
+-- =====================
+-- Auth → App profile sync
+-- =====================
+-- When a user is created in Supabase Auth (auth.users), we want a matching row
+-- in public.users, with the SAME UUID (public.users.id = auth.users.id).
+--
+-- How to set role/school/phone/full_name at creation time:
+-- - Set user metadata (raw_user_meta_data) when creating the Auth user.
+--   Example metadata JSON:
+--   {
+--     "role": "TEACHER",
+--     "school_id": "11111111-1111-1111-1111-111111111111",
+--     "full_name": "Enseignant 42",
+--     "phone": "+225100000042"
+--   }
+--
+-- Notes:
+-- - role must be one of public.app_role.
+-- - school_id should be a valid public.schools.id (uuid).
+
+create or replace function public.handle_auth_user_created()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  meta jsonb;
+  role_text text;
+  role_enum public.app_role;
+  school_uuid uuid;
+  full_name_text text;
+  phone_text text;
+begin
+  meta := coalesce(new.raw_user_meta_data, '{}'::jsonb);
+
+  role_text := nullif(trim(meta->>'role'), '');
+  begin
+    role_enum := coalesce(role_text::public.app_role, 'PARENT'::public.app_role);
+  exception when others then
+    role_enum := 'PARENT'::public.app_role;
+  end;
+
+  begin
+    school_uuid := nullif(meta->>'school_id','')::uuid;
+  exception when others then
+    school_uuid := null;
+  end;
+
+  full_name_text := nullif(trim(meta->>'full_name'), '');
+  if full_name_text is null then
+    full_name_text := coalesce(nullif(trim(new.email), ''), 'Utilisateur');
+  end if;
+
+  phone_text := nullif(trim(meta->>'phone'), '');
+
+  insert into public.users (id, email, school_id, role, full_name, phone)
+  values (new.id, new.email, school_uuid, role_enum, full_name_text, phone_text)
+  on conflict (id) do update set
+    email = excluded.email,
+    school_id = excluded.school_id,
+    role = excluded.role,
+    full_name = excluded.full_name,
+    phone = excluded.phone;
+
+  -- Convenience: create the domain row when relevant.
+  if role_enum = 'TEACHER'::public.app_role and school_uuid is not null then
+    insert into public.teachers (school_id, user_id)
+    values (school_uuid, new.id)
+    on conflict (user_id) do nothing;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+after insert on auth.users
+for each row
+execute function public.handle_auth_user_created();
+
+-- =====================
+-- Manual reset (when needed)
+-- =====================
+-- To clear all auth and profile users (keep schema):
+-- 1) delete from public.users; (cascades to teachers/parents if linked)
+-- 2) delete from auth.users; (requires service role)
+-- Recreate admins via /signup or Supabase UI.
 
 -- =====================
 -- Minimal RLS policies (Parent / Student read-only)
@@ -384,7 +560,7 @@ create policy "Parents can read own row"
 on public.parents
 for select
 to authenticated
-using (user_id = auth.uid());
+using (false);
 
 -- Student-Parents link: parent can read links for their parent_id.
 drop policy if exists "Parents can read their links" on public.student_parents;
@@ -393,7 +569,7 @@ on public.student_parents
 for select
 to authenticated
 using (
-  parent_id in (select id from public.parents where user_id = auth.uid())
+  false
 );
 
 -- Students: parent can read students linked to them.
@@ -403,12 +579,7 @@ on public.students
 for select
 to authenticated
 using (
-  id in (
-    select sp.student_id
-    from public.student_parents sp
-    join public.parents p on p.id = sp.parent_id
-    where p.user_id = auth.uid()
-  )
+  false
 );
 
 -- Classes: parent can read class of linked students.
@@ -418,13 +589,7 @@ on public.classes
 for select
 to authenticated
 using (
-  id in (
-    select s.class_id
-    from public.students s
-    join public.student_parents sp on sp.student_id = s.id
-    join public.parents p on p.id = sp.parent_id
-    where p.user_id = auth.uid()
-  )
+  false
 );
 
 -- Attendance: parent can read attendance of linked students.
@@ -434,12 +599,7 @@ on public.attendance
 for select
 to authenticated
 using (
-  student_id in (
-    select sp.student_id
-    from public.student_parents sp
-    join public.parents p on p.id = sp.parent_id
-    where p.user_id = auth.uid()
-  )
+  false
 );
 
 -- Grades: parent can read grades of linked students.
@@ -449,12 +609,7 @@ on public.grades
 for select
 to authenticated
 using (
-  student_id in (
-    select sp.student_id
-    from public.student_parents sp
-    join public.parents p on p.id = sp.parent_id
-    where p.user_id = auth.uid()
-  )
+  false
 );
 
 -- Evaluations: parent can read evaluations for classes of linked students.
@@ -464,13 +619,7 @@ on public.evaluations
 for select
 to authenticated
 using (
-  class_id in (
-    select s.class_id
-    from public.students s
-    join public.student_parents sp on sp.student_id = s.id
-    join public.parents p on p.id = sp.parent_id
-    where p.user_id = auth.uid()
-  )
+  false
 );
 
 -- Reports: parent can read reports of linked students.
@@ -480,10 +629,5 @@ on public.reports
 for select
 to authenticated
 using (
-  student_id in (
-    select sp.student_id
-    from public.student_parents sp
-    join public.parents p on p.id = sp.parent_id
-    where p.user_id = auth.uid()
-  )
+  false
 );

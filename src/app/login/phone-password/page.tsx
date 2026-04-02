@@ -35,7 +35,9 @@ function PhonePasswordLoginInner() {
     }
     const body = (await res.json().catch(() => null)) as unknown;
     const apiRedirectTo =
-      body && typeof body === "object" && "redirectTo" in body ? String((body as { redirectTo?: unknown }).redirectTo ?? "") : "";
+      body && typeof body === "object" && "redirectTo" in body
+        ? String((body as { redirectTo?: unknown }).redirectTo ?? "")
+        : "";
     router.replace(apiRedirectTo || redirectTo);
     router.refresh();
   }

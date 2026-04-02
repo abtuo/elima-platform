@@ -18,64 +18,12 @@ export type ParentStudentGrade = {
 };
 
 export async function getParentChildren() {
-  const supabase = await createSupabaseServerClient();
-  const { data: userRes, error: userErr } = await supabase.auth.getUser();
-  if (userErr) throw userErr;
-  const userId = userRes.user?.id;
-  if (!userId) return { userId: null, children: [] as ParentChild[] };
+  // Parent login is disabled in this deployment.
+  // Parents exist as domain entities (public.parents) without Auth accounts.
+  // Therefore, any query relying on auth.uid() / parents.user_id must be disabled.
+  return { userId: null, children: [] as ParentChild[] };
 
-  // 1) parent row
-  const { data: parentRow, error: parentErr } = await supabase
-    .from("parents")
-    .select("id")
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (parentErr) throw parentErr;
-  if (!parentRow) return { userId, children: [] as ParentChild[] };
-
-  // 2) children + class name
-  const { data: links, error: linkErr } = await supabase
-    .from("student_parents")
-    .select(
-      `student_id,
-       students:students(id, full_name, class_id, classes:classes(id, name))`,
-    )
-    .eq("parent_id", parentRow.id);
-  if (linkErr) throw linkErr;
-
-  type LinkRow = {
-    student_id: string;
-    // Depending on the PostgREST relationship shape, `students` can come back as an object or a single-item array.
-    students:
-      | null
-      | {
-          id: string;
-          full_name: string;
-          class_id: string;
-          classes: null | { id: string; name: string };
-        }
-      | Array<{
-          id: string;
-          full_name: string;
-          class_id: string;
-          classes: null | { id: string; name: string };
-        }>;
-  };
-
-  const children: ParentChild[] = ((links as unknown as LinkRow[] | null | undefined) ?? []).flatMap((l) => {
-    const s = Array.isArray(l.students) ? l.students[0] : l.students;
-    if (!s) return [];
-    return [
-      {
-        student_id: s.id,
-        full_name: s.full_name,
-        class_id: s.class_id,
-        class_name: s.classes?.name ?? "—",
-      },
-    ];
-  });
-
-  return { userId, children };
+  // (Unreachable)
 }
 
 export async function getStudentGrades(studentId: string) {

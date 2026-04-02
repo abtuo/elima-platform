@@ -14,6 +14,9 @@ const envSchema = z.object({
   TWILIO_ACCOUNT_SID: optionalNonEmptyString(),
   TWILIO_AUTH_TOKEN: optionalNonEmptyString(),
   TWILIO_WHATSAPP_FROM: optionalNonEmptyString(),
+  RESEND_API_KEY: optionalNonEmptyString(),
+  NOTIFY_EMAIL_TO: optionalNonEmptyString(),
+  NOTIFY_EMAIL_FROM: optionalNonEmptyString(),
   APP_BASE_URL: z.string().url().default("http://localhost:3000"),
 });
 

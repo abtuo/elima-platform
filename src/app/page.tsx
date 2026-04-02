@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
+import { MarketingHeader } from "@/components/ui/MarketingHeader";
 import {
   ArrowRight,
   BarChart3,
@@ -17,6 +20,9 @@ import {
   ShieldCheck,
   Ticket,
   Users,
+  Sparkles,
+  Crown,
+  Rocket,
 } from "lucide-react";
 
 
@@ -24,45 +30,18 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Decorative background */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-24 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[var(--secondary)]/25 blur-3xl" />
         <div className="absolute top-24 right-[-120px] h-[520px] w-[520px] rounded-full bg-[var(--primary)]/15 blur-3xl" />
         <div className="absolute bottom-[-220px] left-[-120px] h-[520px] w-[520px] rounded-full bg-[var(--primary)]/10 blur-3xl" />
+        <div className="absolute inset-0 opacity-60">
+          <div className="absolute left-0 top-20 h-48 w-[120%] -translate-x-10 animate-[wave_18s_ease-in-out_infinite] rounded-full border border-[var(--primary)]/20" />
+          <div className="absolute left-0 top-60 h-56 w-[130%] -translate-x-16 animate-[wave_22s_ease-in-out_infinite] rounded-full border border-[var(--secondary)]/25" />
+        </div>
       </div>
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-4 py-6 md:px-8 md:py-10">
-        {/* Navbar */}
-        <nav className="sticky top-4 z-20 rounded-2xl border border-slate-200/60 bg-white/70 px-4 py-3 shadow-sm backdrop-blur">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <Image
-                src="/logo_e-lima-with-text_wo_bg.png"
-                alt="Logo Elima"
-                width={190}
-                height={56}
-                className="h-14 w-auto"
-                priority
-              />
-            </Link>
-
-            <div className="hidden items-center gap-1 text-sm md:flex">
-              <Link href="#produit" className="rounded-lg px-3 py-2 hover:bg-slate-100">Produit</Link>
-              <Link href="#roles" className="rounded-lg px-3 py-2 hover:bg-slate-100">Pour qui ?</Link>
-              <Link href="/tarifs" className="rounded-lg px-3 py-2 hover:bg-slate-100">Tarifs</Link>
-              <Link href="/contact" className="rounded-lg px-3 py-2 hover:bg-slate-100">Contact</Link>
-              <Link href="/dashboard" className="rounded-lg px-3 py-2 hover:bg-slate-100">Démo</Link>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Link
-                href="/login"
-                className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-              >
-                Se connecter
-              </Link>
-            </div>
-          </div>
-        </nav>
+        <MarketingHeader />
 
         {/* Hero */}
         <header className="grid items-center gap-8 md:grid-cols-2">
@@ -86,16 +65,16 @@ export default function Home() {
 
             <div className="flex flex-wrap items-center gap-3">
               <Link
-                href="/login"
+                href="/signup"
                 className="inline-flex items-center gap-2 rounded-xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white hover:opacity-90"
               >
-                Commencer maintenant <ArrowRight size={16} />
+                S’inscrire <ArrowRight size={16} />
               </Link>
               <Link
-                href="/tarifs"
+                href="/contact"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
               >
-                Voir nos tarifs <Ticket size={16} />
+                Demander une démo <Ticket size={16} />
               </Link>
             </div>
 
@@ -259,14 +238,14 @@ export default function Home() {
 
           <Reveal delayMs={120}>
             <article className="elima-card">
-            <h2 className="text-xl font-semibold">Sécurité & conformité</h2>
-            <p className="mt-2 text-sm text-slate-600">RBAC strict par école, validation serveur et logs critiques.</p>
+            <h2 className="text-xl font-semibold">Impact mesurable pour votre établissement</h2>
+            <p className="mt-2 text-sm text-slate-600">Une solution pensée pour accélérer vos résultats, rassurer les familles et attirer des partenaires.</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {[
-                { title: "RBAC", desc: "Rôles par école + contrôle d’accès", icon: ShieldCheck },
-                { title: "Validation", desc: "Zod côté serveur", icon: CheckCircle2 },
-                { title: "Traçabilité", desc: "Logs événements clés", icon: Bell },
-                { title: "Évolutif", desc: "Prêt pour IA/analytics", icon: BarChart3 },
+                { title: "Engagement familles", desc: "Infos instantanées, confiance renforcée et parents plus impliqués.", icon: MessageCircleMore },
+                { title: "Pilotage en temps réel", desc: "KPIs clairs pour agir vite sur absentéisme et performances.", icon: BarChart3 },
+                { title: "Réduction des coûts", desc: "Automatisation des tâches pour libérer du budget et du temps.", icon: CheckCircle2 },
+                { title: "Image moderne", desc: "Une école connectée, attractive pour les élèves et investisseurs.", icon: ShieldCheck },
               ].map((it) => (
                 <div key={it.title} className="rounded-2xl border border-slate-200 bg-white p-4">
                   <div className="flex items-center gap-2">
@@ -279,6 +258,98 @@ export default function Home() {
             </div>
             </article>
           </Reveal>
+        </section>
+
+        {/* Pricing */}
+        <section id="tarifs" className="space-y-6">
+          <Reveal>
+            <div className="flex flex-col gap-2 text-center">
+              <p className="text-xs font-semibold uppercase text-[var(--primary)]">Tarifs établissements</p>
+              <h2 className="text-2xl font-bold text-[var(--accent)]">Des offres adaptées à chaque école</h2>
+              <p className="text-sm text-slate-600">Choisissez la formule idéale pour votre croissance.</p>
+            </div>
+          </Reveal>
+          <div className="grid gap-5 md:grid-cols-3">
+            {[
+              {
+                title: "Basic",
+                icon: Sparkles,
+                highlight: false,
+                features: [
+                  "Gestion élèves / classes",
+                  "Notes & absences",
+                  "Bulletins",
+                  "Emploi du temps",
+                  "Communication avec les parents d'élève",
+                ],
+              },
+              {
+                title: "Premium",
+                icon: Crown,
+                highlight: true,
+                features: [
+                  "Tout Basic",
+                  "Inscriptions en ligne",
+                  "Moyen de Paiements",
+                  "Suivi des paiements",
+                  "Dashboard financier",
+                ],
+              },
+              {
+                title: "Sur mesure",
+                icon: Rocket,
+                highlight: false,
+                features: [
+                  "Tout Premium",
+                  "Archivage Intelligent de documents",
+                  "Indexation et recherche intelligente",
+                  "Assistant administratif (IA)",
+                  "Assistance juridique et conformité",
+                  "Comptabilité",
+                  "Budget & reporting",
+                  "Support prioritaire",
+                  "Autres fonctionnalités sur demande",
+                ],
+              },
+            ].map((plan) => (
+              <Reveal
+                key={plan.title}
+                className={`elima-card flex h-full flex-col gap-4 transition hover:-translate-y-1 hover:shadow-lg ${
+                  plan.highlight ? "border-[var(--primary)]/60 bg-[var(--primary)]/5" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <plan.icon className="text-[var(--primary)]" size={20} />
+                    <h3 className="text-lg font-semibold">{plan.title}</h3>
+                  </div>
+                  {plan.highlight ? (
+                    <span className="rounded-full bg-[var(--primary)] px-3 py-1 text-xs font-semibold text-white">⭐ recommandé</span>
+                  ) : null}
+                </div>
+                <ul className="space-y-2 text-sm text-slate-600">
+                  {plan.features.map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <CheckCircle2 size={16} className="mt-0.5 text-[var(--primary)]" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-auto">
+                <Link
+                  href="/contact"
+                  className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ${
+                    plan.highlight
+                      ? "bg-[var(--primary)] text-white"
+                      : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  Demander un devis
+                </Link>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </section>
 
         {/* CTA */}
@@ -296,18 +367,20 @@ export default function Home() {
                 href="/contact"
                 className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
               >
-                Parler à l’équipe
+                Demander une démo
               </Link>
               <Link
-                href="/login"
+                href="/signup"
                 className="rounded-xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white hover:opacity-90"
               >
-                Se connecter
+                S’inscrire
               </Link>
             </div>
           </div>
         </section>
         </Reveal>
+
+        {/* Demo request (moved to contact page) */}
 
         {/* Footer (mega) */}
         <footer className="pb-10 pt-2 text-sm text-slate-600">
@@ -381,3 +454,4 @@ export default function Home() {
     </div>
   );
 }
+

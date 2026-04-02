@@ -54,7 +54,12 @@ function PhoneLoginInner() {
       setError(message || "Code invalide");
       return;
     }
-    router.replace(redirectTo);
+    const body = (await res.json().catch(() => null)) as unknown;
+    const apiRedirectTo =
+      body && typeof body === "object" && "redirectTo" in body
+        ? String((body as { redirectTo?: unknown }).redirectTo ?? "")
+        : "";
+    router.replace(apiRedirectTo || redirectTo);
     router.refresh();
   }
 

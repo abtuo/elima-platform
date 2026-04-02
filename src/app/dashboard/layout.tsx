@@ -17,6 +17,7 @@ import {
 
 const nav = [
   { href: "/dashboard", label: "Vue d’ensemble", icon: LayoutDashboard },
+  { href: "/dashboard/kpis", label: "KPIs", icon: BarChart3 },
   { href: "/dashboard/students", label: "Élèves", icon: BookOpen },
   { href: "/dashboard/teachers", label: "Enseignants", icon: Users },
   { href: "/dashboard/classes", label: "Classes", icon: CalendarDays },
@@ -30,13 +31,13 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <aside className="h-full rounded-3xl border border-slate-200/70 bg-white/70 p-4 shadow-sm backdrop-blur">
-      <div className="flex items-center gap-3">
+      <Link href="/" className="flex items-center gap-3">
         <Image src="/logo_e-lima.png" alt="Logo Elima" width={36} height={36} className="rounded-full" />
         <div>
           <p className="text-sm font-bold text-[var(--accent)]">Espace Administration</p>
-          <p className="text-xs text-slate-600">Gestion de l’école</p>
+          <p className="text-xs text-slate-600">Retour à l’accueil</p>
         </div>
-      </div>
+      </Link>
 
       <nav className="mt-4 space-y-1">
         {nav.map((item) => {

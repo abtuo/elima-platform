@@ -1,7 +1,8 @@
 -- Elima MVP seed (CI dataset) for Supabase Cloud
 -- هدف: dataset réaliste multi-écoles (CI) + classes/élèves/enseignants/parents + liens parent-enfant.
 -- NOTE:
--- - Ce seed crée des utilisateurs Supabase Auth (auth.users) pour ADMIN/TEACHER/PARENT afin de satisfaire les FKs.
+-- - Ce seed crée des utilisateurs Supabase Auth (auth.users) pour ADMIN/TEACHER uniquement.
+-- - Les parents existent côté domaine (public.parents) sans compte Auth.
 -- - Les élèves (students) sont créés sans compte Auth (students.user_id est nullable).
 -- - Password par défaut pour tous les comptes créés ici: "Password123!"
 
@@ -15,7 +16,7 @@ begin;
 -- Depending on Supabase version, `auth.instances` can be empty. We therefore try:
 -- 1) existing auth.users.instance_id
 -- 2) auth.instances.id (fallback)
--- If both are empty, create 1 user manually in Supabase Dashboard → Auth → Users, then re-run.
+-- If both are empty, we generate a new UUID and insert into auth.instances.
 do $$
 declare
   inst uuid;
@@ -25,7 +26,10 @@ begin
     select id into inst from auth.instances limit 1;
   end if;
   if inst is null then
-    raise exception 'Cannot resolve auth.instance_id. Create 1 user in Supabase Dashboard → Authentication → Users, then re-run seed.';
+    inst := gen_random_uuid();
+    insert into auth.instances (id, uuid, raw_base_config, created_at, updated_at)
+    values (inst, inst, '{}'::jsonb, now(), now())
+    on conflict (id) do nothing;
   end if;
 
   -- Make it available for the rest of the script.
@@ -200,21 +204,17 @@ select
   crypt('Password123!', gen_salt('bf')),
   now(),
   '{"provider":"email","providers":["email"]}'::jsonb,
-  '{}'::jsonb,
+  jsonb_build_object(
+    'role', 'SCHOOL_ADMIN',
+    'school_id', a.school_id::text,
+    'full_name', a.full_name
+  ),
   now(),
   now()
 from seed_admins a
 where not exists (select 1 from auth.users au where lower(au.email) = lower(a.email));
 
-insert into public.users (id, school_id, role, full_name, phone)
-select au.id, a.school_id, 'SCHOOL_ADMIN', a.full_name, null
-from seed_admins a
-join auth.users au on lower(au.email) = lower(a.email)
-on conflict (id) do update set
-  school_id = excluded.school_id,
-  role = excluded.role,
-  full_name = excluded.full_name,
-  phone = excluded.phone;
+-- public.users rows are created by trigger `on_auth_user_created` using raw_user_meta_data.
 
 -- Teachers: 74 for school1, 60 for school2 = 134
 
@@ -228,113 +228,37 @@ select
   crypt('Password123!', gen_salt('bf')),
   now(),
   '{"provider":"email","providers":["email"]}'::jsonb,
-  '{}'::jsonb,
+  jsonb_build_object(
+    'role', 'TEACHER',
+    'school_id', t.school_id::text,
+    'full_name', t.full_name,
+    'phone', t.phone
+  ),
   now(),
   now()
 from seed_teachers t
 where not exists (select 1 from auth.users au where lower(au.email) = lower(t.email));
 
-insert into public.users (id, school_id, role, full_name, phone)
-select au.id, t.school_id, 'TEACHER', t.full_name, t.phone
-from seed_teachers t
-join auth.users au on lower(au.email) = lower(t.email)
-on conflict (id) do update set
-  school_id = excluded.school_id,
-  role = excluded.role,
-  full_name = excluded.full_name,
-  phone = excluded.phone;
+-- public.users + public.teachers rows are created by trigger `on_auth_user_created`.
 
-insert into public.teachers (school_id, user_id)
-select u.school_id, u.id
-from public.users u
-where u.role = 'TEACHER'
-on conflict (user_id) do nothing;
-
--- IMPORTANT: allow login by phone+password.
--- We create an additional auth identity using the deterministic email mapping: <phone>@phone.elima
--- The user will then login with phone+password via the app, which maps phone -> email.
-insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
-select
-  au.id,
-  au.instance_id,
-  au.aud,
-  au.role,
-  (regexp_replace(t.phone, '[\\s\\-().]', '', 'g') || '@phone.elima') as email,
-  au.encrypted_password,
-  au.email_confirmed_at,
-  au.raw_app_meta_data,
-  coalesce(au.raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('phone', t.phone),
-  au.created_at,
-  now()
-from seed_teachers t
-join auth.users au on lower(au.email) = lower(t.email)
-where t.phone is not null
-  and not exists (
-    select 1
-    from auth.users u2
-    where lower(u2.email) = lower(regexp_replace(t.phone, '[\\s\\-().]', '', 'g') || '@phone.elima')
-  );
+-- IMPORTANT:
+-- We do NOT create a second auth.users row per teacher for phone login.
+-- Supabase Auth primary key is (id) so inserting the same id twice would fail.
+-- In this codebase, phone+password login already resolves to the teacher email stored in public.users.
 
 -- Parents: target ~1550
 -- - 900 parents for school1 (1 parent = 1 élève)
 -- - 600 parents for school2 (1 parent = 1-2 élèves)
 -- - 50 cross-school parents (primary in school1, also linked to 1-2 students in school2)
 
+-- Parents (NO AUTH ACCOUNTS)
+-- We keep parents in domain tables + links to students, but we do NOT create Supabase Auth users for them.
+-- This requires schema where public.parents.user_id is nullable.
 
-insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
-select
-  gen_random_uuid(),
-  current_setting('elima.instance_id')::uuid,
-  'authenticated',
-  'authenticated',
-  p.email,
-  crypt('Password123!', gen_salt('bf')),
-  now(),
-  '{"provider":"email","providers":["email"]}'::jsonb,
-  '{}'::jsonb,
-  now(),
-  now()
+insert into public.parents (school_id, user_id, email, full_name, phone)
+select p.school_id, null, p.email, p.full_name, p.phone
 from seed_parents p
-where not exists (select 1 from auth.users au where lower(au.email) = lower(p.email));
-
-insert into public.users (id, school_id, role, full_name, phone)
-select au.id, p.school_id, 'PARENT', p.full_name, p.phone
-from seed_parents p
-join auth.users au on lower(au.email) = lower(p.email)
-on conflict (id) do update set
-  school_id = excluded.school_id,
-  role = excluded.role,
-  full_name = excluded.full_name,
-  phone = excluded.phone;
-
-insert into public.parents (school_id, user_id)
-select u.school_id, u.id
-from public.users u
-where u.role = 'PARENT'
-on conflict (user_id) do nothing;
-
--- Same phone+password identity for parents (optional, but useful for messaging tests)
-insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
-select
-  au.id,
-  au.instance_id,
-  au.aud,
-  au.role,
-  (regexp_replace(p.phone, '[\\s\\-().]', '', 'g') || '@phone.elima') as email,
-  au.encrypted_password,
-  au.email_confirmed_at,
-  au.raw_app_meta_data,
-  coalesce(au.raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('phone', p.phone),
-  au.created_at,
-  now()
-from seed_parents p
-join auth.users au on lower(au.email) = lower(p.email)
-where p.phone is not null
-  and not exists (
-    select 1
-    from auth.users u2
-    where lower(u2.email) = lower(regexp_replace(p.phone, '[\\s\\-().]', '', 'g') || '@phone.elima')
-  );
+on conflict do nothing;
 
 -- --------------------------------------------------
 -- Students: ~2400 (900 in school1, 1500 in school2)
@@ -415,7 +339,6 @@ with s1_students as (
 ), s1_parents as (
   select p.id as parent_id, row_number() over (order by p.created_at, p.id) as rn
   from public.parents p
-  join public.users u on u.id = p.user_id
   where p.school_id = '11111111-1111-1111-1111-111111111111'
   limit 900
 )
@@ -482,7 +405,7 @@ on conflict do nothing;
 -- Optional: create 1 conversation + a few messages (for quick smoke test)
 -- --------------------------------------------------
 
--- Create a conversation in school1 between a teacher and one parent
+-- Create a conversation in school1 between a teacher and an admin (parents have no Auth user_id)
 with t as (
   select u.id as teacher_user_id
   from public.users u
@@ -490,14 +413,14 @@ with t as (
   order by u.created_at
   limit 1
 ), p as (
-  select u.id as parent_user_id
+  select u.id as admin_user_id
   from public.users u
-  where u.school_id = '11111111-1111-1111-1111-111111111111' and u.role = 'PARENT'
+  where u.school_id = '11111111-1111-1111-1111-111111111111' and u.role = 'SCHOOL_ADMIN'
   order by u.created_at
   limit 1
 ), conv as (
   insert into public.conversations (school_id, title)
-  values ('11111111-1111-1111-1111-111111111111', 'Demo: discussion enseignant ↔ parent')
+  values ('11111111-1111-1111-1111-111111111111', 'Demo: discussion enseignant ↔ admin')
   returning id
 ), participants as (
   insert into public.conversation_participants (conversation_id, participant_type, user_id)
@@ -506,7 +429,7 @@ with t as (
   cross join (
     select teacher_user_id as user_id from t
     union all
-    select parent_user_id as user_id from p
+    select admin_user_id as user_id from p
   ) x
   returning conversation_id
 )
@@ -519,7 +442,7 @@ from conv
 union all
 select
   conv.id,
-  (select parent_user_id from p),
+  (select admin_user_id from p),
   'Merci, bien reçu !'
 from conv;
 

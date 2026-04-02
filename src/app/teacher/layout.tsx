@@ -36,13 +36,13 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <aside className="h-full rounded-3xl border border-slate-200/70 bg-white/70 p-4 shadow-sm backdrop-blur">
-      <div className="flex items-center gap-3">
+      <Link href="/" className="flex items-center gap-3">
         <Image src="/logo_e-lima.png" alt="Logo Elima" width={36} height={36} className="rounded-full" />
         <div>
           <p className="text-sm font-bold text-[var(--accent)]">Espace Enseignant</p>
-          <p className="text-xs text-slate-600">M. Traoré</p>
+          <p className="text-xs text-slate-600">Retour à l’accueil</p>
         </div>
-      </div>
+      </Link>
 
       <nav className="mt-4 space-y-1">
         {nav.map((item) => {
@@ -90,10 +90,10 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
             {/* Mobile top bar + drawer */}
             <div className="md:hidden">
               <div className="flex items-center justify-between rounded-2xl border border-slate-200/60 bg-white/70 px-4 py-3 shadow-sm backdrop-blur">
-                <div className="flex items-center gap-2">
-                  <GraduationCap size={18} className="text-[var(--primary)]" />
-                  <p className="text-sm font-semibold">Espace Enseignant</p>
-                </div>
+          <Link href="/" className="flex items-center gap-2">
+            <GraduationCap size={18} className="text-[var(--primary)]" />
+            <p className="text-sm font-semibold">Espace Enseignant</p>
+          </Link>
                 <button
                   onClick={() => setDrawerOpen(true)}
                   className="rounded-xl border border-slate-200 bg-white p-2"

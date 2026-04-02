@@ -16,7 +16,10 @@ export function middleware(request: NextRequest) {
   if (
     pathname.startsWith("/api/auth/login") ||
     pathname.startsWith("/api/auth/logout") ||
-    pathname.startsWith("/api/auth/email/login")
+    pathname.startsWith("/api/auth/email/login") ||
+    pathname.startsWith("/api/auth/signup") ||
+    pathname.startsWith("/api/demo-requests") ||
+    pathname.startsWith("/api/schools")
   ) {
     return NextResponse.next();
   }
