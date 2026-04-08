@@ -131,6 +131,15 @@ create table if not exists public.subjects (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.level_subjects (
+  id uuid primary key default gen_random_uuid(),
+  school_id uuid not null references public.schools(id) on delete cascade,
+  level text not null,
+  subject_id uuid not null references public.subjects(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (school_id, level, subject_id)
+);
+
 create table if not exists public.terms (
   id uuid primary key default gen_random_uuid(),
   school_id uuid not null references public.schools(id) on delete cascade,
@@ -411,6 +420,7 @@ alter table public.schools enable row level security;
 alter table public.users enable row level security;
 alter table public.classes enable row level security;
 alter table public.subjects enable row level security;
+alter table public.level_subjects enable row level security;
 alter table public.teachers enable row level security;
 alter table public.parents enable row level security;
 alter table public.students enable row level security;

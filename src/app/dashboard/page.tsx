@@ -14,12 +14,32 @@ export default async function DashboardPage() {
   const stats = await getDashboardStatsForCurrentUserSchool();
 
   const location = [stats.schoolCity, stats.schoolCountry].filter(Boolean).join(", ");
+  const hasClasses = stats.classesCount > 0;
+  const schoolName = stats.schoolName || "École (à configurer)";
 
   return (
     <div className="space-y-6">
+      {stats.classesCount === 0 ? (
+        <section className="elima-card flex flex-col gap-3 border border-dashed border-[var(--primary)] bg-white">
+          <div>
+            <h2 className="text-lg font-semibold text-[var(--accent)]">Configuration requise</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Vous n’avez pas encore configuré votre école. Commencez par créer vos classes et définir vos matières.
+            </p>
+          </div>
+          <div>
+            <a
+              href="/dashboard/setup"
+              className="inline-flex w-fit items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:brightness-95"
+            >
+              Configurer maintenant
+            </a>
+          </div>
+        </section>
+      ) : null}
       <header className="elima-card flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-[240px]">
-          <h1 className="text-2xl font-bold text-[var(--accent)]">{stats.schoolName}</h1>
+          <h1 className="text-2xl font-bold text-[var(--accent)]">{schoolName}</h1>
           <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
             {location ? (
               <span className="inline-flex items-center gap-2">
@@ -36,44 +56,48 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <a
-            href="/dashboard/settings"
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            Paramètres
-          </a>
-        </div>
+        {hasClasses ? (
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="/dashboard/setup"
+              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Configurer l’école
+            </a>
+          </div>
+        ) : null}
       </header>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <article className="elima-card">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500">Élèves</p>
-            <BookOpen size={18} className="text-[var(--primary)]" />
-          </div>
-          <p className="mt-2 text-3xl font-bold">{stats.studentsCount}</p>
-          <p className="mt-1 text-xs text-slate-500">Total d’élèves inscrits</p>
-        </article>
+      {hasClasses ? (
+        <section className="grid gap-4 md:grid-cols-3">
+          <article className="elima-card">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-500">Élèves</p>
+              <BookOpen size={18} className="text-[var(--primary)]" />
+            </div>
+            <p className="mt-2 text-3xl font-bold">{stats.studentsCount}</p>
+            <p className="mt-1 text-xs text-slate-500">Total d’élèves inscrits</p>
+          </article>
 
-        <article className="elima-card">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500">Enseignants</p>
-            <GraduationCap size={18} className="text-[var(--primary)]" />
-          </div>
-          <p className="mt-2 text-3xl font-bold">{stats.teachersCount}</p>
-          <p className="mt-1 text-xs text-slate-500">Personnel enseignant</p>
-        </article>
+          <article className="elima-card">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-500">Enseignants</p>
+              <GraduationCap size={18} className="text-[var(--primary)]" />
+            </div>
+            <p className="mt-2 text-3xl font-bold">{stats.teachersCount}</p>
+            <p className="mt-1 text-xs text-slate-500">Personnel enseignant</p>
+          </article>
 
-        <article className="elima-card">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500">Classes</p>
-            <Users size={18} className="text-[var(--primary)]" />
-          </div>
-          <p className="mt-2 text-3xl font-bold">{stats.classesCount}</p>
-          <p className="mt-1 text-xs text-slate-500">Classes actives</p>
-        </article>
-      </section>
+          <article className="elima-card">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-500">Classes</p>
+              <Users size={18} className="text-[var(--primary)]" />
+            </div>
+            <p className="mt-2 text-3xl font-bold">{stats.classesCount}</p>
+            <p className="mt-1 text-xs text-slate-500">Classes actives</p>
+          </article>
+        </section>
+      ) : null}
 
       <section className="grid gap-4 lg:grid-cols-3">
         <article className="elima-card lg:col-span-2">
