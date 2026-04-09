@@ -2,27 +2,75 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { FileText, Users } from "lucide-react";
-import { demoStudents } from "@/lib/demo-data";
+import { FileText, Mail, Users } from "lucide-react";
 
-type Student = (typeof demoStudents)[number];
+type Classroom = {
+  id: string;
+  name: string;
+  level: string;
+  academic_year?: string;
+};
 
-function uniqueClasses(students: Student[]) {
-  return Array.from(new Set(students.map((s) => s.className))).sort((a, b) => a.localeCompare(b));
-}
+type Student = {
+  id: string;
+  fullName: string;
+  classId: string;
+  className: string;
+  level: string;
+  academicYear: string;
+};
 
 export function ReportsPanel() {
-  const classes = useMemo(() => uniqueClasses(demoStudents), []);
-  const [selectedClass, setSelectedClass] = useState<string>(classes[0] ?? "");
-  const studentsInClass = useMemo(
-    () => demoStudents.filter((s) => s.className === selectedClass),
-    [selectedClass],
-  );
-  const [selectedStudentId, setSelectedStudentId] = useState<string>(studentsInClass[0]?.id ?? "");
+  const [classes, setClasses] = useState<Classroom[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<string>("");
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const [batchLoading, setBatchLoading] = useState(false);
 
-  // Keep a valid student selected when the class changes.
   useEffect(() => {
-    if (studentsInClass.length === 0) return;
+    let isMounted = true;
+    async function loadStudents() {
+      setLoading(true);
+      setError(null);
+      const res = await fetch("/api/dashboard/students");
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { message?: string } | null;
+        if (isMounted) {
+          setError(body?.message ?? "Chargement impossible");
+          setLoading(false);
+        }
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as
+        | { classes?: Classroom[]; students?: Student[] }
+        | null;
+      if (!isMounted || !data) return;
+      setClasses(data.classes ?? []);
+      setStudents(data.students ?? []);
+      setLoading(false);
+      if (!selectedClassId && data.classes && data.classes.length > 0) {
+        setSelectedClassId(String(data.classes[0].id));
+      }
+    }
+    loadStudents();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const studentsInClass = useMemo(
+    () => students.filter((s) => s.classId === selectedClassId),
+    [students, selectedClassId],
+  );
+
+  useEffect(() => {
+    if (studentsInClass.length === 0) {
+      setSelectedStudentId("");
+      return;
+    }
     if (!studentsInClass.some((s) => s.id === selectedStudentId)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedStudentId(studentsInClass[0].id);
@@ -32,11 +80,30 @@ export function ReportsPanel() {
   const selectedStudent = studentsInClass.find((s) => s.id === selectedStudentId);
   const reportHref = selectedStudent ? `/api/reports/${selectedStudent.id}` : "#";
 
+  async function generateClassReports() {
+    if (!selectedClassId) return;
+    setBatchLoading(true);
+    setStatus(null);
+    setError(null);
+    const res = await fetch("/api/reports/generate-class", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ classId: selectedClassId, termScope: "year" }),
+    });
+    setBatchLoading(false);
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as { message?: string } | null;
+      setError(body?.message ?? "Génération impossible");
+      return;
+    }
+    setStatus("Bulletins de la classe générés (validation en cours). ");
+  }
+
   return (
     <article className="elima-card">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Bulletins PDF (démo)</h2>
+          <h2 className="text-lg font-semibold">Bulletins PDF</h2>
           <p className="mt-1 text-sm text-slate-600">
             Choisissez une classe puis un élève. Le bulletin est généré en PDF via l’API.
           </p>
@@ -47,17 +114,23 @@ export function ReportsPanel() {
         </div>
       </div>
 
+      {loading ? (
+        <p className="mt-4 text-sm text-slate-500">Chargement des classes...</p>
+      ) : null}
+      {error ? <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+      {status ? <p className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{status}</p> : null}
+
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         <label className="grid gap-1 text-sm">
           <span className="text-xs font-semibold text-slate-600">Classe</span>
           <select
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
+            value={selectedClassId}
+            onChange={(e) => setSelectedClassId(e.target.value)}
             className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm"
           >
             {classes.map((c) => (
-              <option key={c} value={c}>
-                {c}
+              <option key={c.id} value={c.id}>
+                {c.name} • {c.level} • {c.academic_year ?? ""}
               </option>
             ))}
           </select>
@@ -72,7 +145,7 @@ export function ReportsPanel() {
           >
             {studentsInClass.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.fullName} • Moy {s.average}/20 • Présence {s.attendanceRate}%
+                {s.fullName} • {s.className}
               </option>
             ))}
           </select>
@@ -91,6 +164,21 @@ export function ReportsPanel() {
         >
           Générer le bulletin PDF <FileText size={16} />
         </Link>
+
+        <button
+          onClick={generateClassReports}
+          disabled={batchLoading || studentsInClass.length === 0}
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 disabled:opacity-60"
+        >
+          Générer tous les bulletins de la classe <Users size={16} />
+        </button>
+
+        <button
+          disabled
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-400"
+        >
+          Envoyer aux parents (bientôt) <Mail size={16} />
+        </button>
 
         {selectedStudent ? (
           <p className="text-xs text-slate-500">

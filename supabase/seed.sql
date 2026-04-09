@@ -101,7 +101,18 @@ on conflict (id) do nothing;
 insert into public.terms (school_id, name, start_date, end_date, is_closed)
 values
   ('11111111-1111-1111-1111-111111111111', 'Trimestre 1', '2025-09-09', '2025-12-20', false),
-  ('22222222-2222-2222-2222-222222222222', 'Trimestre 1', '2025-09-09', '2025-12-20', false);
+  ('11111111-1111-1111-1111-111111111111', 'Trimestre 2', '2026-01-06', '2026-03-29', false),
+  ('11111111-1111-1111-1111-111111111111', 'Trimestre 3', '2026-04-08', '2026-06-30', false),
+  ('22222222-2222-2222-2222-222222222222', 'Trimestre 1', '2025-09-09', '2025-12-20', false),
+  ('22222222-2222-2222-2222-222222222222', 'Trimestre 2', '2026-01-06', '2026-03-29', false),
+  ('22222222-2222-2222-2222-222222222222', 'Trimestre 3', '2026-04-08', '2026-06-30', false);
+
+update public.schools set current_term_id = (
+  select id from public.terms
+  where terms.school_id = schools.id
+    and terms.name = 'Trimestre 1'
+  limit 1
+);
 
 -- --------------------------------------------------
 -- Subjects (shared set, but per school in this schema)

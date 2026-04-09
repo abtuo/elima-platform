@@ -37,10 +37,8 @@ export interface ReportSubjectRow {
   subject: string;
   teacher?: string;
   coefficient?: number;
-  score: number; // /20
-  classMin?: number;
-  classMax?: number;
-  classAvg?: number;
+  termScores: Record<string, number | undefined>;
+  yearScore?: number;
   appreciation?: string;
 }
 

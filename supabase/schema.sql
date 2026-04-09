@@ -98,6 +98,7 @@ create table if not exists public.schools (
   country text not null,
   city text,
   phone text,
+  current_term_id uuid references public.terms(id),
   status public.school_status not null default 'private',
   created_at timestamptz not null default now()
 );
@@ -251,6 +252,7 @@ create table if not exists public.grades (
   school_id uuid not null references public.schools(id) on delete cascade,
   evaluation_id uuid not null references public.evaluations(id) on delete cascade,
   student_id uuid not null references public.students(id) on delete cascade,
+  term_id uuid references public.terms(id) on delete set null,
   score numeric(6,2) not null,
   comment text,
   created_at timestamptz not null default now(),
