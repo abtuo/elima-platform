@@ -21,6 +21,30 @@ function buildClassName(level: string, index: number, scheme: "letters" | "numbe
   return `${level} ${index}`;
 }
 
+function getNextIndexFromNames(level: string, names: string[], scheme: "letters" | "numbers") {
+  const normalizedLevel = level.trim();
+  const prefix = normalizedLevel.toLowerCase();
+  const indices = names
+    .map((name) => String(name || "").trim())
+    .filter((name) => name.toLowerCase().startsWith(prefix))
+    .map((name) => name.slice(normalizedLevel.length).trim())
+    .map((suffix) => {
+      if (!suffix) return null;
+      if (scheme === "letters") {
+        const char = suffix.trim().charAt(0).toUpperCase();
+        const code = char.charCodeAt(0);
+        if (code >= 65 && code <= 90) return code - 64;
+        return null;
+      }
+      const match = suffix.match(/\d+/);
+      return match ? Number(match[0]) : null;
+    })
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+
+  if (indices.length === 0) return 1;
+  return Math.max(...indices) + 1;
+}
+
 export async function POST(request: Request) {
   try {
     const payload = (await request.json().catch(() => null)) as ConfigurePayload | null;
@@ -55,9 +79,24 @@ export async function POST(request: Request) {
 
     const schoolId = String(userRow.school_id);
 
+    const { data: existingClasses, error: existingClassesErr } = await admin
+      .from("classes")
+      .select("name")
+      .eq("school_id", schoolId)
+      .eq("level", level.trim());
+
+    if (existingClassesErr)
+      return NextResponse.json({ message: existingClassesErr.message }, { status: 400 });
+
+    const startIndex = getNextIndexFromNames(
+      level.trim(),
+      (existingClasses ?? []).map((row) => String(row.name)),
+      numberingScheme,
+    );
+
     const classesToInsert = Array.from({ length: numberOfClasses }, (_, idx) => ({
       school_id: schoolId,
-      name: buildClassName(level.trim(), idx + 1, numberingScheme),
+      name: buildClassName(level.trim(), startIndex + idx, numberingScheme),
       level: level.trim(),
       academic_year: academicYear.trim(),
     }));
@@ -74,12 +113,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ classes: createdClasses ?? [], subjects: [] });
     }
 
-    const { data: existingSubjects, error: existingErr } = await admin
+    const { data: existingSubjects, error: existingSubjectsErr } = await admin
       .from("subjects")
       .select("id, name, coefficient")
       .eq("school_id", schoolId);
 
-    if (existingErr) return NextResponse.json({ message: existingErr.message }, { status: 400 });
+    if (existingSubjectsErr)
+      return NextResponse.json({ message: existingSubjectsErr.message }, { status: 400 });
 
     const existingByName = new Map(
       (existingSubjects ?? []).map((subject) => [subject.name.toLowerCase(), subject]),

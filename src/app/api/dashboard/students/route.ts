@@ -42,26 +42,31 @@ export async function GET() {
 
     if (studentsErr) return NextResponse.json({ message: studentsErr.message }, { status: 400 });
 
+    type StudentClassRow = {
+      id: string;
+      name: string;
+      level: string;
+      academic_year: string;
+    };
+
     type StudentRow = {
       id: string;
       full_name: string;
       class_id: string;
-      class: null | {
-        id: string;
-        name: string;
-        level: string;
-        academic_year: string;
-      };
+      class: StudentClassRow[] | null;
     };
 
-    const mappedStudents = ((students as StudentRow[]) ?? []).map((student) => ({
+    const mappedStudents = ((students as StudentRow[]) ?? []).map((student) => {
+      const studentClass = student.class?.[0] ?? null;
+      return {
       id: String(student.id),
       fullName: String(student.full_name),
       classId: String(student.class_id),
-      className: String(student.class?.name ?? ""),
-      level: String(student.class?.level ?? ""),
-      academicYear: String(student.class?.academic_year ?? ""),
-    }));
+      className: String(studentClass?.name ?? ""),
+      level: String(studentClass?.level ?? ""),
+      academicYear: String(studentClass?.academic_year ?? ""),
+    };
+    });
 
     return NextResponse.json({ classes: classes ?? [], students: mappedStudents });
   } catch (err) {

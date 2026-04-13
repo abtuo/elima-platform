@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { UploadDocument } from "@/components/dashboard/UploadDocument";
 import { useToast } from "@/components/ui/Toast";
 
 type SubjectRow = {
@@ -19,13 +20,13 @@ type ExistingClass = {
 };
 
 const baseSubjects = [
-  { name: "Mathématiques", coefficient: 4 },
-  { name: "Français", coefficient: 3 },
-  { name: "Anglais", coefficient: 2 },
-  { name: "SVT", coefficient: 2 },
-  { name: "Sciences physiques", coefficient: 2 },
-  { name: "Histoire-Géographie", coefficient: 2 },
-  { name: "Philosophie", coefficient: 2 },
+  { name: "Mathématiques", coefficient: 1 },
+  { name: "Français", coefficient: 1 },
+  { name: "Anglais", coefficient: 1 },
+  { name: "SVT", coefficient: 1 },
+  { name: "Sciences physiques", coefficient: 1 },
+  { name: "Histoire-Géographie", coefficient: 1 },
+  { name: "Philosophie", coefficient: 1 },
   { name: "EPS", coefficient: 1 },
   { name: "Informatique", coefficient: 1 },
   { name: "Espagnol", coefficient: 1 },
@@ -60,6 +61,7 @@ export default function DashboardSetupPage() {
   const [classes, setClasses] = useState<ExistingClass[]>([]);
   const [classesLoading, setClassesLoading] = useState(true);
   const [classesError, setClassesError] = useState<string | null>(null);
+  const [selectedClassId, setSelectedClassId] = useState<string>("");
 
   const effectiveLevel = useMemo(() => {
     if (level === "Autre") return customLevel.trim();
@@ -75,7 +77,11 @@ export default function DashboardSetupPage() {
         throw new Error("Impossible de récupérer les classes.");
       }
       const body = (await res.json()) as { classes?: ExistingClass[] };
-      setClasses(body.classes ?? []);
+      const availableClasses = body.classes ?? [];
+      setClasses(availableClasses);
+      if (!selectedClassId && availableClasses.length) {
+        setSelectedClassId(availableClasses[0].id);
+      }
     } catch (err) {
       if (signal?.aborted) return;
       setClassesError(err instanceof Error ? err.message : "Erreur lors du chargement.");
@@ -91,6 +97,8 @@ export default function DashboardSetupPage() {
     fetchClasses(controller.signal);
     return () => controller.abort();
   }, []);
+
+  const selectedClass = classes.find((item) => item.id === selectedClassId);
 
   function toggleSubject(id: string) {
     setSubjects((prev) => prev.map((row) => (row.id === id ? { ...row, selected: !row.selected } : row)));
@@ -183,9 +191,15 @@ export default function DashboardSetupPage() {
           classes.length ? (
             <div className="space-y-2">
               {classes.map((item) => (
-                <div
+                <button
+                  type="button"
                   key={item.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3"
+                  onClick={() => setSelectedClassId(item.id)}
+                  className={`flex w-full flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition ${
+                    selectedClassId === item.id
+                      ? "border-[var(--primary)] bg-[var(--primary)]/10"
+                      : "border-slate-200 bg-white hover:border-[var(--primary)]/40"
+                  }`}
                 >
                   <div>
                     <p className="text-sm font-semibold text-slate-800">{item.name}</p>
@@ -194,15 +208,11 @@ export default function DashboardSetupPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      disabled
-                      className="rounded-xl border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-500"
-                    >
-                      Supprimer
-                    </button>
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                      {selectedClassId === item.id ? "Sélectionnée" : "Choisir"}
+                    </span>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           ) : (
@@ -210,6 +220,12 @@ export default function DashboardSetupPage() {
           )
         ) : null}
       </section>
+
+      <UploadDocument
+        classId={selectedClassId}
+        className={selectedClass ? `${selectedClass.name} · ${selectedClass.level ?? "Niveau"}` : undefined}
+        onUploaded={fetchClasses}
+      />
 
       <section className="elima-card space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
