@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-import pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireServerEnv } from "@/lib/env";
 
@@ -37,7 +37,8 @@ function extractTextFromWorkbook(buffer: Buffer) {
 async function extractRawText(fileName: string, fileType: string, buffer: Buffer) {
   const lowerName = fileName.toLowerCase();
   if (fileType === "application/pdf" || lowerName.endsWith(".pdf")) {
-    const parsed = await pdfParse(buffer);
+    const parser = new PDFParse({ data: buffer });
+    const parsed = await parser.getText();
     return parsed.text ?? "";
   }
   if (

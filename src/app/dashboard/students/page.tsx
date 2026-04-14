@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useToast } from "@/components/ui/Toast";
 
@@ -60,7 +60,7 @@ export default function DashboardStudentsPage() {
     [students, effectiveSelectedClassId],
   );
 
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -81,11 +81,11 @@ export default function DashboardStudentsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [selectedLevel]);
 
   useEffect(() => {
     fetchData().catch(() => null);
-  }, []);
+  }, [fetchData]);
 
   function handleFileChange(file: File | null) {
     setError(null);
