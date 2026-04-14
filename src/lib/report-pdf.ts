@@ -83,6 +83,8 @@ export async function buildStudentReportPdf(input: {
   schoolStats?: {
     classSize?: number;
     section?: string;
+    termAverage?: number | null;
+    annualAverage?: number | null;
   };
   logoPngBytes?: Uint8Array;
   stampJpgBytes?: Uint8Array;
@@ -319,11 +321,11 @@ export async function buildStudentReportPdf(input: {
   const blockH = 54;
   const halfW = (tableW - 12) / 2;
 
-  // Moyenne générale
+  // Moyenne trimestrielle
   drawCell(page, { x: tableX, y: summaryY - blockH, w: halfW, h: blockH, bg: COLORS.white });
   page.drawRectangle({ x: tableX, y: summaryY - 18, width: halfW, height: 18, color: COLORS.accent });
-  drawText(page, "Moyenne générale", { x: tableX + 10, y: summaryY - 14, size: 10, font: bold, color: COLORS.white });
-  drawText(page, `${formatScore(input.student.average)}/20`, {
+  drawText(page, "Moyenne trimestrielle", { x: tableX + 10, y: summaryY - 14, size: 10, font: bold, color: COLORS.white });
+  drawText(page, `${formatScore(input.schoolStats?.termAverage ?? input.student.average)}/20`, {
     x: tableX + 10,
     y: summaryY - 42,
     size: 18,
@@ -344,6 +346,17 @@ export async function buildStudentReportPdf(input: {
     color: COLORS.primary,
   });
 
+  const annualLabel =
+    input.schoolStats?.annualAverage == null ? "Moyenne annuelle : — (trimestres incomplets)" : `Moyenne annuelle : ${formatScore(input.schoolStats.annualAverage)}/20`;
+  drawText(page, annualLabel, {
+    x: absX + 110,
+    y: summaryY - 41,
+    size: 8.8,
+    font,
+    color: COLORS.muted,
+    maxWidth: halfW - 118,
+  });
+
   // Advice / council appreciation
   const councilY = summaryY - blockH - 18;
   const councilH = 62;
@@ -358,14 +371,15 @@ export async function buildStudentReportPdf(input: {
         ? "Niveau de risque moyen : vigilance sur la régularité."
         : "Niveau de risque faible : continue sur cette lancée.";
 
+  const effectiveAverage = input.schoolStats?.termAverage ?? input.student.average;
   const appreciation =
-    input.student.average >= 16
+    effectiveAverage >= 16
       ? "Excellent trimestre."
-      : input.student.average >= 14
+      : effectiveAverage >= 14
         ? "Très bon trimestre."
-        : input.student.average >= 12
+        : effectiveAverage >= 12
           ? "Bon trimestre."
-          : input.student.average >= 10
+          : effectiveAverage >= 10
             ? "Trimestre moyen, efforts à intensifier."
             : "Trimestre insuffisant, accompagnement nécessaire.";
 
@@ -397,14 +411,14 @@ export async function buildStudentReportPdf(input: {
   // Footer
   const footerY = 24;
   page.drawLine({ start: { x: margin, y: footerY + 16 }, end: { x: A4[0] - margin, y: footerY + 16 }, color: COLORS.line, thickness: 1 });
-  drawText(page, "Elima — Apprendre. Connecter. Réussir.", {
+  drawText(page, "Elima — la plateforme educative pour l'Afrique.", {
     x: margin,
     y: footerY,
     size: 9,
     font: bold,
     color: COLORS.muted,
   });
-  const dateStr = `Généré le ${new Date().toLocaleDateString("fr-FR")}`;
+  const dateStr = `Genere le ${new Date().toLocaleDateString("fr-FR")} via la plateforme Elima — Tous droits reserves`;
   drawText(page, dateStr, {
     x: A4[0] - margin - font.widthOfTextAtSize(dateStr, 9),
     y: footerY,

@@ -14,13 +14,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Elima | Apprendre. Connecter. Réussir.",
+  title: "Elima | la plateforme educative pour l'Afrique",
   description:
     "Plateforme de gestion administrative intelligente pour écoles en Afrique de l'Ouest.",
   icons: {
-    icon: [{ url: "/logo_carre.png", type: "image/png" }],
-    shortcut: [{ url: "/logo_carre.png", type: "image/png" }],
-    apple: [{ url: "/logo_carre.png", type: "image/png" }],
+    icon: [{ url: "/logo_e-lima-with-text_wo_bg.png", type: "image/png" }],
+    shortcut: [{ url: "/logo_e-lima-with-text_wo_bg.png", type: "image/png" }],
+    apple: [{ url: "/logo_e-lima-with-text_wo_bg.png", type: "image/png" }],
   },
 };
 

@@ -13,6 +13,16 @@ function normalizeName(name: string) {
   return name.trim().replace(/\s+/g, " ");
 }
 
+function slugSegment(value: string, fallback: string) {
+  const normalized = value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return normalized || fallback;
+}
+
 function extractTextFromWorkbook(buffer: Buffer) {
   const workbook = XLSX.read(buffer, { type: "buffer" });
   const parts: string[] = [];
@@ -176,7 +186,7 @@ export async function POST(request: Request) {
 
     const { data: classRow, error: classErr } = await admin
       .from("classes")
-      .select("id, name")
+      .select("id, name, level")
       .eq("id", classId)
       .eq("school_id", schoolId)
       .maybeSingle();
@@ -184,6 +194,24 @@ export async function POST(request: Request) {
     if (!classRow) return NextResponse.json({ message: "Classe introuvable pour cette ecole" }, { status: 404 });
 
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    const fileExt = file.name.split(".").pop()?.toLowerCase() || "bin";
+    const schoolSegment = slugSegment(schoolId, "ecole");
+    const levelSegment = slugSegment(String((classRow as { level?: string | null }).level ?? ""), "niveau");
+    const classSegment = slugSegment(String((classRow as { name?: string | null }).name ?? ""), "classe");
+    const originalNameSegment = slugSegment(file.name.replace(/\.[^.]+$/, ""), "liste");
+    const filePath =
+      `listes-classe/${schoolSegment}/${levelSegment}/${classSegment}/` +
+      `${Date.now()}-${originalNameSegment}-${crypto.randomUUID()}.${fileExt}`;
+
+    const { error: storageErr } = await admin.storage.from("elima-files").upload(filePath, buffer, {
+      contentType: file.type || "application/octet-stream",
+      upsert: false,
+    });
+    if (storageErr) {
+      return NextResponse.json({ message: storageErr.message }, { status: 400 });
+    }
+
     const rawText = await extractRawText(file.name, file.type, buffer);
     if (!rawText.trim()) {
       return NextResponse.json({ message: "Aucun texte exploitable dans le fichier." }, { status: 400 });
@@ -225,6 +253,7 @@ export async function POST(request: Request) {
       skipped: extracted.length - toInsert.length,
       extracted: extracted.length,
       className: String(classRow.name),
+      storagePath: filePath,
       students: extracted.slice(0, 100),
     });
   } catch (err) {

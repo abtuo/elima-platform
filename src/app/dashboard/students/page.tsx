@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useToast } from "@/components/ui/Toast";
+import { LogoProcessingLoader } from "@/components/ui/LogoProcessingLoader";
 
 type ClassItem = {
   id: string;
@@ -230,6 +231,10 @@ export default function DashboardStudentsPage() {
             {uploading ? "Traitement IA en cours..." : "Importer et ajouter les élèves"}
           </button>
         </div>
+
+        {uploading ? (
+          <LogoProcessingLoader label="Traitement en cours via IA Elima..." />
+        ) : null}
       </section>
 
       <section className="elima-card space-y-3">
