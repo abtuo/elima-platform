@@ -265,7 +265,13 @@ export default function Home() {
           <Reveal>
             <div className="flex flex-col gap-2 text-center">
               <p className="text-xs font-semibold uppercase text-[var(--primary)]">Tarifs établissements</p>
-              <h2 className="text-2xl font-bold text-[var(--accent)]">Des offres adaptées à chaque école</h2>
+              <h2 className="text-2xl font-bold text-[var(--accent)]">
+                Des offres{" "}
+                <span className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent">
+                  adaptées
+                </span>{" "}
+                à chaque école
+              </h2>
               <p className="text-sm text-slate-600">Choisissez la formule idéale pour votre croissance.</p>
             </div>
           </Reveal>

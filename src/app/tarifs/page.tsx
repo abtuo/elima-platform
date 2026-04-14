@@ -60,7 +60,11 @@ export default function TarifsPage() {
           <div className="text-center">
             <p className="text-xs font-semibold uppercase text-[var(--primary)]">Tarifs pour les établissements</p>
             <h1 className="text-3xl font-bold text-[var(--accent)]">
-              Des offres <span className="text-[var(--primary)]">adaptées</span> à chaque école
+              Des offres{" "}
+              <span className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent">
+                adaptées
+              </span>{" "}
+              à chaque école
             </h1>
             <p className="mt-2 text-sm text-slate-600">Choisissez la formule idéale pour votre croissance.</p>
           </div>
@@ -76,7 +80,9 @@ export default function TarifsPage() {
                     <div className="rounded-xl bg-white p-2 shadow-sm ring-1 ring-slate-200">
                       <plan.icon className="text-[var(--primary)]" size={20} />
                     </div>
-                    <h2 className="text-lg font-semibold">{plan.title}</h2>
+                    <h2 className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-lg font-semibold text-transparent">
+                      {plan.title}
+                    </h2>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                     {plan.pill}
