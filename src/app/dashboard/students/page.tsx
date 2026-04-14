@@ -25,6 +25,7 @@ type ExtractedStudent = {
   fullName: string;
   registrationNumber?: string | null;
   birthDate?: string | null;
+  alreadyExists?: boolean;
 };
 
 export default function DashboardStudentsPage() {
@@ -39,6 +40,7 @@ export default function DashboardStudentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [lastExtracted, setLastExtracted] = useState<ExtractedStudent[]>([]);
+  const [validating, setValidating] = useState(false);
 
   const levels = useMemo(() => {
     const unique = new Set(classes.map((item) => item.level).filter((value): value is string => Boolean(value)));
@@ -127,6 +129,7 @@ export default function DashboardStudentsPage() {
             inserted?: number;
             skipped?: number;
             extracted?: number;
+            insertable?: number;
             className?: string;
             students?: ExtractedStudent[];
           }
@@ -138,15 +141,55 @@ export default function DashboardStudentsPage() {
 
       setLastExtracted(body?.students ?? []);
       setStatus(
-        `Import termine: ${body?.inserted ?? 0} ajoutes, ${body?.skipped ?? 0} ignores (doublons), ${body?.extracted ?? 0} extraits.`,
+        `Extraction terminee: ${body?.extracted ?? 0} extraits, ${body?.insertable ?? 0} a inserer, ${body?.skipped ?? 0} deja existants.`,
       );
-      toast.success("Import eleves termine", "Extraction LLM et insertion en base reussies.");
+      toast.success("Extraction IA terminee", "Vous pouvez corriger la liste puis valider.");
       setSelectedFile(null);
-      await fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur durant l'import.");
     } finally {
       setUploading(false);
+    }
+  }
+
+  function updateExtractedStudent(
+    index: number,
+    patch: Partial<Pick<ExtractedStudent, "fullName" | "registrationNumber" | "birthDate">>,
+  ) {
+    setLastExtracted((prev) => prev.map((row, idx) => (idx === index ? { ...row, ...patch } : row)));
+  }
+
+  async function validateEditedExtraction() {
+    if (!effectiveSelectedClassId || lastExtracted.length === 0) return;
+    setValidating(true);
+    setError(null);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/dashboard/students/validate-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          classId: effectiveSelectedClassId,
+          students: lastExtracted.map((student) => ({
+            fullName: student.fullName,
+            registrationNumber: student.registrationNumber ?? null,
+            birthDate: student.birthDate ?? null,
+          })),
+        }),
+      });
+      const body = (await res.json().catch(() => null)) as
+        | { message?: string; inserted?: number; skipped?: number }
+        | null;
+      if (!res.ok) {
+        throw new Error(body?.message ?? "Validation impossible.");
+      }
+      setStatus(`Validation terminee: ${body?.inserted ?? 0} ajoutes, ${body?.skipped ?? 0} ignores.`);
+      toast.success("Import valide", "La liste corrigee a ete enregistree.");
+      await fetchData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur durant la validation.");
+    } finally {
+      setValidating(false);
     }
   }
 
@@ -263,12 +306,43 @@ export default function DashboardStudentsPage() {
           <div className="space-y-2">
             {lastExtracted.map((student, idx) => (
               <div key={`${student.fullName}-${idx}`} className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                <p className="text-sm font-medium text-slate-700">{student.fullName}</p>
-                <p className="text-xs text-slate-500">
-                  Matricule: {student.registrationNumber || "N/A"} · Naissance: {student.birthDate || "N/A"}
-                </p>
+                <div className="grid gap-2 md:grid-cols-3">
+                  <input
+                    value={student.fullName}
+                    onChange={(event) => updateExtractedStudent(idx, { fullName: event.target.value })}
+                    className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm"
+                    placeholder="Nom complet"
+                  />
+                  <input
+                    value={student.registrationNumber ?? ""}
+                    onChange={(event) =>
+                      updateExtractedStudent(idx, { registrationNumber: event.target.value || null })
+                    }
+                    className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm"
+                    placeholder="Matricule"
+                  />
+                  <input
+                    type="date"
+                    value={student.birthDate ?? ""}
+                    onChange={(event) => updateExtractedStudent(idx, { birthDate: event.target.value || null })}
+                    className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm"
+                  />
+                </div>
+                {student.alreadyExists ? (
+                  <p className="mt-2 text-xs font-semibold text-amber-600">Deja present dans la classe</p>
+                ) : null}
               </div>
             ))}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={validateEditedExtraction}
+                disabled={validating || lastExtracted.length === 0}
+                className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {validating ? "Validation..." : "Valider"}
+              </button>
+            </div>
           </div>
         )}
       </section>

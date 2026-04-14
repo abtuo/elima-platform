@@ -233,28 +233,20 @@ export async function POST(request: Request) {
       (existingRows ?? []).map((row) => String((row as { full_name: string }).full_name).toLocaleLowerCase("fr")),
     );
 
-    const toInsert = extracted
-      .filter((student) => !existingNames.has(student.fullName.toLocaleLowerCase("fr")))
-      .map((student) => ({
-        school_id: schoolId,
-        class_id: classId,
-        full_name: student.fullName,
-        registration_number: student.registrationNumber || null,
-        birth_date: student.birthDate || null,
-      }));
-
-    if (toInsert.length > 0) {
-      const { error: insertErr } = await admin.from("students").insert(toInsert);
-      if (insertErr) return NextResponse.json({ message: insertErr.message }, { status: 400 });
-    }
+    const preview = extracted.map((student) => ({
+      ...student,
+      alreadyExists: existingNames.has(student.fullName.toLocaleLowerCase("fr")),
+    }));
+    const insertableCount = preview.filter((s) => !s.alreadyExists).length;
 
     return NextResponse.json({
-      inserted: toInsert.length,
-      skipped: extracted.length - toInsert.length,
+      inserted: 0,
+      skipped: extracted.length - insertableCount,
       extracted: extracted.length,
+      insertable: insertableCount,
       className: String(classRow.name),
       storagePath: filePath,
-      students: extracted.slice(0, 100),
+      students: preview.slice(0, 100),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur serveur";
