@@ -7,8 +7,6 @@ import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { useTeacherContext } from "../TeacherContext";
 import { EditableTable } from "@/components/ui/EditableTable";
 
-type Student = { id: string; name: string };
-
 type Status = "PRESENT" | "ABSENT" | "LATE";
 
 export default function TeacherAttendancePage() {

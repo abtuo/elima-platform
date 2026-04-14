@@ -12,16 +12,15 @@ export default function TeacherAveragesPage() {
 
   const { selectedClassId, students } = useTeacherContext();
 
-  const rows = (
-    students
-      .filter((s) => s.classId === selectedClassId)
-      .map((s) => ({
-        id: s.id,
-        name: s.fullName,
-        avg: null,
-        appreciationAuto: autoAppreciation(null),
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+  const rows: Row[] = students
+    .filter((s) => s.classId === selectedClassId)
+    .map((s) => ({
+      id: s.id,
+      name: s.fullName,
+      avg: null,
+      appreciationAuto: autoAppreciation(null),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   function autoAppreciation(avg: number | null) {
     if (avg == null) return "Moyenne non disponible pour le moment.";
