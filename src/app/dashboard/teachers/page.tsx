@@ -533,7 +533,7 @@ export default function DashboardTeachersPage() {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={generateTeacherCodes}
+              onClick={() => generateTeacherCodes()}
               disabled={codesLoading}
               className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
