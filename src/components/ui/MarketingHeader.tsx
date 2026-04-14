@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 const roleHomeMap: Record<string, string> = {
   SUPER_ADMIN: "/dashboard",
@@ -21,12 +21,10 @@ function getCookieValue(name: string) {
 }
 
 export function MarketingHeader() {
-  const [role, setRole] = useState<string | null>(null);
-
-  useEffect(() => {
+  const [role] = useState<string | null>(() => {
     const cookieValue = getCookieValue("elima_role");
-    setRole(cookieValue ? decodeURIComponent(cookieValue) : null);
-  }, []);
+    return cookieValue ? decodeURIComponent(cookieValue) : null;
+  });
 
   const homePath = useMemo(() => {
     if (!role) return "/";

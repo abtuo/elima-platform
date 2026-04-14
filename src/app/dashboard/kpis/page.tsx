@@ -30,8 +30,11 @@ export default async function DashboardKpisPage() {
     );
   }
 
-  const to = formatDate(new Date());
-  const from = formatDate(new Date(Date.now() - 29 * 86400000));
+  const toDate = new Date();
+  const fromDate = new Date(toDate);
+  fromDate.setDate(fromDate.getDate() - 29);
+  const to = formatDate(toDate);
+  const from = formatDate(fromDate);
 
   const kpis = await getSchoolKpisForCurrentUserSchool({ from, to });
 

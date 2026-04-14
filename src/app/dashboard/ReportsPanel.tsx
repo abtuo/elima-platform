@@ -51,8 +51,8 @@ export function ReportsPanel() {
       setClasses(data.classes ?? []);
       setStudents(data.students ?? []);
       setLoading(false);
-      if (!selectedClassId && data.classes && data.classes.length > 0) {
-        setSelectedClassId(String(data.classes[0].id));
+      if (data.classes && data.classes.length > 0) {
+        setSelectedClassId((current) => current || String(data.classes[0].id));
       }
     }
     loadStudents();
@@ -66,18 +66,13 @@ export function ReportsPanel() {
     [students, selectedClassId],
   );
 
-  useEffect(() => {
-    if (studentsInClass.length === 0) {
-      setSelectedStudentId("");
-      return;
-    }
-    if (!studentsInClass.some((s) => s.id === selectedStudentId)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedStudentId(studentsInClass[0].id);
-    }
+  const effectiveSelectedStudentId = useMemo(() => {
+    if (studentsInClass.length === 0) return "";
+    if (studentsInClass.some((s) => s.id === selectedStudentId)) return selectedStudentId;
+    return studentsInClass[0].id;
   }, [studentsInClass, selectedStudentId]);
 
-  const selectedStudent = studentsInClass.find((s) => s.id === selectedStudentId);
+  const selectedStudent = studentsInClass.find((s) => s.id === effectiveSelectedStudentId);
   const reportHref = selectedStudent ? `/api/reports/${selectedStudent.id}` : "#";
 
   async function generateClassReports() {
@@ -139,7 +134,7 @@ export function ReportsPanel() {
         <label className="grid gap-1 text-sm md:col-span-2">
           <span className="text-xs font-semibold text-slate-600">Élève</span>
           <select
-            value={selectedStudentId}
+            value={effectiveSelectedStudentId}
             onChange={(e) => setSelectedStudentId(e.target.value)}
             className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm"
           >

@@ -50,7 +50,7 @@ export default function ContactPage() {
               ))}
             </ul>
             <div className="rounded-2xl bg-[var(--primary)]/10 p-4 text-sm">
-              <p className="font-semibold text-[var(--accent)]">Besoin d'une réponse rapide ?</p>
+              <p className="font-semibold text-[var(--accent)]">Besoin d&apos;une réponse rapide ?</p>
               <p className="text-slate-600">Nous répondons sous 24h avec un plan d’action clair.</p>
             </div>
           </div>
