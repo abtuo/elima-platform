@@ -45,7 +45,7 @@ function requiredEnv(name: string) {
   return value;
 }
 
-async function countTable(admin: ReturnType<typeof createClient>, table: string) {
+async function countTable(admin: ReturnType<typeof createClient<any>>, table: string) {
   const { count, error } = await admin.from(table).select("id", { count: "exact", head: true });
   if (error) throw error;
   return count ?? 0;

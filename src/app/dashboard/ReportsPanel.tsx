@@ -48,11 +48,12 @@ export function ReportsPanel() {
         | { classes?: Classroom[]; students?: Student[] }
         | null;
       if (!isMounted || !data) return;
-      setClasses(data.classes ?? []);
+      const loadedClasses = data.classes ?? [];
+      setClasses(loadedClasses);
       setStudents(data.students ?? []);
       setLoading(false);
-      if (data.classes && data.classes.length > 0) {
-        setSelectedClassId((current) => current || String(data.classes[0].id));
+      if (loadedClasses.length > 0) {
+        setSelectedClassId((current) => current || String(loadedClasses[0].id));
       }
     }
     loadStudents();
