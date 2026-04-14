@@ -274,7 +274,7 @@ export default function Home() {
               {
                 title: "Basic",
                 icon: Sparkles,
-                highlight: false,
+                highlight: true,
                 features: [
                   "Gestion élèves / classes",
                   "Notes & absences",
@@ -286,7 +286,7 @@ export default function Home() {
               {
                 title: "Premium",
                 icon: Crown,
-                highlight: true,
+                highlight: false,
                 features: [
                   "Tout Basic",
                   "Inscriptions en ligne",
@@ -324,7 +324,7 @@ export default function Home() {
                     <h3 className="text-lg font-semibold">{plan.title}</h3>
                   </div>
                   {plan.highlight ? (
-                    <span className="rounded-full bg-[var(--primary)] px-3 py-1 text-xs font-semibold text-white">⭐ recommandé</span>
+                    <span className="rounded-full bg-[var(--primary)] px-3 py-1 text-xs font-semibold text-white">Gratuit</span>
                   ) : null}
                 </div>
                 <ul className="space-y-2 text-sm text-slate-600">
@@ -344,7 +344,7 @@ export default function Home() {
                       : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
                   }`}
                 >
-                  Demander un devis
+                  {plan.title === "Basic" ? "Essayer maintenant" : "Demander un devis"}
                 </Link>
                 </div>
               </Reveal>
