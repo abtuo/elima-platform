@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-import { PDFParse } from "pdf-parse";
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireServerEnv } from "@/lib/env";
 
@@ -37,9 +36,34 @@ function extractTextFromWorkbook(buffer: Buffer) {
 async function extractRawText(fileName: string, fileType: string, buffer: Buffer) {
   const lowerName = fileName.toLowerCase();
   if (fileType === "application/pdf" || lowerName.endsWith(".pdf")) {
-    const parser = new PDFParse({ data: buffer });
-    const parsed = await parser.getText();
-    return parsed.text ?? "";
+    const PDFParserModule = await import("pdf2json");
+    const PDFParser = PDFParserModule.default;
+    const parsedText = await new Promise<string>((resolve, reject) => {
+      const parser = new PDFParser();
+      parser.on("pdfParser_dataError", (errData: Error | { parserError: Error }) => {
+        if (errData instanceof Error) {
+          reject(errData);
+          return;
+        }
+        reject(errData.parserError ?? new Error("Erreur de lecture PDF."));
+      });
+      parser.on(
+        "pdfParser_dataReady",
+        (pdfData: { Pages?: Array<{ Texts?: Array<{ R?: Array<{ T?: string }> }> }> }) => {
+          const lines =
+            pdfData.Pages?.flatMap((page) =>
+              (page.Texts ?? []).map((textItem) =>
+                (textItem.R ?? [])
+                  .map((r) => decodeURIComponent(r.T ?? ""))
+                  .join(" "),
+              ),
+            ) ?? [];
+          resolve(lines.join("\n"));
+        },
+      );
+      parser.parseBuffer(buffer);
+    });
+    return parsedText;
   }
   if (
     fileType.includes("spreadsheetml") ||
