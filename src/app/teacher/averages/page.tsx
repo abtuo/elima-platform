@@ -5,40 +5,26 @@ import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { useTeacherContext } from "../TeacherContext";
 import { EditableTable } from "@/components/ui/EditableTable";
 
-type Row = { id: string; name: string; avg: number; appreciationAuto: string; appreciationOverride?: string };
-
-const demo: Record<string, Row[]> = {
-  "6e A": [
-    { id: "s1", name: "Aïcha Koné", avg: 13.4, appreciationAuto: "Bon trimestre." },
-    { id: "s2", name: "Moussa Traoré", avg: 9.2, appreciationAuto: "Trimestre insuffisant, efforts à intensifier." },
-    { id: "s3", name: "Yao Kouassi", avg: 12.1, appreciationAuto: "Trimestre correct." },
-  ],
-  "6e B": [
-    { id: "s4", name: "Aminata Diallo", avg: 15.2, appreciationAuto: "Très bon trimestre." },
-    { id: "s5", name: "Ibrahim Camara", avg: 11.4, appreciationAuto: "Trimestre moyen." },
-  ],
-  "5e B": [
-    { id: "s6", name: "Fatou Diallo", avg: 15.1, appreciationAuto: "Très bon trimestre." },
-    { id: "s7", name: "Kader Ouattara", avg: 10.3, appreciationAuto: "Trimestre moyen, à stabiliser." },
-  ],
-};
+type Row = { id: string; name: string; avg: number | null; appreciationAuto: string; appreciationOverride?: string };
 
 export default function TeacherAveragesPage() {
   const [overrides, setOverrides] = useState<Record<string, string>>({});
 
-  const { selectedClass } = useTeacherContext();
+  const { selectedClassId, students } = useTeacherContext();
 
-  const rows = (() => {
-    const base = demo[selectedClass as keyof typeof demo] ?? [];
-    return [...base]
-      .map((r) => ({
-        ...r,
-        appreciationAuto: autoAppreciation(r.avg),
+  const rows = (
+    students
+      .filter((s) => s.classId === selectedClassId)
+      .map((s) => ({
+        id: s.id,
+        name: s.fullName,
+        avg: null,
+        appreciationAuto: autoAppreciation(null),
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  })();
 
-  function autoAppreciation(avg: number) {
+  function autoAppreciation(avg: number | null) {
+    if (avg == null) return "Moyenne non disponible pour le moment.";
     if (avg >= 16) return "Excellent trimestre. Continuez ainsi.";
     if (avg >= 14) return "Très bon trimestre.";
     if (avg >= 12) return "Bon trimestre.";
@@ -66,7 +52,7 @@ export default function TeacherAveragesPage() {
             {
               key: "avg",
               header: "Moyenne",
-              cell: (r) => `${r.avg.toFixed(1)}/20`,
+              cell: (r) => (r.avg == null ? "—" : `${r.avg.toFixed(1)}/20`),
               className: "whitespace-nowrap",
             },
             {

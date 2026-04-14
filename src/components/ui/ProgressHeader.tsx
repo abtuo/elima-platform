@@ -2,17 +2,23 @@
 
 import { BookOpen, CalendarRange, GraduationCap, Layers } from "lucide-react";
 import { useTeacherContext } from "@/app/teacher/TeacherContext";
-import { demoClasses, demoSubjects, demoTerms } from "@/lib/teacher/demo";
+import type { TeacherTerm } from "@/app/teacher/TeacherContext";
 
 export function ProgressHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   const {
-    selectedClass,
-    setSelectedClass,
-    selectedSubject,
-    setSelectedSubject,
+    selectedClassId,
+    setSelectedClassId,
+    selectedSubjectId,
+    setSelectedSubjectId,
     selectedTerm,
     setSelectedTerm,
+    classes,
+    subjects,
   } = useTeacherContext();
+
+  const selectedClass = classes.find((c) => c.id === selectedClassId);
+  const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
+  const terms: TeacherTerm[] = ["Trimestre 1", "Trimestre 2", "Trimestre 3"];
 
   return (
     <header className="elima-card">
@@ -27,13 +33,13 @@ export function ProgressHeader({ title, subtitle }: { title: string; subtitle?: 
             <GraduationCap size={16} className="text-[var(--primary)]" />
             <span className="sr-only">Classe</span>
             <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
+              value={selectedClassId}
+              onChange={(e) => setSelectedClassId(e.target.value)}
               className="w-full bg-transparent text-sm font-semibold text-slate-800 outline-none"
             >
-              {demoClasses.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -43,13 +49,13 @@ export function ProgressHeader({ title, subtitle }: { title: string; subtitle?: 
             <BookOpen size={16} className="text-[var(--primary)]" />
             <span className="sr-only">Matière</span>
             <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
+              value={selectedSubjectId}
+              onChange={(e) => setSelectedSubjectId(e.target.value)}
               className="w-full bg-transparent text-sm font-semibold text-slate-800 outline-none"
             >
-              {demoSubjects.map((s) => (
-                <option key={s} value={s}>
-                  {s}
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
                 </option>
               ))}
             </select>
@@ -60,10 +66,10 @@ export function ProgressHeader({ title, subtitle }: { title: string; subtitle?: 
             <span className="sr-only">Période</span>
             <select
               value={selectedTerm}
-              onChange={(e) => setSelectedTerm(e.target.value as (typeof demoTerms)[number])}
+              onChange={(e) => setSelectedTerm(e.target.value as TeacherTerm)}
               className="w-full bg-transparent text-sm font-semibold text-slate-800 outline-none"
             >
-              {demoTerms.map((t) => (
+              {terms.map((t) => (
                 <option key={t} value={t}>
                   {t}
                 </option>
@@ -75,8 +81,8 @@ export function ProgressHeader({ title, subtitle }: { title: string; subtitle?: 
 
       <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-500">
         <Layers size={14} className="text-slate-400" />
-        Contexte actif : <span className="font-semibold text-slate-700">{selectedClass}</span> •{" "}
-        <span className="font-semibold text-slate-700">{selectedSubject}</span> •{" "}
+        Contexte actif : <span className="font-semibold text-slate-700">{selectedClass?.name ?? "—"}</span> •{" "}
+        <span className="font-semibold text-slate-700">{selectedSubject?.name ?? "—"}</span> •{" "}
         <span className="font-semibold text-slate-700">{selectedTerm}</span>
       </div>
     </header>

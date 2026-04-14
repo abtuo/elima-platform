@@ -9,28 +9,19 @@ import { EditableTable } from "@/components/ui/EditableTable";
 
 type Student = { id: string; name: string };
 
-const demo: Record<string, Student[]> = {
-  "6e A": [
-    { id: "s1", name: "Aïcha Koné" },
-    { id: "s2", name: "Moussa Traoré" },
-    { id: "s3", name: "Yao Kouassi" },
-  ],
-  "6e B": [
-    { id: "s4", name: "Aminata Diallo" },
-    { id: "s5", name: "Ibrahim Camara" },
-  ],
-  "5e B": [
-    { id: "s6", name: "Fatou Diallo" },
-    { id: "s7", name: "Kader Ouattara" },
-  ],
-};
-
 type Status = "PRESENT" | "ABSENT" | "LATE";
 
 export default function TeacherAttendancePage() {
-  const { selectedClass } = useTeacherContext();
-  const className = selectedClass as keyof typeof demo;
-  const students = useMemo(() => [...(demo[className] ?? [])].sort((a, b) => a.name.localeCompare(b.name)), [className]);
+  const { selectedClassId, classes, students: contextStudents } = useTeacherContext();
+  const selectedClass = classes.find((c) => c.id === selectedClassId);
+  const students = useMemo(
+    () =>
+      contextStudents
+        .filter((s) => s.classId === selectedClassId)
+        .map((s) => ({ id: s.id, name: s.fullName }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [contextStudents, selectedClassId],
+  );
   const [status, setStatus] = useState<Record<string, Status>>({});
   const [history, setHistory] = useState<{ dateISO: string; present: number; absent: number; late: number }[]>([
     { dateISO: "2026-02-24", present: 28, absent: 3, late: 1 },
@@ -44,7 +35,7 @@ export default function TeacherAttendancePage() {
       <section className="elima-card space-y-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-            Classe : {selectedClass}
+            Classe : {selectedClass?.name ?? "Aucune"}
           </div>
           <div className="ml-auto text-sm text-slate-600">{students.length} élèves</div>
         </div>

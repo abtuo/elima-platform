@@ -48,8 +48,6 @@ export default function DashboardTeachersPage() {
   const [subjects, setSubjects] = useState<SubjectOption[]>([]);
   const [classes, setClasses] = useState<ClassOption[]>([]);
   const [existingTeachers, setExistingTeachers] = useState<TeacherOption[]>([]);
-  const [uploadedTeachers, setUploadedTeachers] = useState<TeacherOption[]>([]);
-  const [manualTeachers, setManualTeachers] = useState<TeacherOption[]>([]);
   const [assignments, setAssignments] = useState<AssignmentRow[]>([]);
   const [accessCodes, setAccessCodes] = useState<TeacherAccessCodeRow[]>([]);
   const [codeFailures, setCodeFailures] = useState<Array<{ teacherId: string; reason: string }>>([]);
@@ -57,10 +55,7 @@ export default function DashboardTeachersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const allTeachers = useMemo(
-    () => [...existingTeachers, ...uploadedTeachers, ...manualTeachers],
-    [existingTeachers, uploadedTeachers, manualTeachers],
-  );
+  const allTeachers = useMemo(() => existingTeachers, [existingTeachers]);
 
   const levels = useMemo(() => {
     const unique = new Set(
@@ -100,13 +95,11 @@ export default function DashboardTeachersPage() {
         if (active) {
           setSubjects(subjectsBody.subjects ?? []);
           setClasses(classesBody.classes ?? []);
-          setExistingTeachers(
-            (teachersBody.teachers ?? []).map((teacher) => ({
-              id: teacher.id,
-              fullName: teacher.fullName,
-              source: "existing",
-            })),
-          );
+          setExistingTeachers((teachersBody.teachers ?? []).map((teacher) => ({
+            id: teacher.id,
+            fullName: teacher.fullName,
+            source: "existing",
+          })));
         }
       } catch (err) {
         if (active) {
@@ -136,6 +129,39 @@ export default function DashboardTeachersPage() {
     setSelectedClassIds([]);
   }, [levelFilter, selectedTeacherId]);
 
+  async function createTeachersInDb(payload: Array<{ fullName: string }>, source: "upload" | "manual") {
+    const res = await fetch("/api/dashboard/teachers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teachers: payload }),
+    });
+    const body = (await res.json().catch(() => null)) as
+      | {
+          message?: string;
+          created?: Array<{ id: string; fullName: string }>;
+          skipped?: Array<{ fullName: string; reason: string }>;
+        }
+      | null;
+    if (!res.ok) throw new Error(body?.message ?? "Création enseignants impossible");
+
+    const createdRows = (body?.created ?? []).map((teacher) => ({
+      id: teacher.id,
+      fullName: teacher.fullName,
+      source,
+    })) satisfies TeacherOption[];
+
+    setExistingTeachers((prev) => {
+      const byId = new Map(prev.map((t) => [t.id, t]));
+      createdRows.forEach((row) => byId.set(row.id, row));
+      return Array.from(byId.values());
+    });
+
+    return {
+      createdCount: createdRows.length,
+      skipped: body?.skipped ?? [],
+    };
+  }
+
   function parseTeacherNamesFromCsv(content: string) {
     const rows = content
       .split(/\r?\n/)
@@ -161,22 +187,19 @@ export default function DashboardTeachersPage() {
       }
 
       const existingNames = new Set(allTeachers.map((teacher) => teacher.fullName.trim().toLocaleLowerCase("fr")));
-      const newTeachers = names
-        .filter((name) => !existingNames.has(name.toLocaleLowerCase("fr")))
-        .map((name, idx) => ({
-          id: `upload-${Date.now()}-${idx}`,
-          fullName: name,
-          source: "upload" as const,
-        }));
+      const newTeacherNames = names.filter((name) => !existingNames.has(name.toLocaleLowerCase("fr")));
 
-      if (!newTeachers.length) {
+      if (!newTeacherNames.length) {
         setError("Tous les enseignants du fichier sont déjà dans la liste.");
         return;
       }
 
-      setUploadedTeachers((prev) => [...prev, ...newTeachers]);
+      const result = await createTeachersInDb(newTeacherNames.map((fullName) => ({ fullName })), "upload");
       setError(null);
-      toast.success("Fichier importé", `${newTeachers.length} enseignant(s) ajouté(s) à la liste.`);
+      toast.success(
+        "Fichier importé",
+        `${result.createdCount} enseignant(s) ajouté(s), ${result.skipped.length} ignoré(s).`,
+      );
     } catch {
       setError("Impossible de lire le fichier importé.");
     } finally {
@@ -199,15 +222,18 @@ export default function DashboardTeachersPage() {
       return;
     }
 
-    const newTeacher: TeacherOption = {
-      id: `manual-${Date.now()}`,
-      fullName: trimmed,
-      source: "manual",
-    };
-    setManualTeachers((prev) => [...prev, newTeacher]);
-    setManualTeacherName("");
-    setError(null);
-    toast.success("Enseignant ajouté", "Vous pouvez maintenant lui affecter des classes.");
+    createTeachersInDb([{ fullName: trimmed }], "manual")
+      .then((result) => {
+        setManualTeacherName("");
+        setError(null);
+        toast.success(
+          "Enseignant ajouté",
+          `${result.createdCount} ajouté(s), ${result.skipped.length} ignoré(s).`,
+        );
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Impossible d’ajouter l’enseignant.");
+      });
   }
 
   function toggleClassSelection(classId: string) {
@@ -237,29 +263,42 @@ export default function DashboardTeachersPage() {
 
     setError(null);
     const uniqueClassIds = Array.from(new Set(selectedClassIds));
-    setAssignments((prev) => {
-      const next = [...prev];
-      const existingIdx = next.findIndex(
-        (row) => row.teacherId === selectedTeacherId && row.subjectId === subjectId && row.level === levelFilter,
-      );
-      const payload: AssignmentRow = {
+    fetch("/api/dashboard/teachers/assignments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         teacherId: selectedTeacherId,
         subjectId,
-        level: levelFilter,
         classIds: uniqueClassIds,
-      };
-      if (existingIdx >= 0) {
-        next[existingIdx] = payload;
-      } else {
-        next.push(payload);
-      }
-      return next;
-    });
-    setSelectedClassIds([]);
-    toast.success(
-      "Assignation enregistrée",
-      "La liaison enseignant/matière/classes est prête pour la validation finale.",
-    );
+      }),
+    })
+      .then(async (res) => {
+        const body = (await res.json().catch(() => null)) as { message?: string } | null;
+        if (!res.ok) throw new Error(body?.message ?? "Assignation impossible");
+        setAssignments((prev) => {
+          const next = [...prev];
+          const existingIdx = next.findIndex(
+            (row) => row.teacherId === selectedTeacherId && row.subjectId === subjectId && row.level === levelFilter,
+          );
+          const payload: AssignmentRow = {
+            teacherId: selectedTeacherId,
+            subjectId,
+            level: levelFilter,
+            classIds: uniqueClassIds,
+          };
+          if (existingIdx >= 0) {
+            next[existingIdx] = payload;
+          } else {
+            next.push(payload);
+          }
+          return next;
+        });
+        setSelectedClassIds([]);
+        toast.success("Assignation enregistrée", "L’enseignant voit maintenant ses classes et élèves assignés.");
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Assignation impossible");
+      });
   }
 
   function labelFromSource(source: TeacherOption["source"]) {

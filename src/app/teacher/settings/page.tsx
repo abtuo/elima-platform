@@ -11,7 +11,9 @@ type Profile = {
 };
 
 export default function TeacherSettingsPage() {
-  const { selectedClass, selectedSubject, selectedTerm } = useTeacherContext();
+  const { selectedClassId, selectedSubjectId, selectedTerm, classes, subjects } = useTeacherContext();
+  const selectedClass = classes.find((c) => c.id === selectedClassId);
+  const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -118,10 +120,10 @@ export default function TeacherSettingsPage() {
 
         <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
           <p>
-            <span className="font-semibold">Classe</span> : {selectedClass}
+            <span className="font-semibold">Classe</span> : {selectedClass?.name ?? "—"}
           </p>
           <p>
-            <span className="font-semibold">Matière</span> : {selectedSubject}
+            <span className="font-semibold">Matière</span> : {selectedSubject?.name ?? "—"}
           </p>
           <p>
             <span className="font-semibold">Période</span> : {selectedTerm}

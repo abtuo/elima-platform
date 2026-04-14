@@ -5,36 +5,44 @@ import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { useTeacherContext } from "../TeacherContext";
-import { demoEvaluations, demoStudents } from "@/lib/teacher/demo";
 import { getDraft, saveDraft } from "@/lib/teacher/grades-store";
 import { useToast } from "@/components/ui/Toast";
 
 type StudentRow = { id: string; name: string };
-type EvaluationRow = (typeof demoEvaluations)[number];
+type EvaluationRow = { id: string; label: string };
 
 export default function TeacherGradesPage() {
-  const { selectedClass, selectedSubject, selectedTerm } = useTeacherContext();
+  const {
+    selectedClassId,
+    selectedSubjectId,
+    selectedTerm,
+    students: contextStudents,
+    classes,
+    subjects,
+  } = useTeacherContext();
   const { success } = useToast();
 
   const students: StudentRow[] = useMemo(
     () =>
-      demoStudents
-        .filter((s) => s.className === selectedClass)
+      contextStudents
+        .filter((s) => s.classId === selectedClassId)
         .map((s) => ({ id: s.id, name: s.fullName }))
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [selectedClass],
+    [contextStudents, selectedClassId],
   );
 
-  const evaluation: EvaluationRow = useMemo(() => {
-    return (
-      demoEvaluations.find(
-        (e) => e.className === selectedClass && e.subject === selectedSubject && e.term === selectedTerm,
-      ) ?? demoEvaluations[0]
-    );
-  }, [selectedClass, selectedSubject, selectedTerm]);
+  const selectedClass = classes.find((c) => c.id === selectedClassId);
+  const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
+  const evaluation: EvaluationRow = useMemo(
+    () => ({
+      id: `${selectedClassId}:${selectedSubjectId}:${selectedTerm}`,
+      label: `${selectedSubject?.name ?? "Matière"} — ${selectedClass?.name ?? "Classe"} — ${selectedTerm}`,
+    }),
+    [selectedClass?.name, selectedClassId, selectedSubject?.name, selectedSubjectId, selectedTerm],
+  );
 
   // Changing evaluation or class remounts the inner component, resetting local state without useEffect.
-  const contextKey = `${selectedClass}:${evaluation.id}`;
+  const contextKey = `${selectedClassId}:${evaluation.id}`;
 
   return <TeacherGradesInner key={contextKey} students={students} evaluation={evaluation} onSaved={success} />;
 }

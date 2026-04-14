@@ -1,36 +1,112 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export type TeacherTerm = "Trimestre 1" | "Trimestre 2" | "Trimestre 3";
 
+export type TeacherClass = {
+  id: string;
+  name: string;
+  level: string;
+  academicYear: string;
+};
+
+export type TeacherSubject = {
+  id: string;
+  name: string;
+};
+
+export type TeacherStudent = {
+  id: string;
+  fullName: string;
+  classId: string;
+  className: string;
+};
+
+export type TeacherAssignment = {
+  classId: string;
+  className: string;
+  subjectId: string;
+  subjectName: string;
+};
+
 export type TeacherContextValue = {
-  selectedClass: string;
-  setSelectedClass: (value: string) => void;
-  selectedSubject: string;
-  setSelectedSubject: (value: string) => void;
+  selectedClassId: string;
+  setSelectedClassId: (value: string) => void;
+  selectedSubjectId: string;
+  setSelectedSubjectId: (value: string) => void;
   selectedTerm: TeacherTerm;
   setSelectedTerm: (value: TeacherTerm) => void;
+  classes: TeacherClass[];
+  subjects: TeacherSubject[];
+  students: TeacherStudent[];
+  assignments: TeacherAssignment[];
+  loading: boolean;
 };
 
 const TeacherContext = createContext<TeacherContextValue | null>(null);
 
 export function TeacherContextProvider({ children }: { children: React.ReactNode }) {
-  // Demo defaults (later: from DB/profile)
-  const [selectedClass, setSelectedClass] = useState("6e A");
-  const [selectedSubject, setSelectedSubject] = useState("Mathématiques");
+  const [selectedClassId, setSelectedClassId] = useState("");
+  const [selectedSubjectId, setSelectedSubjectId] = useState("");
   const [selectedTerm, setSelectedTerm] = useState<TeacherTerm>("Trimestre 1");
+  const [classes, setClasses] = useState<TeacherClass[]>([]);
+  const [subjects, setSubjects] = useState<TeacherSubject[]>([]);
+  const [students, setStudents] = useState<TeacherStudent[]>([]);
+  const [assignments, setAssignments] = useState<TeacherAssignment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    async function loadTeacherContext() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/teacher/context");
+        const body = (await res.json().catch(() => null)) as
+          | {
+              classes?: TeacherClass[];
+              subjects?: TeacherSubject[];
+              students?: TeacherStudent[];
+              assignments?: TeacherAssignment[];
+            }
+          | null;
+        if (!res.ok || !active) return;
+
+        const nextClasses = body?.classes ?? [];
+        const nextSubjects = body?.subjects ?? [];
+        setClasses(nextClasses);
+        setSubjects(nextSubjects);
+        setStudents(body?.students ?? []);
+        setAssignments(body?.assignments ?? []);
+        setSelectedClassId((current) => current || nextClasses[0]?.id || "");
+        setSelectedSubjectId((current) => current || nextSubjects[0]?.id || "");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    loadTeacherContext().catch(() => {
+      if (active) setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const value = useMemo<TeacherContextValue>(
     () => ({
-      selectedClass,
-      setSelectedClass,
-      selectedSubject,
-      setSelectedSubject,
+      selectedClassId,
+      setSelectedClassId,
+      selectedSubjectId,
+      setSelectedSubjectId,
       selectedTerm,
       setSelectedTerm,
+      classes,
+      subjects,
+      students,
+      assignments,
+      loading,
     }),
-    [selectedClass, selectedSubject, selectedTerm],
+    [selectedClassId, selectedSubjectId, selectedTerm, classes, subjects, students, assignments, loading],
   );
 
   return <TeacherContext.Provider value={value}>{children}</TeacherContext.Provider>;
