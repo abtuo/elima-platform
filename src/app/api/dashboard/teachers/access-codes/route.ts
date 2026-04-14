@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { buildTeacherMatricule, generateTeacherInitialCode } from "@/lib/teacher-access";
+import { buildTeacherMatricule, generateTeacherInitialCode, teacherCodeToAuthPassword } from "@/lib/teacher-access";
 
 type TeacherRow = { id: string; user_id: string };
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const body = (await request.json().catch(() => null)) as null | { teacherId?: string };
+    const targetTeacherId = String(body?.teacherId ?? "").trim();
+
     const supabase = await createSupabaseServerClient();
     const admin = await createSupabaseAdminServerClient();
 
@@ -31,7 +34,10 @@ export async function POST() {
       .eq("school_id", userRow.school_id);
     if (teachersErr) return NextResponse.json({ message: teachersErr.message }, { status: 400 });
 
-    const teachers = (teachersData ?? []) as TeacherRow[];
+    const allTeachers = (teachersData ?? []) as TeacherRow[];
+    const teachers = targetTeacherId
+      ? allTeachers.filter((teacher) => teacher.id === targetTeacherId)
+      : allTeachers;
     if (!teachers.length) return NextResponse.json({ codes: [] });
 
     const userIds = teachers.map((teacher) => teacher.user_id);
@@ -43,10 +49,14 @@ export async function POST() {
     const usersById = new Map((usersData ?? []).map((u) => [String(u.id), u]));
 
     const results: Array<{ teacherId: string; fullName: string; email: string; matricule: string; code: string }> = [];
+    const failed: Array<{ teacherId: string; reason: string }> = [];
     for (const teacher of teachers) {
       const profile = usersById.get(teacher.user_id);
       const email = String(profile?.email ?? "").trim().toLowerCase();
-      if (!email) continue;
+      if (!email) {
+        failed.push({ teacherId: teacher.id, reason: "Email manquant sur le profil utilisateur." });
+        continue;
+      }
 
       const matricule = buildTeacherMatricule(teacher.id);
       const code = generateTeacherInitialCode(5);
@@ -55,7 +65,7 @@ export async function POST() {
       const currentMeta = (currentAuth.data.user?.user_metadata ?? {}) as Record<string, unknown>;
 
       const { error: updateErr } = await admin.auth.admin.updateUserById(teacher.user_id, {
-        password: code,
+        password: teacherCodeToAuthPassword(code),
         user_metadata: {
           ...currentMeta,
           teacher_matricule: matricule,
@@ -63,7 +73,10 @@ export async function POST() {
           teacher_temp_code_generated_at: new Date().toISOString(),
         },
       });
-      if (updateErr) continue;
+      if (updateErr) {
+        failed.push({ teacherId: teacher.id, reason: updateErr.message });
+        continue;
+      }
 
       results.push({
         teacherId: teacher.id,
@@ -74,7 +87,12 @@ export async function POST() {
       });
     }
 
-    return NextResponse.json({ codes: results });
+    return NextResponse.json({
+      codes: results,
+      generated: results.length,
+      failedCount: failed.length,
+      failed,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur serveur";
     return NextResponse.json({ message }, { status: 500 });

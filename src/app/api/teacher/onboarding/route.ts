@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { isValidTeacherNewPin } from "@/lib/teacher-access";
+import { isValidTeacherNewPin, teacherCodeToAuthPassword } from "@/lib/teacher-access";
 
 export async function GET() {
   try {
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     const authUser = await admin.auth.admin.getUserById(userId);
     const currentMeta = (authUser.data.user?.user_metadata ?? {}) as Record<string, unknown>;
     const { error: updateErr } = await admin.auth.admin.updateUserById(userId, {
-      password: newCode,
+      password: teacherCodeToAuthPassword(newCode),
       user_metadata: {
         ...currentMeta,
         teacher_must_change_code: false,

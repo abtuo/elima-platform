@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { buildTeacherMatricule, isValidTeacherInitialCode } from "@/lib/teacher-access";
+import { buildTeacherMatricule, isValidTeacherInitialCode, teacherCodeToAuthPassword } from "@/lib/teacher-access";
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as null | { matricule?: string; code?: string };
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
   const signIn = await supabase.auth.signInWithPassword({
     email: String(userProfile.email).toLowerCase(),
-    password: code,
+    password: teacherCodeToAuthPassword(code),
   });
   if (signIn.error) return NextResponse.json({ message: "Code invalide." }, { status: 400 });
 

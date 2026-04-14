@@ -1,4 +1,5 @@
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const AUTH_PASSWORD_PREFIX = "ELM-";
 
 export function buildTeacherMatricule(teacherId: string) {
   return teacherId.replace(/-/g, "").slice(0, 5).toUpperCase();
@@ -19,4 +20,8 @@ export function isValidTeacherInitialCode(code: string) {
 
 export function isValidTeacherNewPin(code: string) {
   return /^\d{5}$/.test(code);
+}
+
+export function teacherCodeToAuthPassword(code: string) {
+  return `${AUTH_PASSWORD_PREFIX}${code}`;
 }

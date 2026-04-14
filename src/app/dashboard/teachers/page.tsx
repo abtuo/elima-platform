@@ -52,6 +52,7 @@ export default function DashboardTeachersPage() {
   const [manualTeachers, setManualTeachers] = useState<TeacherOption[]>([]);
   const [assignments, setAssignments] = useState<AssignmentRow[]>([]);
   const [accessCodes, setAccessCodes] = useState<TeacherAccessCodeRow[]>([]);
+  const [codeFailures, setCodeFailures] = useState<Array<{ teacherId: string; reason: string }>>([]);
   const [codesLoading, setCodesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -287,19 +288,40 @@ export default function DashboardTeachersPage() {
   const selectedTeacherName =
     allTeachers.find((teacher) => teacher.id === selectedTeacherId)?.fullName ?? "Choisissez un enseignant.";
 
-  async function generateTeacherCodes() {
+  async function generateTeacherCodes(targetTeacherId?: string) {
     setCodesLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/dashboard/teachers/access-codes", { method: "POST" });
+      const res = await fetch("/api/dashboard/teachers/access-codes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(targetTeacherId ? { teacherId: targetTeacherId } : {}),
+      });
       const body = (await res.json().catch(() => null)) as
-        | { message?: string; codes?: TeacherAccessCodeRow[] }
+        | {
+            message?: string;
+            codes?: TeacherAccessCodeRow[];
+            generated?: number;
+            failedCount?: number;
+            failed?: Array<{ teacherId: string; reason: string }>;
+          }
         | null;
       if (!res.ok) {
         throw new Error(body?.message ?? "Génération des codes impossible.");
       }
-      setAccessCodes(body?.codes ?? []);
-      toast.success("Codes générés", "Vous pouvez imprimer et remettre les accès aux enseignants.");
+      const generatedCodes = body?.codes ?? [];
+      setCodeFailures(body?.failed ?? []);
+      setAccessCodes((prev) => {
+        if (targetTeacherId) {
+          const keep = prev.filter((row) => row.teacherId !== targetTeacherId);
+          return [...keep, ...generatedCodes];
+        }
+        return generatedCodes;
+      });
+      toast.success(
+        "Codes générés",
+        `${body?.generated ?? generatedCodes.length} code(s) généré(s), ${body?.failedCount ?? 0} échec(s).`,
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de la génération des codes.");
     } finally {
@@ -529,7 +551,9 @@ export default function DashboardTeachersPage() {
         </div>
 
         {accessCodes.length === 0 ? (
-          <p className="text-sm text-slate-500">Aucun code généré pour le moment.</p>
+          <p className="text-sm text-slate-500">
+            Aucun code généré pour le moment. Cliquez sur “Générer les codes”. Si rien ne sort, les erreurs seront listées ci-dessous.
+          </p>
         ) : (
           <div className="space-y-2">
             {accessCodes.map((row) => (
@@ -540,10 +564,31 @@ export default function DashboardTeachersPage() {
                   Matricule: <span className="font-mono font-semibold">{row.matricule}</span> · Code provisoire:{" "}
                   <span className="font-mono font-semibold">{row.code}</span>
                 </p>
+                <button
+                  type="button"
+                  onClick={() => generateTeacherCodes(row.teacherId)}
+                  disabled={codesLoading}
+                  className="mt-2 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                >
+                  Régénérer ce code
+                </button>
               </div>
             ))}
           </div>
         )}
+
+        {codeFailures.length > 0 ? (
+          <div className="rounded-xl bg-amber-50 p-3 text-sm text-amber-700">
+            <p className="font-semibold">Échecs de génération</p>
+            <ul className="mt-1 space-y-1">
+              {codeFailures.map((failure, idx) => (
+                <li key={`${failure.teacherId}-${idx}`}>
+                  {failure.teacherId}: {failure.reason}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </section>
     </div>
   );
