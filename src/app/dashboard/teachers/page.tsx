@@ -30,6 +30,14 @@ type AssignmentRow = {
   classIds: string[];
 };
 
+type TeacherAccessCodeRow = {
+  teacherId: string;
+  fullName: string;
+  email: string;
+  matricule: string;
+  code: string;
+};
+
 export default function DashboardTeachersPage() {
   const toast = useToast();
   const [manualTeacherName, setManualTeacherName] = useState("");
@@ -43,6 +51,8 @@ export default function DashboardTeachersPage() {
   const [uploadedTeachers, setUploadedTeachers] = useState<TeacherOption[]>([]);
   const [manualTeachers, setManualTeachers] = useState<TeacherOption[]>([]);
   const [assignments, setAssignments] = useState<AssignmentRow[]>([]);
+  const [accessCodes, setAccessCodes] = useState<TeacherAccessCodeRow[]>([]);
+  const [codesLoading, setCodesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -277,6 +287,26 @@ export default function DashboardTeachersPage() {
   const selectedTeacherName =
     allTeachers.find((teacher) => teacher.id === selectedTeacherId)?.fullName ?? "Choisissez un enseignant.";
 
+  async function generateTeacherCodes() {
+    setCodesLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/dashboard/teachers/access-codes", { method: "POST" });
+      const body = (await res.json().catch(() => null)) as
+        | { message?: string; codes?: TeacherAccessCodeRow[] }
+        | null;
+      if (!res.ok) {
+        throw new Error(body?.message ?? "Génération des codes impossible.");
+      }
+      setAccessCodes(body?.codes ?? []);
+      toast.success("Codes générés", "Vous pouvez imprimer et remettre les accès aux enseignants.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de la génération des codes.");
+    } finally {
+      setCodesLoading(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -467,6 +497,52 @@ export default function DashboardTeachersPage() {
               </p>
             </div>
           ))
+        )}
+      </section>
+
+      <section className="elima-card space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-[var(--accent)]">Codes d&apos;accès enseignants</h2>
+            <p className="text-sm text-slate-600">
+              Générez les codes provisoires (5 caractères), imprimez la liste et partagez-la aux enseignants.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={generateTeacherCodes}
+              disabled={codesLoading}
+              className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {codesLoading ? "Génération..." : "Générer les codes"}
+            </button>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              disabled={accessCodes.length === 0}
+              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-60"
+            >
+              Imprimer
+            </button>
+          </div>
+        </div>
+
+        {accessCodes.length === 0 ? (
+          <p className="text-sm text-slate-500">Aucun code généré pour le moment.</p>
+        ) : (
+          <div className="space-y-2">
+            {accessCodes.map((row) => (
+              <div key={row.teacherId} className="rounded-xl border border-slate-200 bg-white p-3 text-sm">
+                <p className="font-semibold text-slate-800">{row.fullName}</p>
+                <p className="text-slate-600">{row.email}</p>
+                <p className="mt-1 text-slate-700">
+                  Matricule: <span className="font-mono font-semibold">{row.matricule}</span> · Code provisoire:{" "}
+                  <span className="font-mono font-semibold">{row.code}</span>
+                </p>
+              </div>
+            ))}
+          </div>
         )}
       </section>
     </div>

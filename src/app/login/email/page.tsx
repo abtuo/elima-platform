@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 function EmailLoginInner() {
   const router = useRouter();
@@ -49,6 +50,12 @@ function EmailLoginInner() {
       <section className="elima-card mx-auto w-full max-w-lg space-y-5">
         <h1 className="text-2xl font-bold">Connexion</h1>
         <p className="text-sm text-slate-600">Saisissez vos identifiants.</p>
+        <p className="text-xs text-slate-500">
+          Enseignant avec code provisoire ?{" "}
+          <Link href="/login/teacher-code" className="font-semibold text-[var(--primary)]">
+            Connexion par matricule + code
+          </Link>
+        </p>
 
         <div className="space-y-3">
           <label className="block text-sm font-medium text-slate-700">Email</label>

@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   BarChart3,
   CalendarDays,
@@ -75,7 +75,48 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export default function TeacherLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    async function checkOnboarding() {
+      try {
+        const res = await fetch("/api/teacher/onboarding");
+        const body = (await res.json().catch(() => null)) as { mustChangeCode?: boolean } | null;
+        if (!active) return;
+        const mustChange = Boolean(body?.mustChangeCode);
+        if (mustChange && pathname !== "/teacher/onboarding") {
+          router.replace("/teacher/onboarding");
+          return;
+        }
+        if (!mustChange && pathname === "/teacher/onboarding") {
+          router.replace("/teacher");
+          return;
+        }
+      } catch {
+        // noop
+      } finally {
+        if (active) setCheckingOnboarding(false);
+      }
+    }
+    checkOnboarding().catch(() => {
+      if (active) setCheckingOnboarding(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [pathname, router]);
+
+  if (checkingOnboarding && pathname !== "/teacher/onboarding") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-sm text-slate-500">Chargement...</p>
+      </div>
+    );
+  }
 
   return (
     <TeacherContextProvider>
