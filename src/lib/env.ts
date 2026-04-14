@@ -17,6 +17,7 @@ const envSchema = z.object({
   RESEND_API_KEY: optionalNonEmptyString(),
   NOTIFY_EMAIL_TO: optionalNonEmptyString(),
   NOTIFY_EMAIL_FROM: optionalNonEmptyString(),
+  OPENAI_API_KEY: optionalNonEmptyString(),
   APP_BASE_URL: z.string().url().default("http://localhost:3000"),
 });
 
