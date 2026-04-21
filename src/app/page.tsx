@@ -7,7 +7,6 @@ import { MarketingHeader } from "@/components/ui/MarketingHeader";
 import {
   ArrowRight,
   BarChart3,
-  Bell,
   BookOpen,
   CheckCircle2,
   ClipboardCheck,
@@ -44,8 +43,8 @@ export default function Home() {
         <MarketingHeader />
 
         {/* Hero */}
-        <header className="grid items-center gap-8 md:grid-cols-2">
-          <Reveal className="space-y-5" delayMs={50}>
+        <header className="grid items-stretch gap-8 md:grid-cols-2">
+          <Reveal className="flex h-full min-h-0 flex-col space-y-5" delayMs={50}>
             <p className="inline-flex items-center gap-2 rounded-full bg-[var(--secondary)]/25 px-3 py-1 text-xs font-semibold text-[var(--accent)]">
               <span className="h-2 w-2 rounded-full bg-[var(--primary)]" />
               Votre plateforme de gestion éducative intelligente
@@ -94,11 +93,11 @@ export default function Home() {
             </div>
           </Reveal>
 
-          <Reveal className="relative" delayMs={140}>
+          <Reveal className="relative flex h-full min-h-0 flex-col" delayMs={140}>
             <div className="absolute -inset-4 -z-10 rounded-[32px] bg-gradient-to-br from-[var(--primary)]/25 to-[var(--secondary)]/25 blur-xl" />
-            <div className="rounded-[32px] border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex h-full min-h-0 flex-1 flex-col rounded-[32px] border border-slate-200 bg-white p-4 shadow-sm">
               {/* Video highlight */}
-              <div className="relative overflow-hidden rounded-3xl border border-slate-200">
+              <div className="relative shrink-0 overflow-hidden rounded-3xl border border-slate-200">
                 <video
                   className="h-44 w-full object-cover md:h-52"
                   src="/videos/5388900_Coll_wavebreak_Class_3840x2160.mp4"
@@ -114,37 +113,16 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="rounded-3xl bg-[var(--accent)]/95 p-5 text-white">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <MessageCircleMore size={18} />
-                    <p className="text-sm font-semibold">Communication parents</p>
-                  </div>
-                  <span className="rounded-full bg-white/15 px-2 py-1 text-xs">Instantané</span>
-                </div>
-                <p className="mt-4 text-sm text-white/80">Absence détectée : Moussa Traoré (6e A)</p>
-                <div className="mt-3 rounded-2xl bg-white/10 p-3 text-xs">
-                  Bonjour, votre enfant est absent aujourd’hui. Merci de confirmer la raison de l’absence.
-                </div>
-              </div>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold">Performance</p>
-                    <BarChart3 size={18} className="text-[var(--primary)]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold">13.4/20</p>
-                  <p className="text-xs text-slate-600">Moyenne générale</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold">Assiduité</p>
-                    <Bell size={18} className="text-[var(--primary)]" />
-                  </div>
-                  <p className="mt-2 text-2xl font-bold">94%</p>
-                  <p className="text-xs text-slate-600">Taux de présence</p>
-                </div>
+              <div className="relative mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-b from-[#fefcf6] via-white to-[#f0f7f2]">
+                <Image
+                  src="/image_illustration_elima_1.png"
+                  alt="Elima — l’école connectée : présences, notes, paiements et messages"
+                  width={960}
+                  height={720}
+                  className="h-full min-h-[200px] w-full flex-1 object-contain object-center"
+                  priority
+                  sizes="(min-width: 768px) 480px, 100vw"
+                />
               </div>
             </div>
           </Reveal>

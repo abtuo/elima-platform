@@ -9,7 +9,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:demo-attendance": "tsx scripts/seed-demo-attendance.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",

@@ -6,6 +6,9 @@
   --primary: #2e8b57;
   --secondary: #ffd700;
   --accent: #1f2937;
+  /* Admin overview panel (mockup-inspired, main content only) */
+  --dashboard-bg: #f4f1ea;
+  --dashboard-forest: #2d5a4c;
 }
 
 @theme inline {

@@ -5,7 +5,32 @@ import { sendNotificationEmail } from "@/lib/email";
 
 const DEFAULT_COUNTRY = "Côte d'Ivoire";
 
+/** Messages Supabase Auth souvent en anglais → français pour l’UI. */
+function signupAuthErrorToMessage(raw: string): string {
+  const m = raw.toLowerCase();
+  if (m.includes("already been registered") || m.includes("already registered") || m.includes("user already exists")) {
+    return "Un compte existe déjà avec cette adresse e-mail. Connecte-toi ou utilise « mot de passe oublié ».";
+  }
+  if (m.includes("email") && (m.includes("invalid") || m.includes("validate"))) {
+    return "Adresse e-mail invalide ou refusée par le serveur.";
+  }
+  if (m.includes("password") && (m.includes("least") || m.includes("short") || m.includes("weak"))) {
+    return "Mot de passe trop court ou trop faible. Vérifie la politique des mots de passe (Supabase → Authentication → Policies).";
+  }
+  if (m.includes("sign up") && m.includes("disabled")) {
+    return "Les inscriptions par e-mail sont désactivées dans ton projet Supabase (Authentication → Providers → Email).";
+  }
+  if (m.includes("rate limit") || m.includes("too many")) {
+    return "Trop de tentatives. Réessaie dans quelques minutes.";
+  }
+  if (m.includes("unauthorized") || m.includes("invalid api key")) {
+    return "Configuration serveur incorrecte (clé API Supabase). Vérifie SUPABASE_SERVICE_ROLE_KEY sur l’hébergement.";
+  }
+  return raw;
+}
+
 export async function POST(request: Request) {
+  try {
   const body = (await request.json().catch(() => null)) as null | {
     firstName?: string;
     lastName?: string;
@@ -104,7 +129,7 @@ export async function POST(request: Request) {
 
   if (error) {
     const status = error.message.toLowerCase().includes("unauthorized") ? 401 : 400;
-    return NextResponse.json({ message: error.message }, { status });
+    return NextResponse.json({ message: signupAuthErrorToMessage(error.message) }, { status });
   }
 
   try {
@@ -126,4 +151,17 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ ok: true, userId: data.user?.id ?? null });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Erreur serveur";
+    console.error("[signup]", err);
+    return NextResponse.json(
+      {
+        message:
+          message.includes("Missing required environment variable") || message.includes("SUPABASE")
+            ? "Configuration serveur incomplète (variables d’environnement Supabase). Vérifie le déploiement."
+            : message,
+      },
+      { status: 500 },
+    );
+  }
 }
