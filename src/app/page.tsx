@@ -373,7 +373,7 @@ export default function Home() {
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Image src="/logo_e-lima.png" alt="Logo Elima" width={30} height={30} className="rounded-full" />
+                    <Image src="/logo.png" alt="Logo Elima" width={30} height={30} className="rounded-full" />
                     <p className="text-base font-bold text-[var(--accent)]">Elima</p>
                   </div>
                   <p className="text-sm text-slate-600">Plateforme de gestion scolaire intelligente.</p>

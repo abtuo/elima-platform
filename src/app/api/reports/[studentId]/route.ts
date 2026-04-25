@@ -255,7 +255,7 @@ export async function GET(
     // If anything fails, keep demo fallback to avoid blocking bulletin generation.
   }
 
-  const logoPath = path.join(process.cwd(), "public", "logo_e-lima.png");
+  const logoPath = path.join(process.cwd(), "public", "logo.png");
   const logoPngBytes = new Uint8Array(await readFile(logoPath));
   const stampPath = path.join(process.cwd(), "public", "tampon.jpg");
   const stampJpgBytes = new Uint8Array(await readFile(stampPath));

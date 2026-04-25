@@ -129,7 +129,7 @@ export function AdminDashboardHome({
       {/* Header bar — mockup tablet top */}
       <header className="flex flex-wrap items-center justify-between gap-4 rounded-[22px] border border-slate-200/80 bg-white p-4 shadow-sm md:p-5">
         <div className="flex min-w-0 items-center gap-3">
-          <Image src="/logo_e-lima.png" alt="Elima" width={40} height={40} className="shrink-0 rounded-full bg-white" />
+          <Image src="/logo.png" alt="Elima" width={40} height={40} className="shrink-0 rounded-full bg-white" />
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Tableau de bord</p>
             <h1 className="truncate text-lg font-bold md:text-xl" style={{ color: forest }}>
