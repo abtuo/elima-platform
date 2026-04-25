@@ -35,7 +35,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <aside className="flex h-full flex-col rounded-3xl bg-[var(--primary)] p-4 text-white shadow-lg">
       <Link href="/" className="flex items-center gap-3" onClick={onNavigate}>
-        <Image src="/logo_e-lima.png" alt="Logo Elima" width={36} height={36} className="rounded-full bg-white" />
+        <Image src="/logo.png" alt="Logo Elima" width={36} height={36} className="rounded-full bg-white" />
         <div>
           <p className="text-sm font-semibold">Espace Administration</p>
           <p className="text-xs text-white/80">Retour à l’accueil</p>

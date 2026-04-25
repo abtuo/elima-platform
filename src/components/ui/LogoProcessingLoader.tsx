@@ -13,7 +13,7 @@ export function LogoProcessingLoader({ label = "Traitement en cours..." }: LogoP
         <div className="absolute inset-0 animate-spin rounded-full border-4 border-[var(--primary)]/20 border-t-[var(--primary)]" />
         <div className="absolute inset-2 rounded-full bg-white p-2 shadow-sm">
           <Image
-            src="/logo_e-lima-with-text_wo_bg.png"
+            src="/logo_wo_bg.png"
             alt="Logo Elima"
             fill
             className="object-contain"
