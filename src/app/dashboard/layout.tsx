@@ -13,7 +13,6 @@ import {
   Menu,
   MessageCircleMore,
   Settings,
-  UserCircle2,
   Users,
 } from "lucide-react";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -26,7 +25,6 @@ const nav = [
   { href: "/dashboard/classes", label: "Classes", icon: CalendarDays },
   { href: "/dashboard/reports", label: "Bulletins", icon: BarChart3 },
   { href: "/dashboard/messages", label: "Messages", icon: MessageCircleMore },
-  { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
@@ -67,10 +65,14 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         <Link
           href="/dashboard/settings"
           onClick={onNavigate}
-          className="flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium text-white/85 transition hover:bg-white/10"
+          className={
+            pathname === "/dashboard/settings"
+              ? "flex items-center gap-3 rounded-2xl bg-white/15 px-3 py-2 text-sm font-semibold text-white"
+              : "flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium text-white/85 transition hover:bg-white/10"
+          }
         >
-          <UserCircle2 size={18} className="text-white" />
-          Profil
+          <Settings size={18} className="text-white" />
+          Paramètres
         </Link>
         <form action="/api/auth/logout" method="POST">
           <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left text-sm font-semibold text-white transition hover:bg-white/10">

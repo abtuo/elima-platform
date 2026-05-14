@@ -1,8 +1,8 @@
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
+import { ChevronRight } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { UploadDocument } from "@/components/dashboard/UploadDocument";
+import { StudentListAiImport } from "@/components/dashboard/StudentListAiImport";
+import { useToast } from "@/components/ui/Toast";
 
 type ClassItem = {
   id: string;
@@ -11,12 +11,37 @@ type ClassItem = {
   academic_year: string | null;
 };
 
+type ClassRosterStudent = {
+  id: string;
+  fullName: string;
+  registrationNumber?: string | null;
+  birthDate?: string | null;
+};
+
+function formatBirthDisplay(value: string | null | undefined): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+}
+
 export default function DashboardClassesPage() {
+  const toast = useToast();
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [levelFilter, setLevelFilter] = useState("");
   const [selectedClassId, setSelectedClassId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [roster, setRoster] = useState<ClassRosterStudent[]>([]);
+  const [rosterLoading, setRosterLoading] = useState(false);
+  const [rosterError, setRosterError] = useState<string | null>(null);
+
+  const [newFullName, setNewFullName] = useState("");
+  const [newRegistration, setNewRegistration] = useState("");
+  const [newBirthDate, setNewBirthDate] = useState("");
+  const [addSubmitting, setAddSubmitting] = useState(false);
+  const [addFormError, setAddFormError] = useState<string | null>(null);
 
   const levels = useMemo(() => {
     const unique = new Set(
@@ -50,6 +75,31 @@ export default function DashboardClassesPage() {
     }
   }
 
+  const fetchClassRoster = useCallback(async (classId: string) => {
+    if (!classId) {
+      setRoster([]);
+      setRosterError(null);
+      return;
+    }
+    setRosterLoading(true);
+    setRosterError(null);
+    try {
+      const res = await fetch(`/api/dashboard/students?classId=${encodeURIComponent(classId)}`);
+      const body = (await res.json().catch(() => null)) as
+        | { students?: ClassRosterStudent[]; message?: string }
+        | null;
+      if (!res.ok) {
+        throw new Error(body?.message ?? "Impossible de charger les élèves.");
+      }
+      setRoster(body?.students ?? []);
+    } catch (err) {
+      setRoster([]);
+      setRosterError(err instanceof Error ? err.message : "Erreur lors du chargement des élèves.");
+    } finally {
+      setRosterLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchClasses()
       .then(() => null)
@@ -66,13 +116,66 @@ export default function DashboardClassesPage() {
     }
   }, [filteredClasses, levelFilter, selectedClassId]);
 
+  useEffect(() => {
+    void fetchClassRoster(selectedClassId);
+  }, [selectedClassId, fetchClassRoster]);
+
   const selectedClass = classes.find((item) => item.id === selectedClassId);
+
+  async function handleAddStudent(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedClassId) return;
+    setAddFormError(null);
+    const fullName = newFullName.trim();
+    if (fullName.length < 2) {
+      setAddFormError("Indiquez au moins 2 caractères pour le nom complet.");
+      return;
+    }
+    setAddSubmitting(true);
+    try {
+      const res = await fetch("/api/dashboard/students/validate-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          classId: selectedClassId,
+          students: [
+            {
+              fullName,
+              registrationNumber: newRegistration.trim() || null,
+              birthDate: newBirthDate.trim() || null,
+            },
+          ],
+        }),
+      });
+      const body = (await res.json().catch(() => null)) as
+        | { message?: string; inserted?: number; skipped?: number }
+        | null;
+      if (!res.ok) {
+        throw new Error(body?.message ?? "Ajout impossible.");
+      }
+      if ((body?.inserted ?? 0) < 1) {
+        setAddFormError(
+          "Le nom est peut-être déjà présent dans cette classe, ou les données sont invalides.",
+        );
+        return;
+      }
+      toast.success("Élève ajouté", `${fullName} a été enregistré dans la classe.`);
+      setNewFullName("");
+      setNewRegistration("");
+      setNewBirthDate("");
+      await fetchClassRoster(selectedClassId);
+    } catch (err) {
+      setAddFormError(err instanceof Error ? err.message : "Une erreur est survenue.");
+    } finally {
+      setAddSubmitting(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Classes"
-        subtitle="Sélectionnez un niveau pour gérer les classes et importer des élèves."
+        subtitle="Sélectionnez un niveau et une classe pour les modifier, consulter les élèves, en ajouter ou importer une liste (IA)."
       />
 
       <section className="elima-card space-y-4">
@@ -140,10 +243,106 @@ export default function DashboardClassesPage() {
         ) : null}
       </section>
 
-      <UploadDocument
+      {selectedClassId ? (
+        <section className="elima-card space-y-6">
+          <details className="group rounded-2xl border border-slate-200 bg-slate-50/80 open:bg-white open:shadow-sm">
+            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-800 marker:content-none [&::-webkit-details-marker]:hidden">
+              <ChevronRight
+                className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-90"
+                aria-hidden
+              />
+              <span>
+                Voir la liste des élèves
+                <span className="ml-2 font-normal text-slate-500">({roster.length})</span>
+              </span>
+            </summary>
+            <div className="border-t border-slate-200 px-4 pb-4 pt-2">
+              {rosterLoading ? (
+                <p className="text-sm text-slate-500">Chargement de la liste…</p>
+              ) : rosterError ? (
+                <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{rosterError}</p>
+              ) : roster.length === 0 ? (
+                <p className="text-sm text-slate-500">Aucun élève dans cette classe pour le moment.</p>
+              ) : (
+                <ul className="max-h-72 divide-y divide-slate-100 overflow-y-auto rounded-xl border border-slate-100 bg-white">
+                  {roster.map((student) => (
+                    <li key={student.id} className="px-3 py-2.5 text-sm">
+                      <p className="font-medium text-slate-800">{student.fullName}</p>
+                      <p className="text-xs text-slate-500">
+                        {student.registrationNumber ? `Matricule : ${student.registrationNumber}` : "Sans matricule"}
+                        {student.birthDate ? ` · Né(e) le ${formatBirthDisplay(student.birthDate)}` : ""}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </details>
+
+          <div className="space-y-3">
+            <h3 className="text-base font-semibold text-[var(--accent)]">Ajouter un élève</h3>
+            <form onSubmit={handleAddStudent} className="grid gap-3 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm sm:col-span-2">
+                <span className="text-xs font-semibold text-slate-600">Nom complet</span>
+                <input
+                  value={newFullName}
+                  onChange={(e) => {
+                    setNewFullName(e.target.value);
+                    setAddFormError(null);
+                  }}
+                  required
+                  minLength={2}
+                  placeholder="Prénom et nom"
+                  className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
+              </label>
+              <label className="grid gap-1 text-sm">
+                <span className="text-xs font-semibold text-slate-600">Matricule (optionnel)</span>
+                <input
+                  value={newRegistration}
+                  onChange={(e) => setNewRegistration(e.target.value)}
+                  placeholder="Numéro interne"
+                  className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
+              </label>
+              <label className="grid gap-1 text-sm">
+                <span className="text-xs font-semibold text-slate-600">Date de naissance (optionnel)</span>
+                <input
+                  type="date"
+                  value={newBirthDate}
+                  onChange={(e) => setNewBirthDate(e.target.value)}
+                  className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
+              </label>
+              <div className="flex items-end sm:col-span-2">
+                <button
+                  type="submit"
+                  disabled={addSubmitting || rosterLoading}
+                  className="rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                >
+                  {addSubmitting ? "Enregistrement…" : "Ajouter l’élève"}
+                </button>
+              </div>
+              {addFormError ? (
+                <p className="sm:col-span-2 rounded-xl bg-red-50 p-3 text-sm text-red-700">{addFormError}</p>
+              ) : null}
+            </form>
+          </div>
+        </section>
+      ) : null}
+
+      <StudentListAiImport
         classId={selectedClassId}
-        className={selectedClass ? `${selectedClass.name} · ${selectedClass.level ?? "Niveau"}` : undefined}
-        onUploaded={fetchClasses}
+        classLabel={
+          selectedClass
+            ? `${selectedClass.name} · ${selectedClass.level ?? "Niveau"} · ${selectedClass.academic_year ?? ""}`
+            : undefined
+        }
+        disabled={loading}
+        onImportComplete={() => {
+          void fetchClasses();
+          if (selectedClassId) void fetchClassRoster(selectedClassId);
+        }}
       />
     </div>
   );
