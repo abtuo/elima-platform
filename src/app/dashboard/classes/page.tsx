@@ -1,4 +1,7 @@
+"use client";
+
 import type { FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StudentListAiImport } from "@/components/dashboard/StudentListAiImport";
