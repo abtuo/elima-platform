@@ -45,7 +45,7 @@ export function MarketingHeader() {
           />
         </Link>
 
-        <div className="hidden items-center gap-1 text-sm md:flex">
+        <div className="order-3 flex w-full items-center gap-1 text-sm sm:w-auto md:order-none">
           <Link href="/#produit" className="rounded-lg px-3 py-2 hover:bg-slate-100">
             Produit
           </Link>
