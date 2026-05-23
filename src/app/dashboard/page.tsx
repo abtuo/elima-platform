@@ -1,6 +1,6 @@
 import {
-  getAttendanceByLevelLastDays,
-  getDashboardActorBrief,
+  getAtRiskStudentsForCurrentUserSchool,
+  getDashboardPaymentSummaryForCurrentUserSchool,
   getDashboardStatsForCurrentUserSchool,
 } from "@/lib/dashboard/queries";
 import { getSchoolKpisForCurrentUserSchool } from "@/lib/dashboard/kpis";
@@ -12,31 +12,27 @@ function formatDateIso(d: Date) {
 
 export default async function DashboardPage() {
   const stats = await getDashboardStatsForCurrentUserSchool();
-  const actor = await getDashboardActorBrief();
-
   const toDate = new Date();
   const fromDate = new Date(toDate);
   fromDate.setDate(fromDate.getDate() - 6);
   const from = formatDateIso(fromDate);
   const to = formatDateIso(toDate);
 
-  const [kpis7, attendanceByLevel] = await Promise.all([
+  const [kpis7, paymentSummary, atRiskStudents] = await Promise.all([
     getSchoolKpisForCurrentUserSchool({ from, to }),
-    stats.schoolId ? getAttendanceByLevelLastDays(stats.schoolId, 7) : Promise.resolve([]),
+    getDashboardPaymentSummaryForCurrentUserSchool(),
+    getAtRiskStudentsForCurrentUserSchool(4),
   ]);
 
   const location = [stats.schoolCity, stats.schoolCountry].filter(Boolean).join(", ");
-  const hasClasses = stats.classesCount > 0;
-
   return (
     <AdminDashboardHome
       schoolName={stats.schoolName || "École (à configurer)"}
       location={location}
-      hasClasses={hasClasses}
-      actorName={actor.fullName}
       stats={stats}
       kpis7={kpis7}
-      attendanceByLevel={attendanceByLevel}
+      paymentSummary={paymentSummary}
+      atRiskStudents={atRiskStudents}
     />
   );
 }

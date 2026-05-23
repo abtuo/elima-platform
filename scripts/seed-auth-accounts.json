@@ -1,0 +1,216 @@
+{
+  "generatedAt": "2026-05-18T19:57:11.434Z",
+  "password": "ElimaSeed!2026",
+  "accounts": [
+    {
+      "email": "admin.abidjan@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "SCHOOL_ADMIN",
+      "school": "Collège Moderne d’Abidjan"
+    },
+    {
+      "email": "student.abidjan.1@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Collège Moderne d’Abidjan"
+    },
+    {
+      "email": "parent.abidjan.1@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Collège Moderne d’Abidjan"
+    },
+    {
+      "email": "student.abidjan.2@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Collège Moderne d’Abidjan"
+    },
+    {
+      "email": "parent.abidjan.2@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Collège Moderne d’Abidjan"
+    },
+    {
+      "email": "student.abidjan.3@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Collège Moderne d’Abidjan"
+    },
+    {
+      "email": "parent.abidjan.3@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Collège Moderne d’Abidjan"
+    },
+    {
+      "email": "admin.yamoussoukro@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "SCHOOL_ADMIN",
+      "school": "Institut Excellence Yamoussoukro"
+    },
+    {
+      "email": "student.yamoussoukro.1@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Institut Excellence Yamoussoukro"
+    },
+    {
+      "email": "parent.yamoussoukro.1@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Institut Excellence Yamoussoukro"
+    },
+    {
+      "email": "student.yamoussoukro.2@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Institut Excellence Yamoussoukro"
+    },
+    {
+      "email": "parent.yamoussoukro.2@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Institut Excellence Yamoussoukro"
+    },
+    {
+      "email": "student.yamoussoukro.3@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Institut Excellence Yamoussoukro"
+    },
+    {
+      "email": "parent.yamoussoukro.3@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Institut Excellence Yamoussoukro"
+    },
+    {
+      "email": "admin.bouake@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "SCHOOL_ADMIN",
+      "school": "Groupe Scolaire La Concorde"
+    },
+    {
+      "email": "student.bouake.1@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Groupe Scolaire La Concorde"
+    },
+    {
+      "email": "parent.bouake.1@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Groupe Scolaire La Concorde"
+    },
+    {
+      "email": "student.bouake.2@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Groupe Scolaire La Concorde"
+    },
+    {
+      "email": "parent.bouake.2@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Groupe Scolaire La Concorde"
+    },
+    {
+      "email": "student.bouake.3@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Groupe Scolaire La Concorde"
+    },
+    {
+      "email": "parent.bouake.3@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Groupe Scolaire La Concorde"
+    },
+    {
+      "email": "admin.anyama@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "SCHOOL_ADMIN",
+      "school": "Collège Saint-Augustin"
+    },
+    {
+      "email": "student.anyama.1@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Collège Saint-Augustin"
+    },
+    {
+      "email": "parent.anyama.1@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Collège Saint-Augustin"
+    },
+    {
+      "email": "student.anyama.2@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Collège Saint-Augustin"
+    },
+    {
+      "email": "parent.anyama.2@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Collège Saint-Augustin"
+    },
+    {
+      "email": "student.anyama.3@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Collège Saint-Augustin"
+    },
+    {
+      "email": "parent.anyama.3@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Collège Saint-Augustin"
+    },
+    {
+      "email": "admin.sanpedro@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "SCHOOL_ADMIN",
+      "school": "Institut Polyvalent Le Progrès"
+    },
+    {
+      "email": "student.sanpedro.1@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Institut Polyvalent Le Progrès"
+    },
+    {
+      "email": "parent.sanpedro.1@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Institut Polyvalent Le Progrès"
+    },
+    {
+      "email": "student.sanpedro.2@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Institut Polyvalent Le Progrès"
+    },
+    {
+      "email": "parent.sanpedro.2@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Institut Polyvalent Le Progrès"
+    },
+    {
+      "email": "student.sanpedro.3@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "STUDENT",
+      "school": "Institut Polyvalent Le Progrès"
+    },
+    {
+      "email": "parent.sanpedro.3@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "PARENT",
+      "school": "Institut Polyvalent Le Progrès"
+    }
+  ]
+}

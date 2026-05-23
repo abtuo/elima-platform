@@ -92,8 +92,10 @@ export async function GET(request: Request) {
       };
     });
 
+    // Alert enrichment can be expensive on large schools; only compute it
+    // when a specific class is requested (small result set).
     const studentIds = mappedStudents.map((s) => s.id);
-    if (studentIds.length > 0) {
+    if (classIdFilter && studentIds.length > 0) {
       const [{ data: gradesRows, error: gradesErr }, { data: attRows, error: attErr }] = await Promise.all([
         admin.from("grades").select("student_id, score").eq("school_id", schoolId).in("student_id", studentIds),
         admin.from("attendance").select("student_id, status").eq("school_id", schoolId).in("student_id", studentIds),

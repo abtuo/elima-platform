@@ -104,12 +104,14 @@ export default function DashboardStudentsPage() {
       setLoading(true);
       setError(null);
       const res = await fetch("/api/dashboard/students");
+      const body = (await res.json().catch(() => null)) as
+        | { classes?: ClassItem[]; students?: StudentItem[]; message?: string }
+        | null;
       if (!res.ok) {
-        throw new Error("Impossible de charger les classes/eleves.");
+        throw new Error(body?.message ?? "Impossible de charger les classes/eleves.");
       }
-      const body = (await res.json()) as { classes?: ClassItem[]; students?: StudentItem[] };
-      setClasses(body.classes ?? []);
-      setStudents(body.students ?? []);
+      setClasses(body?.classes ?? []);
+      setStudents(body?.students ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur de chargement.");
     } finally {
