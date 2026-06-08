@@ -14,9 +14,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Elima | la plateforme educative pour l'Afrique",
+  title: "Elima | Gestion scolaire pour écoles d'Afrique de l'Ouest",
   description:
-    "Plateforme de gestion administrative intelligente pour écoles en Afrique de l'Ouest.",
+    "Elima aide les établissements à piloter élèves, absences, bulletins, communication parents et paiements depuis une seule plateforme.",
   icons: {
     icon: [{ url: "/logo_wo_bg.png", type: "image/png" }],
     shortcut: [{ url: "/logo_wo_bg.png", type: "image/png" }],

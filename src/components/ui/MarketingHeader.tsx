@@ -49,8 +49,11 @@ export function MarketingHeader() {
           <Link href="/#produit" className="rounded-lg px-3 py-2 hover:bg-slate-100">
             Produit
           </Link>
+          <Link href="/#impact" className="rounded-lg px-3 py-2 hover:bg-slate-100">
+            Impact
+          </Link>
           <Link href="/#tarifs" className="rounded-lg px-3 py-2 hover:bg-slate-100">
-            Tarifs
+            Offres
           </Link>
           <Link href="/contact" className="rounded-lg px-3 py-2 hover:bg-slate-100">
             Contact
@@ -78,16 +81,22 @@ export function MarketingHeader() {
           ) : (
             <>
               <Link
-                href="/signup"
-                className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                href="/contact"
+                className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
               >
-                S’inscrire
+                Demander une démo
               </Link>
               <Link
                 href="/login"
-                className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
               >
                 Se connecter
+              </Link>
+              <Link
+                href="/signup"
+                className="hidden rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 sm:inline-flex"
+              >
+                S'inscrire
               </Link>
             </>
           )}
