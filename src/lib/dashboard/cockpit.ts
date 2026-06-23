@@ -437,7 +437,7 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       id: "absents",
       label: "Élèves absents aujourd'hui",
       count: todayAbsent,
-      href: "/dashboard/students",
+      href: "/dashboard/attendance",
       severity: (todayAbsent > 10 ? "high" : todayAbsent > 0 ? "medium" : "low") as CockpitActionItem["severity"],
     },
     {

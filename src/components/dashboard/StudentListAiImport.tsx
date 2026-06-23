@@ -143,7 +143,7 @@ export function StudentListAiImport({ classId, classLabel, disabled, onImportCom
   return (
     <div className="elima-card space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-[var(--accent)]">Import liste (traitement IA)</h3>
+        <h3 className="text-lg font-semibold text-[var(--accent)]">Import liste</h3>
         <p className="text-sm text-slate-600">
           {classLabel
             ? `Classe : ${classLabel}.`
@@ -176,11 +176,11 @@ export function StudentListAiImport({ classId, classLabel, disabled, onImportCom
           disabled={!selectedFile || !ready || uploading}
           className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
-          {uploading ? "Traitement IA en cours…" : "Importer et ajouter les élèves"}
+          {uploading ? "Traitement en cours…" : "Importer et ajouter les élèves"}
         </button>
       </div>
 
-      {uploading ? <LogoProcessingLoader label="Traitement en cours via IA Elima…" /> : null}
+      {uploading ? <LogoProcessingLoader label="Traitement en cours…" /> : null}
 
       {lastExtracted.length > 0 ? (
         <div className="space-y-3 border-t border-slate-200 pt-4">

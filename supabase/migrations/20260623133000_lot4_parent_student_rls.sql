@@ -109,28 +109,40 @@ create policy "Family can read linked homeworks"
 on public.homeworks for select to authenticated
 using (public.user_can_access_class(class_id));
 
--- Cahier de textes (par classe accessible).
-drop policy if exists "Family can read linked lesson_logs" on public.lesson_logs;
-create policy "Family can read linked lesson_logs"
-on public.lesson_logs for select to authenticated
-using (public.user_can_access_class(class_id));
+-- Cahier de textes (Lot 2): garde d'existence pour tolérer l'ordre des migrations.
+do $$
+begin
+  if to_regclass('public.lesson_logs') is not null then
+    execute 'drop policy if exists "Family can read linked lesson_logs" on public.lesson_logs';
+    execute 'create policy "Family can read linked lesson_logs" on public.lesson_logs for select to authenticated using (public.user_can_access_class(class_id))';
+  end if;
+end$$;
 
 -- Emploi du temps (par classe accessible).
-drop policy if exists "Family can read linked timetable" on public.timetable_events;
-create policy "Family can read linked timetable"
-on public.timetable_events for select to authenticated
-using (public.user_can_access_class(class_id));
+do $$
+begin
+  if to_regclass('public.timetable_events') is not null then
+    execute 'drop policy if exists "Family can read linked timetable" on public.timetable_events';
+    execute 'create policy "Family can read linked timetable" on public.timetable_events for select to authenticated using (public.user_can_access_class(class_id))';
+  end if;
+end$$;
 
--- Frais et paiements de l'élève accessible.
-drop policy if exists "Family can read linked student_fees" on public.student_fees;
-create policy "Family can read linked student_fees"
-on public.student_fees for select to authenticated
-using (public.user_can_access_student(student_id));
+-- Frais et paiements de l'élève (Lot 3): gardes d'existence.
+do $$
+begin
+  if to_regclass('public.student_fees') is not null then
+    execute 'drop policy if exists "Family can read linked student_fees" on public.student_fees';
+    execute 'create policy "Family can read linked student_fees" on public.student_fees for select to authenticated using (public.user_can_access_student(student_id))';
+  end if;
+end$$;
 
-drop policy if exists "Family can read linked payments" on public.payments;
-create policy "Family can read linked payments"
-on public.payments for select to authenticated
-using (public.user_can_access_student(student_id));
+do $$
+begin
+  if to_regclass('public.payments') is not null then
+    execute 'drop policy if exists "Family can read linked payments" on public.payments';
+    execute 'create policy "Family can read linked payments" on public.payments for select to authenticated using (public.user_can_access_student(student_id))';
+  end if;
+end$$;
 
 -- Référentiels école (matières, trimestres) lisibles par les membres de l'école.
 drop policy if exists "Members can read school subjects" on public.subjects;

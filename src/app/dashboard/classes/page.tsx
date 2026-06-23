@@ -21,6 +21,14 @@ type ClassRosterStudent = {
   birthDate?: string | null;
 };
 
+type ClassTeacher = {
+  subjectId: string;
+  subjectName: string;
+  coefficient: number;
+  teacherId: string;
+  teacherName: string;
+};
+
 function formatBirthDisplay(value: string | null | undefined): string {
   if (!value) return "";
   const d = new Date(value);
@@ -39,6 +47,10 @@ export default function DashboardClassesPage() {
   const [roster, setRoster] = useState<ClassRosterStudent[]>([]);
   const [rosterLoading, setRosterLoading] = useState(false);
   const [rosterError, setRosterError] = useState<string | null>(null);
+
+  const [classTeachers, setClassTeachers] = useState<ClassTeacher[]>([]);
+  const [teachersLoading, setTeachersLoading] = useState(false);
+  const [teachersError, setTeachersError] = useState<string | null>(null);
 
   const [newFullName, setNewFullName] = useState("");
   const [newRegistration, setNewRegistration] = useState("");
@@ -119,9 +131,33 @@ export default function DashboardClassesPage() {
     }
   }, [filteredClasses, levelFilter, selectedClassId]);
 
+  const fetchClassTeachers = useCallback(async (classId: string) => {
+    if (!classId) {
+      setClassTeachers([]);
+      setTeachersError(null);
+      return;
+    }
+    setTeachersLoading(true);
+    setTeachersError(null);
+    try {
+      const res = await fetch(`/api/dashboard/classes/teachers?classId=${encodeURIComponent(classId)}`);
+      const body = (await res.json().catch(() => null)) as { teachers?: ClassTeacher[]; message?: string } | null;
+      if (!res.ok) {
+        throw new Error(body?.message ?? "Impossible de charger les enseignants.");
+      }
+      setClassTeachers(body?.teachers ?? []);
+    } catch (err) {
+      setClassTeachers([]);
+      setTeachersError(err instanceof Error ? err.message : "Erreur lors du chargement des enseignants.");
+    } finally {
+      setTeachersLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void fetchClassRoster(selectedClassId);
-  }, [selectedClassId, fetchClassRoster]);
+    void fetchClassTeachers(selectedClassId);
+  }, [selectedClassId, fetchClassRoster, fetchClassTeachers]);
 
   const selectedClass = classes.find((item) => item.id === selectedClassId);
 
@@ -178,7 +214,7 @@ export default function DashboardClassesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Classes"
-        subtitle="Sélectionnez un niveau et une classe pour les modifier, consulter les élèves, en ajouter ou importer une liste (IA)."
+        subtitle="Sélectionnez un niveau et une classe pour les modifier, consulter les élèves, en ajouter ou importer une liste."
       />
 
       <section className="elima-card space-y-4">
@@ -275,6 +311,44 @@ export default function DashboardClassesPage() {
                         {student.registrationNumber ? `Matricule : ${student.registrationNumber}` : "Sans matricule"}
                         {student.birthDate ? ` · Né(e) le ${formatBirthDisplay(student.birthDate)}` : ""}
                       </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </details>
+
+          <details className="group rounded-2xl border border-slate-200 bg-slate-50/80 open:bg-white open:shadow-sm">
+            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-800 marker:content-none [&::-webkit-details-marker]:hidden">
+              <ChevronRight
+                className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-90"
+                aria-hidden
+              />
+              <span>
+                Voir les enseignants par matière
+                <span className="ml-2 font-normal text-slate-500">({classTeachers.length})</span>
+              </span>
+            </summary>
+            <div className="border-t border-slate-200 px-4 pb-4 pt-2">
+              {teachersLoading ? (
+                <p className="text-sm text-slate-500">Chargement des enseignants…</p>
+              ) : teachersError ? (
+                <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{teachersError}</p>
+              ) : classTeachers.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  Aucun enseignant affecté à cette classe. Affectez-les depuis la page Enseignants.
+                </p>
+              ) : (
+                <ul className="max-h-72 divide-y divide-slate-100 overflow-y-auto rounded-xl border border-slate-100 bg-white">
+                  {classTeachers.map((t) => (
+                    <li key={`${t.subjectId}-${t.teacherId}`} className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm">
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-800">{t.subjectName}</p>
+                        <p className="text-xs text-slate-500">Coef. {t.coefficient}</p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                        {t.teacherName}
+                      </span>
                     </li>
                   ))}
                 </ul>
