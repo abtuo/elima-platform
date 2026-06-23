@@ -117,6 +117,7 @@ export async function buildStudentReportPdf(input: {
   };
   termProgression?: { term: string; average: number }[];
   variant?: "term" | "final";
+  generalAppreciation?: string | null;
   logo?: { bytes: Uint8Array; type: "png" | "jpg" };
   stamp?: { bytes: Uint8Array; type: "png" | "jpg" };
 }) {
@@ -257,7 +258,8 @@ export async function buildStudentReportPdf(input: {
   const tableX = margin;
   let tableY = infoY - 18;
   const tableW = A4[0] - margin * 2;
-  const headerH = 22;
+  const headerRowH = 17;
+  const headerH = headerRowH * 2;
   const rowH = 26;
 
   const colW = {
@@ -270,19 +272,79 @@ export async function buildStudentReportPdf(input: {
     appreciation: tableW - (132 + 34 + 50 + 44 + 44 + 44),
   };
 
-  // header
-  drawCell(page, { x: tableX, y: tableY - headerH, w: tableW, h: headerH, bg: COLORS.accent, border: COLORS.accent });
-  const hy = tableY - 15;
+  const classStatsX = tableX + colW.subject + colW.coeff + colW.score;
+  const classStatsW = colW.min + colW.max + colW.avg;
+  const appreciationX = classStatsX + classStatsW;
+
+  // En-tête à deux lignes : « Classe » au-dessus de Min / Max / Moy
+  const headerTop = tableY - headerH;
+  drawCell(page, { x: tableX, y: headerTop, w: tableW, h: headerH, bg: COLORS.accent, border: COLORS.accent });
+
+  const headerDividerY = headerTop + headerRowH;
+
+  // Trait horizontal uniquement sous « Classe » (pas sur Matières / Coef / Moy/20 / Appréciations)
+  page.drawLine({
+    start: { x: classStatsX, y: headerDividerY },
+    end: { x: classStatsX + classStatsW, y: headerDividerY },
+    color: COLORS.white,
+    thickness: 0.6,
+  });
+
+  // Séparateurs verticaux sur toute la hauteur (colonnes principales)
+  const fullHeightSplits = [
+    colW.subject,
+    colW.subject + colW.coeff,
+    colW.subject + colW.coeff + colW.score,
+    colW.subject + colW.coeff + colW.score + colW.min + colW.max + colW.avg,
+  ];
+  for (const offset of fullHeightSplits) {
+    page.drawLine({
+      start: { x: tableX + offset, y: headerTop },
+      end: { x: tableX + offset, y: headerTop + headerH },
+      color: COLORS.white,
+      thickness: 0.6,
+    });
+  }
+
+  // Séparateurs Min / Max / Moy uniquement sur la rangée du bas
+  const bottomRowSplits = [
+    colW.subject + colW.coeff + colW.score + colW.min,
+    colW.subject + colW.coeff + colW.score + colW.min + colW.max,
+  ];
+  for (const offset of bottomRowSplits) {
+    page.drawLine({
+      start: { x: tableX + offset, y: headerTop },
+      end: { x: tableX + offset, y: headerDividerY },
+      color: COLORS.white,
+      thickness: 0.6,
+    });
+  }
+
   const hs = 9.2;
-  drawText(page, "Matières", { x: tableX + 8, y: hy, size: hs, font: bold, color: COLORS.white });
-  drawText(page, "Coef", { x: tableX + colW.subject + 8, y: hy, size: hs, font: bold, color: COLORS.white });
-  drawText(page, "Moy/20", { x: tableX + colW.subject + colW.coeff + 8, y: hy, size: hs, font: bold, color: COLORS.white });
-  drawText(page, "Min", { x: tableX + colW.subject + colW.coeff + colW.score + 8, y: hy, size: hs, font: bold, color: COLORS.white });
-  drawText(page, "Max", { x: tableX + colW.subject + colW.coeff + colW.score + colW.min + 8, y: hy, size: hs, font: bold, color: COLORS.white });
-  drawText(page, "Moy", { x: tableX + colW.subject + colW.coeff + colW.score + colW.min + colW.max + 8, y: hy, size: hs, font: bold, color: COLORS.white });
+  const headerLabelY = headerTop + headerH / 2 - 4;
+  const subHeaderLabelY = headerTop + 5;
+
+  drawText(page, "Matières", { x: tableX + 8, y: headerLabelY, size: hs, font: bold, color: COLORS.white });
+  drawText(page, "Coef", { x: tableX + colW.subject + 8, y: headerLabelY, size: hs, font: bold, color: COLORS.white });
+  drawText(page, "Moy/20", { x: tableX + colW.subject + colW.coeff + 8, y: headerLabelY, size: hs, font: bold, color: COLORS.white });
+
+  const classeLabel = "Classe";
+  const classeLabelW = bold.widthOfTextAtSize(classeLabel, hs);
+  drawText(page, classeLabel, {
+    x: classStatsX + classStatsW / 2 - classeLabelW / 2,
+    y: headerTop + headerRowH + 5,
+    size: hs,
+    font: bold,
+    color: COLORS.white,
+  });
+
+  drawText(page, "Min", { x: classStatsX + 8, y: subHeaderLabelY, size: hs, font: bold, color: COLORS.white });
+  drawText(page, "Max", { x: classStatsX + colW.min + 8, y: subHeaderLabelY, size: hs, font: bold, color: COLORS.white });
+  drawText(page, "Moy", { x: classStatsX + colW.min + colW.max + 8, y: subHeaderLabelY, size: hs, font: bold, color: COLORS.white });
+
   drawText(page, "Appréciations", {
-    x: tableX + colW.subject + colW.coeff + colW.score + colW.min + colW.max + colW.avg + 8,
-    y: hy,
+    x: appreciationX + 8,
+    y: headerLabelY,
     size: hs,
     font: bold,
     color: COLORS.white,
@@ -422,15 +484,8 @@ export async function buildStudentReportPdf(input: {
   page.drawRectangle({ x: tableX, y: cursorY - 18, width: tableW, height: 18, color: COLORS.primary });
   drawText(page, "Appréciation générale", { x: tableX + 10, y: cursorY - 14, size: 10, font: bold, color: COLORS.white });
 
-  const riskSentence =
-    input.metric.riskLevel === "HIGH"
-      ? "Niveau de risque élevé : suivi renforcé recommandé."
-      : input.metric.riskLevel === "MEDIUM"
-        ? "Niveau de risque moyen : vigilance sur la régularité."
-        : "Niveau de risque faible : continue sur cette lancée.";
-
   const effectiveAverage = input.schoolStats?.termAverage ?? input.student.average;
-  const appreciation =
+  const defaultAppreciation =
     effectiveAverage >= 16
       ? "Excellent trimestre."
       : effectiveAverage >= 14
@@ -440,8 +495,9 @@ export async function buildStudentReportPdf(input: {
           : effectiveAverage >= 10
             ? "Trimestre moyen, efforts à intensifier."
             : "Trimestre insuffisant, accompagnement nécessaire.";
+  const appreciation = input.generalAppreciation?.trim() || defaultAppreciation;
 
-  drawText(page, `${appreciation} ${riskSentence}`, {
+  drawText(page, appreciation, {
     x: tableX + 10,
     y: cursorY - 36,
     size: 9.6,

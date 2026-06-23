@@ -51,16 +51,7 @@ function Sidebar({
   return (
     <aside className="flex h-full flex-col rounded-2xl border border-white/10 bg-gradient-to-b from-[#256f47] to-[var(--primary)] p-4 text-white shadow-xl shadow-[var(--primary)]/20">
       <Link href="/" className="flex items-center gap-3 rounded-xl p-1 transition hover:bg-white/10" onClick={onNavigate}>
-        {school?.logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={school.logoUrl}
-            alt={`Logo ${school.name}`}
-            className="h-9 w-9 rounded-full bg-white object-contain ring-2 ring-white/30"
-          />
-        ) : (
-          <Image src="/logo.png" alt="Logo Elima" width={36} height={36} className="rounded-full bg-white ring-2 ring-white/30" />
-        )}
+        <Image src="/logo.png" alt="Logo Elima" width={36} height={36} className="rounded-full bg-white ring-2 ring-white/30" />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{school?.name ?? "Espace Administration"}</p>
           <p className="text-xs text-white/70">Pilotage établissement</p>

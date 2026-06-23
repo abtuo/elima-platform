@@ -3,6 +3,7 @@ import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/l
 export type DashboardStats = {
   schoolId: string;
   schoolName: string;
+  schoolLogoUrl?: string | null;
   schoolCity?: string | null;
   schoolCountry?: string | null;
   schoolStatus?: string | null;
@@ -49,6 +50,7 @@ export async function getDashboardStatsForCurrentUserSchool(): Promise<Dashboard
     return {
       schoolId: "",
       schoolName: "École (à configurer)",
+      schoolLogoUrl: null,
       schoolCity: null,
       schoolCountry: null,
       schoolStatus: null,
@@ -67,7 +69,7 @@ export async function getDashboardStatsForCurrentUserSchool(): Promise<Dashboard
   const schoolId = String(userRow.school_id);
   const { data: school, error: schoolErr } = await admin
     .from("schools")
-    .select("id, name, city, country, status")
+    .select("id, name, city, country, status, logo_url")
     .eq("id", schoolId)
     .maybeSingle();
   if (schoolErr) throw schoolErr;
@@ -113,6 +115,7 @@ export async function getDashboardStatsForCurrentUserSchool(): Promise<Dashboard
   return {
     schoolId,
     schoolName: String(school?.name ?? "École"),
+    schoolLogoUrl: (school as { logo_url?: string | null } | null)?.logo_url ?? null,
     schoolCity: school?.city ?? null,
     schoolCountry: school?.country ?? null,
     schoolStatus: (school as { status?: string | null } | null)?.status ?? null,

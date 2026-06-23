@@ -23,7 +23,9 @@ export async function GET() {
 
     if (userErr) return NextResponse.json({ message: userErr.message }, { status: 400 });
     if (!userRow?.school_id) return NextResponse.json({ message: "École introuvable." }, { status: 404 });
-    if (userRow.role !== "SCHOOL_ADMIN") return NextResponse.json({ message: "Accès refusé." }, { status: 403 });
+    if (!["SCHOOL_ADMIN", "SUPER_ADMIN", "COMPTABLE"].includes(String(userRow.role))) {
+      return NextResponse.json({ message: "Accès refusé." }, { status: 403 });
+    }
 
     const schoolId = String(userRow.school_id);
 

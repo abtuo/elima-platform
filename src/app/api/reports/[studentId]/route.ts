@@ -4,8 +4,6 @@ import { buildStudentReportPdf } from "@/lib/report-pdf";
 import { logEvent } from "@/lib/logger";
 import { computeAcademicMetric } from "@/lib/academic-intelligence";
 import { createSupabaseAdminServerClient } from "@/lib/supabase/server";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 
 function slugSegment(value: string, fallback: string) {
   const normalized = value
@@ -22,7 +20,9 @@ export async function GET(
   { params }: { params: Promise<{ studentId: string }> },
 ) {
   const { studentId } = await params;
-  const requestedTerm = new URL(request.url).searchParams.get("term")?.trim() || null;
+  const searchParams = new URL(request.url).searchParams;
+  const requestedTerm = searchParams.get("term")?.trim() || null;
+  const requestedAppreciation = searchParams.get("appreciation")?.trim() || null;
   const admin = await createSupabaseAdminServerClient();
 
   let student = demoStudents.find((s) => s.id === studentId) ?? demoStudents[0];
@@ -42,18 +42,24 @@ export async function GET(
   let schoolLogoUrl: string | null = null;
   let schoolStampUrl: string | null = null;
 
-  try {
-    const { data: studentRow } = await admin
-      .from("students")
-      .select(`
-        id, full_name, school_id, class_id,
-        class:classes!students_class_id_fkey(id, name, level, academic_year),
-        school:schools!students_school_id_fkey(name, city, country, phone, logo_url, stamp_url)
-      `)
-      .eq("id", studentId)
-      .maybeSingle();
+  const { data: studentRow, error: studentErr } = await admin
+    .from("students")
+    .select(`
+      id, full_name, school_id, class_id,
+      class:classes!students_class_id_fkey(id, name, level, academic_year),
+      school:schools!students_school_id_fkey(name, city, country, phone, logo_url, stamp_url)
+    `)
+    .eq("id", studentId)
+    .maybeSingle();
 
-    if (studentRow) {
+  if (studentErr) {
+    return NextResponse.json({ message: studentErr.message }, { status: 400 });
+  }
+  if (!studentRow) {
+    return NextResponse.json({ message: "Élève introuvable" }, { status: 404 });
+  }
+
+  try {
       const classRow = (studentRow as { class?: Array<{ id: string; name: string; level: string; academic_year: string }> | null }).class?.[0];
       const schoolRow = (studentRow as { school?: Array<{ name?: string; city?: string; country?: string; phone?: string; logo_url?: string | null; stamp_url?: string | null }> | null }).school?.[0];
       schoolLogoUrl = schoolRow?.logo_url ? String(schoolRow.logo_url) : null;
@@ -365,18 +371,10 @@ export async function GET(
         attendanceRate: student.attendanceRate,
         previousAverageScore: student.average - 0.4,
       });
-    }
-  } catch {
-    // If anything fails, keep demo fallback to avoid blocking bulletin generation.
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Erreur lors de la génération du bulletin";
+    return NextResponse.json({ message }, { status: 500 });
   }
-
-  const readOptionalAsset = async (fileName: string): Promise<Uint8Array | undefined> => {
-    try {
-      return new Uint8Array(await readFile(path.join(process.cwd(), "public", fileName)));
-    } catch {
-      return undefined;
-    }
-  };
 
   const imageTypeFor = (url: string, contentType: string | null): "png" | "jpg" | null => {
     const ct = (contentType ?? "").toLowerCase();
@@ -401,18 +399,10 @@ export async function GET(
     }
   };
 
-  // Prefer the school's uploaded branding; fall back to bundled assets.
-  let logo = await fetchRemoteImage(schoolLogoUrl);
-  if (!logo) {
-    const local = await readOptionalAsset("logo.png");
-    if (local) logo = { bytes: local, type: "png" };
-  }
-
-  let stamp = await fetchRemoteImage(schoolStampUrl);
-  if (!stamp) {
-    const localStamp = await readOptionalAsset("tampon.jpg");
-    if (localStamp) stamp = { bytes: localStamp, type: "jpg" };
-  }
+  // Bulletins use only the school's own branding.
+  // If the school has no uploaded logo/stamp, nothing generic is injected.
+  const logo = await fetchRemoteImage(schoolLogoUrl);
+  const stamp = await fetchRemoteImage(schoolStampUrl);
 
   const pdfBytes = await buildStudentReportPdf({
     school,
@@ -431,6 +421,7 @@ export async function GET(
     },
     termProgression,
     variant: reportVariant,
+    generalAppreciation: requestedAppreciation,
     logo,
     stamp,
   });

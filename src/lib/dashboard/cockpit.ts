@@ -17,6 +17,7 @@ export type CockpitActionItem = {
 export type ClassPerformanceRow = {
   classId: string;
   className: string;
+  level: string;
   average: number;
   studentCount: number;
 };
@@ -53,6 +54,11 @@ export type MonthlyPerformancePoint = {
   previous: number | null;
 };
 
+export type LevelPerformanceSeries = {
+  level: string;
+  points: { label: string; average: number | null }[];
+};
+
 export type AdminCockpitData = {
   stats: DashboardStats;
   currentTermName: string | null;
@@ -70,6 +76,7 @@ export type AdminCockpitData = {
   actionItems: CockpitActionItem[];
   academicPerformance: {
     monthlySeries: MonthlyPerformancePoint[];
+    levelSeries: LevelPerformanceSeries[];
     comparisonPct: number | null;
     topClasses: ClassPerformanceRow[];
     watchClasses: ClassPerformanceRow[];
@@ -81,6 +88,7 @@ export type AdminCockpitData = {
     todayPresent: number;
     topAbsentClasses: { className: string; absentCount: number }[];
     weeklyTrend: { date: string; rate: number }[];
+    recentSchoolDays: AttendanceSchoolDayBreakdown[];
   };
   atRiskStudents: AtRiskStudentDetail[];
   communication: {
@@ -96,6 +104,30 @@ export type AdminCockpitData = {
 
 function isoDate(d: Date) {
   return d.toISOString().slice(0, 10);
+}
+
+export type AttendanceSchoolDayBreakdown = {
+  date: string;
+  present: number;
+  justifiedAbsent: number;
+  unjustifiedAbsent: number;
+  late: number;
+};
+
+function isSchoolDay(d: Date) {
+  const day = d.getDay();
+  return day !== 0 && day !== 6;
+}
+
+/** Les N derniers jours ouvrés (lun–ven), du plus ancien au plus récent. */
+function getLastSchoolDays(from: Date, count: number): string[] {
+  const days: string[] = [];
+  const cursor = new Date(from);
+  while (days.length < count) {
+    if (isSchoolDay(cursor)) days.push(isoDate(cursor));
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return days.reverse();
 }
 
 function startOfWeek(d: Date) {
@@ -117,6 +149,35 @@ function trendFromDelta(delta: number, invert = false): TrendDirection {
   if (effective > 0.5) return "up";
   if (effective < -0.5) return "down";
   return "neutral";
+}
+
+function chunkArray<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
+
+function levelRank(level: string) {
+  const normalized = level
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  if (normalized.includes("6")) return 10;
+  if (normalized.includes("5")) return 20;
+  if (normalized.includes("4")) return 30;
+  if (normalized.includes("3")) return 40;
+  if (normalized.includes("2nde") || normalized.includes("2de") || normalized.includes("seconde")) return 50;
+  if (normalized.includes("1ere") || normalized.includes("1re") || normalized.includes("premiere")) return 60;
+  if (normalized.includes("terminale") || normalized.includes("tle")) return 70;
+  return 999;
+}
+
+function compareLevels(a: string, b: string) {
+  const ra = levelRank(a);
+  const rb = levelRank(b);
+  return ra - rb || a.localeCompare(b, "fr", { numeric: true });
 }
 
 function riskReason(row: {
@@ -170,7 +231,7 @@ function emptyCockpit(stats: DashboardStats): AdminCockpitData {
       whatsappTrend: "neutral",
     },
     actionItems: [],
-    academicPerformance: { monthlySeries: [], comparisonPct: null, topClasses: [], watchClasses: [] },
+    academicPerformance: { monthlySeries: [], levelSeries: [], comparisonPct: null, topClasses: [], watchClasses: [] },
     attendance: {
       todayRate: 0,
       todayAbsent: 0,
@@ -178,6 +239,7 @@ function emptyCockpit(stats: DashboardStats): AdminCockpitData {
       todayPresent: 0,
       topAbsentClasses: [],
       weeklyTrend: [],
+      recentSchoolDays: [],
     },
     atRiskStudents: [],
     communication: { sent: 0, pending: 0, failed: 0, channel: "WhatsApp", recent: [] },
@@ -228,9 +290,9 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
     admin.from("attendance").select("status, class_id").eq("school_id", schoolId).eq("date", todayStr),
     admin
       .from("attendance")
-      .select("status, date")
+      .select("status, date, justified")
       .eq("school_id", schoolId)
-      .gte("date", d7Str)
+      .gte("date", d14Str)
       .lte("date", todayStr),
     admin.from("notifications").select("status").eq("school_id", schoolId).gte("created_at", weekStartIso),
     admin.from("notifications").select("status").eq("school_id", schoolId),
@@ -255,12 +317,12 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       .gte("evaluation_date", d14Str),
     admin
       .from("evaluations")
-      .select("id, evaluation_date")
+      .select("id, class_id, evaluation_date, max_score")
       .eq("school_id", schoolId)
       .gte("evaluation_date", isoDate(new Date(today.getFullYear(), today.getMonth() - 5, 1))),
     admin
       .from("evaluations")
-      .select("id, evaluation_date")
+      .select("id, class_id, evaluation_date, max_score")
       .eq("school_id", schoolId)
       .gte("evaluation_date", isoDate(new Date(today.getFullYear(), today.getMonth() - 11, 1)))
       .lt("evaluation_date", isoDate(new Date(today.getFullYear(), today.getMonth() - 5, 1))),
@@ -288,16 +350,44 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
 
   const weekRows = weekAttendanceRes.data ?? [];
   const byDay = new Map<string, { present: number; total: number }>();
+  const breakdownByDay = new Map<
+    string,
+    { present: number; justifiedAbsent: number; unjustifiedAbsent: number; late: number }
+  >();
   weekRows.forEach((r) => {
     const d = String(r.date).slice(0, 10);
     const cur = byDay.get(d) ?? { present: 0, total: 0 };
     cur.total += 1;
     if (r.status === "PRESENT") cur.present += 1;
     byDay.set(d, cur);
+
+    const breakdown = breakdownByDay.get(d) ?? {
+      present: 0,
+      justifiedAbsent: 0,
+      unjustifiedAbsent: 0,
+      late: 0,
+    };
+    if (r.status === "PRESENT") breakdown.present += 1;
+    else if (r.status === "ABSENT") {
+      if ((r as { justified?: boolean }).justified) breakdown.justifiedAbsent += 1;
+      else breakdown.unjustifiedAbsent += 1;
+    } else if (r.status === "LATE") breakdown.late += 1;
+    breakdownByDay.set(d, breakdown);
   });
   const weeklyTrend = Array.from(byDay.entries())
+    .filter(([date]) => date >= d7Str)
     .sort(([a], [b]) => (a < b ? -1 : 1))
     .map(([date, v]) => ({ date, rate: v.total ? Math.round((v.present / v.total) * 1000) / 10 : 0 }));
+
+  const recentSchoolDays = getLastSchoolDays(today, 4).map((date) => {
+    const breakdown = breakdownByDay.get(date) ?? {
+      present: 0,
+      justifiedAbsent: 0,
+      unjustifiedAbsent: 0,
+      late: 0,
+    };
+    return { date, ...breakdown };
+  });
 
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
@@ -470,39 +560,82 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
     },
   ].filter((item) => item.count > 0);
 
-  const eval6m = (grades6mRes.data ?? []) as Array<{ id: string; evaluation_date: string }>;
-  const evalPrev = (prevTermGradesRes.data ?? []) as Array<{ id: string; evaluation_date: string }>;
+  const eval6m = (grades6mRes.data ?? []) as Array<{
+    id: string;
+    class_id: string;
+    evaluation_date: string;
+    max_score: number;
+  }>;
+  const evalPrev = (prevTermGradesRes.data ?? []) as Array<{
+    id: string;
+    class_id: string;
+    evaluation_date: string;
+    max_score: number;
+  }>;
   const allEvalIds = [...eval6m, ...evalPrev].map((e) => e.id);
 
   let monthlySeries: MonthlyPerformancePoint[] = [];
+  let levelSeries: LevelPerformanceSeries[] = [];
   let comparisonPct: number | null = null;
   let topClasses: ClassPerformanceRow[] = [];
   let watchClasses: ClassPerformanceRow[] = [];
 
   if (allEvalIds.length > 0) {
-    const { data: gradeRows } = await admin
-      .from("grades")
-      .select("score, evaluation_id, student_id")
-      .eq("school_id", schoolId)
-      .in("evaluation_id", allEvalIds);
+    const gradeRows: Array<{ score: number; evaluation_id: string; student_id: string }> = [];
+
+    // Supabase/PostgREST rejects very large `.in(...)` URLs and caps result
+    // sizes. Reading by small evaluation batches keeps the demo dashboard
+    // populated even for the rich seed dataset (principal school).
+    for (const evalChunk of chunkArray(allEvalIds, 40)) {
+      const { data, error } = await admin
+        .from("grades")
+        .select("score, evaluation_id, student_id")
+        .eq("school_id", schoolId)
+        .in("evaluation_id", evalChunk)
+        .range(0, 50000);
+      if (!error) {
+        gradeRows.push(...((data ?? []) as Array<{ score: number; evaluation_id: string; student_id: string }>));
+      }
+    }
 
     const evalDateById = new Map<string, string>();
+    const evalMetaById = new Map<string, { classId: string; maxScore: number }>();
     eval6m.forEach((e) => evalDateById.set(String(e.id), String(e.evaluation_date).slice(0, 10)));
     evalPrev.forEach((e) => evalDateById.set(String(e.id), String(e.evaluation_date).slice(0, 10)));
+    [...eval6m, ...evalPrev].forEach((e) => {
+      evalMetaById.set(String(e.id), {
+        classId: String(e.class_id),
+        maxScore: Number(e.max_score ?? 20) || 20,
+      });
+    });
 
     const currentByMonth = new Map<string, { sum: number; n: number }>();
     const previousByMonth = new Map<string, { sum: number; n: number }>();
+    const levelByMonth = new Map<string, Map<string, { sum: number; n: number }>>();
     const cutoff = isoDate(new Date(today.getFullYear(), today.getMonth() - 5, 1));
 
-    (gradeRows ?? []).forEach((g) => {
+    gradeRows.forEach((g) => {
       const d = evalDateById.get(String(g.evaluation_id));
       if (!d) return;
+      const meta = evalMetaById.get(String(g.evaluation_id));
+      if (!meta) return;
+      const score20 = (Number(g.score) / (meta?.maxScore ?? 20)) * 20;
       const monthKey = d.slice(0, 7);
       const bucket = d >= cutoff ? currentByMonth : previousByMonth;
       const cur = bucket.get(monthKey) ?? { sum: 0, n: 0 };
-      cur.sum += Number(g.score);
+      cur.sum += score20;
       cur.n += 1;
       bucket.set(monthKey, cur);
+
+      if (d >= cutoff) {
+        const level = classMap.get(meta.classId)?.level || "Niveau";
+        const byMonth = levelByMonth.get(level) ?? new Map<string, { sum: number; n: number }>();
+        const levelCur = byMonth.get(monthKey) ?? { sum: 0, n: 0 };
+        levelCur.sum += score20;
+        levelCur.n += 1;
+        byMonth.set(monthKey, levelCur);
+        levelByMonth.set(level, byMonth);
+      }
     });
 
     const monthKeys = Array.from(currentByMonth.keys()).sort();
@@ -517,6 +650,20 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       };
     });
 
+    levelSeries = Array.from(levelByMonth.entries())
+      .map(([level, byMonth]) => ({
+        level,
+        points: monthKeys.map((mk) => {
+          const cur = byMonth.get(mk);
+          return {
+            label: monthLabel(`${mk}-01`),
+            average: cur ? Math.round((cur.sum / cur.n) * 10) / 10 : null,
+          };
+        }),
+      }))
+      .filter((series) => series.points.some((p) => p.average !== null))
+      .sort((a, b) => compareLevels(a.level, b.level));
+
     const curAvg =
       monthlySeries.filter((p) => p.current !== null).reduce((a, p) => a + (p.current ?? 0), 0) /
       Math.max(1, monthlySeries.filter((p) => p.current !== null).length);
@@ -525,23 +672,15 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       Math.max(1, monthlySeries.filter((p) => p.previous !== null).length);
     comparisonPct = prevAvg > 0 ? Math.round(((curAvg - prevAvg) / prevAvg) * 100) : null;
 
-    const evalClassMap = new Map<string, string>();
-    const allEvalsWithClass = await admin
-      .from("evaluations")
-      .select("id, class_id")
-      .eq("school_id", schoolId)
-      .gte("evaluation_date", d14Str);
-    (allEvalsWithClass.data ?? []).forEach((e) => {
-      evalClassMap.set(String((e as { id: string }).id), String((e as { class_id: string }).class_id));
-    });
-
     const classScores = new Map<string, { sum: number; n: number; students: Set<string> }>();
-    (gradeRows ?? []).forEach((g) => {
+    gradeRows.forEach((g) => {
       const evalId = String(g.evaluation_id);
-      if (!evalClassMap.has(evalId)) return;
-      const classId = evalClassMap.get(evalId)!;
+      const meta = evalMetaById.get(evalId);
+      if (!meta) return;
+      const classId = meta.classId;
+      const score20 = (Number(g.score) / meta.maxScore) * 20;
       const cur = classScores.get(classId) ?? { sum: 0, n: 0, students: new Set() };
-      cur.sum += Number(g.score);
+      cur.sum += score20;
       cur.n += 1;
       cur.students.add(String(g.student_id));
       classScores.set(classId, cur);
@@ -552,13 +691,23 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       .map(([classId, v]) => ({
         classId,
         className: classMap.get(classId)?.name ?? "Classe",
+        level: classMap.get(classId)?.level ?? "Niveau",
         average: Math.round((v.sum / v.n) * 10) / 10,
         studentCount: v.students.size,
       }))
       .sort((a, b) => b.average - a.average);
 
-    topClasses = classPerf.slice(0, 3);
-    watchClasses = [...classPerf].reverse().slice(0, 3);
+    const bestByLevel = new Map<string, ClassPerformanceRow>();
+    for (const row of classPerf) {
+      const current = bestByLevel.get(row.level);
+      if (!current || row.average > current.average) {
+        bestByLevel.set(row.level, row);
+      }
+    }
+    topClasses = Array.from(bestByLevel.values()).sort((a, b) => compareLevels(a.level, b.level));
+
+    // Demo rule: a class below 12/20 needs attention.
+    watchClasses = [...classPerf].filter((row) => row.average < 12).sort((a, b) => a.average - b.average);
   }
 
   const schoolAverageTrendPct = comparisonPct;
@@ -601,7 +750,7 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       whatsappTrend,
     },
     actionItems,
-    academicPerformance: { monthlySeries, comparisonPct, topClasses, watchClasses },
+    academicPerformance: { monthlySeries, levelSeries, comparisonPct, topClasses, watchClasses },
     attendance: {
       todayRate,
       todayAbsent,
@@ -609,6 +758,7 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       todayPresent,
       topAbsentClasses,
       weeklyTrend,
+      recentSchoolDays,
     },
     atRiskStudents,
     communication: {

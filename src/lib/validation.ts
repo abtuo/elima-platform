@@ -15,13 +15,25 @@ export const gradeInputSchema = z.object({
   score: z.number().min(0).max(20),
 });
 
-export const whatsappNotificationSchema = z.object({
-  schoolId: z.string().uuid(),
-  studentId: z.string().uuid().optional(),
-  parentPhone: z.string().min(8),
-  type: z.enum(["ABSENCE", "REPORT_PUBLISHED", "HIGH_RISK"]),
-  message: z.string().min(5),
-});
+export const whatsappNotificationSchema = z
+  .object({
+    schoolId: z.string().uuid(),
+    studentId: z.string().uuid().optional(),
+    parentPhone: z.string().min(8),
+    type: z.enum(["ABSENCE", "REPORT_PUBLISHED", "HIGH_RISK", "WELCOME", "ADMIN_INFO"]),
+    message: z.string().min(5).optional(),
+    template: z.enum(["welcome"]).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const useWelcome = data.template === "welcome" || data.type === "WELCOME";
+    if (!useWelcome && !data.message) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Le champ message est requis hors template welcome.",
+        path: ["message"],
+      });
+    }
+  });
 
 export const homeworkInputSchema = z.object({
   classId: z.string().uuid(),

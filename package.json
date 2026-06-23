@@ -11,11 +11,14 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --import tsx --test src/lib/__tests__/critical-calculations.test.ts",
+    "test:whatsapp": "tsx scripts/test-whatsapp.ts",
     "seed": "tsx scripts/seed.ts",
     "seed:reset": "tsx scripts/seed.ts --reset",
     "seed:demo-attendance": "tsx scripts/seed-demo-attendance.ts"
   },
   "dependencies": {
+    "@azure-rest/communication-messages": "^2.0.0",
+    "@azure/core-auth": "^1.10.1",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.98.0",
     "clsx": "^2.1.1",

@@ -42,6 +42,7 @@ export function ReportsPanel() {
   const [ranking, setRanking] = useState<RankingRow[]>([]);
   const [rankingLoading, setRankingLoading] = useState(false);
   const [classAverage, setClassAverage] = useState<number | null>(null);
+  const [appreciations, setAppreciations] = useState<Record<string, string>>({});
 
   const terms = ["Trimestre 1", "Trimestre 2", "Trimestre 3"];
 
@@ -133,10 +134,51 @@ export function ReportsPanel() {
     };
   }, [effectiveSelectedClassId, selectedTerm]);
 
-  const generatedStudents = useMemo(
-    () => studentsInClass.filter((student) => generatedStudentIds.includes(student.id)),
-    [studentsInClass, generatedStudentIds],
+  const hasGeneratedBulletins = generatedStudentIds.length > 0;
+
+  const rankingByStudent = useMemo(() => new Map(ranking.map((row) => [row.studentId, row])), [ranking]);
+
+  const studentNameById = useMemo(
+    () => new Map(studentsInClass.map((student) => [student.id, student])),
+    [studentsInClass],
   );
+
+  /** Liste unifiée : classement avant génération, bulletins enrichis après. */
+  const displayRows = useMemo(() => {
+    if (ranking.length > 0) {
+      return ranking.map((row) => ({
+        ...row,
+        student: studentNameById.get(row.studentId),
+      }));
+    }
+    return studentsInClass
+      .map((student) => ({
+        studentId: student.id,
+        fullName: student.fullName,
+        average: null as number | null,
+        attendanceRate: null as number | null,
+        rank: 0,
+        student,
+      }))
+      .sort((a, b) => a.fullName.localeCompare(b.fullName, "fr"));
+  }, [ranking, studentsInClass, studentNameById]);
+
+  function defaultAppreciation(row?: RankingRow) {
+    const average = row?.average;
+    if (average == null) return "À compléter après saisie des notes.";
+    if (average >= 16) return "Excellent trimestre.";
+    if (average >= 14) return "Très bon trimestre.";
+    if (average >= 12) return "Bon trimestre.";
+    if (average >= 10) return "Trimestre moyen, efforts à intensifier.";
+    return "Trimestre insuffisant, accompagnement nécessaire.";
+  }
+
+  function reportHref(studentId: string) {
+    const row = rankingByStudent.get(studentId);
+    const appreciation = appreciations[studentId] ?? defaultAppreciation(row);
+    const params = new URLSearchParams({ term: selectedTerm, appreciation });
+    return `/api/reports/${studentId}?${params.toString()}`;
+  }
 
   async function handleGenerateClassReports() {
     if (!effectiveSelectedClassId) return;
@@ -150,6 +192,13 @@ export function ReportsPanel() {
     }
     await new Promise((resolve) => setTimeout(resolve, 400));
     setGeneratedStudentIds(studentsInClass.map((student) => student.id));
+    setAppreciations((current) => {
+      const next = { ...current };
+      for (const student of studentsInClass) {
+        if (!next[student.id]) next[student.id] = defaultAppreciation(rankingByStudent.get(student.id));
+      }
+      return next;
+    });
     setBatchLoading(false);
     setStatus(`Bulletins préparés pour ${studentsInClass.length} élève(s).`);
   }
@@ -180,7 +229,10 @@ export function ReportsPanel() {
           <span className="text-xs font-semibold text-slate-600">Trimestre</span>
           <select
             value={selectedTerm}
-            onChange={(e) => setSelectedTerm(e.target.value)}
+            onChange={(e) => {
+              setSelectedTerm(e.target.value);
+              setGeneratedStudentIds([]);
+            }}
             className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm"
           >
             {terms.map((term) => (
@@ -245,65 +297,106 @@ export function ReportsPanel() {
           Générer tous les bulletins de la classe <Users size={16} />
         </button>
 
-        <button
-          disabled
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-400"
-        >
-          Envoyer aux parents (bientôt) <Mail size={16} />
-        </button>
-
       </div>
-
-      <section className="mt-5 space-y-3 border-t border-slate-200 pt-4">
-        <h3 className="text-sm font-semibold text-slate-700">Bulletins générés (aperçu classe)</h3>
-        {generatedStudents.length === 0 ? (
-          <p className="text-sm text-slate-500">
-            Lancez la génération pour afficher les bulletins de la classe sélectionnée.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {generatedStudents.map((student) => (
-              <div
-                key={student.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2"
-              >
-                <div>
-                  <p className="text-sm font-medium text-slate-700">{student.fullName}</p>
-                  <p className="text-xs text-slate-500">
-                    {student.className} • {student.level} • {student.academicYear}
-                  </p>
-                </div>
-                <Link
-                  href={`/api/reports/${student.id}?term=${encodeURIComponent(selectedTerm)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:opacity-90"
-                >
-                  Voir le PDF <FileText size={14} />
-                </Link>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
 
       <section className="mt-5 space-y-3 border-t border-slate-200 pt-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
             <Trophy size={16} className="text-[var(--secondary,#FFD700)]" />
-            Classement de la classe — {selectedTerm}
+            {hasGeneratedBulletins
+              ? `Bulletins de la classe — ${selectedTerm}`
+              : `Classement de la classe — ${selectedTerm}`}
           </h3>
-          {classAverage != null ? (
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-              Moyenne de classe : {classAverage.toFixed(2)}/20
-            </span>
-          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            {classAverage != null ? (
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                Moyenne de classe : {classAverage.toFixed(2)}/20
+              </span>
+            ) : null}
+            {hasGeneratedBulletins ? (
+              <button
+                disabled={displayRows.length === 0}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:hover:bg-slate-100"
+              >
+                Envoyer tous les bulletins aux parents <Mail size={14} />
+              </button>
+            ) : null}
+          </div>
         </div>
 
         {rankingLoading ? (
           <p className="text-sm text-slate-500">Calcul du classement...</p>
-        ) : ranking.length === 0 ? (
-          <p className="text-sm text-slate-500">Aucune note pour ce trimestre dans cette classe.</p>
+        ) : displayRows.length === 0 ? (
+          <p className="text-sm text-slate-500">Aucun élève ou aucune note pour ce trimestre dans cette classe.</p>
+        ) : hasGeneratedBulletins ? (
+          <div className="space-y-3">
+            {displayRows.map((row) => {
+              const student = row.student;
+              const appreciation = appreciations[row.studentId] ?? defaultAppreciation(row);
+              return (
+                <div
+                  key={row.studentId}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-3"
+                >
+                  <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(260px,360px)_auto] lg:items-center">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                            row.rank === 1
+                              ? "bg-[var(--secondary,#FFD700)] text-slate-900"
+                              : row.rank <= 3
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {row.rank > 0 ? row.rank : "—"}
+                        </span>
+                        <p className="truncate text-sm font-medium text-slate-700">{row.fullName}</p>
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {student?.className ?? "—"} · Moyenne{" "}
+                        {row.average != null ? `${row.average.toFixed(2)}/20` : "—"} · Présence{" "}
+                        {row.attendanceRate != null ? `${row.attendanceRate}%` : "—"}
+                      </p>
+                    </div>
+
+                    <label className="grid gap-1 text-xs font-semibold text-slate-600">
+                      Appréciation générale
+                      <input
+                        value={appreciation}
+                        onChange={(event) =>
+                          setAppreciations((current) => ({
+                            ...current,
+                            [row.studentId]: event.target.value,
+                          }))
+                        }
+                        className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800"
+                      />
+                    </label>
+
+                    <Link
+                      href={reportHref(row.studentId)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex justify-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:opacity-90"
+                    >
+                      Voir le PDF <FileText size={14} />
+                    </Link>
+                  </div>
+
+                  <div className="mt-3 flex justify-end border-t border-slate-100 pt-3">
+                    <button
+                      disabled
+                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-400"
+                    >
+                      Envoyer au parent <Mail size={14} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-slate-200">
             <table className="w-full text-sm">
@@ -316,8 +409,8 @@ export function ReportsPanel() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {ranking.map((row) => (
-                  <tr key={row.studentId} className={row.rank <= 3 ? "bg-amber-50/50" : ""}>
+                {displayRows.map((row) => (
+                  <tr key={row.studentId} className={row.rank > 0 && row.rank <= 3 ? "bg-amber-50/50" : ""}>
                     <td className="px-3 py-2">
                       <span
                         className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
@@ -328,7 +421,7 @@ export function ReportsPanel() {
                               : "bg-slate-100 text-slate-600"
                         }`}
                       >
-                        {row.rank}
+                        {row.rank > 0 ? row.rank : "—"}
                       </span>
                     </td>
                     <td className="px-3 py-2 font-medium text-slate-700">{row.fullName}</td>
@@ -342,6 +435,9 @@ export function ReportsPanel() {
                 ))}
               </tbody>
             </table>
+            <p className="border-t border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+              Générez les bulletins pour ajouter les appréciations, les PDF et l&apos;envoi aux parents.
+            </p>
           </div>
         )}
       </section>
