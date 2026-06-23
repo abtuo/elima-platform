@@ -1,11 +1,17 @@
 {
-  "generatedAt": "2026-05-18T19:57:11.434Z",
+  "generatedAt": "2026-06-15T09:10:35.394Z",
   "password": "ElimaSeed!2026",
   "accounts": [
     {
       "email": "admin.abidjan@seed-elima.invalid",
       "password": "ElimaSeed!2026",
       "role": "SCHOOL_ADMIN",
+      "school": "Collège Moderne d’Abidjan"
+    },
+    {
+      "email": "teacher.abidjan@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "TEACHER",
       "school": "Collège Moderne d’Abidjan"
     },
     {
@@ -51,6 +57,12 @@
       "school": "Institut Excellence Yamoussoukro"
     },
     {
+      "email": "teacher.yamoussoukro@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "TEACHER",
+      "school": "Institut Excellence Yamoussoukro"
+    },
+    {
       "email": "student.yamoussoukro.1@seed-elima.invalid",
       "password": "ElimaSeed!2026",
       "role": "STUDENT",
@@ -90,6 +102,12 @@
       "email": "admin.bouake@seed-elima.invalid",
       "password": "ElimaSeed!2026",
       "role": "SCHOOL_ADMIN",
+      "school": "Groupe Scolaire La Concorde"
+    },
+    {
+      "email": "teacher.bouake@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "TEACHER",
       "school": "Groupe Scolaire La Concorde"
     },
     {
@@ -135,6 +153,12 @@
       "school": "Collège Saint-Augustin"
     },
     {
+      "email": "teacher.anyama@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "TEACHER",
+      "school": "Collège Saint-Augustin"
+    },
+    {
       "email": "student.anyama.1@seed-elima.invalid",
       "password": "ElimaSeed!2026",
       "role": "STUDENT",
@@ -174,6 +198,12 @@
       "email": "admin.sanpedro@seed-elima.invalid",
       "password": "ElimaSeed!2026",
       "role": "SCHOOL_ADMIN",
+      "school": "Institut Polyvalent Le Progrès"
+    },
+    {
+      "email": "teacher.sanpedro@seed-elima.invalid",
+      "password": "ElimaSeed!2026",
+      "role": "TEACHER",
       "school": "Institut Polyvalent Le Progrès"
     },
     {

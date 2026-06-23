@@ -16,12 +16,16 @@ begin
     create type public.app_role as enum (
       'SUPER_ADMIN',
       'SCHOOL_ADMIN',
+      'COMPTABLE',
       'TEACHER',
       'PARENT',
       'STUDENT'
     );
   end if;
 end$$;
+
+-- Ensure COMPTABLE exists even when app_role was created before Lot 1.
+alter type public.app_role add value if not exists 'COMPTABLE';
 
 do $$
 begin
@@ -227,6 +231,7 @@ create table if not exists public.attendance (
   student_id uuid not null references public.students(id) on delete cascade,
   recorded_by uuid references public.users(id) on delete set null,
   status public.attendance_status not null,
+  reason text,
   date date not null,
   created_at timestamptz not null default now(),
   unique (student_id, date)
@@ -307,7 +312,22 @@ create table if not exists public.homeworks (
   teacher_id uuid references public.teachers(id) on delete set null,
   title text not null,
   description text,
+  resource_url text,
   due_date date not null,
+  created_at timestamptz not null default now()
+);
+
+-- Cahier de textes (lesson log): contenu de cours par séance.
+create table if not exists public.lesson_logs (
+  id uuid primary key default gen_random_uuid(),
+  school_id uuid not null references public.schools(id) on delete cascade,
+  class_id uuid not null references public.classes(id) on delete cascade,
+  subject_id uuid not null references public.subjects(id) on delete cascade,
+  teacher_id uuid references public.teachers(id) on delete set null,
+  term_id uuid references public.terms(id) on delete set null,
+  lesson_date date not null,
+  content text not null,
+  resource_url text,
   created_at timestamptz not null default now()
 );
 
@@ -391,6 +411,54 @@ create table if not exists public.notifications (
   created_at timestamptz not null default now()
 );
 
+-- =====================
+-- Finance (Lot 3): barèmes -> échéancier -> frais élève -> paiements -> reçus
+-- =====================
+create table if not exists public.fee_structures (
+  id uuid primary key default gen_random_uuid(),
+  school_id uuid not null references public.schools(id) on delete cascade,
+  label text not null,
+  level text,
+  class_id uuid references public.classes(id) on delete set null,
+  academic_year text,
+  total_amount numeric(12,2) not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.fee_installments (
+  id uuid primary key default gen_random_uuid(),
+  fee_structure_id uuid not null references public.fee_structures(id) on delete cascade,
+  school_id uuid not null references public.schools(id) on delete cascade,
+  label text not null,
+  due_date date not null,
+  amount numeric(12,2) not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.student_fees (
+  id uuid primary key default gen_random_uuid(),
+  school_id uuid not null references public.schools(id) on delete cascade,
+  student_id uuid not null references public.students(id) on delete cascade,
+  fee_structure_id uuid references public.fee_structures(id) on delete set null,
+  amount_due numeric(12,2) not null default 0,
+  academic_year text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.payments (
+  id uuid primary key default gen_random_uuid(),
+  school_id uuid not null references public.schools(id) on delete cascade,
+  student_id uuid not null references public.students(id) on delete cascade,
+  student_fee_id uuid references public.student_fees(id) on delete set null,
+  installment_id uuid references public.fee_installments(id) on delete set null,
+  amount numeric(12,2) not null,
+  method text not null default 'cash' check (method in ('mobile_money', 'card', 'transfer', 'cash')),
+  status text not null default 'paid' check (status in ('paid', 'partial', 'pending', 'late')),
+  receipt_no text,
+  paid_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
 -- Demo requests (landing)
 create table if not exists public.demo_requests (
   id uuid primary key default gen_random_uuid(),
@@ -440,6 +508,7 @@ alter table public.notifications enable row level security;
 alter table public.terms enable row level security;
 alter table public.student_term_summaries enable row level security;
 alter table public.homeworks enable row level security;
+alter table public.lesson_logs enable row level security;
 alter table public.conversations enable row level security;
 alter table public.conversation_participants enable row level security;
 alter table public.messages enable row level security;
@@ -447,6 +516,11 @@ alter table public.teacher_todos enable row level security;
 alter table public.teacher_memos enable row level security;
 alter table public.audit_logs enable row level security;
 alter table public.demo_requests enable row level security;
+
+alter table public.fee_structures enable row level security;
+alter table public.fee_installments enable row level security;
+alter table public.student_fees enable row level security;
+alter table public.payments enable row level security;
 
 create or replace function public.current_user_role()
 returns public.app_role

@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getPortalContext } from "@/lib/portal/queries";
 
 export type ParentChild = {
   student_id: string;
@@ -18,12 +19,19 @@ export type ParentStudentGrade = {
 };
 
 export async function getParentChildren() {
-  // Parent login is disabled in this deployment.
-  // Parents exist as domain entities (public.parents) without Auth accounts.
-  // Therefore, any query relying on auth.uid() / parents.user_id must be disabled.
-  return { userId: null, children: [] as ParentChild[] };
-
-  // (Unreachable)
+  // Parent login is re-enabled (Lot 4). We resolve children via the shared
+  // portal context (parents.user_id -> student_parents -> students).
+  const ctx = await getPortalContext();
+  if (!ctx || ctx.role !== "PARENT") {
+    return { userId: ctx?.userId ?? null, children: [] as ParentChild[] };
+  }
+  const children: ParentChild[] = ctx.students.map((s) => ({
+    student_id: s.id,
+    full_name: s.fullName,
+    class_id: s.classId,
+    class_name: s.className,
+  }));
+  return { userId: ctx.userId, children };
 }
 
 export async function getStudentGrades(studentId: string) {

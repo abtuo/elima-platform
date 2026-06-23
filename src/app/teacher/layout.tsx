@@ -6,12 +6,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   BarChart3,
+  BookMarked,
   CalendarDays,
   ClipboardCheck,
   FileText,
   GraduationCap,
   LayoutDashboard,
   Menu,
+  NotebookPen,
   Settings as SettingsIcon,
   StickyNote,
   University,
@@ -26,6 +28,8 @@ const nav = [
   { href: "/teacher/grades", label: "Notes", icon: FileText },
   { href: "/teacher/averages", label: "Moyennes", icon: BarChart3 },
   { href: "/teacher/attendance", label: "Présences", icon: ClipboardCheck },
+  { href: "/teacher/homework", label: "Devoirs", icon: BookMarked },
+  { href: "/teacher/lessons", label: "Cahier de textes", icon: NotebookPen },
   { href: "/teacher/memo", label: "Todo", icon: StickyNote },
   { href: "/teacher/resources", label: "Ressources", icon: University },
   { href: "/teacher/settings", label: "Paramètres", icon: SettingsIcon },

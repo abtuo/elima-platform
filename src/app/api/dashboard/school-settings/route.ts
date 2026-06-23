@@ -29,7 +29,7 @@ export async function GET() {
 
     const { data: school, error: schoolErr } = await admin
       .from("schools")
-      .select("id, name, current_term_id")
+      .select("id, name, current_term_id, logo_url, stamp_url")
       .eq("id", schoolId)
       .maybeSingle();
 

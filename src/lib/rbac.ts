@@ -1,11 +1,12 @@
 import { type AppRole } from "@/lib/types";
 
 const roleScopes: Record<AppRole, AppRole[]> = {
-  SUPER_ADMIN: ["SUPER_ADMIN", "SCHOOL_ADMIN", "TEACHER"],
-  SCHOOL_ADMIN: ["SCHOOL_ADMIN", "TEACHER"],
+  SUPER_ADMIN: ["SUPER_ADMIN", "SCHOOL_ADMIN", "COMPTABLE", "TEACHER"],
+  SCHOOL_ADMIN: ["SCHOOL_ADMIN", "COMPTABLE", "TEACHER"],
+  // Comptable: accès finance uniquement (espace dédié réutilisant /dashboard/finance).
+  COMPTABLE: ["COMPTABLE"],
   TEACHER: ["TEACHER"],
-  // Note: PARENT/STUDENT roles still exist in the DB, but their UI spaces are removed.
-  // We keep them as valid roles to avoid breaking existing data, but we don't grant them access to protected areas.
+  // Parent / Élève: espaces réactivés (Lot 4), accès strictement à leur propre périmètre.
   PARENT: ["PARENT"],
   STUDENT: ["STUDENT"],
 };
@@ -15,5 +16,5 @@ export function canAccessRole(actor: AppRole, target: AppRole) {
 }
 
 export function isValidRole(value: string): value is AppRole {
-  return ["SUPER_ADMIN", "SCHOOL_ADMIN", "TEACHER", "PARENT", "STUDENT"].includes(value);
+  return ["SUPER_ADMIN", "SCHOOL_ADMIN", "COMPTABLE", "TEACHER", "PARENT", "STUDENT"].includes(value);
 }

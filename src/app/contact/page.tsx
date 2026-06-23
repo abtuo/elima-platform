@@ -17,9 +17,24 @@ export default function ContactPage() {
             </p>
           </div>
           <ul className="space-y-2 text-sm text-slate-700">
-            <li className="flex items-center gap-2"><Ticket size={16} className="text-[var(--primary)]" /> Email: contact@elima.tech</li>
-            <li className="flex items-center gap-2"><Phone size={16} className="text-[var(--primary)]" /> WhatsApp: +225 00 00 00 00</li>
-            <li className="flex items-center gap-2"><Ticket size={16} className="text-[var(--primary)]" /> Support écoles: support@elima.tech</li>
+            <li className="flex items-center gap-2">
+              <Ticket size={16} className="text-[var(--primary)]" />
+              <a className="hover:text-[var(--accent)]" href="mailto:contact@elima.africa">
+                contact@elima.africa
+              </a>
+            </li>
+            <li className="flex items-center gap-2">
+              <Phone size={16} className="text-[var(--primary)]" />
+              <a className="hover:text-[var(--accent)]" href="https://wa.me/33656802188" target="_blank" rel="noopener noreferrer">
+                WhatsApp : +33 6 56 80 21 88
+              </a>
+            </li>
+            <li className="flex items-center gap-2">
+              <Ticket size={16} className="text-[var(--primary)]" />
+              <a className="hover:text-[var(--accent)]" href="mailto:support@elima.africa">
+                support@elima.africa
+              </a>
+            </li>
           </ul>
         </section>
 

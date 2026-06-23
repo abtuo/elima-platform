@@ -45,6 +45,10 @@ const SCHOOL_SPECS = [
     motto: "L’excellence notre objectif",
     plan: "premium",
     currency: "XOF",
+    // Principal demo school: the richest dataset (~70% of the quality lives here).
+    principal: true,
+    studentTarget: 620,
+    richness: 1,
   },
   {
     id: SEED_SCHOOL_IDS.iey,
@@ -53,6 +57,9 @@ const SCHOOL_SPECS = [
     motto: "Discipline - Travail - Réussite",
     plan: "basic",
     currency: "XOF",
+    principal: false,
+    studentTarget: 280,
+    richness: 0.4,
   },
   {
     id: SEED_SCHOOL_IDS.gslc,
@@ -61,6 +68,9 @@ const SCHOOL_SPECS = [
     motto: "Éduquer aujourd’hui pour bâtir demain",
     plan: "custom",
     currency: "XOF",
+    principal: false,
+    studentTarget: 240,
+    richness: 0.4,
   },
   {
     id: SEED_SCHOOL_IDS.csa,
@@ -69,6 +79,9 @@ const SCHOOL_SPECS = [
     motto: "Foi - Savoir - Service",
     plan: "basic",
     currency: "XOF",
+    principal: false,
+    studentTarget: 200,
+    richness: 0.35,
   },
   {
     id: SEED_SCHOOL_IDS.iplp,
@@ -77,6 +90,9 @@ const SCHOOL_SPECS = [
     motto: "Travail - Discipline - Réussite",
     plan: "premium",
     currency: "XOF",
+    principal: false,
+    studentTarget: 180,
+    richness: 0.35,
   },
 ] as const;
 
@@ -109,6 +125,12 @@ const LEVEL_WEIGHTS: Record<string, number> = {
 };
 
 const LEVELS = Object.keys(LEVEL_WEIGHTS);
+
+/** Light realism: philosophy only exists in the lycée (1ère / Terminale). */
+function subjectAppliesToLevel(subject: string, level: string): boolean {
+  if (subject === "Philosophie") return /Terminale|1ère/.test(level);
+  return true;
+}
 
 /** Class templates (name + level) — varied per school by rotation. */
 const CLASS_BLUEPRINTS: { name: string; level: string }[] = [
@@ -182,6 +204,81 @@ const LAST_NAMES = [
   "Addy",
   "Owusu",
 ];
+
+// --- Date helpers anchored on the real "today" (dashboard reads recent windows) ---
+const NOW = new Date();
+function isoDay(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+const TODAY_ISO = isoDay(NOW);
+
+function daysAgo(n: number): Date {
+  const d = new Date(NOW);
+  d.setDate(d.getDate() - n);
+  return d;
+}
+
+/** Random timestamp within the last `n` days (returns ISO string). */
+function recentTimestamp(maxDaysAgo: number): string {
+  const ms = NOW.getTime() - faker.number.int({ min: 0, max: maxDaysAgo * 86_400_000 });
+  return new Date(ms).toISOString();
+}
+
+type RiskLevel = "LOW" | "MEDIUM" | "HIGH";
+type TrendLabel = "IMPROVING" | "STABLE" | "DECLINING";
+
+type MetricOverride = {
+  average: number;
+  attendance: number;
+  trend: TrendLabel;
+  risk: RiskLevel;
+  alert: boolean;
+};
+
+/**
+ * Named at-risk students for the principal school, so the demo can tell a story
+ * ("on clique sur Habib Koné…"). Keyed later by the generated student id.
+ */
+const PRINCIPAL_AT_RISK: { firstName: string; lastName: string; perf: Perf; metric: MetricOverride }[] = [
+  { firstName: "Habib", lastName: "Koné", perf: "weak", metric: { average: 7.2, attendance: 88, trend: "DECLINING", risk: "HIGH", alert: true } },
+  { firstName: "Binta", lastName: "N’Guessan", perf: "weak", metric: { average: 9.1, attendance: 72, trend: "DECLINING", risk: "HIGH", alert: true } },
+  { firstName: "Ibrahim", lastName: "Bamba", perf: "weak", metric: { average: 6.9, attendance: 79, trend: "DECLINING", risk: "HIGH", alert: true } },
+  { firstName: "Oumar", lastName: "Sangaré", perf: "declining", metric: { average: 7.8, attendance: 83, trend: "DECLINING", risk: "HIGH", alert: true } },
+  { firstName: "Akissi", lastName: "Fofana", perf: "declining", metric: { average: 9.8, attendance: 81, trend: "DECLINING", risk: "MEDIUM", alert: true } },
+  { firstName: "Mamadou", lastName: "Amani", perf: "declining", metric: { average: 10.1, attendance: 86, trend: "DECLINING", risk: "MEDIUM", alert: true } },
+  { firstName: "Salimata", lastName: "Touré", perf: "average", metric: { average: 10.4, attendance: 84, trend: "STABLE", risk: "MEDIUM", alert: true } },
+  { firstName: "Adjoua", lastName: "Kouamé", perf: "average", metric: { average: 9.5, attendance: 88, trend: "DECLINING", risk: "MEDIUM", alert: false } },
+];
+
+/** student_id -> forced academic_metrics values (only for the named demo students). */
+const metricOverrides = new Map<string, MetricOverride>();
+
+type NotifType = "GRADE_PUBLISHED" | "ABSENCE_ALERT" | "REPORT_AVAILABLE" | "PAYMENT_REMINDER" | "ADMIN_INFO";
+
+function notifMessage(type: NotifType, childName: string): string {
+  const first = childName.split(/\s+/)[0] || "votre enfant";
+  switch (type) {
+    case "GRADE_PUBLISHED": {
+      const subject = faker.helpers.arrayElement(["Mathématiques", "Français", "Anglais", "Physique-Chimie", "SVT"]);
+      const score = faker.number.int({ min: 8, max: 18 });
+      return `Bonjour, ${first} a obtenu ${score}/20 en ${subject}. Consultez le détail dans l’espace parent.`;
+    }
+    case "ABSENCE_ALERT":
+      return `Votre enfant ${first} a été marqué(e) absent(e) aujourd’hui. Merci de contacter la vie scolaire.`;
+    case "REPORT_AVAILABLE":
+      return `Le bulletin du Trimestre 3 de ${first} est disponible dans votre espace parent.`;
+    case "PAYMENT_REMINDER":
+      return `Rappel : la scolarité du Trimestre 3 arrive à échéance. Paiement possible via Wave ou Orange Money.`;
+    case "ADMIN_INFO":
+      return faker.helpers.arrayElement([
+        "Réunion parents-professeurs samedi à 10h en salle polyvalente.",
+        "Les cours reprennent lundi après le congé. Bonne reprise à tous.",
+        "Pensez à mettre à jour le dossier médical de votre enfant.",
+      ]);
+    default:
+      return "Information de l’établissement.";
+  }
+}
 
 function requiredEnv(name: string): string {
   const v = process.env[name];
@@ -402,12 +499,25 @@ type SchoolCtx = {
   classRows: { id: string; name: string; level: string; capacity: number }[];
   teacherIds: string[];
   teacherUserIds: string[];
+  adminUserId: string;
+  /** `${classId}:${subjectId}` -> teacherId, so evaluations match the class teacher. */
+  assignments: Map<string, string>;
+};
+
+/** Shared shape for an in-memory student used across all seeding steps. */
+type StudentMeta = {
+  id: string;
+  class_id: string;
+  school_id: string;
+  perf: Perf;
+  parent_phone: string;
+  fullName: string;
 };
 
 type DemoAuthCredential = {
   email: string;
   password: string;
-  role: "SCHOOL_ADMIN" | "PARENT" | "STUDENT";
+  role: "SCHOOL_ADMIN" | "TEACHER" | "PARENT" | "STUDENT";
   school: string;
 };
 
@@ -449,7 +559,7 @@ function scoreForPerf(perf: Perf, evalIndex: number, termIndex: number): number 
 
 async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[number]): Promise<{
   ctx: SchoolCtx;
-  studentRows: { id: string; class_id: string; school_id: string; perf: Perf; parent_phone: string }[];
+  studentRows: StudentMeta[];
   demoAuths: DemoAuthCredential[];
 }> {
   const logoUrl = `https://placehold.co/320x120/png?text=${encodeURIComponent(spec.name.slice(0, 18))}`;
@@ -491,11 +601,11 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
     termIds.push(t.id as string);
   }
 
-  // Optional: point the school at its middle term (column may not exist on partial schemas).
+  // Current term for the demo is Trimestre 3 (index 2). Column may not exist on partial schemas.
   {
     const { error: setTermErr } = await supabase
       .from("schools")
-      .update({ current_term_id: termIds[1] })
+      .update({ current_term_id: termIds[2] })
       .eq("id", spec.id);
     if (setTermErr) {
       const msg = setTermErr.message ?? "";
@@ -536,6 +646,7 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
   const teacherCount = faker.number.int({ min: minTeachers, max: maxTeachers });
   const teacherIds: string[] = [];
   const teacherUserIds: string[] = [];
+  const teacherSubjectPairs: { teacherId: string; subject: string }[] = [];
   const demoAuths: DemoAuthCredential[] = [];
   // Cycle through subjects so every subject is covered by at least one teacher,
   // additional teachers reinforce the most class-heavy subjects.
@@ -547,7 +658,7 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
 
   const schoolSlug = spec.city.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
   const adminEmail = `admin.${schoolSlug}@seed-elima.invalid`;
-  await createAuthUser(supabase, {
+  const adminUserId = await createAuthUser(supabase, {
     email: adminEmail,
     role: "SCHOOL_ADMIN",
     schoolId: spec.id,
@@ -559,7 +670,11 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
   for (let i = 0; i < teacherCount; i += 1) {
     const fn = faker.helpers.arrayElement(FIRST_NAMES);
     const ln = faker.helpers.arrayElement(LAST_NAMES);
-    const email = `seed.t.${spec.id.slice(0, 8)}.${i}.${faker.string.alphanumeric(8)}@seed-elima.invalid`;
+    // First teacher of each school gets a predictable, demoable login.
+    const email =
+      i === 0
+        ? `teacher.${schoolSlug}@seed-elima.invalid`
+        : `seed.t.${spec.id.slice(0, 8)}.${i}.${faker.string.alphanumeric(8)}@seed-elima.invalid`;
     const phone = ivorianMobile();
     const primarySubject = subjectCycle[i];
 
@@ -572,40 +687,68 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
     });
 
     teacherUserIds.push(userId);
+    if (i === 0) {
+      demoAuths.push({ email, password: DEMO_AUTH_PASSWORD, role: "TEACHER", school: spec.name });
+    }
 
     const tid = await waitForTeacherRow(supabase, userId);
     teacherIds.push(tid);
+    teacherSubjectPairs.push({ teacherId: tid, subject: primarySubject });
 
     const { error: upTErr } = await supabase.from("teachers").update({ primary_subject: primarySubject }).eq("id", tid);
     if (upTErr) throw new Error(`teacher primary_subject: ${upTErr.message}`);
   }
 
-  const targetStudents = faker.number.int({ min: 200, max: 800 });
+  // Teaching assignments: every class gets a teacher per (level-applicable) subject.
+  // Prefer teachers whose primary subject matches; round-robin spreads the load.
+  const teachersBySubject = new Map<string, string[]>();
+  for (const pair of teacherSubjectPairs) {
+    const arr = teachersBySubject.get(pair.subject) ?? [];
+    arr.push(pair.teacherId);
+    teachersBySubject.set(pair.subject, arr);
+  }
+  const assignments = new Map<string, string>();
+  const classTeacherRows: Record<string, unknown>[] = [];
+  const teacherSubjectClassRows: Record<string, unknown>[] = [];
+  const rrIndex = new Map<string, number>();
+  for (const cls of classRows) {
+    for (const subjName of SUBJECT_NAMES) {
+      if (!subjectAppliesToLevel(subjName, cls.level)) continue;
+      const subjectId = subjectIds[subjName];
+      const pool = teachersBySubject.get(subjName)?.length ? teachersBySubject.get(subjName)! : teacherIds;
+      const idx = (rrIndex.get(subjName) ?? 0) % pool.length;
+      rrIndex.set(subjName, idx + 1);
+      const teacherId = pool[idx];
+      assignments.set(`${cls.id}:${subjectId}`, teacherId);
+      classTeacherRows.push({ class_id: cls.id, teacher_id: teacherId, subject_id: subjectId });
+      teacherSubjectClassRows.push({ teacher_id: teacherId, class_id: cls.id, subject_id: subjectId });
+    }
+  }
+  await insertBatched(supabase, "class_teachers", classTeacherRows, 400);
+  await insertBatched(supabase, "teacher_subject_classes", teacherSubjectClassRows, 400);
+
+  const targetStudents = spec.studentTarget;
   const weights = classRows.map((c) => LEVEL_WEIGHTS[c.level] ?? 5);
   const wSum = weights.reduce((a, b) => a + b, 0);
 
   const studentBulk: Record<string, unknown>[] = [];
-  const studentMeta: { id: string; class_id: string; school_id: string; perf: Perf; parent_phone: string }[] = [];
+  const studentMeta: StudentMeta[] = [];
 
-  for (let n = 0; n < targetStudents; n += 1) {
+  const pickWeightedClass = () => {
     let r = faker.number.float({ min: 0, max: wSum });
-    let idx = 0;
     for (let j = 0; j < weights.length; j += 1) {
       r -= weights[j];
-      if (r <= 0) {
-        idx = j;
-        break;
-      }
+      if (r <= 0) return classRows[j];
     }
-    const cls = classRows[idx];
-    const fn = faker.helpers.arrayElement(FIRST_NAMES);
-    const ln = faker.helpers.arrayElement(LAST_NAMES);
+    return classRows[classRows.length - 1];
+  };
+
+  const pushStudent = (fn: string, ln: string, perf: Perf, cls: (typeof classRows)[number]): string => {
     const fullName = `${fn} ${ln}`;
     const gender = faker.helpers.arrayElement(["M", "F"] as const);
     const birth = faker.date.birthdate({ min: 11, max: 19, mode: "age" }).toISOString().slice(0, 10);
     const parentPhone = ivorianMobile();
     const sid = crypto.randomUUID();
-    const perf = pickPerf(sid.split("-").reduce((acc, x) => acc + parseInt(x, 16), 0));
 
     studentBulk.push({
       id: sid,
@@ -622,7 +765,27 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
       parent_email: `parent.${sid.slice(0, 8)}@seed-elima.invalid`,
       registration_number: `${spec.city.slice(0, 3).toUpperCase()}-${faker.string.numeric(5)}`,
     });
-    studentMeta.push({ id: sid, class_id: cls.id, school_id: spec.id, perf, parent_phone: parentPhone });
+    studentMeta.push({ id: sid, class_id: cls.id, school_id: spec.id, perf, parent_phone: parentPhone, fullName });
+    return sid;
+  };
+
+  // Named, story-driven at-risk students (principal school only) created first so they
+  // surface at the top of the dashboard "Élèves à risque" list.
+  if (spec.principal) {
+    for (const named of PRINCIPAL_AT_RISK) {
+      const cls = pickWeightedClass();
+      const sid = pushStudent(named.firstName, named.lastName, named.perf, cls);
+      metricOverrides.set(sid, named.metric);
+    }
+  }
+
+  const remaining = Math.max(0, targetStudents - studentMeta.length);
+  for (let n = 0; n < remaining; n += 1) {
+    const cls = pickWeightedClass();
+    const fn = faker.helpers.arrayElement(FIRST_NAMES);
+    const ln = faker.helpers.arrayElement(LAST_NAMES);
+    const perf = pickPerf(faker.number.int({ min: 0, max: 1_000_000 }));
+    pushStudent(fn, ln, perf, cls);
   }
 
   await insertBatched(supabase, "students", studentBulk as never);
@@ -701,6 +864,8 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
     classRows,
     teacherIds,
     teacherUserIds,
+    adminUserId,
+    assignments,
   };
 
   return { ctx, studentRows: studentMeta, demoAuths };
@@ -709,17 +874,28 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
 async function seedEvaluationsAndGrades(
   supabase: SupabaseClient,
   ctx: SchoolCtx,
-  studentRows: { id: string; class_id: string; school_id: string; perf: Perf; parent_phone: string }[],
+  studentRows: StudentMeta[],
   opts: { gradesHasTermId: boolean; evaluationsHasType: boolean },
-): Promise<{ evaluations: number; grades: number }> {
+): Promise<{ evaluations: number; grades: number; studentAverages: Map<string, number> }> {
   const evalTypes = ["devoir", "interrogation", "composition"] as const;
   const termLabels = ["Trimestre 1", "Trimestre 2", "Trimestre 3"];
+  const richness = ctx.spec.richness;
   let evalCount = 0;
   let gradeCount = 0;
 
   const evalBuffer: Record<string, unknown>[] = [];
   const gradeBuffer: { evaluation_id: string; student_id: string; school_id: string; term_id?: string; score: number }[] =
     [];
+  // Running average per student (used later for academic_metrics & reports).
+  const sums = new Map<string, { sum: number; n: number }>();
+
+  // For Trimestre 3 (current term), let some evaluations land within the last few days
+  // so the dashboard shows recent activity and "classes sans notes récentes" stays realistic.
+  const termRanges: [string, string][] = [
+    ["2025-09-20", "2025-12-15"],
+    ["2026-01-10", "2026-03-20"],
+    ["2026-04-05", TODAY_ISO],
+  ];
 
   for (const cls of ctx.classRows) {
     const classStudents = studentRows.filter((s) => s.class_id === cls.id);
@@ -728,11 +904,15 @@ async function seedEvaluationsAndGrades(
     let evalIndex = 0;
     for (let t = 0; t < 3; t += 1) {
       const termId = ctx.termIds[t];
-      const picks = faker.helpers.arrayElements([...SUBJECT_NAMES], faker.number.int({ min: 5, max: 8 }));
+      const subjectPool = SUBJECT_NAMES.filter((s) => subjectAppliesToLevel(s, cls.level));
+      const subjMin = Math.max(3, Math.round(5 * richness));
+      const subjMax = Math.max(subjMin + 1, Math.round(8 * richness));
+      const picks = faker.helpers.arrayElements(subjectPool, Math.min(subjectPool.length, faker.number.int({ min: subjMin, max: subjMax })));
       for (const subjName of picks) {
-        for (let k = 0; k < faker.number.int({ min: 2, max: 4 }); k += 1) {
+        const evalsPerSubject = Math.max(1, faker.number.int({ min: Math.round(2 * richness), max: Math.max(2, Math.round(4 * richness)) }));
+        for (let k = 0; k < evalsPerSubject; k += 1) {
           const subjectId = ctx.subjectIds[subjName];
-          const teacherId = faker.helpers.arrayElement(ctx.teacherIds);
+          const teacherId = ctx.assignments.get(`${cls.id}:${subjectId}`) ?? faker.helpers.arrayElement(ctx.teacherIds);
           const eid = crypto.randomUUID();
           evalBuffer.push({
             id: eid,
@@ -742,10 +922,7 @@ async function seedEvaluationsAndGrades(
             title: `${subjName} — ${termLabels[t]} — ${evalTypes[evalIndex % 3]}`,
             max_score: 20,
             evaluation_date: faker.date
-              .between({
-                from: t === 0 ? "2025-09-20" : t === 1 ? "2026-01-10" : "2026-04-05",
-                to: t === 0 ? "2025-12-15" : t === 1 ? "2026-03-20" : "2026-06-15",
-              })
+              .between({ from: termRanges[t][0], to: termRanges[t][1] })
               .toISOString()
               .slice(0, 10),
             coefficient: faker.helpers.arrayElement([1, 1, 1.5, 2]),
@@ -757,13 +934,18 @@ async function seedEvaluationsAndGrades(
           evalCount += 1;
 
           for (const st of classStudents) {
+            const score = scoreForPerf(st.perf, evalIndex, t);
             gradeBuffer.push({
               evaluation_id: eid,
               student_id: st.id,
               school_id: ctx.spec.id,
               ...(opts.gradesHasTermId ? { term_id: termId } : {}),
-              score: scoreForPerf(st.perf, evalIndex, t),
+              score,
             });
+            const cur = sums.get(st.id) ?? { sum: 0, n: 0 };
+            cur.sum += score;
+            cur.n += 1;
+            sums.set(st.id, cur);
           }
         }
       }
@@ -776,41 +958,83 @@ async function seedEvaluationsAndGrades(
   }
 
   gradeCount = await insertBatched(supabase, "grades", gradeBuffer as never, 500);
-  return { evaluations: evalCount, grades: gradeCount };
+
+  const studentAverages = new Map<string, number>();
+  for (const [sid, v] of sums) {
+    studentAverages.set(sid, Math.round((v.sum / Math.max(1, v.n)) * 10) / 10);
+  }
+  return { evaluations: evalCount, grades: gradeCount, studentAverages };
 }
 
 async function seedAttendance(
   supabase: SupabaseClient,
   ctx: SchoolCtx,
-  studentRows: { id: string; class_id: string; school_id: string; perf: Perf; parent_phone: string }[],
-): Promise<number> {
+  studentRows: StudentMeta[],
+): Promise<{
+  inserted: number;
+  ratesByStudent: Map<string, number>;
+  today: { present: number; absent: number; late: number };
+  todayAbsentStudentIds: string[];
+}> {
   const rows: Record<string, unknown>[] = [];
-  const dayCount = 72;
+  // Last 30 calendar days, ending today (weekends skipped, today always included).
+  const dayCount = 30;
   const problematic = new Set(
     faker.helpers.arrayElements(
       studentRows.map((s) => s.id),
-      Math.max(8, Math.floor(studentRows.length * 0.04)),
+      Math.max(8, Math.floor(studentRows.length * 0.05)),
     ),
   );
 
-  for (let d = 0; d < dayCount; d += 1) {
-    const date = new Date("2025-09-01T12:00:00Z");
-    date.setDate(date.getDate() + d);
-    if (date.getDay() === 0 || date.getDay() === 6) continue;
-    const dateStr = date.toISOString().slice(0, 10);
+  const counts = new Map<string, { present: number; total: number }>();
+  const today = { present: 0, absent: 0, late: 0 };
+  const todayAbsentStudentIds: string[] = [];
+
+  // Per-student attendance profile so presence rates spread realistically
+  // (otherwise everyone shares the same probability and clusters around ~90%).
+  const profile = new Map<string, { pAbsent: number; pLate: number }>();
+  for (const st of studentRows) {
+    if (problematic.has(st.id)) {
+      profile.set(st.id, {
+        pAbsent: faker.number.float({ min: 10, max: 24 }),
+        pLate: faker.number.float({ min: 8, max: 18 }),
+      });
+    } else if (faker.number.float({ min: 0, max: 100 }) < 55) {
+      // ~55% of regular students are perfectly assiduous → 100% presence.
+      profile.set(st.id, { pAbsent: 0, pLate: 0 });
+    } else {
+      profile.set(st.id, {
+        pAbsent: faker.number.float({ min: 0, max: 7 }),
+        pLate: faker.number.float({ min: 1, max: 10 }),
+      });
+    }
+  }
+
+  for (let d = dayCount - 1; d >= 0; d -= 1) {
+    const date = daysAgo(d);
+    const isToday = d === 0;
+    if (!isToday && (date.getDay() === 0 || date.getDay() === 6)) continue;
+    const dateStr = isoDay(date);
 
     for (const st of studentRows) {
-      const isBad = problematic.has(st.id);
-      const r = faker.number.int({ min: 0, max: 100 });
+      const p = profile.get(st.id) ?? { pAbsent: 4, pLate: 8 };
+      const r = faker.number.float({ min: 0, max: 100 });
       let status: "PRESENT" | "ABSENT" | "LATE";
-      if (isBad) {
-        if (r < 12) status = "ABSENT";
-        else if (r < 45) status = "LATE";
-        else status = "PRESENT";
-      } else {
-        if (r < 3) status = "ABSENT";
-        else if (r < 18) status = "LATE";
-        else status = "PRESENT";
+      if (r < p.pAbsent) status = "ABSENT";
+      else if (r < p.pAbsent + p.pLate) status = "LATE";
+      else status = "PRESENT";
+
+      const cur = counts.get(st.id) ?? { present: 0, total: 0 };
+      cur.total += 1;
+      if (status === "PRESENT") cur.present += 1;
+      counts.set(st.id, cur);
+
+      if (isToday) {
+        if (status === "PRESENT") today.present += 1;
+        else if (status === "ABSENT") {
+          today.absent += 1;
+          todayAbsentStudentIds.push(st.id);
+        } else today.late += 1;
       }
 
       rows.push({
@@ -824,7 +1048,12 @@ async function seedAttendance(
     }
   }
 
-  return insertBatched(supabase, "attendance", rows, 500);
+  const inserted = await insertBatched(supabase, "attendance", rows, 500);
+  const ratesByStudent = new Map<string, number>();
+  for (const [sid, v] of counts) {
+    ratesByStudent.set(sid, v.total ? Math.round((v.present / v.total) * 1000) / 10 : 100);
+  }
+  return { inserted, ratesByStudent, today, todayAbsentStudentIds };
 }
 
 async function seedPayments(
@@ -990,6 +1219,267 @@ async function seedProfilesAndInsights(
   return { profiles: p, insights: i };
 }
 
+function todayTimestamp(): string {
+  const start = new Date(NOW);
+  start.setHours(0, 0, 0, 0);
+  const span = Math.max(1, NOW.getTime() - start.getTime());
+  return new Date(start.getTime() + faker.number.int({ min: 0, max: span })).toISOString();
+}
+
+function perfFallbackAverage(perf: Perf): number {
+  switch (perf) {
+    case "excellent":
+      return 16.5;
+    case "weak":
+      return 7.5;
+    case "declining":
+      return 9.5;
+    case "improving":
+      return 12.5;
+    default:
+      return 12;
+  }
+}
+
+function perfTrend(perf: Perf): TrendLabel {
+  if (perf === "improving") return "IMPROVING";
+  if (perf === "declining") return "DECLINING";
+  if (perf === "weak") return faker.datatype.boolean() ? "DECLINING" : "STABLE";
+  return "STABLE";
+}
+
+function computeRisk(avg: number, attendance: number): RiskLevel {
+  if (avg < 8 || attendance < 75) return "HIGH";
+  if (avg < 11 || attendance < 85) return "MEDIUM";
+  return "LOW";
+}
+
+async function seedAcademicMetrics(
+  supabase: SupabaseClient,
+  ctx: SchoolCtx,
+  studentRows: StudentMeta[],
+  averages: Map<string, number>,
+  attRates: Map<string, number>,
+): Promise<{ count: number; dist: Record<RiskLevel, number> }> {
+  const rows: Record<string, unknown>[] = [];
+  const dist: Record<RiskLevel, number> = { LOW: 0, MEDIUM: 0, HIGH: 0 };
+
+  for (const st of studentRows) {
+    const override = metricOverrides.get(st.id);
+    let average: number;
+    let attendance: number;
+    let trend: TrendLabel;
+    let risk: RiskLevel;
+    let alert: boolean;
+
+    if (override) {
+      average = override.average;
+      attendance = override.attendance;
+      trend = override.trend;
+      risk = override.risk;
+      alert = override.alert;
+    } else {
+      average = averages.get(st.id) ?? perfFallbackAverage(st.perf);
+      attendance = attRates.get(st.id) ?? 95;
+      trend = perfTrend(st.perf);
+      risk = computeRisk(average, attendance);
+      alert = risk === "HIGH" || (risk === "MEDIUM" && faker.number.float({ min: 0, max: 1 }) < 0.4);
+    }
+
+    dist[risk] += 1;
+    rows.push({
+      school_id: ctx.spec.id,
+      student_id: st.id,
+      average_score: average,
+      attendance_rate: attendance,
+      performance_trend: trend,
+      risk_level: risk,
+      alert_flag: alert,
+      computed_at: recentTimestamp(3),
+    });
+  }
+
+  const count = await insertBatched(supabase, "academic_metrics", rows, 500);
+  return { count, dist };
+}
+
+async function seedReports(
+  supabase: SupabaseClient,
+  ctx: SchoolCtx,
+  studentRows: StudentMeta[],
+  averages: Map<string, number>,
+  attRates: Map<string, number>,
+): Promise<number> {
+  const target = ctx.spec.principal ? 120 : faker.number.int({ min: 20, max: 40 });
+  const sample = faker.helpers.arrayElements(studentRows, Math.min(target, studentRows.length));
+  const rows = sample.map((st, i) => ({
+    school_id: ctx.spec.id,
+    student_id: st.id,
+    term: "Trimestre 3",
+    average_score: averages.get(st.id) ?? perfFallbackAverage(st.perf),
+    attendance_rate: attRates.get(st.id) ?? 95,
+    pdf_url: `https://demo.elima.africa/reports/${st.id}.pdf`,
+    published_by: ctx.adminUserId,
+    created_at: i < 5 ? todayTimestamp() : recentTimestamp(12),
+  }));
+  return insertBatched(supabase, "reports", rows as never, 300);
+}
+
+async function seedNotifications(
+  supabase: SupabaseClient,
+  ctx: SchoolCtx,
+  studentRows: StudentMeta[],
+  todayAbsentStudentIds: string[],
+): Promise<{ sent: number; pending: number; failed: number }> {
+  const principal = ctx.spec.principal;
+  const sentTarget = principal ? faker.number.int({ min: 320, max: 470 }) : faker.number.int({ min: 40, max: 90 });
+  const pendingTarget = principal ? faker.number.int({ min: 25, max: 55 }) : faker.number.int({ min: 6, max: 18 });
+  const failedTarget = principal ? faker.number.int({ min: 8, max: 18 }) : faker.number.int({ min: 2, max: 6 });
+
+  const nameById = new Map(studentRows.map((s) => [s.id, s.fullName]));
+  const types: NotifType[] = ["GRADE_PUBLISHED", "ABSENCE_ALERT", "REPORT_AVAILABLE", "PAYMENT_REMINDER", "ADMIN_INFO"];
+  const rows: Record<string, unknown>[] = [];
+
+  const buildRow = (
+    status: "SENT" | "PENDING" | "FAILED",
+    type: NotifType,
+    studentId: string,
+    createdAt: string,
+  ) => {
+    const childName = nameById.get(studentId) ?? "votre enfant";
+    rows.push({
+      school_id: ctx.spec.id,
+      student_id: studentId,
+      parent_id: null,
+      type,
+      channel: "WHATSAPP",
+      message: notifMessage(type, childName),
+      status,
+      provider_ref: status === "SENT" ? `wamid.${faker.string.alphanumeric(20)}` : null,
+      sent_at: status === "SENT" ? createdAt : null,
+      created_at: createdAt,
+    });
+  };
+
+  // Coherent absence alerts for students actually absent today (scenario 3).
+  const absenceSample = faker.helpers.arrayElements(
+    todayAbsentStudentIds,
+    Math.min(todayAbsentStudentIds.length, principal ? 25 : 8),
+  );
+  let sentMade = 0;
+  for (const sid of absenceSample) {
+    buildRow("SENT", "ABSENCE_ALERT", sid, todayTimestamp());
+    sentMade += 1;
+  }
+
+  // Remaining SENT: ~60% created today (feeds "WhatsApp cette semaine"), rest over 7 days.
+  for (; sentMade < sentTarget; sentMade += 1) {
+    const st = faker.helpers.arrayElement(studentRows);
+    const type = faker.helpers.arrayElement(types);
+    const createdAt = faker.number.float({ min: 0, max: 1 }) < 0.6 ? todayTimestamp() : recentTimestamp(7);
+    buildRow("SENT", type, st.id, createdAt);
+  }
+
+  for (let i = 0; i < pendingTarget; i += 1) {
+    const st = faker.helpers.arrayElement(studentRows);
+    const type = faker.helpers.arrayElement(types);
+    buildRow("PENDING", type, st.id, faker.number.float({ min: 0, max: 1 }) < 0.5 ? todayTimestamp() : recentTimestamp(3));
+  }
+
+  for (let i = 0; i < failedTarget; i += 1) {
+    const st = faker.helpers.arrayElement(studentRows);
+    const type = faker.helpers.arrayElement(types);
+    buildRow("FAILED", type, st.id, recentTimestamp(6));
+  }
+
+  await insertBatched(supabase, "notifications", rows, 500);
+  return { sent: sentMade, pending: pendingTarget, failed: failedTarget };
+}
+
+async function seedConversationsAndMessages(
+  supabase: SupabaseClient,
+  ctx: SchoolCtx,
+): Promise<{ conversations: number; messages: number }> {
+  const findClass = (needle: string) =>
+    ctx.classRows.find((c) => c.name.toLowerCase().includes(needle.toLowerCase())) ??
+    faker.helpers.arrayElement(ctx.classRows);
+
+  const blueprints = ctx.spec.principal
+    ? [
+        { title: "Direction → Parents 3ème A", cls: findClass("3ème A") },
+        { title: "Administration → Parents Terminale D", cls: findClass("Terminale D") },
+        { title: "Vie scolaire → Parents 6ème B", cls: findClass("6ème B") },
+      ]
+    : [{ title: "Administration → Parents", cls: faker.helpers.arrayElement(ctx.classRows) }];
+
+  const bodies = [
+    "Bonjour à tous, merci de noter la réunion parents-professeurs de ce samedi.",
+    "Les bulletins du Trimestre 3 seront disponibles cette semaine dans votre espace.",
+    "Pensez à régulariser les absences non justifiées auprès de la vie scolaire.",
+    "Félicitations aux élèves pour leurs résultats en nette progression ce trimestre.",
+  ];
+
+  let convCount = 0;
+  let msgCount = 0;
+
+  for (const bp of blueprints) {
+    const { data: conv, error: convErr } = await supabase
+      .from("conversations")
+      .insert({ school_id: ctx.spec.id, title: bp.title, created_at: recentTimestamp(5) } as never)
+      .select("id")
+      .single();
+    if (convErr || !conv) throw new Error(`conversation: ${convErr?.message}`);
+    convCount += 1;
+
+    const participants = [
+      { conversation_id: conv.id, participant_type: "USER", user_id: ctx.adminUserId, class_id: null },
+      { conversation_id: conv.id, participant_type: "CLASS", user_id: null, class_id: bp.cls.id },
+    ];
+    const { error: partErr } = await supabase.from("conversation_participants").insert(participants as never);
+    if (partErr) throw new Error(`conversation_participants: ${partErr.message}`);
+
+    const messageCountForConv = faker.number.int({ min: 2, max: 4 });
+    const msgRows = Array.from({ length: messageCountForConv }).map((_, i) => ({
+      conversation_id: conv.id,
+      sender_id: ctx.adminUserId,
+      content: faker.helpers.arrayElement(bodies),
+      created_at: i === messageCountForConv - 1 ? todayTimestamp() : recentTimestamp(4),
+    }));
+    msgCount += await insertBatched(supabase, "messages", msgRows as never, 100);
+  }
+
+  return { conversations: convCount, messages: msgCount };
+}
+
+async function seedAuditLogs(supabase: SupabaseClient, ctx: SchoolCtx): Promise<number> {
+  const entries: { action: string; entity_type: string; daysAgo: number }[] = ctx.spec.principal
+    ? [
+        { action: "evaluation.created", entity_type: "evaluation", daysAgo: 0 },
+        { action: "grade.entered", entity_type: "grade", daysAgo: 0 },
+        { action: "notification.sent", entity_type: "notification", daysAgo: 0 },
+        { action: "report.published", entity_type: "report", daysAgo: 1 },
+        { action: "call.logged", entity_type: "parent", daysAgo: 1 },
+        { action: "class.updated", entity_type: "class", daysAgo: 2 },
+        { action: "attendance.recorded", entity_type: "attendance", daysAgo: 0 },
+        { action: "report.published", entity_type: "report", daysAgo: 3 },
+      ]
+    : [
+        { action: "evaluation.created", entity_type: "evaluation", daysAgo: 1 },
+        { action: "grade.entered", entity_type: "grade", daysAgo: 2 },
+        { action: "notification.sent", entity_type: "notification", daysAgo: 3 },
+      ];
+
+  const rows = entries.map((e) => ({
+    school_id: ctx.spec.id,
+    user_id: ctx.adminUserId,
+    action: e.action,
+    entity_type: e.entity_type,
+    entity_id: null,
+    created_at: e.daysAgo === 0 ? todayTimestamp() : recentTimestamp(e.daysAgo),
+  }));
+  return insertBatched(supabase, "audit_logs", rows as never, 100);
+}
+
 async function main() {
   const reset = process.argv.includes("--reset");
   faker.seed(20260215);
@@ -1019,9 +1509,10 @@ async function main() {
   }
 
   console.log("[seed] Creating 5 schools, terms, subjects, classes, teachers (auth), students…");
-  const allStudents: { id: string; class_id: string; school_id: string; perf: Perf; parent_phone: string }[] = [];
+  const allStudents: StudentMeta[] = [];
   const contexts: SchoolCtx[] = [];
   const demoAuths: DemoAuthCredential[] = [];
+  const studentsBySchool = new Map<string, StudentMeta[]>();
   let totalTeachers = 0;
 
   for (const spec of SCHOOL_SPECS) {
@@ -1029,55 +1520,131 @@ async function main() {
     const { ctx, studentRows } = seeded;
     contexts.push(ctx);
     allStudents.push(...studentRows);
+    studentsBySchool.set(spec.id, studentRows);
     demoAuths.push(...seeded.demoAuths);
     totalTeachers += ctx.teacherIds.length;
     console.log(`  → ${spec.name}: ${studentRows.length} élèves, ${ctx.classRows.length} classes, ${ctx.teacherIds.length} enseignants`);
   }
 
-  console.log("[seed] Evaluations + notes…");
+  // Per-school working maps reused by metrics / reports.
+  const averagesBySchool = new Map<string, Map<string, number>>();
+  const attRatesBySchool = new Map<string, Map<string, number>>();
+  const todayAbsentBySchool = new Map<string, string[]>();
+
+  console.log("[seed] Évaluations + notes…");
   let totalEval = 0;
   let totalGrades = 0;
-  for (let i = 0; i < contexts.length; i += 1) {
-    const schoolStudents = allStudents.filter((s) => s.school_id === SCHOOL_SPECS[i].id);
-    const r = await seedEvaluationsAndGrades(supabase, contexts[i], schoolStudents, {
-      gradesHasTermId,
-      evaluationsHasType,
-    });
+  for (const ctx of contexts) {
+    const schoolStudents = studentsBySchool.get(ctx.spec.id) ?? [];
+    const r = await seedEvaluationsAndGrades(supabase, ctx, schoolStudents, { gradesHasTermId, evaluationsHasType });
+    averagesBySchool.set(ctx.spec.id, r.studentAverages);
     totalEval += r.evaluations;
     totalGrades += r.grades;
   }
   console.log(`  → ${totalEval} évaluations, ${totalGrades} notes`);
 
-  console.log("[seed] Présences / retards…");
+  console.log("[seed] Présences / retards (30 derniers jours, aujourd’hui inclus)…");
   let att = 0;
-  for (let i = 0; i < contexts.length; i += 1) {
-    const schoolStudents = allStudents.filter((s) => s.school_id === SCHOOL_SPECS[i].id);
-    att += await seedAttendance(supabase, contexts[i], schoolStudents);
+  const todayTotals = { present: 0, absent: 0, late: 0 };
+  for (const ctx of contexts) {
+    const schoolStudents = studentsBySchool.get(ctx.spec.id) ?? [];
+    const r = await seedAttendance(supabase, ctx, schoolStudents);
+    att += r.inserted;
+    attRatesBySchool.set(ctx.spec.id, r.ratesByStudent);
+    todayAbsentBySchool.set(ctx.spec.id, r.todayAbsentStudentIds);
+    if (ctx.spec.principal) {
+      todayTotals.present = r.today.present;
+      todayTotals.absent = r.today.absent;
+      todayTotals.late = r.today.late;
+    }
   }
-  console.log(`  → ${att} lignes de présence`);
+  console.log(
+    `  → ${att} lignes de présence | aujourd’hui (école principale): ${todayTotals.present} présents, ${todayTotals.absent} absents, ${todayTotals.late} retards`,
+  );
+
+  console.log("[seed] Academic metrics (LOW/MEDIUM/HIGH)…");
+  let metricsCount = 0;
+  const riskTotals: Record<RiskLevel, number> = { LOW: 0, MEDIUM: 0, HIGH: 0 };
+  for (const ctx of contexts) {
+    const schoolStudents = studentsBySchool.get(ctx.spec.id) ?? [];
+    const r = await seedAcademicMetrics(
+      supabase,
+      ctx,
+      schoolStudents,
+      averagesBySchool.get(ctx.spec.id) ?? new Map(),
+      attRatesBySchool.get(ctx.spec.id) ?? new Map(),
+    );
+    metricsCount += r.count;
+    riskTotals.LOW += r.dist.LOW;
+    riskTotals.MEDIUM += r.dist.MEDIUM;
+    riskTotals.HIGH += r.dist.HIGH;
+  }
+  console.log(`  → ${metricsCount} academic_metrics (LOW ${riskTotals.LOW} / MEDIUM ${riskTotals.MEDIUM} / HIGH ${riskTotals.HIGH})`);
+
+  console.log("[seed] Bulletins (reports) Trimestre 3…");
+  let reportsCount = 0;
+  for (const ctx of contexts) {
+    const schoolStudents = studentsBySchool.get(ctx.spec.id) ?? [];
+    reportsCount += await seedReports(
+      supabase,
+      ctx,
+      schoolStudents,
+      averagesBySchool.get(ctx.spec.id) ?? new Map(),
+      attRatesBySchool.get(ctx.spec.id) ?? new Map(),
+    );
+  }
+  console.log(`  → ${reportsCount} bulletins publiés (le reste génère l’alerte « Bulletins non publiés »)`);
+
+  console.log("[seed] Notifications WhatsApp…");
+  const notifTotals = { sent: 0, pending: 0, failed: 0 };
+  for (const ctx of contexts) {
+    const schoolStudents = studentsBySchool.get(ctx.spec.id) ?? [];
+    const r = await seedNotifications(supabase, ctx, schoolStudents, todayAbsentBySchool.get(ctx.spec.id) ?? []);
+    notifTotals.sent += r.sent;
+    notifTotals.pending += r.pending;
+    notifTotals.failed += r.failed;
+  }
+  console.log(`  → notifications: ${notifTotals.sent} SENT / ${notifTotals.pending} PENDING / ${notifTotals.failed} FAILED`);
+
+  console.log("[seed] Conversations + messages…");
+  let convTotal = 0;
+  let msgTotal = 0;
+  for (const ctx of contexts) {
+    const r = await seedConversationsAndMessages(supabase, ctx);
+    convTotal += r.conversations;
+    msgTotal += r.messages;
+  }
+  console.log(`  → ${convTotal} conversations, ${msgTotal} messages`);
+
+  console.log("[seed] Audit logs (activité récente)…");
+  let auditTotal = 0;
+  for (const ctx of contexts) {
+    auditTotal += await seedAuditLogs(supabase, ctx);
+  }
+  console.log(`  → ${auditTotal} audit logs`);
 
   console.log("[seed] Paiements…");
   let pay = 0;
-  for (let i = 0; i < contexts.length; i += 1) {
-    const schoolStudents = allStudents.filter((s) => s.school_id === SCHOOL_SPECS[i].id);
-    pay += await seedPayments(supabase, contexts[i], schoolStudents);
+  for (const ctx of contexts) {
+    const schoolStudents = studentsBySchool.get(ctx.spec.id) ?? [];
+    pay += await seedPayments(supabase, ctx, schoolStudents);
   }
   console.log(`  → ${pay} paiements`);
 
-  console.log("[seed] Messages WhatsApp fictifs…");
+  console.log("[seed] Messages WhatsApp (table d’extension)…");
   let wa = 0;
-  for (let i = 0; i < contexts.length; i += 1) {
-    const schoolStudents = allStudents.filter((s) => s.school_id === SCHOOL_SPECS[i].id);
-    wa += await seedWhatsapp(supabase, contexts[i], schoolStudents);
+  for (const ctx of contexts) {
+    const schoolStudents = studentsBySchool.get(ctx.spec.id) ?? [];
+    wa += await seedWhatsapp(supabase, ctx, schoolStudents);
   }
   console.log(`  → ${wa} messages`);
 
   console.log("[seed] Profils apprentissage + insights IA…");
   let prof = 0;
   let ins = 0;
-  for (let i = 0; i < contexts.length; i += 1) {
-    const schoolStudents = allStudents.filter((s) => s.school_id === SCHOOL_SPECS[i].id);
-    const r = await seedProfilesAndInsights(supabase, contexts[i], schoolStudents);
+  for (const ctx of contexts) {
+    const schoolStudents = studentsBySchool.get(ctx.spec.id) ?? [];
+    const r = await seedProfilesAndInsights(supabase, ctx, schoolStudents);
     prof += r.profiles;
     ins += r.insights;
   }
@@ -1088,13 +1655,21 @@ async function main() {
     JSON.stringify(
       {
         schools: SCHOOL_SPECS.length,
+        principalSchool: SCHOOL_SPECS[0].name,
         students: allStudents.length,
         teachers: totalTeachers,
         evaluationsApprox: totalEval,
         grades: totalGrades,
         attendanceRows: att,
+        academicMetrics: metricsCount,
+        riskDistribution: riskTotals,
+        reportsPublished: reportsCount,
+        notifications: notifTotals,
+        conversations: convTotal,
+        messages: msgTotal,
+        auditLogs: auditTotal,
         payments: pay,
-        whatsapp: wa,
+        whatsappExtension: wa,
         learningProfiles: prof,
         aiInsights: ins,
       },

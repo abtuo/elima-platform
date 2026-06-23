@@ -49,7 +49,7 @@ const TeacherContext = createContext<TeacherContextValue | null>(null);
 export function TeacherContextProvider({ children }: { children: React.ReactNode }) {
   const [selectedClassId, setSelectedClassId] = useState("");
   const [selectedSubjectId, setSelectedSubjectId] = useState("");
-  const [selectedTerm, setSelectedTerm] = useState<TeacherTerm>("Trimestre 1");
+  const [selectedTerm, setSelectedTerm] = useState<TeacherTerm>("Trimestre 3");
   const [classes, setClasses] = useState<TeacherClass[]>([]);
   const [subjects, setSubjects] = useState<TeacherSubject[]>([]);
   const [students, setStudents] = useState<TeacherStudent[]>([]);

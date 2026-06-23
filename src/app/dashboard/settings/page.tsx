@@ -28,6 +28,11 @@ export default function DashboardSettingsPage() {
   const [termError, setTermError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [stampUrl, setStampUrl] = useState<string | null>(null);
+  const [uploadingKind, setUploadingKind] = useState<"logo" | "stamp" | null>(null);
+  const [brandStatus, setBrandStatus] = useState<string | null>(null);
+  const [brandError, setBrandError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -45,11 +50,13 @@ export default function DashboardSettingsPage() {
       const res = await fetch("/api/dashboard/school-settings");
       if (!res.ok) return;
       const data = (await res.json().catch(() => null)) as
-        | { school?: { current_term_id?: string | null }; terms?: Term[] }
+        | { school?: { current_term_id?: string | null; logo_url?: string | null; stamp_url?: string | null }; terms?: Term[] }
         | null;
       if (!isMounted || !data) return;
       setTerms(data.terms ?? []);
       setCurrentTermId(data.school?.current_term_id ?? "");
+      setLogoUrl(data.school?.logo_url ?? null);
+      setStampUrl(data.school?.stamp_url ?? null);
     }
     loadProfile();
     loadSchoolSettings();
@@ -98,6 +105,29 @@ export default function DashboardSettingsPage() {
     }
 
     setTermStatus("Trimestre courant mis à jour.");
+  }
+
+  async function uploadBranding(kind: "logo" | "stamp", file: File) {
+    setUploadingKind(kind);
+    setBrandStatus(null);
+    setBrandError(null);
+    try {
+      const formData = new FormData();
+      formData.append("kind", kind);
+      formData.append("file", file);
+      const res = await fetch("/api/dashboard/school-branding", { method: "POST", body: formData });
+      const body = (await res.json().catch(() => null)) as { url?: string; message?: string } | null;
+      if (!res.ok || !body?.url) throw new Error(body?.message ?? "Téléversement impossible");
+      if (kind === "logo") setLogoUrl(body.url);
+      else setStampUrl(body.url);
+      // Notify the dashboard layout so the sidebar logo refreshes instantly.
+      window.dispatchEvent(new CustomEvent("elima:branding-updated", { detail: { kind, url: body.url } }));
+      setBrandStatus(kind === "logo" ? "Logo mis à jour." : "Tampon mis à jour.");
+    } catch (e) {
+      setBrandError(e instanceof Error ? e.message : "Téléversement impossible");
+    } finally {
+      setUploadingKind(null);
+    }
   }
 
   const formattedTerms = terms.map((term) => ({
@@ -154,6 +184,76 @@ export default function DashboardSettingsPage() {
         >
           {loading ? "Mise à jour…" : "Enregistrer"}
         </button>
+      </section>
+
+      <section className="elima-card space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-[var(--accent)]">Identité visuelle</h2>
+          <p className="text-sm text-slate-600">
+            Le logo s’affiche dans l’interface et sur les bulletins. Le tampon est apposé sur les bulletins générés. (PNG ou JPG, max 2 Mo.)
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+            <p className="text-sm font-semibold text-slate-800">Logo de l’école</p>
+            <div className="mt-3 flex items-center gap-4">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                {logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={logoUrl} alt="Logo de l’école" className="h-full w-full object-contain" />
+                ) : (
+                  <span className="text-xs text-slate-400">Aucun</span>
+                )}
+              </div>
+              <label className="cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                {uploadingKind === "logo" ? "Téléversement…" : "Choisir un logo"}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  className="hidden"
+                  disabled={uploadingKind !== null}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void uploadBranding("logo", f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+            <p className="text-sm font-semibold text-slate-800">Tampon / cachet</p>
+            <div className="mt-3 flex items-center gap-4">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                {stampUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={stampUrl} alt="Tampon de l’école" className="h-full w-full object-contain" />
+                ) : (
+                  <span className="text-xs text-slate-400">Aucun</span>
+                )}
+              </div>
+              <label className="cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                {uploadingKind === "stamp" ? "Téléversement…" : "Choisir un tampon"}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  className="hidden"
+                  disabled={uploadingKind !== null}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void uploadBranding("stamp", f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {brandError ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{brandError}</p> : null}
+        {brandStatus ? <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{brandStatus}</p> : null}
       </section>
 
       <section className="elima-card space-y-4">

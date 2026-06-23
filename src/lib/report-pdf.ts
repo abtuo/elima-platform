@@ -73,6 +73,33 @@ function drawCell(
   page.drawRectangle({ x, y, width: w, height: h, borderColor: border, borderWidth: 1 });
 }
 
+function shortTermLabel(name: string): string {
+  const m = name.match(/(\d+)/);
+  return m ? `T${m[1]}` : name.slice(0, 6);
+}
+
+/** Simple vertical bar chart (used for the end-of-year term-average evolution). */
+function drawBarChart(
+  page: PDFPage,
+  fonts: { font: PDFFont; bold: PDFFont },
+  opts: { x: number; y: number; w: number; h: number; data: { label: string; value: number }[] },
+) {
+  const { x, y, w, h, data } = opts;
+  const n = Math.max(1, data.length);
+  const gap = 14;
+  const barW = Math.min(48, (w - gap * (n + 1)) / n);
+  const baseline = y + 13;
+  const maxBarH = h - 24;
+  data.forEach((d, i) => {
+    const bx = x + gap + i * (barW + gap);
+    const value = Math.max(0, Math.min(20, d.value));
+    const bh = Math.max(2, (value / 20) * maxBarH);
+    page.drawRectangle({ x: bx, y: baseline, width: barW, height: bh, color: COLORS.primary });
+    page.drawText(value.toFixed(1), { x: bx + barW / 2 - 7, y: baseline + bh + 3, size: 8, font: fonts.bold, color: COLORS.accent });
+    page.drawText(d.label, { x: bx + barW / 2 - 5, y: y + 1, size: 8, font: fonts.font, color: COLORS.muted });
+  });
+}
+
 export async function buildStudentReportPdf(input: {
   school: SchoolIdentity;
   student: Student;
@@ -85,11 +112,18 @@ export async function buildStudentReportPdf(input: {
     section?: string;
     termAverage?: number | null;
     annualAverage?: number | null;
+    rank?: number | null;
+    rankTotal?: number | null;
   };
-  logoPngBytes?: Uint8Array;
-  stampJpgBytes?: Uint8Array;
+  termProgression?: { term: string; average: number }[];
+  variant?: "term" | "final";
+  logo?: { bytes: Uint8Array; type: "png" | "jpg" };
+  stamp?: { bytes: Uint8Array; type: "png" | "jpg" };
 }) {
+  const isFinal = input.variant === "final";
   const pdf = await PDFDocument.create();
+  const embedImage = async (img: { bytes: Uint8Array; type: "png" | "jpg" }) =>
+    img.type === "png" ? pdf.embedPng(img.bytes) : pdf.embedJpg(img.bytes);
   const page = pdf.addPage(A4);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -142,8 +176,8 @@ export async function buildStudentReportPdf(input: {
   });
 
   // Logo on the right
-  if (input.logoPngBytes) {
-    const logo = await pdf.embedPng(input.logoPngBytes);
+  if (input.logo) {
+    const logo = await embedImage(input.logo);
     const targetW = 70;
     const scale = targetW / logo.width;
     const w = targetW;
@@ -157,7 +191,7 @@ export async function buildStudentReportPdf(input: {
   }
 
   // Title
-  drawText(page, `BULLETIN DE NOTES — ${input.term.toUpperCase()}`, {
+  drawText(page, isFinal ? "BULLETIN DE FIN D'ANNÉE" : `BULLETIN — ${input.term.toUpperCase()}`, {
     x: margin,
     y: top - 108,
     size: 16,
@@ -182,35 +216,39 @@ export async function buildStudentReportPdf(input: {
   const labelSize = 9;
   const valueSize = 11;
 
-  drawText(page, "Nom :", { x: margin + 12, y: infoY + 44, size: labelSize, font: bold, color: COLORS.muted });
-  drawText(page, input.student.fullName, { x: margin + 60, y: infoY + 42.5, size: valueSize, font: bold });
+  // Left column: Nom / Classe / Trimestre
+  drawText(page, "Nom :", { x: margin + 12, y: infoY + 48, size: labelSize, font: bold, color: COLORS.muted });
+  drawText(page, input.student.fullName, { x: margin + 70, y: infoY + 46.5, size: valueSize, font: bold });
 
-  drawText(page, "Classe :", { x: margin + 12, y: infoY + 22, size: labelSize, font: bold, color: COLORS.muted });
-  drawText(page, input.student.className, { x: margin + 60, y: infoY + 20.5, size: valueSize, font: bold });
+  drawText(page, "Classe :", { x: margin + 12, y: infoY + 28, size: labelSize, font: bold, color: COLORS.muted });
+  drawText(page, input.student.className, { x: margin + 70, y: infoY + 26.5, size: valueSize, font: bold });
 
+  drawText(page, "Trimestre :", { x: margin + 12, y: infoY + 8, size: labelSize, font: bold, color: COLORS.muted });
+  drawText(page, input.term, { x: margin + 70, y: infoY + 6.5, size: valueSize, font: bold });
+
+  // Right column: Effectif / Section / Année
   const rightColX = margin + 290;
-  drawText(page, "Effectif :", { x: rightColX, y: infoY + 44, size: labelSize, font: bold, color: COLORS.muted });
-  drawText(page, String(input.schoolStats?.classSize ?? "-"), { x: rightColX + 60, y: infoY + 42.5, size: valueSize, font: bold });
+  drawText(page, "Effectif :", { x: rightColX, y: infoY + 48, size: labelSize, font: bold, color: COLORS.muted });
+  drawText(page, String(input.schoolStats?.classSize ?? "-"), { x: rightColX + 60, y: infoY + 46.5, size: valueSize, font: bold });
 
-  drawText(page, "Section :", { x: rightColX, y: infoY + 22, size: labelSize, font: bold, color: COLORS.muted });
+  drawText(page, "Section :", { x: rightColX, y: infoY + 28, size: labelSize, font: bold, color: COLORS.muted });
   drawText(page, input.schoolStats?.section ?? "Générale", {
     x: rightColX + 60,
-    y: infoY + 20.5,
+    y: infoY + 26.5,
     size: valueSize,
     font: bold,
   });
 
-  // Also repeat academic year in the info block (right side) for clarity
   drawText(page, "Année :", {
     x: rightColX,
-    y: infoY + 6,
+    y: infoY + 8,
     size: labelSize,
     font: bold,
     color: COLORS.muted,
   });
   drawText(page, input.academicYear, {
     x: rightColX + 60,
-    y: infoY + 4.5,
+    y: infoY + 6.5,
     size: valueSize,
     font: bold,
   });
@@ -316,53 +354,73 @@ export async function buildStudentReportPdf(input: {
     tableY = y;
   });
 
-  // Summary blocks
-  const summaryY = tableY - 18;
+  // ---- Summary blocks (term average + rank + attendance) ----
   const blockH = 54;
-  const halfW = (tableW - 12) / 2;
+  const gapW = 10;
+  const thirdW = (tableW - gapW * 2) / 3;
+  let cursorY = tableY - 18;
 
-  // Moyenne trimestrielle
-  drawCell(page, { x: tableX, y: summaryY - blockH, w: halfW, h: blockH, bg: COLORS.white });
-  page.drawRectangle({ x: tableX, y: summaryY - 18, width: halfW, height: 18, color: COLORS.accent });
-  drawText(page, "Moyenne trimestrielle", { x: tableX + 10, y: summaryY - 14, size: 10, font: bold, color: COLORS.white });
-  drawText(page, `${formatScore(input.schoolStats?.termAverage ?? input.student.average)}/20`, {
-    x: tableX + 10,
-    y: summaryY - 42,
-    size: 18,
-    font: bold,
-    color: COLORS.primary,
-  });
+  const summaryCard = (col: number, title: string, value: string) => {
+    const x = tableX + col * (thirdW + gapW);
+    drawCell(page, { x, y: cursorY - blockH, w: thirdW, h: blockH, bg: COLORS.white });
+    page.drawRectangle({ x, y: cursorY - 18, width: thirdW, height: 18, color: COLORS.accent });
+    drawText(page, title, { x: x + 10, y: cursorY - 14, size: 10, font: bold, color: COLORS.white });
+    drawText(page, value, { x: x + 10, y: cursorY - 42, size: 18, font: bold, color: COLORS.primary });
+  };
 
-  // Absences
-  const absX = tableX + halfW + 12;
-  drawCell(page, { x: absX, y: summaryY - blockH, w: halfW, h: blockH, bg: COLORS.white });
-  page.drawRectangle({ x: absX, y: summaryY - 18, width: halfW, height: 18, color: COLORS.accent });
-  drawText(page, "Taux de présence", { x: absX + 10, y: summaryY - 14, size: 10, font: bold, color: COLORS.white });
-  drawText(page, `${input.student.attendanceRate}%`, {
-    x: absX + 10,
-    y: summaryY - 42,
-    size: 18,
-    font: bold,
-    color: COLORS.primary,
-  });
+  const rank = input.schoolStats?.rank;
+  const rankTotal = input.schoolStats?.rankTotal;
+  const rankText = rank != null && rankTotal != null ? `${rank}${rank === 1 ? "er" : "e"} / ${rankTotal}` : "—";
 
-  const annualLabel =
-    input.schoolStats?.annualAverage == null ? "Moyenne annuelle : — (trimestres incomplets)" : `Moyenne annuelle : ${formatScore(input.schoolStats.annualAverage)}/20`;
-  drawText(page, annualLabel, {
-    x: absX + 110,
-    y: summaryY - 41,
-    size: 8.8,
-    font,
-    color: COLORS.muted,
-    maxWidth: halfW - 118,
-  });
+  summaryCard(0, "Moyenne du trimestre", `${formatScore(input.schoolStats?.termAverage ?? input.student.average)}/20`);
+  summaryCard(1, "Rang", rankText);
+  summaryCard(2, "Taux de présence", `${input.student.attendanceRate}%`);
 
-  // Advice / council appreciation
-  const councilY = summaryY - blockH - 18;
-  const councilH = 62;
-  drawCell(page, { x: tableX, y: councilY - councilH, w: tableW, h: councilH, bg: COLORS.white });
-  page.drawRectangle({ x: tableX, y: councilY - 18, width: tableW, height: 18, color: COLORS.primary });
-  drawText(page, "Appréciation générale", { x: tableX + 10, y: councilY - 14, size: 10, font: bold, color: COLORS.white });
+  cursorY = cursorY - blockH - 16;
+
+  // ---- Final (end-of-year) only: evolution bar chart + general average ----
+  if (isFinal) {
+    const progression = (input.termProgression ?? []).filter((t) => Number.isFinite(t.average));
+    const finalH = 92;
+    const halfW = (tableW - 12) / 2;
+    const absX = tableX + halfW + 12;
+
+    drawCell(page, { x: tableX, y: cursorY - finalH, w: halfW, h: finalH, bg: COLORS.white });
+    page.drawRectangle({ x: tableX, y: cursorY - 18, width: halfW, height: 18, color: COLORS.primary });
+    drawText(page, "Évolution des moyennes", { x: tableX + 10, y: cursorY - 14, size: 10, font: bold, color: COLORS.white });
+    if (progression.length >= 1) {
+      drawBarChart(page, { font, bold }, {
+        x: tableX + 6,
+        y: cursorY - finalH + 6,
+        w: halfW - 12,
+        h: finalH - 26,
+        data: progression.map((t) => ({ label: shortTermLabel(t.term), value: t.average })),
+      });
+    } else {
+      drawText(page, "Données insuffisantes.", { x: tableX + 10, y: cursorY - finalH + 16, size: 9, font, color: COLORS.muted });
+    }
+
+    drawCell(page, { x: absX, y: cursorY - finalH, w: halfW, h: finalH, bg: COLORS.white });
+    page.drawRectangle({ x: absX, y: cursorY - 18, width: halfW, height: 18, color: COLORS.primary });
+    drawText(page, "Moyenne générale annuelle", { x: absX + 10, y: cursorY - 14, size: 10, font: bold, color: COLORS.white });
+    const annual = input.schoolStats?.annualAverage;
+    drawText(page, annual == null ? "—" : `${formatScore(annual)}/20`, {
+      x: absX + 10,
+      y: cursorY - 60,
+      size: 26,
+      font: bold,
+      color: COLORS.primary,
+    });
+    drawText(page, "Moyenne des trois trimestres", { x: absX + 10, y: cursorY - finalH + 10, size: 8, font, color: COLORS.muted });
+
+    cursorY = cursorY - finalH - 16;
+  }
+
+  // ---- Council appreciation ----
+  const councilH = 56;
+  drawCell(page, { x: tableX, y: cursorY - councilH, w: tableW, h: councilH, bg: COLORS.white });
+  page.drawRectangle({ x: tableX, y: cursorY - 18, width: tableW, height: 18, color: COLORS.primary });
+  drawText(page, "Appréciation générale", { x: tableX + 10, y: cursorY - 14, size: 10, font: bold, color: COLORS.white });
 
   const riskSentence =
     input.metric.riskLevel === "HIGH"
@@ -385,7 +443,7 @@ export async function buildStudentReportPdf(input: {
 
   drawText(page, `${appreciation} ${riskSentence}`, {
     x: tableX + 10,
-    y: councilY - 34,
+    y: cursorY - 36,
     size: 9.6,
     font,
     maxWidth: tableW - 20,
@@ -393,8 +451,8 @@ export async function buildStudentReportPdf(input: {
   });
 
   // Stamp (illustration tampon)
-  if (input.stampJpgBytes) {
-    const stamp = await pdf.embedJpg(input.stampJpgBytes);
+  if (input.stamp) {
+    const stamp = await embedImage(input.stamp);
     const targetW = 110;
     const scale = targetW / stamp.width;
     const w = targetW;

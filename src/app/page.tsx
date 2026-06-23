@@ -359,11 +359,7 @@ export default function Home() {
             <div className="flex flex-col gap-2 text-center">
               <p className="text-xs font-semibold uppercase text-[var(--primary)]">Tarifs établissements</p>
               <h2 className="text-2xl font-bold text-[var(--accent)]">
-                Des offres{" "}
-                <span className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent">
-                  adaptées
-                </span>{" "}
-                à chaque école
+                Des offres adaptées à chaque école
               </h2>
               <p className="text-sm text-slate-600">Choisissez la formule idéale pour votre croissance.</p>
             </div>
@@ -486,10 +482,22 @@ export default function Home() {
                   <p className="text-sm text-slate-600">Plateforme de gestion scolaire intelligente.</p>
                   <div className="space-y-2 text-sm">
                     <p className="flex items-center gap-2">
-                      <Ticket size={16} className="text-[var(--primary)]" /> Support: support@elima.tech
+                      <Ticket size={16} className="text-[var(--primary)]" />
+                      <a className="hover:text-slate-900" href="mailto:contact@elima.africa">
+                        contact@elima.africa
+                      </a>
                     </p>
                     <p className="flex items-center gap-2">
-                      <Phone size={16} className="text-[var(--primary)]" /> +225 01 23 45 67 89
+                      <Ticket size={16} className="text-[var(--primary)]" />
+                      <a className="hover:text-slate-900" href="mailto:support@elima.africa">
+                        support@elima.africa
+                      </a>
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <Phone size={16} className="text-[var(--primary)]" />
+                      <a className="hover:text-slate-900" href="https://wa.me/33656802188" target="_blank" rel="noopener noreferrer">
+                        +33 6 56 80 21 88
+                      </a>
                     </p>
                   </div>
                 </div>

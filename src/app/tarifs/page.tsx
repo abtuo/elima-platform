@@ -60,11 +60,7 @@ export default function TarifsPage() {
           <div className="text-center">
             <p className="text-xs font-semibold uppercase text-[var(--primary)]">Tarifs pour les établissements</p>
             <h1 className="text-3xl font-bold text-[var(--accent)]">
-              Des offres{" "}
-              <span className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent">
-                adaptées
-              </span>{" "}
-              à chaque école
+              Des offres adaptées à chaque école
             </h1>
             <p className="mt-2 text-sm text-slate-600">Choisissez la formule idéale pour votre croissance.</p>
           </div>

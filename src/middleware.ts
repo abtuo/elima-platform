@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const protectedPrefixes = ["/dashboard", "/teacher", "/api"];
+const protectedPrefixes = ["/dashboard", "/teacher", "/parent", "/student", "/api"];
 
 function hasSupabaseSessionCookie(request: NextRequest) {
   // Supabase SSR stores the session across multiple cookies.
@@ -47,5 +47,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/teacher/:path*", "/api/:path*"],
+  matcher: ["/dashboard/:path*", "/teacher/:path*", "/parent/:path*", "/student/:path*", "/api/:path*"],
 };

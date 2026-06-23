@@ -1,16 +1,21 @@
 import { PageHeader } from "@/components/ui/PageHeader";
-import { KpiCard } from "@/components/ui/KpiCard";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { DashboardSection } from "@/components/dashboard/DashboardSection";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { AttendanceAreaChart, GradesBarChart } from "@/components/ui/KpiCharts";
+import { MonthlyAverageChart, ClassPerformanceBars } from "@/components/dashboard/AnalyticsCharts";
 import { getSchoolKpisForCurrentUserSchool } from "@/lib/dashboard/kpis";
+import { getAdminCockpitData } from "@/lib/dashboard/cockpit";
 import { getSessionRole } from "@/lib/auth";
 import {
-  BarChart3,
   BookOpen,
   CalendarDays,
   CheckCircle2,
   GraduationCap,
   Timer,
+  TrendingUp,
   UserX,
+  Users,
 } from "lucide-react";
 
 function formatDate(d: Date) {
@@ -22,7 +27,7 @@ export default async function DashboardKpisPage() {
   if (role !== "SCHOOL_ADMIN" && role !== "SUPER_ADMIN") {
     return (
       <div className="space-y-6">
-        <PageHeader title="KPIs de l’école" subtitle="Accès interdit." />
+        <PageHeader title="Analytique de l’école" subtitle="Accès interdit." />
         <div className="elima-card">
           <p className="text-sm text-slate-600">Vous n’avez pas les droits pour accéder à cette page.</p>
         </div>
@@ -36,57 +41,144 @@ export default async function DashboardKpisPage() {
   const to = formatDate(toDate);
   const from = formatDate(fromDate);
 
-  const kpis = await getSchoolKpisForCurrentUserSchool({ from, to });
+  const [kpis, cockpit] = await Promise.all([
+    getSchoolKpisForCurrentUserSchool({ from, to }),
+    getAdminCockpitData(),
+  ]);
+
+  const { academicPerformance, attendance, kpis: cockpitKpis } = cockpit;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
-        title="KPIs de l’école"
-        subtitle={`Synthèse sur la période ${kpis.from} → ${kpis.to}`}
+        title="Analytique de l’école"
+        subtitle={`Performance académique & assiduité · ${kpis.from} → ${kpis.to}`}
       />
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <KpiCard title="Élèves" value={kpis.studentsCount} hint="Total inscrits" icon={<BookOpen size={18} />} />
-        <KpiCard title="Enseignants" value={kpis.teachersCount} hint="Personnel enseignant" icon={<GraduationCap size={18} />} />
-        <KpiCard title="Classes" value={kpis.classesCount} hint="Classes actives" icon={<CalendarDays size={18} />} />
+      {/* Counters */}
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard title="Élèves" value={kpis.studentsCount} trend="neutral" trendLabel="Total inscrits" icon={<BookOpen size={20} />} />
+        <StatCard title="Enseignants" value={kpis.teachersCount} trend="neutral" trendLabel="Personnel" icon={<GraduationCap size={20} />} />
+        <StatCard title="Classes" value={kpis.classesCount} trend="neutral" trendLabel="Classes actives" icon={<CalendarDays size={20} />} />
+        <StatCard
+          title="Moyenne générale"
+          value={cockpitKpis.schoolAverage !== null ? `${cockpitKpis.schoolAverage}/20` : "—"}
+          trend={
+            academicPerformance.comparisonPct !== null
+              ? academicPerformance.comparisonPct > 0
+                ? "up"
+                : academicPerformance.comparisonPct < 0
+                  ? "down"
+                  : "neutral"
+              : "neutral"
+          }
+          trendLabel={
+            academicPerformance.comparisonPct !== null
+              ? `${academicPerformance.comparisonPct > 0 ? "+" : ""}${academicPerformance.comparisonPct}% vs trim. précédent`
+              : "Données insuffisantes"
+          }
+          icon={<TrendingUp size={20} />}
+          status="success"
+        />
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <KpiCard
+      {/* Grade evolution */}
+      <DashboardSection
+        title="Évolution de la moyenne générale"
+        subtitle="Moyenne mensuelle, comparée au trimestre précédent"
+        action={
+          academicPerformance.comparisonPct !== null ? (
+            <span className="text-sm font-semibold text-[var(--primary)]">
+              {academicPerformance.comparisonPct > 0 ? "+" : ""}
+              {academicPerformance.comparisonPct}%
+            </span>
+          ) : null
+        }
+      >
+        <MonthlyAverageChart series={academicPerformance.monthlySeries} />
+      </DashboardSection>
+
+      {/* Attendance breakdown */}
+      <section className="grid gap-3 sm:grid-cols-3">
+        <StatCard
           title="Présence"
           value={`${kpis.attendancePresenceRate}%`}
-          hint={`${kpis.attendancePresentCount} présents / ${kpis.attendanceRecordsCount} enregistrements`}
-          icon={<CheckCircle2 size={18} />}
+          trend="up"
+          trendLabel={`${kpis.attendancePresentCount} présences`}
+          icon={<CheckCircle2 size={20} />}
+          status="success"
         />
-        <KpiCard
+        <StatCard
           title="Absences"
           value={`${kpis.attendanceAbsenceRate}%`}
-          hint={`${kpis.attendanceAbsentCount} absents`}
-          icon={<UserX size={18} />}
+          trend="down"
+          trendLabel={`${kpis.attendanceAbsentCount} absences`}
+          icon={<UserX size={20} />}
+          status="danger"
         />
-        <KpiCard
+        <StatCard
           title="Retards"
           value={`${kpis.attendanceLateRate}%`}
-          hint={`${kpis.attendanceLateCount} retards`}
-          icon={<Timer size={18} />}
+          trend="neutral"
+          trendLabel={`${kpis.attendanceLateCount} retards`}
+          icon={<Timer size={20} />}
+          status="warning"
         />
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <KpiCard
-          title="Moyenne"
-          value={kpis.gradesAverageScore ?? "—"}
-          hint={kpis.gradesAverageScore != null ? "Moyenne des notes (/20)" : "Pas de notes sur la période"}
-          icon={<BarChart3 size={18} />}
-        />
-        <KpiCard title="Min" value={kpis.gradesMinScore ?? "—"} hint="Note min (/20)" icon={<BarChart3 size={18} />} />
-        <KpiCard title="Max" value={kpis.gradesMaxScore ?? "—"} hint="Note max (/20)" icon={<BarChart3 size={18} />} />
-      </section>
-
+      {/* Charts: attendance over 30 days + grades per day */}
       <section className="grid gap-4 lg:grid-cols-2">
         <AttendanceAreaChart present={kpis.attendanceDailyPresent} absent={kpis.attendanceDailyAbsent} />
         <GradesBarChart averageByDay={kpis.gradesDailyAverage} />
       </section>
+
+      {/* Class rankings */}
+      <section className="grid gap-4 lg:grid-cols-2">
+        <DashboardSection title="Top classes" subtitle="Meilleures moyennes récentes">
+          {academicPerformance.topClasses.length === 0 ? (
+            <EmptyState title="Aucune donnée" description="Les classements apparaîtront après les évaluations." />
+          ) : (
+            <ClassPerformanceBars classes={academicPerformance.topClasses} tone="good" />
+          )}
+        </DashboardSection>
+        <DashboardSection title="Classes à surveiller" subtitle="Moyennes les plus basses">
+          {academicPerformance.watchClasses.length === 0 ? (
+            <EmptyState title="Aucune alerte" description="Aucune classe en difficulté détectée." />
+          ) : (
+            <ClassPerformanceBars classes={academicPerformance.watchClasses} tone="watch" />
+          )}
+        </DashboardSection>
+      </section>
+
+      {/* Weekly attendance summary */}
+      <DashboardSection title="Assiduité — 7 derniers jours" subtitle="Taux de présence quotidien">
+        {attendance.weeklyTrend.length === 0 ? (
+          <EmptyState title="Aucune présence enregistrée" />
+        ) : (
+          <div className="flex items-end justify-between gap-2">
+            {attendance.weeklyTrend.map((d) => (
+              <div key={d.date} className="flex flex-1 flex-col items-center gap-1">
+                <div className="flex h-32 w-full items-end justify-center">
+                  <div
+                    className="w-full max-w-[36px] rounded-t-md bg-[var(--primary)]/85"
+                    style={{ height: `${Math.max(4, d.rate)}%` }}
+                    title={`${d.date}: ${d.rate}%`}
+                  />
+                </div>
+                <span className="text-[10px] font-medium text-slate-500">
+                  {new Date(`${d.date}T12:00:00`).toLocaleDateString("fr-FR", { weekday: "short" })}
+                </span>
+                <span className="text-[10px] font-semibold text-slate-700">{Math.round(d.rate)}%</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </DashboardSection>
+
+      <div className="flex items-center gap-2 text-xs text-slate-400">
+        <Users size={12} />
+        Données calculées en direct depuis la base Supabase de votre établissement.
+      </div>
     </div>
   );
 }

@@ -1,16 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { useTeacherContext } from "../TeacherContext";
 import { EditableTable } from "@/components/ui/EditableTable";
+import { useToast } from "@/components/ui/Toast";
 
 type Status = "PRESENT" | "ABSENT" | "LATE";
 
 export default function TeacherAttendancePage() {
   const { selectedClassId, classes, students: contextStudents } = useTeacherContext();
+  const { success } = useToast();
+  const [saving, setSaving] = useState(false);
   const selectedClass = classes.find((c) => c.id === selectedClassId);
   const students = useMemo(
     () =>
@@ -21,10 +24,30 @@ export default function TeacherAttendancePage() {
     [contextStudents, selectedClassId],
   );
   const [status, setStatus] = useState<Record<string, Status>>({});
-  const [history, setHistory] = useState<{ dateISO: string; present: number; absent: number; late: number }[]>([
-    { dateISO: "2026-02-24", present: 28, absent: 3, late: 1 },
-    { dateISO: "2026-02-25", present: 29, absent: 2, late: 1 },
-  ]);
+  const [reason, setReason] = useState<Record<string, string>>({});
+  const [history, setHistory] = useState<{ dateISO: string; present: number; absent: number; late: number }[]>([]);
+
+  useEffect(() => {
+    if (!selectedClassId) {
+      setHistory([]);
+      setStatus({});
+      setReason({});
+      return;
+    }
+    let active = true;
+    fetch(`/api/teacher/attendance?classId=${encodeURIComponent(selectedClassId)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body: { history?: { dateISO: string; present: number; absent: number; late: number }[]; today?: Record<string, Status>; todayReason?: Record<string, string> } | null) => {
+        if (!active || !body) return;
+        setHistory(body.history ?? []);
+        setStatus(body.today ?? {});
+        setReason(body.todayReason ?? {});
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [selectedClassId]);
 
   return (
     <div className="space-y-6">
@@ -62,21 +85,60 @@ export default function TeacherAttendancePage() {
                 </select>
               ),
             },
+            {
+              key: "reason",
+              header: "Motif",
+              cell: (s) => {
+                const st = status[s.id] ?? "PRESENT";
+                if (st === "PRESENT") return <span className="text-xs text-slate-400">—</span>;
+                return (
+                  <input
+                    value={reason[s.id] ?? ""}
+                    onChange={(e) => setReason((r) => ({ ...r, [s.id]: e.target.value }))}
+                    placeholder="Motif (optionnel)"
+                    className="w-40 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
+                  />
+                );
+              },
+            },
           ]}
         />
 
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => {
-              // demo: append to history
-              const present = students.filter((s) => (status[s.id] ?? "PRESENT") === "PRESENT").length;
-              const absent = students.filter((s) => (status[s.id] ?? "PRESENT") === "ABSENT").length;
-              const late = students.filter((s) => (status[s.id] ?? "PRESENT") === "LATE").length;
-              setHistory((h) => [{ dateISO: new Date().toISOString().slice(0, 10), present, absent, late }, ...h]);
+            disabled={saving || students.length === 0}
+            onClick={async () => {
+              if (!selectedClassId || students.length === 0) return;
+              setSaving(true);
+              const todayISO = new Date().toISOString().slice(0, 10);
+              const statuses = students.map((s) => {
+                const st = (status[s.id] ?? "PRESENT") as Status;
+                return { studentId: s.id, status: st, reason: st === "PRESENT" ? null : (reason[s.id] ?? null) };
+              });
+              try {
+                const res = await fetch("/api/teacher/attendance", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ classId: selectedClassId, date: todayISO, statuses }),
+                });
+                if (!res.ok) throw new Error("save failed");
+                const present = statuses.filter((s) => s.status === "PRESENT").length;
+                const absent = statuses.filter((s) => s.status === "ABSENT").length;
+                const late = statuses.filter((s) => s.status === "LATE").length;
+                setHistory((h) => [
+                  { dateISO: todayISO, present, absent, late },
+                  ...h.filter((r) => r.dateISO !== todayISO),
+                ]);
+                success("Appel enregistré", `${present} présents · ${absent} absents · ${late} retards`);
+              } catch {
+                success("Échec de l’enregistrement", "Veuillez réessayer.");
+              } finally {
+                setSaving(false);
+              }
             }}
-            className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+            className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
           >
-            Enregistrer
+            {saving ? "Enregistrement…" : "Enregistrer l’appel"}
           </button>
           <Link
             href="/teacher/timetable"

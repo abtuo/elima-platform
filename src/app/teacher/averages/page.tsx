@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { useTeacherContext } from "../TeacherContext";
 import { EditableTable } from "@/components/ui/EditableTable";
@@ -9,17 +9,49 @@ type Row = { id: string; name: string; avg: number | null; appreciationAuto: str
 
 export default function TeacherAveragesPage() {
   const [overrides, setOverrides] = useState<Record<string, string>>({});
+  const [averages, setAverages] = useState<Record<string, number>>({});
+  const [classAverage, setClassAverage] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const { selectedClassId, students } = useTeacherContext();
+  const { selectedClassId, selectedSubjectId, selectedTerm, students } = useTeacherContext();
+
+  useEffect(() => {
+    if (!selectedClassId || !selectedSubjectId) {
+      setAverages({});
+      setClassAverage(null);
+      return;
+    }
+    let active = true;
+    setLoading(true);
+    const params = new URLSearchParams({ classId: selectedClassId, subjectId: selectedSubjectId, term: selectedTerm });
+    fetch(`/api/teacher/averages?${params.toString()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body: { averages?: { studentId: string; average: number }[]; classAverage?: number | null } | null) => {
+        if (!active || !body) return;
+        const map: Record<string, number> = {};
+        for (const a of body.averages ?? []) map[a.studentId] = a.average;
+        setAverages(map);
+        setClassAverage(body.classAverage ?? null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedClassId, selectedSubjectId, selectedTerm]);
 
   const rows: Row[] = students
     .filter((s) => s.classId === selectedClassId)
-    .map((s) => ({
-      id: s.id,
-      name: s.fullName,
-      avg: null,
-      appreciationAuto: autoAppreciation(null),
-    }))
+    .map((s) => {
+      const avg = averages[s.id] ?? null;
+      return {
+        id: s.id,
+        name: s.fullName,
+        avg,
+        appreciationAuto: autoAppreciation(avg),
+      };
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
 
   function autoAppreciation(avg: number | null) {
@@ -35,8 +67,20 @@ export default function TeacherAveragesPage() {
     <div className="space-y-6">
       <ProgressHeader
         title="Moyennes"
-        subtitle="Moyennes calculées automatiquement + appréciations auto, avec override éditable."
+        subtitle="Moyennes calculées automatiquement à partir des notes saisies, avec appréciation auto et override éditable."
       />
+
+      <section className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-slate-500">Moyenne de classe</span>
+          <span className="text-lg font-bold text-[var(--primary)]">
+            {classAverage != null ? `${classAverage.toFixed(1)}/20` : "—"}
+          </span>
+        </div>
+        <span className="text-xs text-slate-400">·</span>
+        <span className="text-xs text-slate-500">{rows.length} élèves · {selectedTerm}</span>
+        {loading ? <span className="ml-auto text-xs text-slate-400">Calcul…</span> : null}
+      </section>
 
       <section className="elima-card space-y-4">
         <EditableTable
