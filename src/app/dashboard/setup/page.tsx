@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { UploadDocument } from "@/components/dashboard/UploadDocument";
 import { useToast } from "@/components/ui/Toast";
@@ -68,7 +68,7 @@ export default function DashboardSetupPage() {
     return level.trim();
   }, [level, customLevel]);
 
-  async function fetchClasses(signal?: AbortSignal) {
+  const fetchClasses = useCallback(async (signal?: AbortSignal) => {
     try {
       setClassesLoading(true);
       setClassesError(null);
@@ -90,13 +90,13 @@ export default function DashboardSetupPage() {
         setClassesLoading(false);
       }
     }
-  }
+  }, [selectedClassId]);
 
   useEffect(() => {
     const controller = new AbortController();
     fetchClasses(controller.signal);
     return () => controller.abort();
-  }, []);
+  }, [fetchClasses]);
 
   const selectedClass = classes.find((item) => item.id === selectedClassId);
 

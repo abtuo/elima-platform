@@ -20,9 +20,18 @@ export function RiskStudentCard({ student }: { student: AtRiskStudentDetail }) {
   return (
     <div className="flex items-start justify-between gap-3 rounded-xl border border-slate-100 p-3">
       <div className="flex min-w-0 items-start gap-3">
-        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--primary)]/10 text-xs font-bold text-[var(--primary)]">
-          {initials(student.fullName)}
-        </div>
+        {student.photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={student.photoUrl}
+            alt={`Photo de ${student.fullName}`}
+            className="h-9 w-9 shrink-0 rounded-full border border-slate-200 object-cover"
+          />
+        ) : (
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--primary)]/10 text-xs font-bold text-[var(--primary)]">
+            {initials(student.fullName)}
+          </div>
+        )}
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-slate-900">{student.fullName}</p>
           <p className="text-xs text-slate-500">

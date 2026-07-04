@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
+import { normalizeBrandingUrl } from "@/lib/school-branding";
+
+export const dynamic = "force-dynamic";
 
 type SchoolSettingsPayload = {
   current_term_id?: string | null;
 };
+
+function jsonNoStore(body: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers);
+  headers.set("Cache-Control", "no-store");
+  return NextResponse.json(body, { ...init, headers });
+}
 
 export async function GET() {
   try {
@@ -11,9 +20,9 @@ export async function GET() {
     const admin = await createSupabaseAdminServerClient();
 
     const { data: authData, error: authErr } = await supabase.auth.getUser();
-    if (authErr) return NextResponse.json({ message: authErr.message }, { status: 401 });
+    if (authErr) return jsonNoStore({ message: authErr.message }, { status: 401 });
     const userId = authData.user?.id;
-    if (!userId) return NextResponse.json({ message: "Utilisateur non authentifié" }, { status: 401 });
+    if (!userId) return jsonNoStore({ message: "Utilisateur non authentifié" }, { status: 401 });
 
     const { data: userRow, error: userErr } = await admin
       .from("users")
@@ -21,10 +30,10 @@ export async function GET() {
       .eq("id", userId)
       .maybeSingle();
 
-    if (userErr) return NextResponse.json({ message: userErr.message }, { status: 400 });
-    if (!userRow?.school_id) return NextResponse.json({ message: "École introuvable." }, { status: 404 });
+    if (userErr) return jsonNoStore({ message: userErr.message }, { status: 400 });
+    if (!userRow?.school_id) return jsonNoStore({ message: "École introuvable." }, { status: 404 });
     if (!["SCHOOL_ADMIN", "SUPER_ADMIN", "COMPTABLE"].includes(String(userRow.role))) {
-      return NextResponse.json({ message: "Accès refusé." }, { status: 403 });
+      return jsonNoStore({ message: "Accès refusé." }, { status: 403 });
     }
 
     const schoolId = String(userRow.school_id);
@@ -35,7 +44,7 @@ export async function GET() {
       .eq("id", schoolId)
       .maybeSingle();
 
-    if (schoolErr) return NextResponse.json({ message: schoolErr.message }, { status: 400 });
+    if (schoolErr) return jsonNoStore({ message: schoolErr.message }, { status: 400 });
 
     const { data: terms, error: termsErr } = await admin
       .from("terms")
@@ -43,15 +52,23 @@ export async function GET() {
       .eq("school_id", schoolId)
       .order("start_date", { ascending: true });
 
-    if (termsErr) return NextResponse.json({ message: termsErr.message }, { status: 400 });
+    if (termsErr) return jsonNoStore({ message: termsErr.message }, { status: 400 });
 
-    return NextResponse.json({
-      school: school ?? null,
+    const schoolPayload = school
+      ? {
+          ...school,
+          logo_url: normalizeBrandingUrl((school as { logo_url?: string | null }).logo_url),
+          stamp_url: normalizeBrandingUrl((school as { stamp_url?: string | null }).stamp_url),
+        }
+      : null;
+
+    return jsonNoStore({
+      school: schoolPayload,
       terms: terms ?? [],
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur serveur";
-    return NextResponse.json({ message }, { status: 500 });
+    return jsonNoStore({ message }, { status: 500 });
   }
 }
 

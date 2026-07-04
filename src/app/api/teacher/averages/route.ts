@@ -1,93 +1,76 @@
 import { NextResponse } from "next/server";
-import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminServerClient } from "@/lib/supabase/server";
+import { assertTeacherAssignment, resolveTeacher, resolveTermId } from "@/lib/teacher/server";
 
-/**
- * Per-student average for a class + subject + term, computed from real grades.
- * Used by the teacher "Moyennes" page.
- */
+/** Per-student average for a class + subject + term, computed from real grades. */
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const classId = url.searchParams.get("classId");
     const subjectId = url.searchParams.get("subjectId");
-    const term = url.searchParams.get("term"); // "Trimestre 1" | ...
+    const term = url.searchParams.get("term");
 
     if (!classId || !subjectId) {
       return NextResponse.json({ averages: [], classAverage: null });
     }
 
-    const supabase = await createSupabaseServerClient();
+    const ctx = await resolveTeacher();
+    if ("error" in ctx) return ctx.error;
+
     const admin = await createSupabaseAdminServerClient();
+    const assignmentError = await assertTeacherAssignment(admin, ctx, classId, subjectId);
+    if (assignmentError) return assignmentError;
 
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
-    if (authErr || !authData.user?.id) {
-      return NextResponse.json({ message: "Non authentifié" }, { status: 401 });
-    }
+    const termId = await resolveTermId(admin, ctx.schoolId, term);
 
-    const { data: userRow } = await admin
-      .from("users")
-      .select("id, role, school_id")
-      .eq("id", authData.user.id)
-      .maybeSingle();
-    if (!userRow || userRow.role !== "TEACHER") {
-      return NextResponse.json({ message: "Profil enseignant introuvable" }, { status: 404 });
-    }
-    const schoolId = String((userRow as { school_id?: string | null }).school_id ?? "");
-
-    // Resolve term id from its label (optional filter).
-    let termId: string | null = null;
-    if (term) {
-      const { data: termRow } = await admin
-        .from("terms")
-        .select("id")
-        .eq("school_id", schoolId)
-        .eq("name", term)
-        .maybeSingle();
-      termId = (termRow as { id?: string } | null)?.id ?? null;
-    }
-
-    // Evaluations for this class + subject (+ term), bounded dataset.
     let evalQuery = admin
       .from("evaluations")
       .select("id, max_score")
+      .eq("school_id", ctx.schoolId)
       .eq("class_id", classId)
       .eq("subject_id", subjectId);
     if (termId) evalQuery = evalQuery.eq("term_id", termId);
-    const { data: evalRows } = await evalQuery;
+
+    const { data: evalRows, error: evalErr } = await evalQuery;
+    if (evalErr) return NextResponse.json({ message: evalErr.message }, { status: 400 });
 
     const maxByEval = new Map<string, number>();
     for (const e of (evalRows as Array<{ id: unknown; max_score: unknown }>) ?? []) {
       maxByEval.set(String(e.id), Number(e.max_score ?? 20) || 20);
     }
+
     const evalIds = Array.from(maxByEval.keys());
     if (evalIds.length === 0) {
       return NextResponse.json({ averages: [], classAverage: null });
     }
 
-    const { data: gradeRows } = await admin
+    const { data: gradeRows, error: gradeErr } = await admin
       .from("grades")
       .select("student_id, score, evaluation_id")
+      .eq("school_id", ctx.schoolId)
       .in("evaluation_id", evalIds)
       .range(0, 20000);
+    if (gradeErr) return NextResponse.json({ message: gradeErr.message }, { status: 400 });
 
     const acc = new Map<string, { sum: number; n: number }>();
     for (const g of (gradeRows as Array<{ student_id: unknown; score: unknown; evaluation_id: unknown }>) ?? []) {
       const max = maxByEval.get(String(g.evaluation_id)) ?? 20;
-      const s20 = (Number(g.score) / (max || 20)) * 20;
-      const sid = String(g.student_id);
-      const cur = acc.get(sid) ?? { sum: 0, n: 0 };
-      cur.sum += s20;
+      const score20 = (Number(g.score) / (max || 20)) * 20;
+      const studentId = String(g.student_id);
+      const cur = acc.get(studentId) ?? { sum: 0, n: 0 };
+      cur.sum += score20;
       cur.n += 1;
-      acc.set(sid, cur);
+      acc.set(studentId, cur);
     }
 
-    const averages = Array.from(acc.entries()).map(([studentId, v]) => ({
+    const averages = Array.from(acc.entries()).map(([studentId, value]) => ({
       studentId,
-      average: Math.round((v.sum / Math.max(1, v.n)) * 10) / 10,
-      count: v.n,
+      average: Math.round((value.sum / Math.max(1, value.n)) * 10) / 10,
+      count: value.n,
     }));
+
     const classAverage = averages.length
-      ? Math.round((averages.reduce((s, a) => s + a.average, 0) / averages.length) * 10) / 10
+      ? Math.round((averages.reduce((sum, item) => sum + item.average, 0) / averages.length) * 10) / 10
       : null;
 
     return NextResponse.json({ averages, classAverage });

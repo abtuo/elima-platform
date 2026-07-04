@@ -308,6 +308,7 @@ export async function getStudentFinance(
       receiptNo: p.receipt_no ? String(p.receipt_no) : null,
     }),
   );
-  const currency = String((schoolRes.data as { currency?: string | null } | null)?.currency ?? "XOF");
+  const rawCurrency = String((schoolRes.data as { currency?: string | null } | null)?.currency ?? "XOF");
+  const currency = rawCurrency === "XOF" ? "FCFA" : rawCurrency;
   return { balance, payments, currency };
 }

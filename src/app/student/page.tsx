@@ -23,7 +23,7 @@ export default async function StudentHomePage() {
           Classe {me.className} — voici un aperçu de ta scolarité.
         </p>
       </div>
-      <StudentPortalView student={me} />
+      <StudentPortalView student={me} audience="student" />
     </div>
   );
 }

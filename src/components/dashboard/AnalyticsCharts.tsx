@@ -22,6 +22,13 @@ export function MonthlyAverageChart({ series }: { series: MonthlyPerformancePoin
   const innerH = h - padT - padB;
 
   const all = series.flatMap((p) => [p.current, p.previous].filter((v): v is number => v !== null));
+  if (all.length === 0) {
+    return (
+      <div className="flex h-56 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 text-sm text-slate-500">
+        Aucune note disponible sur les années scolaires comparées.
+      </div>
+    );
+  }
   const min = Math.max(0, Math.floor(Math.min(...all) - 1));
   const max = Math.min(20, Math.ceil(Math.max(...all) + 1));
   const span = max - min || 1;
@@ -36,11 +43,32 @@ export function MonthlyAverageChart({ series }: { series: MonthlyPerformancePoin
       .filter(Boolean)
       .join(" ");
 
+  const currentPoints = series
+    .map((p, i) => (p.current === null ? null : { x: xAt(i), y: yAt(p.current), label: p.label }))
+    .filter((p): p is { x: number; y: number; label: string } => p !== null);
+  const previousPoints = series
+    .map((p, i) => (p.previous === null ? null : { x: xAt(i), y: yAt(p.previous), label: p.label }))
+    .filter((p): p is { x: number; y: number; label: string } => p !== null);
+  const currentArea =
+    currentPoints.length > 1
+      ? `M ${currentPoints[0].x},${padT + innerH} L ${currentPoints.map((p) => `${p.x},${p.y}`).join(" L ")} L ${
+          currentPoints[currentPoints.length - 1].x
+        },${padT + innerH} Z`
+      : "";
+  const currentMonthIndex = series.findIndex((p) => p.isCurrentMonth);
+  const currentMonthX = currentMonthIndex >= 0 ? xAt(currentMonthIndex) : null;
+
   const gridValues = [min, min + span / 2, max];
 
   return (
     <div>
       <svg viewBox={`0 0 ${w} ${h}`} className="h-56 w-full" preserveAspectRatio="xMidYMid meet" aria-label="Évolution de la moyenne">
+        <defs>
+          <linearGradient id="monthlyCurrentFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2E8B57" stopOpacity={0.18} />
+            <stop offset="100%" stopColor="#2E8B57" stopOpacity={0.02} />
+          </linearGradient>
+        </defs>
         {gridValues.map((v) => {
           const y = yAt(v);
           return (
@@ -52,13 +80,29 @@ export function MonthlyAverageChart({ series }: { series: MonthlyPerformancePoin
             </g>
           );
         })}
-        <polyline fill="none" stroke="#FFD700" strokeWidth={2} strokeDasharray="6 4" points={lineFor("previous")} />
-        <polyline fill="none" stroke="#2E8B57" strokeWidth={2.5} strokeLinecap="round" points={lineFor("current")} />
-        {series.map((p, i) =>
-          p.current === null ? null : (
-            <circle key={p.label} cx={xAt(i)} cy={yAt(p.current)} r={3} fill="#2E8B57" />
-          ),
-        )}
+        {currentMonthX !== null ? (
+          <g>
+            <line x1={currentMonthX} y1={padT} x2={currentMonthX} y2={padT + innerH} stroke="#0f172a" strokeOpacity={0.18} strokeDasharray="3 4" />
+            <text x={Math.min(currentMonthX + 6, w - 86)} y={padT + 10} fontSize={9} fill="#475569">
+              Nous sommes ici
+            </text>
+          </g>
+        ) : null}
+        {currentArea ? <path d={currentArea} fill="url(#monthlyCurrentFill)" /> : null}
+        <polyline fill="none" stroke="#EAB308" strokeWidth={3} strokeDasharray="6 4" strokeLinecap="round" strokeLinejoin="round" points={lineFor("previous")} />
+        <polyline fill="none" stroke="#166534" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" points={lineFor("current")} />
+        {previousPoints.map((p) => (
+          <g key={`${p.label}-previous`}>
+            <circle cx={p.x} cy={p.y} r={5} fill="#ffffff" stroke="#EAB308" strokeWidth={2} />
+            <circle cx={p.x} cy={p.y} r={2} fill="#EAB308" />
+          </g>
+        ))}
+        {currentPoints.map((p) => (
+          <g key={p.label}>
+            <circle cx={p.x} cy={p.y} r={6} fill="#ffffff" stroke="#166534" strokeWidth={2.5} />
+            <circle cx={p.x} cy={p.y} r={2.5} fill="#166534" />
+          </g>
+        ))}
         {series.map((p, i) => (
           <text key={`${p.label}-x`} x={xAt(i)} y={h - 8} fontSize={9} fill="#64748b" textAnchor="middle">
             {p.label}
@@ -67,10 +111,10 @@ export function MonthlyAverageChart({ series }: { series: MonthlyPerformancePoin
       </svg>
       <div className="mt-2 flex flex-wrap gap-4 text-xs text-slate-600">
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-0.5 w-5 rounded bg-[var(--primary)]" /> Période courante
+          <span className="h-0.5 w-5 rounded bg-[var(--primary)]" /> Année courante
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-0.5 w-5 rounded bg-[var(--secondary)]" /> Trimestre précédent
+          <span className="h-0.5 w-5 rounded bg-[var(--secondary)]" /> Année précédente
         </span>
       </div>
     </div>

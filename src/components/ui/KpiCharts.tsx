@@ -1,15 +1,136 @@
 "use client";
 
+import type { ClassAttendanceSummary, ClassGradeDistribution, SubjectAverageSummary } from "@/lib/dashboard/kpis";
+
 type Point = { date: string; value: number };
 
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <section className="min-w-0 rounded-3xl border border-slate-200/70 bg-white/70 p-5 shadow-sm backdrop-blur">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4">
         <h2 className="text-sm font-semibold text-slate-800">{title}</h2>
+        {subtitle ? <p className="mt-1 text-xs text-slate-500">{subtitle}</p> : null}
       </div>
-      <div className="h-64 w-full min-w-0">{children}</div>
+      <div className="h-64 w-full min-w-0 overflow-hidden">{children}</div>
     </section>
+  );
+}
+
+const gradeBuckets: Array<{ key: keyof ClassGradeDistribution["buckets"]; label: string; color: string }> = [
+  { key: "below8", label: "<8", color: "#ef4444" },
+  { key: "from8To10", label: "8-10", color: "#f97316" },
+  { key: "from10To12", label: "10-12", color: "#f59e0b" },
+  { key: "from12To14", label: "12-14", color: "#84cc16" },
+  { key: "from14To16", label: "14-16", color: "#22c55e" },
+  { key: "above16", label: "16+", color: "#0f766e" },
+];
+
+export function GradeDistributionByClassChart({ rows }: { rows: ClassGradeDistribution[] }) {
+  return (
+    <ChartCard title="Distribution des notes par classe" subtitle="Part des notes faibles, moyennes et fortes sur la période">
+      {rows.length === 0 ? (
+        <p className="text-sm text-slate-500">Aucune note sur la période.</p>
+      ) : (
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+            {rows.map((row) => {
+              const total = Math.max(1, row.totalGrades);
+              return (
+                <div key={row.classId} className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-3 text-xs">
+                    <span className="truncate font-semibold text-slate-700">{row.className}</span>
+                    <span className="shrink-0 tabular-nums text-slate-500">
+                      {row.average !== null ? `${row.average}/20` : "-"} · {row.totalGrades} notes
+                    </span>
+                  </div>
+                  <div className="flex h-4 overflow-hidden rounded-full bg-slate-100">
+                    {gradeBuckets.map((bucket) => {
+                      const value = row.buckets[bucket.key];
+                      if (value <= 0) return null;
+                      return (
+                        <div
+                          key={bucket.key}
+                          title={`${bucket.label}: ${value} note(s)`}
+                          style={{ width: `${(value / total) * 100}%`, backgroundColor: bucket.color }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-3 shrink-0 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
+            {gradeBuckets.map((bucket) => (
+              <span key={bucket.key} className="inline-flex items-center gap-1">
+                <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: bucket.color }} />
+                {bucket.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </ChartCard>
+  );
+}
+
+export function ClassAttendanceFocusChart({ rows }: { rows: ClassAttendanceSummary[] }) {
+  return (
+    <ChartCard title="Classes à suivre côté assiduité" subtitle="Absences et retards cumulés sur la période">
+      {rows.length === 0 ? (
+        <p className="text-sm text-slate-500">Aucune présence enregistrée.</p>
+      ) : (
+        <div className="h-full space-y-2 overflow-y-auto pr-1">
+          {rows.slice(0, 5).map((row) => {
+            const incidents = row.absent + row.late;
+            const maxIncidents = Math.max(1, ...rows.map((r) => r.absent + r.late));
+            return (
+              <div key={row.classId} className="rounded-xl border border-slate-100 px-3 py-2">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="font-semibold text-slate-800">{row.className}</span>
+                  <span className="text-xs font-semibold text-slate-500">{row.rate}% présence</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-full rounded-full bg-amber-500" style={{ width: `${Math.max(4, (incidents / maxIncidents) * 100)}%` }} />
+                </div>
+                <div className="mt-1 flex justify-between text-[11px] text-slate-500">
+                  <span>{row.absent} absences</span>
+                  <span>{row.late} retards</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </ChartCard>
+  );
+}
+
+export function SubjectAverageChart({ rows }: { rows: SubjectAverageSummary[] }) {
+  return (
+    <ChartCard title="Matières qui tirent la moyenne" subtitle="Moyenne par matière, de la plus fragile à la plus solide">
+      {rows.length === 0 ? (
+        <p className="text-sm text-slate-500">Aucune note sur la période.</p>
+      ) : (
+        <div className="h-full space-y-2.5 overflow-y-auto pr-1">
+          {rows.slice(0, 6).map((row) => {
+            const color = row.average < 10 ? "bg-rose-500" : row.average < 12 ? "bg-amber-500" : "bg-emerald-500";
+            return (
+              <div key={row.subjectId} className="space-y-1">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="truncate font-semibold text-slate-800">{row.subjectName}</span>
+                  <span className="shrink-0 font-semibold tabular-nums text-slate-700">{row.average}/20</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.min(100, (row.average / 20) * 100)}%` }} />
+                </div>
+                <p className="text-[11px] text-slate-500">{row.gradesCount} note(s)</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </ChartCard>
   );
 }
 

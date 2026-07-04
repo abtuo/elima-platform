@@ -4,6 +4,7 @@ import { buildStudentReportPdf } from "@/lib/report-pdf";
 import { logEvent } from "@/lib/logger";
 import { computeAcademicMetric } from "@/lib/academic-intelligence";
 import { createSupabaseAdminServerClient } from "@/lib/supabase/server";
+import { brandingStoragePathFromUrl } from "@/lib/school-branding";
 
 function slugSegment(value: string, fallback: string) {
   const normalized = value
@@ -13,6 +14,11 @@ function slugSegment(value: string, fallback: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   return normalized || fallback;
+}
+
+function pickOne<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
 }
 
 export async function GET(
@@ -47,7 +53,7 @@ export async function GET(
     .select(`
       id, full_name, school_id, class_id,
       class:classes!students_class_id_fkey(id, name, level, academic_year),
-      school:schools!students_school_id_fkey(name, city, country, phone, logo_url, stamp_url)
+      school:schools!students_school_id_fkey(name, city, country, address, phone, logo_url, stamp_url)
     `)
     .eq("id", studentId)
     .maybeSingle();
@@ -60,8 +66,22 @@ export async function GET(
   }
 
   try {
-      const classRow = (studentRow as { class?: Array<{ id: string; name: string; level: string; academic_year: string }> | null }).class?.[0];
-      const schoolRow = (studentRow as { school?: Array<{ name?: string; city?: string; country?: string; phone?: string; logo_url?: string | null; stamp_url?: string | null }> | null }).school?.[0];
+      const classRow = pickOne(
+        (studentRow as {
+          class?:
+            | { id: string; name: string; level: string; academic_year: string }
+            | Array<{ id: string; name: string; level: string; academic_year: string }>
+            | null;
+        }).class,
+      );
+      const schoolRow = pickOne(
+        (studentRow as {
+          school?:
+            | { name?: string; city?: string; country?: string; address?: string | null; phone?: string; logo_url?: string | null; stamp_url?: string | null }
+            | Array<{ name?: string; city?: string; country?: string; address?: string | null; phone?: string; logo_url?: string | null; stamp_url?: string | null }>
+            | null;
+        }).school,
+      );
       schoolLogoUrl = schoolRow?.logo_url ? String(schoolRow.logo_url) : null;
       schoolStampUrl = schoolRow?.stamp_url ? String(schoolRow.stamp_url) : null;
       const schoolId = String((studentRow as { school_id: string }).school_id);
@@ -79,10 +99,10 @@ export async function GET(
           name: String(schoolRow.name ?? demoSchool.name),
           city: schoolRow.city ? String(schoolRow.city) : undefined,
           country: schoolRow.country ? String(schoolRow.country) : undefined,
+          address: schoolRow.address ? String(schoolRow.address) : undefined,
           phone: schoolRow.phone ? String(schoolRow.phone) : undefined,
           email: undefined,
           site: undefined,
-          address: undefined,
         };
       }
 
@@ -153,9 +173,6 @@ export async function GET(
         subjectCoeff: number;
         teacherName: string | null;
       };
-      const pickOne = <T>(v: T[] | T | null | undefined): T | null =>
-        Array.isArray(v) ? (v[0] ?? null) : (v ?? null);
-
       const evalById = new Map<string, EvalInfo>();
       for (const e of (evalRowsRaw as unknown as Array<{
         id: unknown;
@@ -388,8 +405,20 @@ export async function GET(
 
   const fetchRemoteImage = async (url: string | null): Promise<{ bytes: Uint8Array; type: "png" | "jpg" } | undefined> => {
     if (!url) return undefined;
+    const storagePath = brandingStoragePathFromUrl(url);
+    if (storagePath) {
+      try {
+        const { data } = await admin.storage.from("documents").download(storagePath);
+        const type = imageTypeFor(storagePath, data?.type ?? null);
+        if (!data || !type) return undefined;
+        return { bytes: new Uint8Array(await data.arrayBuffer()), type };
+      } catch {
+        return undefined;
+      }
+    }
     try {
-      const res = await fetch(url);
+      const absoluteUrl = url.startsWith("/") ? new URL(url, request.url).toString() : url;
+      const res = await fetch(absoluteUrl);
       if (!res.ok) return undefined;
       const type = imageTypeFor(url, res.headers.get("content-type"));
       if (!type) return undefined;

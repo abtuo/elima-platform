@@ -47,7 +47,7 @@ export default function DashboardSettingsPage() {
       }
     }
     async function loadSchoolSettings() {
-      const res = await fetch("/api/dashboard/school-settings");
+      const res = await fetch("/api/dashboard/school-settings", { cache: "no-store" });
       if (!res.ok) return;
       const data = (await res.json().catch(() => null)) as
         | { school?: { current_term_id?: string | null; logo_url?: string | null; stamp_url?: string | null }; terms?: Term[] }
@@ -120,6 +120,14 @@ export default function DashboardSettingsPage() {
       if (!res.ok || !body?.url) throw new Error(body?.message ?? "Téléversement impossible");
       if (kind === "logo") setLogoUrl(body.url);
       else setStampUrl(body.url);
+      void fetch("/api/dashboard/school-settings", { cache: "no-store" })
+        .then((settingsRes) => (settingsRes.ok ? settingsRes.json() : null))
+        .then((data: { school?: { logo_url?: string | null; stamp_url?: string | null } } | null) => {
+          if (!data?.school) return;
+          setLogoUrl(data.school.logo_url ?? null);
+          setStampUrl(data.school.stamp_url ?? null);
+        })
+        .catch(() => null);
       // Notify the dashboard layout so the sidebar logo refreshes instantly.
       window.dispatchEvent(new CustomEvent("elima:branding-updated", { detail: { kind, url: body.url } }));
       setBrandStatus(kind === "logo" ? "Logo mis à jour." : "Tampon mis à jour.");

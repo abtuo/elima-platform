@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
 
 export function DashboardSection({
+  id,
   title,
   subtitle,
   action,
   children,
   className = "",
 }: {
+  id?: string;
   title: string;
   subtitle?: string;
   action?: ReactNode;
@@ -14,7 +16,7 @@ export function DashboardSection({
   className?: string;
 }) {
   return (
-    <section className={`rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:p-5 ${className}`}>
+    <section id={id} className={`rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:p-5 ${className}`}>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-slate-900">{title}</h2>

@@ -7,8 +7,23 @@ type StudentPayload = {
   birthDate?: string | null;
 };
 
+const STUDENT_PROFILE_PHOTOS = [
+  "/student_profil_1.png",
+  "/student_profil_2.png",
+  "/student_profil_3.png",
+  "/student_profil_4.png",
+  "/student_profil_5.png",
+] as const;
+
 function normalizeName(value: string) {
   return value.trim().replace(/\s+/g, " ");
+}
+
+function isMissingColumnError(error: { code?: string; message?: string } | null | undefined, column: string) {
+  if (!error) return false;
+  const msg = String(error.message ?? "");
+  const code = String(error.code ?? "");
+  return code === "PGRST204" || (msg.includes(column) && /column|schema cache|does not exist/i.test(msg));
 }
 
 export async function POST(request: Request) {
@@ -54,6 +69,12 @@ export async function POST(request: Request) {
       .eq("class_id", classId);
     if (existingErr) return NextResponse.json({ message: existingErr.message }, { status: 400 });
 
+    const photoProbe = await admin.from("students").select("photo_url").eq("school_id", schoolId).limit(1);
+    if (photoProbe.error && !isMissingColumnError(photoProbe.error, "photo_url")) {
+      return NextResponse.json({ message: photoProbe.error.message }, { status: 400 });
+    }
+    const studentsHasPhotoUrl = !photoProbe.error;
+
     const existingNames = new Set(
       (existingRows ?? []).map((row) => String((row as { full_name: string }).full_name).toLocaleLowerCase("fr")),
     );
@@ -73,10 +94,13 @@ export async function POST(request: Request) {
         return true;
       })
       .filter((student) => !existingNames.has(student.fullName.toLocaleLowerCase("fr")))
-      .map((student) => ({
+      .map((student, index) => ({
         school_id: schoolId,
         class_id: classId,
         full_name: student.fullName,
+        ...(studentsHasPhotoUrl
+          ? { photo_url: STUDENT_PROFILE_PHOTOS[((existingRows?.length ?? 0) + index) % STUDENT_PROFILE_PHOTOS.length] }
+          : {}),
         registration_number: student.registrationNumber,
         birth_date: student.birthDate,
       }));

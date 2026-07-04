@@ -172,6 +172,8 @@ export function UploadDocument({ classId, className, onUploaded }: UploadDocumen
               className="h-72 w-full rounded-xl border border-slate-200"
             />
           ) : (
+            // Blob previews cannot be optimized by next/image.
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={previewUrl} alt="Prévisualisation" className="max-h-72 w-full rounded-xl object-contain" />
           )}
         </div>

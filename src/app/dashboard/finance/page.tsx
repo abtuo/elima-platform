@@ -30,7 +30,8 @@ type UnpaidRow = {
 };
 
 function money(value: number, currency: string) {
-  return `${value.toLocaleString("fr-FR")} ${currency}`;
+  const label = currency === "XOF" ? "FCFA" : currency;
+  return `${value.toLocaleString("fr-FR")} ${label}`;
 }
 
 export default function FinanceDashboardPage() {
@@ -61,7 +62,7 @@ export default function FinanceDashboardPage() {
     load();
   }, [load]);
 
-  const currency = overview?.currency ?? "XOF";
+  const currency = overview?.currency ?? "FCFA";
 
   async function recordPayment(row: UnpaidRow) {
     const raw = amountDraft[row.studentId] ?? String(row.remaining);

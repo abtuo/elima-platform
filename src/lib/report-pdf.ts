@@ -192,7 +192,7 @@ export async function buildStudentReportPdf(input: {
   }
 
   // Title
-  drawText(page, isFinal ? "BULLETIN DE FIN D'ANNÉE" : `BULLETIN — ${input.term.toUpperCase()}`, {
+  drawText(page, isFinal ? "BULLETIN DE FIN D'ANNÉE" : `BULLETIN ${input.term.toUpperCase()}`, {
     x: margin,
     y: top - 108,
     size: 16,
@@ -432,7 +432,7 @@ export async function buildStudentReportPdf(input: {
 
   const rank = input.schoolStats?.rank;
   const rankTotal = input.schoolStats?.rankTotal;
-  const rankText = rank != null && rankTotal != null ? `${rank}${rank === 1 ? "er" : "e"} / ${rankTotal}` : "—";
+  const rankText = rank != null && rankTotal != null ? `${rank}${rank === 1 ? "er" : "e"} / ${rankTotal}` : "-";
 
   summaryCard(0, "Moyenne du trimestre", `${formatScore(input.schoolStats?.termAverage ?? input.student.average)}/20`);
   summaryCard(1, "Rang", rankText);
@@ -466,7 +466,7 @@ export async function buildStudentReportPdf(input: {
     page.drawRectangle({ x: absX, y: cursorY - 18, width: halfW, height: 18, color: COLORS.primary });
     drawText(page, "Moyenne générale annuelle", { x: absX + 10, y: cursorY - 14, size: 10, font: bold, color: COLORS.white });
     const annual = input.schoolStats?.annualAverage;
-    drawText(page, annual == null ? "—" : `${formatScore(annual)}/20`, {
+    drawText(page, annual == null ? "-" : `${formatScore(annual)}/20`, {
       x: absX + 10,
       y: cursorY - 60,
       size: 26,
@@ -525,14 +525,14 @@ export async function buildStudentReportPdf(input: {
   // Footer
   const footerY = 24;
   page.drawLine({ start: { x: margin, y: footerY + 16 }, end: { x: A4[0] - margin, y: footerY + 16 }, color: COLORS.line, thickness: 1 });
-  drawText(page, "Elima — la plateforme educative pour l'Afrique.", {
+  drawText(page, "Elima, la plateforme educative intelligente.", {
     x: margin,
     y: footerY,
     size: 9,
     font: bold,
     color: COLORS.muted,
   });
-  const dateStr = `Genere le ${new Date().toLocaleDateString("fr-FR")} via la plateforme Elima — Tous droits reserves`;
+  const dateStr = `Édité le ${new Date().toLocaleDateString("fr-FR")} via la plateforme Elima. Tous droits reserves`;
   drawText(page, dateStr, {
     x: A4[0] - margin - font.widthOfTextAtSize(dateStr, 9),
     y: footerY,

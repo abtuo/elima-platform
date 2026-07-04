@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminServerClient } from "@/lib/supabase/server";
-import { resolveTeacher } from "@/lib/teacher/server";
+import { assertTeacherAssignment, resolveTeacher } from "@/lib/teacher/server";
 import { homeworkInputSchema } from "@/lib/validation";
 
 /** List homeworks for a class (optionally filtered by subject). */
@@ -43,6 +43,8 @@ export async function POST(request: Request) {
     const ctx = await resolveTeacher();
     if ("error" in ctx) return ctx.error;
     const admin = await createSupabaseAdminServerClient();
+    const assignmentError = await assertTeacherAssignment(admin, ctx, parsed.data.classId, parsed.data.subjectId);
+    if (assignmentError) return assignmentError;
 
     const { data, error } = await admin
       .from("homeworks")
@@ -60,6 +62,44 @@ export async function POST(request: Request) {
       .single();
     if (error) return NextResponse.json({ message: error.message }, { status: 400 });
     return NextResponse.json({ ok: true, id: (data as { id: string }).id });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Erreur serveur";
+    return NextResponse.json({ message }, { status: 500 });
+  }
+}
+
+/** Update a homework owned by the teacher's school and assignment. */
+export async function PUT(request: Request) {
+  try {
+    const json = (await request.json()) as { id?: string };
+    const id = String(json.id ?? "").trim();
+    const parsed = homeworkInputSchema.safeParse(json);
+    if (!id) return NextResponse.json({ message: "id requis" }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ message: "DonnÃ©es invalides", issues: parsed.error.issues }, { status: 400 });
+    }
+
+    const ctx = await resolveTeacher();
+    if ("error" in ctx) return ctx.error;
+    const admin = await createSupabaseAdminServerClient();
+    const assignmentError = await assertTeacherAssignment(admin, ctx, parsed.data.classId, parsed.data.subjectId);
+    if (assignmentError) return assignmentError;
+
+    const { error } = await admin
+      .from("homeworks")
+      .update({
+        class_id: parsed.data.classId,
+        subject_id: parsed.data.subjectId,
+        teacher_id: ctx.teacherId,
+        title: parsed.data.title.trim(),
+        description: parsed.data.description ?? null,
+        resource_url: parsed.data.resourceUrl ?? null,
+        due_date: parsed.data.dueDate,
+      } as never)
+      .eq("id", id)
+      .eq("school_id", ctx.schoolId);
+    if (error) return NextResponse.json({ message: error.message }, { status: 400 });
+    return NextResponse.json({ ok: true, id });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur serveur";
     return NextResponse.json({ message }, { status: 500 });

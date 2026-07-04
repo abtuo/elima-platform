@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminServerClient } from "@/lib/supabase/server";
-import { resolveTeacher, resolveTermId } from "@/lib/teacher/server";
+import { assertTeacherAssignment, resolveTeacher, resolveTermId } from "@/lib/teacher/server";
 import { lessonLogInputSchema } from "@/lib/validation";
 
 /** List lesson-log entries (cahier de textes) for a class. */
@@ -43,6 +43,8 @@ export async function POST(request: Request) {
     const ctx = await resolveTeacher();
     if ("error" in ctx) return ctx.error;
     const admin = await createSupabaseAdminServerClient();
+    const assignmentError = await assertTeacherAssignment(admin, ctx, parsed.data.classId, parsed.data.subjectId);
+    if (assignmentError) return assignmentError;
     const termId = await resolveTermId(admin, ctx.schoolId, parsed.data.term ?? null);
 
     const { data, error } = await admin

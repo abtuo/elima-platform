@@ -60,7 +60,8 @@ export async function resolveCurrentSchoolId(): Promise<string | null> {
 
 async function getCurrency(admin: Awaited<ReturnType<typeof createSupabaseAdminServerClient>>, schoolId: string) {
   const { data } = await admin.from("schools").select("currency").eq("id", schoolId).maybeSingle();
-  return String((data as { currency?: string | null } | null)?.currency ?? "XOF");
+  const currency = String((data as { currency?: string | null } | null)?.currency ?? "XOF");
+  return currency === "XOF" ? "FCFA" : currency;
 }
 
 /**

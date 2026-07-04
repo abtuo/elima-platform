@@ -29,7 +29,7 @@ const nav = [
   { href: "/dashboard/attendance", label: "Présences", icon: ClipboardCheck },
   { href: "/dashboard/finance", label: "Finances", icon: Wallet },
   { href: "/dashboard/reports", label: "Bulletins", icon: FileText },
-  { href: "/dashboard/messages", label: "Messages", icon: MessageCircleMore },
+  { href: "/dashboard/messages", label: "Messagerie", icon: MessageCircleMore },
 ];
 
 type SchoolBrand = { name: string; logoUrl: string | null };
@@ -126,7 +126,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     let active = true;
-    fetch("/api/dashboard/school-settings")
+    fetch("/api/dashboard/school-settings", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((body: { school?: { name?: string; logo_url?: string | null } } | null) => {
         if (!active || !body?.school) return;

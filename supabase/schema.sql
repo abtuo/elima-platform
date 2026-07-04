@@ -101,6 +101,7 @@ create table if not exists public.schools (
   name text not null,
   country text not null,
   city text,
+  address text,
   phone text,
   current_term_id uuid references public.terms(id),
   status public.school_status not null default 'private',
@@ -182,6 +183,7 @@ create table if not exists public.students (
   class_id uuid not null references public.classes(id) on delete restrict,
   registration_number text,
   full_name text not null,
+  photo_url text,
   birth_date date,
   created_at timestamptz not null default now()
 );

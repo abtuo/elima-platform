@@ -37,17 +37,20 @@ const SEED_SCHOOL_IDS = {
   iplp: "a1111111-1111-4111-8111-111111110005",
 } as const;
 
+const ALL_SEED_SCHOOL_IDS = Object.values(SEED_SCHOOL_IDS);
+
 const SCHOOL_SPECS = [
   {
     id: SEED_SCHOOL_IDS.cma,
     name: "Collège Moderne d’Abidjan",
     city: "Abidjan",
+    address: "Rue des écoles, Cocody",
     motto: "L’excellence notre objectif",
     plan: "premium",
-    currency: "XOF",
+    currency: "FCFA",
     // Principal demo school: the richest dataset (~70% of the quality lives here).
     principal: true,
-    studentTarget: 620,
+    studentTarget: 760,
     richness: 1,
   },
   {
@@ -56,10 +59,10 @@ const SCHOOL_SPECS = [
     city: "Yamoussoukro",
     motto: "Discipline - Travail - Réussite",
     plan: "basic",
-    currency: "XOF",
+    currency: "FCFA",
     principal: false,
-    studentTarget: 280,
-    richness: 0.4,
+    studentTarget: 460,
+    richness: 0.75,
   },
   {
     id: SEED_SCHOOL_IDS.gslc,
@@ -67,7 +70,7 @@ const SCHOOL_SPECS = [
     city: "Bouaké",
     motto: "Éduquer aujourd’hui pour bâtir demain",
     plan: "custom",
-    currency: "XOF",
+    currency: "FCFA",
     principal: false,
     studentTarget: 240,
     richness: 0.4,
@@ -78,7 +81,7 @@ const SCHOOL_SPECS = [
     city: "Anyama",
     motto: "Foi - Savoir - Service",
     plan: "basic",
-    currency: "XOF",
+    currency: "FCFA",
     principal: false,
     studentTarget: 200,
     richness: 0.35,
@@ -89,12 +92,14 @@ const SCHOOL_SPECS = [
     city: "San-Pédro",
     motto: "Travail - Discipline - Réussite",
     plan: "premium",
-    currency: "XOF",
+    currency: "FCFA",
     principal: false,
     studentTarget: 180,
     richness: 0.35,
   },
 ] as const;
+
+const ACTIVE_SCHOOL_SPECS = SCHOOL_SPECS.slice(0, 2);
 
 const SUBJECT_NAMES = [
   "Mathématiques",
@@ -106,6 +111,14 @@ const SUBJECT_NAMES = [
   "Philosophie",
   "Espagnol",
   "Informatique",
+] as const;
+
+const STUDENT_PROFILE_PHOTOS = [
+  "/student_profil_1.png",
+  "/student_profil_2.png",
+  "/student_profil_3.png",
+  "/student_profil_4.png",
+  "/student_profil_5.png",
 ] as const;
 
 /** Levels with relative weights for assigning students (higher = more students). */
@@ -123,8 +136,6 @@ const LEVEL_WEIGHTS: Record<string, number> = {
   "Terminale C": 2,
   "Terminale D": 2,
 };
-
-const LEVELS = Object.keys(LEVEL_WEIGHTS);
 
 /** Light realism: philosophy only exists in the lycée (1ère / Terminale). */
 function subjectAppliesToLevel(subject: string, level: string): boolean {
@@ -242,7 +253,7 @@ type MetricOverride = {
 const PRINCIPAL_AT_RISK: { firstName: string; lastName: string; perf: Perf; metric: MetricOverride }[] = [
   { firstName: "Habib", lastName: "Koné", perf: "weak", metric: { average: 7.2, attendance: 88, trend: "DECLINING", risk: "HIGH", alert: true } },
   { firstName: "Binta", lastName: "N’Guessan", perf: "weak", metric: { average: 9.1, attendance: 72, trend: "DECLINING", risk: "HIGH", alert: true } },
-  { firstName: "Ibrahim", lastName: "Bamba", perf: "weak", metric: { average: 6.9, attendance: 79, trend: "DECLINING", risk: "HIGH", alert: true } },
+  { firstName: "Ibrahim", lastName: "Bamba", perf: "weak", metric: { average: 7.4, attendance: 79, trend: "DECLINING", risk: "HIGH", alert: true } },
   { firstName: "Oumar", lastName: "Sangaré", perf: "declining", metric: { average: 7.8, attendance: 83, trend: "DECLINING", risk: "HIGH", alert: true } },
   { firstName: "Akissi", lastName: "Fofana", perf: "declining", metric: { average: 9.8, attendance: 81, trend: "DECLINING", risk: "MEDIUM", alert: true } },
   { firstName: "Mamadou", lastName: "Amani", perf: "declining", metric: { average: 10.1, attendance: 86, trend: "DECLINING", risk: "MEDIUM", alert: true } },
@@ -536,25 +547,25 @@ type Perf = "excellent" | "average" | "weak" | "declining" | "improving";
 
 function pickPerf(seed: number): Perf {
   const r = Math.abs(seed) % 100;
-  if (r < 8) return "excellent";
-  if (r < 18) return "weak";
-  if (r < 24) return "declining";
-  if (r < 30) return "improving";
+  if (r < 6) return "excellent";
+  if (r < 16) return "weak";
+  if (r < 25) return "declining";
+  if (r < 36) return "improving";
   return "average";
 }
 
 function scoreForPerf(perf: Perf, evalIndex: number, termIndex: number): number {
   const base =
     perf === "excellent"
-      ? 16 + faker.number.float({ min: 0, max: 4, fractionDigits: 1 })
+      ? 15.2 + faker.number.float({ min: 0, max: 2.7, fractionDigits: 1 })
       : perf === "weak"
-        ? 4 + faker.number.float({ min: 0, max: 6, fractionDigits: 1 })
+        ? 6.2 + faker.number.float({ min: 0, max: 3.2, fractionDigits: 1 })
         : perf === "declining"
-          ? Math.max(4, 14 - evalIndex * 0.35 - termIndex * 0.8 + faker.number.float({ min: -2, max: 2, fractionDigits: 1 }))
+          ? Math.max(7, 13.5 - evalIndex * 0.18 - termIndex * 0.55 + faker.number.float({ min: -1.1, max: 1.1, fractionDigits: 1 }))
           : perf === "improving"
-            ? Math.min(20, 9 + evalIndex * 0.4 + termIndex * 0.9 + faker.number.float({ min: -1.5, max: 2, fractionDigits: 1 }))
-            : 9 + faker.number.float({ min: 0, max: 7, fractionDigits: 1 });
-  return Math.round(Math.min(20, Math.max(0, base)) * 10) / 10;
+            ? Math.min(16.5, 9.5 + evalIndex * 0.15 + termIndex * 0.65 + faker.number.float({ min: -0.9, max: 1.2, fractionDigits: 1 }))
+            : 9.2 + faker.number.float({ min: 0, max: 5.7, fractionDigits: 1 });
+  return Math.round(Math.min(18.2, Math.max(6, base)) * 10) / 10;
 }
 
 async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[number]): Promise<{
@@ -569,6 +580,7 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
     name: spec.name,
     country: "Côte d’Ivoire",
     city: spec.city,
+    address: "address" in spec ? spec.address : null,
     phone: ivorianMobile(),
     status: "private",
     motto: spec.motto,
@@ -626,14 +638,14 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
     subjectIds[row.name] = row.id;
   }
 
-  const classCount = faker.number.int({ min: 9, max: CLASS_BLUEPRINTS.length });
-  const blueprints = faker.helpers.shuffle([...CLASS_BLUEPRINTS]).slice(0, classCount);
+  const classCount = spec.principal ? Math.min(14, CLASS_BLUEPRINTS.length) : Math.min(12, CLASS_BLUEPRINTS.length);
+  const blueprints = CLASS_BLUEPRINTS.slice(0, classCount);
   const classIns = blueprints.map((bp) => ({
     school_id: spec.id,
     name: bp.name,
     level: bp.level,
     academic_year: ACADEMIC_YEAR,
-    capacity: faker.number.int({ min: 32, max: 48 }),
+    capacity: faker.number.int({ min: 30, max: 40 }),
   }));
   const { data: clsData, error: clsErr } = await supabase.from("classes").insert(classIns as never).select("id,name,level,capacity");
   if (clsErr || !clsData) throw new Error(`classes: ${clsErr?.message}`);
@@ -724,23 +736,50 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
       teacherSubjectClassRows.push({ teacher_id: teacherId, class_id: cls.id, subject_id: subjectId });
     }
   }
+
+  // Make the predictable demo teacher immediately useful in the teacher portal:
+  // several classes and subjects are available in the dropdowns, with real grades
+  // generated below because the assignment map points these pairs to this teacher.
+  const demoTeacherId = teacherIds[0];
+  const demoSubjects = ["MathÃ©matiques", "FranÃ§ais", "Anglais"];
+  for (const cls of classRows.slice(0, 5)) {
+    for (const subjName of demoSubjects) {
+      if (!subjectAppliesToLevel(subjName, cls.level)) continue;
+      const subjectId = subjectIds[subjName];
+      if (!subjectId) continue;
+      const alreadyAssigned = classTeacherRows.some(
+        (row) => row.class_id === cls.id && row.teacher_id === demoTeacherId && row.subject_id === subjectId,
+      );
+      if (alreadyAssigned) {
+        assignments.set(`${cls.id}:${subjectId}`, demoTeacherId);
+        continue;
+      }
+      assignments.set(`${cls.id}:${subjectId}`, demoTeacherId);
+      classTeacherRows.push({ class_id: cls.id, teacher_id: demoTeacherId, subject_id: subjectId });
+      teacherSubjectClassRows.push({ teacher_id: demoTeacherId, class_id: cls.id, subject_id: subjectId });
+    }
+  }
+
   await insertBatched(supabase, "class_teachers", classTeacherRows, 400);
   await insertBatched(supabase, "teacher_subject_classes", teacherSubjectClassRows, 400);
 
-  const targetStudents = spec.studentTarget;
-  const weights = classRows.map((c) => LEVEL_WEIGHTS[c.level] ?? 5);
-  const wSum = weights.reduce((a, b) => a + b, 0);
+  const classSlots = new Map(classRows.map((cls, index) => [cls.id, 24 + ((index * 7 + spec.city.length) % 13)]));
+  const studentsHasPhotoUrl = await hasColumn(supabase, "students", "photo_url");
 
   const studentBulk: Record<string, unknown>[] = [];
   const studentMeta: StudentMeta[] = [];
 
-  const pickWeightedClass = () => {
+  const pickClassWithSlot = () => {
+    const available = classRows.filter((cls) => (classSlots.get(cls.id) ?? 0) > 0);
+    const pool = available.length ? available : classRows;
+    const weights = pool.map((c) => (LEVEL_WEIGHTS[c.level] ?? 5) * Math.max(1, classSlots.get(c.id) ?? 1));
+    const wSum = weights.reduce((a, b) => a + b, 0);
     let r = faker.number.float({ min: 0, max: wSum });
-    for (let j = 0; j < weights.length; j += 1) {
+    for (let j = 0; j < pool.length; j += 1) {
       r -= weights[j];
-      if (r <= 0) return classRows[j];
+      if (r <= 0) return pool[j];
     }
-    return classRows[classRows.length - 1];
+    return pool[pool.length - 1];
   };
 
   const pushStudent = (fn: string, ln: string, perf: Perf, cls: (typeof classRows)[number]): string => {
@@ -755,6 +794,7 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
       school_id: spec.id,
       class_id: cls.id,
       full_name: fullName,
+      ...(studentsHasPhotoUrl ? { photo_url: STUDENT_PROFILE_PHOTOS[studentMeta.length % STUDENT_PROFILE_PHOTOS.length] } : {}),
       first_name: fn,
       last_name: ln,
       gender,
@@ -765,6 +805,7 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
       parent_email: `parent.${sid.slice(0, 8)}@seed-elima.invalid`,
       registration_number: `${spec.city.slice(0, 3).toUpperCase()}-${faker.string.numeric(5)}`,
     });
+    classSlots.set(cls.id, Math.max(0, (classSlots.get(cls.id) ?? 0) - 1));
     studentMeta.push({ id: sid, class_id: cls.id, school_id: spec.id, perf, parent_phone: parentPhone, fullName });
     return sid;
   };
@@ -773,15 +814,14 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
   // surface at the top of the dashboard "Élèves à risque" list.
   if (spec.principal) {
     for (const named of PRINCIPAL_AT_RISK) {
-      const cls = pickWeightedClass();
+      const cls = pickClassWithSlot();
       const sid = pushStudent(named.firstName, named.lastName, named.perf, cls);
       metricOverrides.set(sid, named.metric);
     }
   }
 
-  const remaining = Math.max(0, targetStudents - studentMeta.length);
-  for (let n = 0; n < remaining; n += 1) {
-    const cls = pickWeightedClass();
+  while (Array.from(classSlots.values()).some((slots) => slots > 0)) {
+    const cls = pickClassWithSlot();
     const fn = faker.helpers.arrayElement(FIRST_NAMES);
     const ln = faker.helpers.arrayElement(LAST_NAMES);
     const perf = pickPerf(faker.number.int({ min: 0, max: 1_000_000 }));
@@ -896,15 +936,60 @@ async function seedEvaluationsAndGrades(
     ["2026-01-10", "2026-03-20"],
     ["2026-04-05", TODAY_ISO],
   ];
+  const previousYearTermRanges: [string, string][] = [
+    ["2024-09-20", "2024-12-15"],
+    ["2025-01-10", "2025-03-20"],
+    ["2025-04-05", "2025-06-20"],
+  ];
 
   for (const cls of ctx.classRows) {
     const classStudents = studentRows.filter((s) => s.class_id === cls.id);
     if (classStudents.length === 0) continue;
 
     let evalIndex = 0;
+    const subjectPool = SUBJECT_NAMES.filter((s) => subjectAppliesToLevel(s, cls.level));
+
+    for (let t = 0; t < 3; t += 1) {
+      const previousPicks = faker.helpers.arrayElements(subjectPool, Math.min(subjectPool.length, Math.max(3, Math.round(4 * richness))));
+      for (const subjName of previousPicks) {
+        const evalsPerSubject = Math.max(1, faker.number.int({ min: 1, max: Math.max(1, Math.round(2 * richness)) }));
+        for (let k = 0; k < evalsPerSubject; k += 1) {
+          const subjectId = ctx.subjectIds[subjName];
+          const teacherId = ctx.assignments.get(`${cls.id}:${subjectId}`) ?? faker.helpers.arrayElement(ctx.teacherIds);
+          const eid = crypto.randomUUID();
+          evalBuffer.push({
+            id: eid,
+            school_id: ctx.spec.id,
+            class_id: cls.id,
+            subject_id: subjectId,
+            title: `${subjName} — Année précédente — ${termLabels[t]} — ${evalTypes[evalIndex % 3]}`,
+            max_score: 20,
+            evaluation_date: faker.date
+              .between({ from: previousYearTermRanges[t][0], to: previousYearTermRanges[t][1] })
+              .toISOString()
+              .slice(0, 10),
+            coefficient: faker.helpers.arrayElement([1, 1, 1.5, 2]),
+            teacher_id: teacherId,
+            ...(opts.evaluationsHasType ? { evaluation_type: evalTypes[evalIndex % 3] } : {}),
+          });
+          evalIndex += 1;
+          evalCount += 1;
+
+          for (const st of classStudents) {
+            const previousScore = Math.round(Math.min(18.2, Math.max(6, scoreForPerf(st.perf, evalIndex, t) + faker.number.float({ min: -0.8, max: 0.6, fractionDigits: 1 }))) * 10) / 10;
+            gradeBuffer.push({
+              evaluation_id: eid,
+              student_id: st.id,
+              school_id: ctx.spec.id,
+              score: previousScore,
+            });
+          }
+        }
+      }
+    }
+
     for (let t = 0; t < 3; t += 1) {
       const termId = ctx.termIds[t];
-      const subjectPool = SUBJECT_NAMES.filter((s) => subjectAppliesToLevel(s, cls.level));
       const subjMin = Math.max(3, Math.round(5 * richness));
       const subjMax = Math.max(subjMin + 1, Math.round(8 * richness));
       const picks = faker.helpers.arrayElements(subjectPool, Math.min(subjectPool.length, faker.number.int({ min: subjMin, max: subjMax })));
@@ -977,12 +1062,12 @@ async function seedAttendance(
   todayAbsentStudentIds: string[];
 }> {
   const rows: Record<string, unknown>[] = [];
-  // Last 30 calendar days, ending today (weekends skipped, today always included).
-  const dayCount = 30;
+  // Last 45 calendar days, ending today (weekends skipped, today always included).
+  const dayCount = 45;
   const problematic = new Set(
     faker.helpers.arrayElements(
       studentRows.map((s) => s.id),
-      Math.max(8, Math.floor(studentRows.length * 0.05)),
+      Math.max(10, Math.floor(studentRows.length * 0.08)),
     ),
   );
 
@@ -996,16 +1081,16 @@ async function seedAttendance(
   for (const st of studentRows) {
     if (problematic.has(st.id)) {
       profile.set(st.id, {
-        pAbsent: faker.number.float({ min: 10, max: 24 }),
-        pLate: faker.number.float({ min: 8, max: 18 }),
+        pAbsent: faker.number.float({ min: 12, max: 22 }),
+        pLate: faker.number.float({ min: 8, max: 16 }),
       });
-    } else if (faker.number.float({ min: 0, max: 100 }) < 55) {
+    } else if (faker.number.float({ min: 0, max: 100 }) < 12) {
       // ~55% of regular students are perfectly assiduous → 100% presence.
       profile.set(st.id, { pAbsent: 0, pLate: 0 });
     } else {
       profile.set(st.id, {
-        pAbsent: faker.number.float({ min: 0, max: 7 }),
-        pLate: faker.number.float({ min: 1, max: 10 }),
+        pAbsent: faker.number.float({ min: 2, max: 8 }),
+        pLate: faker.number.float({ min: 2, max: 11 }),
       });
     }
   }
@@ -1071,14 +1156,14 @@ async function seedPayments(
       student_id: st.id,
       school_id: ctx.spec.id,
       parent_phone: st.parent_phone,
-      amount: 65000,
+      amount: 25000,
       type: "inscription",
       provider: faker.helpers.arrayElement(providers),
       status,
       created_at: faker.date.past({ years: 1 }).toISOString(),
     });
 
-    const scolar = faker.number.int({ min: 25000, max: 150000 });
+    const scolar = faker.number.int({ min: 35000, max: 55000 });
     const roll2 = faker.number.int({ min: 1, max: 100 });
     const status2 = roll2 <= 60 ? "paid" : roll2 <= 90 ? "pending" : "failed";
     rows.push({
@@ -1495,7 +1580,7 @@ async function main() {
     console.log("[seed] Warning: evaluations.evaluation_type absent -> seeding evaluations without type.");
   }
 
-  const schoolIds = SCHOOL_SPECS.map((s) => s.id);
+  const schoolIds = ALL_SEED_SCHOOL_IDS;
 
   if (reset) {
     console.log("[seed] --reset: removing previous seed schools and related data…");
@@ -1508,14 +1593,14 @@ async function main() {
     }
   }
 
-  console.log("[seed] Creating 5 schools, terms, subjects, classes, teachers (auth), students…");
+  console.log("[seed] Creating 2 schools, terms, subjects, classes, teachers (auth), students...");
   const allStudents: StudentMeta[] = [];
   const contexts: SchoolCtx[] = [];
   const demoAuths: DemoAuthCredential[] = [];
   const studentsBySchool = new Map<string, StudentMeta[]>();
   let totalTeachers = 0;
 
-  for (const spec of SCHOOL_SPECS) {
+  for (const spec of ACTIVE_SCHOOL_SPECS) {
     const seeded = await seedSchool(supabase, spec);
     const { ctx, studentRows } = seeded;
     contexts.push(ctx);
@@ -1654,8 +1739,8 @@ async function main() {
   console.log(
     JSON.stringify(
       {
-        schools: SCHOOL_SPECS.length,
-        principalSchool: SCHOOL_SPECS[0].name,
+        schools: ACTIVE_SCHOOL_SPECS.length,
+        principalSchool: ACTIVE_SCHOOL_SPECS[0].name,
         students: allStudents.length,
         teachers: totalTeachers,
         evaluationsApprox: totalEval,

@@ -106,11 +106,11 @@ export function ReportsPanel() {
 
   useEffect(() => {
     if (!effectiveSelectedClassId) {
-      setRanking([]);
-      setClassAverage(null);
       return;
     }
     let isMounted = true;
+    // This effect starts a network request and mirrors its pending state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRankingLoading(true);
     const params = new URLSearchParams({ classId: effectiveSelectedClassId, term: selectedTerm });
     fetch(`/api/dashboard/class-ranking?${params.toString()}`)
@@ -135,8 +135,16 @@ export function ReportsPanel() {
   }, [effectiveSelectedClassId, selectedTerm]);
 
   const hasGeneratedBulletins = generatedStudentIds.length > 0;
+  const effectiveRanking = useMemo(
+    () => (effectiveSelectedClassId ? ranking : []),
+    [effectiveSelectedClassId, ranking],
+  );
+  const effectiveClassAverage = effectiveSelectedClassId ? classAverage : null;
 
-  const rankingByStudent = useMemo(() => new Map(ranking.map((row) => [row.studentId, row])), [ranking]);
+  const rankingByStudent = useMemo(
+    () => new Map(effectiveRanking.map((row) => [row.studentId, row])),
+    [effectiveRanking],
+  );
 
   const studentNameById = useMemo(
     () => new Map(studentsInClass.map((student) => [student.id, student])),
@@ -145,8 +153,8 @@ export function ReportsPanel() {
 
   /** Liste unifiée : classement avant génération, bulletins enrichis après. */
   const displayRows = useMemo(() => {
-    if (ranking.length > 0) {
-      return ranking.map((row) => ({
+    if (effectiveRanking.length > 0) {
+      return effectiveRanking.map((row) => ({
         ...row,
         student: studentNameById.get(row.studentId),
       }));
@@ -161,7 +169,7 @@ export function ReportsPanel() {
         student,
       }))
       .sort((a, b) => a.fullName.localeCompare(b.fullName, "fr"));
-  }, [ranking, studentsInClass, studentNameById]);
+  }, [effectiveRanking, studentsInClass, studentNameById]);
 
   function defaultAppreciation(row?: RankingRow) {
     const average = row?.average;
@@ -308,9 +316,9 @@ export function ReportsPanel() {
               : `Classement de la classe — ${selectedTerm}`}
           </h3>
           <div className="flex flex-wrap items-center gap-2">
-            {classAverage != null ? (
+            {effectiveClassAverage != null ? (
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                Moyenne de classe : {classAverage.toFixed(2)}/20
+                Moyenne de classe : {effectiveClassAverage.toFixed(2)}/20
               </span>
             ) : null}
             {hasGeneratedBulletins ? (

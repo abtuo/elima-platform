@@ -1,4 +1,5 @@
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
+import { normalizeBrandingUrl } from "@/lib/school-branding";
 
 export type DashboardStats = {
   schoolId: string;
@@ -115,7 +116,7 @@ export async function getDashboardStatsForCurrentUserSchool(): Promise<Dashboard
   return {
     schoolId,
     schoolName: String(school?.name ?? "École"),
-    schoolLogoUrl: (school as { logo_url?: string | null } | null)?.logo_url ?? null,
+    schoolLogoUrl: normalizeBrandingUrl((school as { logo_url?: string | null } | null)?.logo_url),
     schoolCity: school?.city ?? null,
     schoolCountry: school?.country ?? null,
     schoolStatus: (school as { status?: string | null } | null)?.status ?? null,

@@ -296,15 +296,18 @@ function AttendanceDayPieChart({ day }: { day: AttendanceSchoolDayBreakdown }) {
     );
   }
 
-  let cursor = 0;
-  const slices = ATTENDANCE_PIE_SEGMENTS.map((segment) => {
+  const slices = ATTENDANCE_PIE_SEGMENTS.reduce<Array<(typeof ATTENDANCE_PIE_SEGMENTS)[number] & {
+    value: number;
+    start: number;
+    end: number;
+  }>>((acc, segment) => {
     const value = day[segment.key];
     const angle = (value / total) * 360;
-    const start = cursor;
-    const end = cursor + angle;
-    cursor = end;
-    return { ...segment, value, start, end };
-  }).filter((slice) => slice.value > 0);
+    const start = acc.at(-1)?.end ?? 0;
+    const end = start + angle;
+    if (value > 0) acc.push({ ...segment, value, start, end });
+    return acc;
+  }, []);
 
   return (
     <div className="flex flex-col items-center rounded-xl border border-slate-100 bg-slate-50/60 p-3">
@@ -494,7 +497,7 @@ export function AdminDashboardHome({ data }: { data: AdminCockpitData }) {
               academicPerformance.comparisonPct !== null ? (
                 <span className="text-sm font-semibold text-[var(--primary)]">
                   {academicPerformance.comparisonPct > 0 ? "+" : ""}
-                  {academicPerformance.comparisonPct}% vs trimestre précédent
+                  {academicPerformance.comparisonPct}% vs année précédente à date
                 </span>
               ) : null
             }
@@ -676,7 +679,7 @@ export function AdminDashboardHome({ data }: { data: AdminCockpitData }) {
               href="/dashboard/messages"
               className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[var(--primary)]"
             >
-              Ouvrir les messages <BookOpen size={14} />
+              Ouvrir la messagerie <BookOpen size={14} />
             </Link>
           </DashboardSection>
         </div>

@@ -2,6 +2,37 @@ import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/l
 
 export type KpiPoint = { date: string; value: number };
 
+export type ClassGradeDistribution = {
+  classId: string;
+  className: string;
+  average: number | null;
+  totalGrades: number;
+  buckets: {
+    below8: number;
+    from8To10: number;
+    from10To12: number;
+    from12To14: number;
+    from14To16: number;
+    above16: number;
+  };
+};
+
+export type ClassAttendanceSummary = {
+  classId: string;
+  className: string;
+  present: number;
+  absent: number;
+  late: number;
+  rate: number;
+};
+
+export type SubjectAverageSummary = {
+  subjectId: string;
+  subjectName: string;
+  average: number;
+  gradesCount: number;
+};
+
 export type SchoolKpis = {
   schoolId: string;
   from: string; // ISO date
@@ -32,6 +63,9 @@ export type SchoolKpis = {
   attendanceDailyPresent: KpiPoint[];
   attendanceDailyAbsent: KpiPoint[];
   gradesDailyAverage: KpiPoint[]; // avg(score) per day for evaluation_date
+  classGradeDistributions: ClassGradeDistribution[];
+  classAttendance: ClassAttendanceSummary[];
+  subjectAverages: SubjectAverageSummary[];
 };
 
 export type SchoolKpisParams = {
@@ -112,6 +146,9 @@ export async function getSchoolKpisForCurrentUserSchool(params: SchoolKpisParams
       attendanceDailyPresent: [],
       attendanceDailyAbsent: [],
       gradesDailyAverage: [],
+      classGradeDistributions: [],
+      classAttendance: [],
+      subjectAverages: [],
     };
   }
 
@@ -136,7 +173,7 @@ export async function getSchoolKpisForCurrentUserSchool(params: SchoolKpisParams
   // NOTE: attendance.date is a DATE column.
   const attendanceBase = admin
     .from("attendance")
-    .select("status, date")
+    .select("status, date, class_id")
     .eq("school_id", schoolId)
     .gte("date", from)
     .lte("date", to);
@@ -153,7 +190,7 @@ export async function getSchoolKpisForCurrentUserSchool(params: SchoolKpisParams
   // Strategy: fetch evaluations within date range, then fetch grades for those evaluations.
   const evalBase = admin
     .from("evaluations")
-    .select("id, evaluation_date")
+    .select("id, evaluation_date, class_id, subject_id")
     .eq("school_id", schoolId)
     .gte("evaluation_date", from)
     .lte("evaluation_date", to);
@@ -216,6 +253,134 @@ export async function getSchoolKpisForCurrentUserSchool(params: SchoolKpisParams
   const attendanceDailyPresent = dates.map((d) => ({ date: d, value: byDatePresent.get(d) ?? 0 }));
   const attendanceDailyAbsent = dates.map((d) => ({ date: d, value: byDateAbsent.get(d) ?? 0 }));
 
+  const { data: classRows, error: classErr } = await admin
+    .from("classes")
+    .select("id, name, level")
+    .eq("school_id", schoolId);
+  if (classErr) throw classErr;
+  const classNames = new Map(
+    ((classRows ?? []) as Array<{ id: string; name: string; level: string | null }>).map((row) => [
+      String(row.id),
+      String(row.name),
+    ]),
+  );
+
+  const evalMetaById = new Map<string, { classId: string; subjectId: string | null }>();
+  const subjectIds = new Set<string>();
+  ((evals ?? []) as Array<{ id: string; class_id?: string | null; subject_id?: string | null }>).forEach((evaluation) => {
+    const subjectId = evaluation.subject_id ? String(evaluation.subject_id) : null;
+    evalMetaById.set(String(evaluation.id), {
+      classId: String(evaluation.class_id ?? ""),
+      subjectId,
+    });
+    if (subjectId) subjectIds.add(subjectId);
+  });
+
+  const subjectNames = new Map<string, string>();
+  if (subjectIds.size > 0) {
+    const { data: subjectRows, error: subjectErr } = await admin
+      .from("subjects")
+      .select("id, name")
+      .eq("school_id", schoolId)
+      .in("id", Array.from(subjectIds));
+    if (subjectErr) throw subjectErr;
+    ((subjectRows ?? []) as Array<{ id: string; name: string }>).forEach((row) => {
+      subjectNames.set(String(row.id), String(row.name));
+    });
+  }
+
+  const classGradeAgg = new Map<
+    string,
+    {
+      sum: number;
+      n: number;
+      buckets: ClassGradeDistribution["buckets"];
+    }
+  >();
+  const subjectAgg = new Map<string, { sum: number; n: number }>();
+  if (evaluationIds.length > 0) {
+    const { data: distributionGrades, error: distErr } = await admin
+      .from("grades")
+      .select("score, evaluation_id")
+      .eq("school_id", schoolId)
+      .in("evaluation_id", evaluationIds);
+    if (distErr) throw distErr;
+    for (const grade of distributionGrades ?? []) {
+      const meta = evalMetaById.get(String((grade as { evaluation_id: string }).evaluation_id));
+      if (!meta?.classId) continue;
+      const score = Number((grade as { score: number | string }).score);
+      const cur =
+        classGradeAgg.get(meta.classId) ??
+        {
+          sum: 0,
+          n: 0,
+          buckets: { below8: 0, from8To10: 0, from10To12: 0, from12To14: 0, from14To16: 0, above16: 0 },
+        };
+      cur.sum += Number.isFinite(score) ? score : 0;
+      cur.n += 1;
+      if (score < 8) cur.buckets.below8 += 1;
+      else if (score < 10) cur.buckets.from8To10 += 1;
+      else if (score < 12) cur.buckets.from10To12 += 1;
+      else if (score < 14) cur.buckets.from12To14 += 1;
+      else if (score < 16) cur.buckets.from14To16 += 1;
+      else cur.buckets.above16 += 1;
+      classGradeAgg.set(meta.classId, cur);
+
+      if (meta.subjectId) {
+        const subj = subjectAgg.get(meta.subjectId) ?? { sum: 0, n: 0 };
+        subj.sum += Number.isFinite(score) ? score : 0;
+        subj.n += 1;
+        subjectAgg.set(meta.subjectId, subj);
+      }
+    }
+  }
+
+  const classGradeDistributions = Array.from(classGradeAgg.entries())
+    .map(([classId, agg]) => ({
+      classId,
+      className: classNames.get(classId) ?? "Classe",
+      average: agg.n ? Math.round((agg.sum / agg.n) * 10) / 10 : null,
+      totalGrades: agg.n,
+      buckets: agg.buckets,
+    }))
+    .sort((a, b) => (b.totalGrades - a.totalGrades) || a.className.localeCompare(b.className, "fr"))
+    .slice(0, 8);
+
+  const classAttendanceAgg = new Map<string, { present: number; absent: number; late: number }>();
+  attendance.forEach((row) => {
+    const classId = String((row as { class_id?: string | null }).class_id ?? "");
+    if (!classId) return;
+    const cur = classAttendanceAgg.get(classId) ?? { present: 0, absent: 0, late: 0 };
+    if (row.status === "PRESENT") cur.present += 1;
+    else if (row.status === "ABSENT") cur.absent += 1;
+    else if (row.status === "LATE") cur.late += 1;
+    classAttendanceAgg.set(classId, cur);
+  });
+  const classAttendance = Array.from(classAttendanceAgg.entries())
+    .map(([classId, agg]) => {
+      const total = agg.present + agg.absent + agg.late;
+      return {
+        classId,
+        className: classNames.get(classId) ?? "Classe",
+        present: agg.present,
+        absent: agg.absent,
+        late: agg.late,
+        rate: safePercent(agg.present, total),
+      };
+    })
+    .sort((a, b) => (b.absent + b.late) - (a.absent + a.late) || a.rate - b.rate)
+    .slice(0, 8);
+
+  const subjectAverages = Array.from(subjectAgg.entries())
+    .map(([subjectId, agg]) => ({
+      subjectId,
+      subjectName: subjectNames.get(subjectId) ?? "Matiere",
+      average: Math.round((agg.sum / Math.max(1, agg.n)) * 10) / 10,
+      gradesCount: agg.n,
+    }))
+    .sort((a, b) => a.average - b.average || b.gradesCount - a.gradesCount)
+    .slice(0, 8);
+
   return {
     schoolId,
     from,
@@ -238,5 +403,8 @@ export async function getSchoolKpisForCurrentUserSchool(params: SchoolKpisParams
     attendanceDailyPresent,
     attendanceDailyAbsent,
     gradesDailyAverage,
+    classGradeDistributions,
+    classAttendance,
+    subjectAverages,
   };
 }

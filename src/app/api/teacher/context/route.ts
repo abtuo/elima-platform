@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
 
+function pickOne<T>(value: T | T[] | null | undefined): T | null {
+  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
+}
+
 export async function GET() {
   try {
     const supabase = await createSupabaseServerClient();
@@ -44,8 +48,14 @@ export async function GET() {
     const assignments: Array<{ classId: string; className: string; subjectId: string; subjectName: string }> = [];
 
     (assignmentRows ?? []).forEach((row) => {
-      const classItem = (row as { class?: Array<{ id: string; name: string; level: string; academic_year: string }> }).class?.[0];
-      const subjectItem = (row as { subject?: Array<{ id: string; name: string }> }).subject?.[0];
+      const classItem = pickOne(
+        (row as {
+          class?: { id: string; name: string; level: string; academic_year: string } | Array<{ id: string; name: string; level: string; academic_year: string }> | null;
+        }).class,
+      );
+      const subjectItem = pickOne(
+        (row as { subject?: { id: string; name: string } | Array<{ id: string; name: string }> | null }).subject,
+      );
       if (classItem) {
         classesMap.set(String(classItem.id), {
           id: String(classItem.id),
@@ -76,12 +86,15 @@ export async function GET() {
         .in("class_id", classIds)
         .order("full_name", { ascending: true });
       if (studentsErr) return NextResponse.json({ message: studentsErr.message }, { status: 400 });
-      students = (studentRows ?? []).map((row) => ({
-        id: String(row.id),
-        fullName: String((row as { full_name: string }).full_name),
-        classId: String((row as { class_id: string }).class_id),
-        className: String(((row as { class?: Array<{ name?: string }> }).class?.[0]?.name ?? "")),
-      }));
+      students = (studentRows ?? []).map((row) => {
+        const classItem = pickOne((row as { class?: { name?: string } | Array<{ name?: string }> | null }).class);
+        return {
+          id: String(row.id),
+          fullName: String((row as { full_name: string }).full_name),
+          classId: String((row as { class_id: string }).class_id),
+          className: String(classItem?.name ?? ""),
+        };
+      });
     }
 
     return NextResponse.json({

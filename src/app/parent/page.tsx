@@ -35,7 +35,7 @@ export default async function ParentHomePage({
         selectedStudentId={selected.id}
         basePath="/parent"
       />
-      <StudentPortalView student={selected} />
+      <StudentPortalView student={selected} audience="parent" />
     </div>
   );
 }

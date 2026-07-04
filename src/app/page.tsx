@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable react/no-unescaped-entities */
+
 import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
@@ -67,7 +69,7 @@ export default function Home() {
             <div className="space-y-5">
               <p className="inline-flex items-center gap-2 rounded-full bg-[var(--secondary)]/25 px-3 py-1 text-xs font-semibold text-[var(--accent)]">
                 <span className="h-2 w-2 rounded-full bg-[var(--primary)]" />
-                EdTech de gestion scolaire pour l'Afrique de l'Ouest
+                EdTech de gestion scolaire pour l&apos;Afrique de l&apos;Ouest
               </p>
 
               <h1 className="text-4xl font-bold leading-tight tracking-tight text-[var(--accent)] md:text-5xl">

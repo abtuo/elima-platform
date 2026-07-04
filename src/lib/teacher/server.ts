@@ -49,3 +49,39 @@ export async function resolveTermId(
   const { data } = await admin.from("terms").select("id").eq("school_id", schoolId).eq("name", term).maybeSingle();
   return (data as { id?: string } | null)?.id ?? null;
 }
+
+export async function assertTeacherAssignment(
+  admin: Awaited<ReturnType<typeof createSupabaseAdminServerClient>>,
+  ctx: TeacherCtx,
+  classId: string,
+  subjectId?: string | null,
+): Promise<NextResponse | null> {
+  if (!ctx.teacherId) {
+    return NextResponse.json({ message: "Enseignant non configure" }, { status: 403 });
+  }
+
+  const { data: classRow, error: classErr } = await admin
+    .from("classes")
+    .select("id")
+    .eq("id", classId)
+    .eq("school_id", ctx.schoolId)
+    .maybeSingle();
+  if (classErr) return NextResponse.json({ message: classErr.message }, { status: 400 });
+  if (!classRow) return NextResponse.json({ message: "Classe introuvable" }, { status: 404 });
+
+  let query = admin
+    .from("class_teachers")
+    .select("class_id")
+    .eq("teacher_id", ctx.teacherId)
+    .eq("class_id", classId)
+    .limit(1);
+  if (subjectId) query = query.eq("subject_id", subjectId);
+
+  const { data, error } = await query;
+  if (error) return NextResponse.json({ message: error.message }, { status: 400 });
+  if (!data || data.length === 0) {
+    return NextResponse.json({ message: "Classe ou matiere non assignee a cet enseignant" }, { status: 403 });
+  }
+
+  return null;
+}

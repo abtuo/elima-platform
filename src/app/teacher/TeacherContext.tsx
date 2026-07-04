@@ -92,6 +92,26 @@ export function TeacherContextProvider({ children }: { children: React.ReactNode
     };
   }, []);
 
+  useEffect(() => {
+    setSelectedClassId((current) => {
+      if (current && classes.some((c) => c.id === current)) return current;
+      return classes[0]?.id ?? "";
+    });
+  }, [classes]);
+
+  useEffect(() => {
+    const availableSubjectIds = selectedClassId
+      ? assignments.filter((a) => a.classId === selectedClassId).map((a) => a.subjectId)
+      : subjects.map((s) => s.id);
+    const uniqueSubjectIds = Array.from(new Set(availableSubjectIds));
+    const fallback = uniqueSubjectIds[0] ?? subjects[0]?.id ?? "";
+
+    setSelectedSubjectId((current) => {
+      if (current && uniqueSubjectIds.includes(current)) return current;
+      return fallback;
+    });
+  }, [assignments, selectedClassId, subjects]);
+
   const value = useMemo<TeacherContextValue>(
     () => ({
       selectedClassId,

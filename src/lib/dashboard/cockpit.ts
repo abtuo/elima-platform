@@ -1,4 +1,4 @@
-import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminServerClient } from "@/lib/supabase/server";
 import type { DashboardStats } from "@/lib/dashboard/queries";
 import { getDashboardStatsForCurrentUserSchool } from "@/lib/dashboard/queries";
 import type { AnalyticsAlert } from "@/lib/types";
@@ -25,6 +25,7 @@ export type ClassPerformanceRow = {
 export type AtRiskStudentDetail = {
   id: string;
   fullName: string;
+  photoUrl: string | null;
   className: string;
   level: string;
   riskLevel: "LOW" | "MEDIUM" | "HIGH";
@@ -52,6 +53,7 @@ export type MonthlyPerformancePoint = {
   label: string;
   current: number | null;
   previous: number | null;
+  isCurrentMonth?: boolean;
 };
 
 export type LevelPerformanceSeries = {
@@ -144,6 +146,13 @@ function monthLabel(dateStr: string) {
   return d.toLocaleDateString("fr-FR", { month: "short" });
 }
 
+function schoolYearMonthKeys(startYear: number) {
+  return [9, 10, 11, 12, 1, 2, 3, 4, 5, 6].map((month) => {
+    const year = month >= 9 ? startYear : startYear + 1;
+    return `${year}-${String(month).padStart(2, "0")}`;
+  });
+}
+
 function trendFromDelta(delta: number, invert = false): TrendDirection {
   const effective = invert ? -delta : delta;
   if (effective > 0.5) return "up";
@@ -206,13 +215,17 @@ function isMissingRelationError(error: { code?: string; message?: string } | nul
   );
 }
 
-async function resolveSchoolId(): Promise<string | null> {
-  const supabase = await createSupabaseServerClient();
-  const admin = await createSupabaseAdminServerClient();
-  const { data: authData, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !authData.user?.id) return null;
-  const { data: userRow } = await admin.from("users").select("school_id").eq("id", authData.user.id).maybeSingle();
-  return userRow?.school_id ? String(userRow.school_id) : null;
+function isMissingColumnError(error: { code?: string; message?: string } | null | undefined, column: string) {
+  if (!error) return false;
+  const msg = String(error.message ?? "");
+  const code = String(error.code ?? "");
+  return code === "PGRST204" || (msg.includes(column) && /column|schema cache|does not exist/i.test(msg));
+}
+
+function studentProfilePhotoUrl(studentId: string, storedPhotoUrl?: string | null) {
+  if (storedPhotoUrl) return storedPhotoUrl;
+  const seed = Array.from(studentId).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return `/student_profil_${(seed % 5) + 1}.png`;
 }
 
 function emptyCockpit(stats: DashboardStats): AdminCockpitData {
@@ -258,14 +271,20 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
   const todayStr = isoDate(today);
   const weekStart = startOfWeek(today);
   const weekStartIso = weekStart.toISOString();
-  const d7 = new Date(today);
-  d7.setDate(d7.getDate() - 6);
-  const d7Str = isoDate(d7);
   const d14 = new Date(today);
   d14.setDate(d14.getDate() - 13);
   const d14Str = isoDate(d14);
   const prevWeekStart = new Date(weekStart);
   prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+  const schoolYearStartYear = today.getMonth() >= 8 ? today.getFullYear() : today.getFullYear() - 1;
+  const currentSchoolYearStartStr = `${schoolYearStartYear}-09-01`;
+  const currentSchoolYearEndStr = `${schoolYearStartYear + 1}-06-30`;
+  const currentSchoolYearDataEndStr = todayStr > currentSchoolYearEndStr ? currentSchoolYearEndStr : todayStr;
+  const previousSchoolYearStartStr = `${schoolYearStartYear - 1}-09-01`;
+  const previousSchoolYearEndStr = `${schoolYearStartYear}-06-30`;
+  const currentSchoolYearMonths = schoolYearMonthKeys(schoolYearStartYear);
+  const previousSchoolYearMonths = schoolYearMonthKeys(schoolYearStartYear - 1);
+  const currentMonthKey = todayStr.slice(0, 7);
 
   const [
     schoolRow,
@@ -276,7 +295,6 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
     recentNotifRes,
     metricsRes,
     classesRes,
-    studentsRes,
     reportsRes,
     recentEvalsRes,
     grades6mRes,
@@ -308,7 +326,6 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       .eq("school_id", schoolId)
       .order("computed_at", { ascending: false }),
     admin.from("classes").select("id, name, level").eq("school_id", schoolId),
-    admin.from("students").select("id, full_name, class_id").eq("school_id", schoolId),
     admin.from("reports").select("id, student_id, created_at").eq("school_id", schoolId),
     admin
       .from("evaluations")
@@ -319,14 +336,31 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       .from("evaluations")
       .select("id, class_id, evaluation_date, max_score")
       .eq("school_id", schoolId)
-      .gte("evaluation_date", isoDate(new Date(today.getFullYear(), today.getMonth() - 5, 1))),
+      .gte("evaluation_date", currentSchoolYearStartStr)
+      .lte("evaluation_date", currentSchoolYearDataEndStr),
     admin
       .from("evaluations")
       .select("id, class_id, evaluation_date, max_score")
       .eq("school_id", schoolId)
-      .gte("evaluation_date", isoDate(new Date(today.getFullYear(), today.getMonth() - 11, 1)))
-      .lt("evaluation_date", isoDate(new Date(today.getFullYear(), today.getMonth() - 5, 1))),
+      .gte("evaluation_date", previousSchoolYearStartStr)
+      .lte("evaluation_date", previousSchoolYearEndStr),
   ]);
+
+  type StudentListResponse = {
+    data: Array<{ id: string; full_name: string; photo_url?: string | null; class_id: string }> | null;
+    error: { code?: string; message?: string } | null;
+  };
+
+  let studentsRes = (await admin
+    .from("students")
+    .select("id, full_name, photo_url, class_id")
+    .eq("school_id", schoolId)) as unknown as StudentListResponse;
+  if (studentsRes.error && isMissingColumnError(studentsRes.error, "photo_url")) {
+    studentsRes = (await admin
+      .from("students")
+      .select("id, full_name, class_id")
+      .eq("school_id", schoolId)) as unknown as StudentListResponse;
+  }
 
   const currentTermJoin = (schoolRow.data as { terms?: Array<{ name: string }> | null } | null)?.terms?.[0];
   let currentTermName = currentTermJoin?.name ?? null;
@@ -374,10 +408,13 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
     } else if (r.status === "LATE") breakdown.late += 1;
     breakdownByDay.set(d, breakdown);
   });
-  const weeklyTrend = Array.from(byDay.entries())
-    .filter(([date]) => date >= d7Str)
-    .sort(([a], [b]) => (a < b ? -1 : 1))
-    .map(([date, v]) => ({ date, rate: v.total ? Math.round((v.present / v.total) * 1000) / 10 : 0 }));
+  const weeklyTrend =
+    byDay.size === 0
+      ? []
+      : getLastSchoolDays(today, 7).map((date) => {
+          const v = byDay.get(date);
+          return { date, rate: v?.total ? Math.round((v.present / v.total) * 1000) / 10 : 0 };
+        });
 
   const recentSchoolDays = getLastSchoolDays(today, 4).map((date) => {
     const breakdown = breakdownByDay.get(date) ?? {
@@ -481,7 +518,7 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       : null;
 
   const studentMap = new Map(
-    ((studentsRes.data ?? []) as Array<{ id: string; full_name: string; class_id: string }>).map((s) => [
+    ((studentsRes.data ?? []) as Array<{ id: string; full_name: string; photo_url?: string | null; class_id: string }>).map((s) => [
       String(s.id),
       s,
     ]),
@@ -500,6 +537,7 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
     return {
       id: studentId,
       fullName: String(s?.full_name ?? "Élève"),
+      photoUrl: studentProfilePhotoUrl(studentId, s?.photo_url),
       className: cls?.name ?? "",
       level: cls?.level ?? "",
       riskLevel: m.risk_level as AtRiskStudentDetail["riskLevel"],
@@ -612,7 +650,6 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
     const currentByMonth = new Map<string, { sum: number; n: number }>();
     const previousByMonth = new Map<string, { sum: number; n: number }>();
     const levelByMonth = new Map<string, Map<string, { sum: number; n: number }>>();
-    const cutoff = isoDate(new Date(today.getFullYear(), today.getMonth() - 5, 1));
 
     gradeRows.forEach((g) => {
       const d = evalDateById.get(String(g.evaluation_id));
@@ -621,13 +658,16 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       if (!meta) return;
       const score20 = (Number(g.score) / (meta?.maxScore ?? 20)) * 20;
       const monthKey = d.slice(0, 7);
-      const bucket = d >= cutoff ? currentByMonth : previousByMonth;
+      const isCurrentSchoolYear = d >= currentSchoolYearStartStr && d <= currentSchoolYearDataEndStr;
+      const isPreviousSchoolYear = d >= previousSchoolYearStartStr && d <= previousSchoolYearEndStr;
+      if (!isCurrentSchoolYear && !isPreviousSchoolYear) return;
+      const bucket = isCurrentSchoolYear ? currentByMonth : previousByMonth;
       const cur = bucket.get(monthKey) ?? { sum: 0, n: 0 };
       cur.sum += score20;
       cur.n += 1;
       bucket.set(monthKey, cur);
 
-      if (d >= cutoff) {
+      if (isCurrentSchoolYear) {
         const level = classMap.get(meta.classId)?.level || "Niveau";
         const byMonth = levelByMonth.get(level) ?? new Map<string, { sum: number; n: number }>();
         const levelCur = byMonth.get(monthKey) ?? { sum: 0, n: 0 };
@@ -638,15 +678,15 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       }
     });
 
-    const monthKeys = Array.from(currentByMonth.keys()).sort();
-    monthlySeries = monthKeys.map((mk) => {
+    const monthKeys = currentSchoolYearMonths;
+    monthlySeries = monthKeys.map((mk, index) => {
       const cur = currentByMonth.get(mk);
-      const prevKey = `${Number(mk.slice(0, 4)) - 1}${mk.slice(4)}`;
-      const prev = previousByMonth.get(prevKey) ?? previousByMonth.get(mk);
+      const prev = previousByMonth.get(previousSchoolYearMonths[index]);
       return {
         label: monthLabel(`${mk}-01`),
-        current: cur ? Math.round((cur.sum / cur.n) * 10) / 10 : null,
+        current: mk <= currentMonthKey && cur ? Math.round((cur.sum / cur.n) * 10) / 10 : null,
         previous: prev ? Math.round((prev.sum / prev.n) * 10) / 10 : null,
+        isCurrentMonth: mk === currentMonthKey,
       };
     });
 
@@ -664,12 +704,9 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
       .filter((series) => series.points.some((p) => p.average !== null))
       .sort((a, b) => compareLevels(a.level, b.level));
 
-    const curAvg =
-      monthlySeries.filter((p) => p.current !== null).reduce((a, p) => a + (p.current ?? 0), 0) /
-      Math.max(1, monthlySeries.filter((p) => p.current !== null).length);
-    const prevAvg =
-      monthlySeries.filter((p) => p.previous !== null).reduce((a, p) => a + (p.previous ?? 0), 0) /
-      Math.max(1, monthlySeries.filter((p) => p.previous !== null).length);
+    const comparableMonths = monthlySeries.filter((p) => p.current !== null && p.previous !== null);
+    const curAvg = comparableMonths.reduce((a, p) => a + (p.current ?? 0), 0) / Math.max(1, comparableMonths.length);
+    const prevAvg = comparableMonths.reduce((a, p) => a + (p.previous ?? 0), 0) / Math.max(1, comparableMonths.length);
     comparisonPct = prevAvg > 0 ? Math.round(((curAvg - prevAvg) / prevAvg) * 100) : null;
 
     const classScores = new Map<string, { sum: number; n: number; students: Set<string> }>();

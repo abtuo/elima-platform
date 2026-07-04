@@ -14,10 +14,14 @@ export function ProgressHeader({ title, subtitle }: { title: string; subtitle?: 
     setSelectedTerm,
     classes,
     subjects,
+    assignments,
   } = useTeacherContext();
 
   const selectedClass = classes.find((c) => c.id === selectedClassId);
-  const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
+  const availableSubjects = selectedClassId
+    ? subjects.filter((s) => assignments.some((a) => a.classId === selectedClassId && a.subjectId === s.id))
+    : subjects;
+  const selectedSubject = availableSubjects.find((s) => s.id === selectedSubjectId) ?? subjects.find((s) => s.id === selectedSubjectId);
   const terms: TeacherTerm[] = ["Trimestre 1", "Trimestre 2", "Trimestre 3"];
 
   return (
@@ -35,13 +39,18 @@ export function ProgressHeader({ title, subtitle }: { title: string; subtitle?: 
             <select
               value={selectedClassId}
               onChange={(e) => setSelectedClassId(e.target.value)}
+              disabled={classes.length === 0}
               className="w-full bg-transparent text-sm font-semibold text-slate-800 outline-none"
             >
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {classes.length === 0 ? (
+                <option value="">Aucune classe</option>
+              ) : (
+                classes.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))
+              )}
             </select>
           </label>
 
@@ -51,13 +60,18 @@ export function ProgressHeader({ title, subtitle }: { title: string; subtitle?: 
             <select
               value={selectedSubjectId}
               onChange={(e) => setSelectedSubjectId(e.target.value)}
+              disabled={availableSubjects.length === 0}
               className="w-full bg-transparent text-sm font-semibold text-slate-800 outline-none"
             >
-              {subjects.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
+              {availableSubjects.length === 0 ? (
+                <option value="">Aucune matiere</option>
+              ) : (
+                availableSubjects.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))
+              )}
             </select>
           </label>
 

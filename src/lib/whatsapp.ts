@@ -8,12 +8,14 @@ export type WhatsAppSendResult =
   | { ok: false; status: "FAILED"; reason: string; provider?: "azure" | "twilio" };
 
 function activeProvider(): "azure" | "twilio" | null {
-  if (env.WHATSAPP_PROVIDER === "azure" && env.ACS_ENDPOINT && env.ACS_ACCESS_KEY && env.ACS_WHATSAPP_CHANNEL_ID) {
-    return "azure";
+  if (env.WHATSAPP_PROVIDER === "azure") {
+    return env.ACS_ENDPOINT && env.ACS_ACCESS_KEY && env.ACS_WHATSAPP_CHANNEL_ID ? "azure" : null;
   }
-  if (env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_WHATSAPP_FROM) {
-    return "twilio";
+  if (env.WHATSAPP_PROVIDER === "twilio") {
+    return env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_WHATSAPP_FROM ? "twilio" : null;
   }
+  if (env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_WHATSAPP_FROM) return "twilio";
+  if (env.ACS_ENDPOINT && env.ACS_ACCESS_KEY && env.ACS_WHATSAPP_CHANNEL_ID) return "azure";
   return null;
 }
 
@@ -36,6 +38,13 @@ function azureErrorMessage(error: unknown): string {
     return JSON.stringify((error as { body?: unknown }).body);
   }
   return error instanceof Error ? error.message : "Échec envoi Azure WhatsApp";
+}
+
+function twilioErrorMessage(error: unknown): string {
+  if (error && typeof error === "object" && "message" in error) {
+    return String((error as { message?: unknown }).message);
+  }
+  return error instanceof Error ? error.message : "Echec envoi Twilio WhatsApp";
 }
 
 export async function sendWhatsAppTemplate(params: {
@@ -76,6 +85,13 @@ export async function sendWhatsAppTemplate(params: {
 }
 
 export async function sendWhatsAppWelcome(params: { to: string }): Promise<WhatsAppSendResult> {
+  if (activeProvider() === "twilio") {
+    return sendWhatsAppMessage({
+      to: params.to,
+      body: "Bienvenue sur Elima. Votre espace scolaire est pret.",
+    });
+  }
+
   const templateName = env.ACS_WHATSAPP_TEMPLATE_WELCOME ?? "welcome";
   const language = env.ACS_WHATSAPP_TEMPLATE_WELCOME_LANG ?? "fr";
   return sendWhatsAppTemplate({ to: params.to, templateName, language });
@@ -112,12 +128,18 @@ export async function sendWhatsAppMessage(params: { to: string; body: string }):
     }
   }
 
-  const client = twilio(requireServerEnv("TWILIO_ACCOUNT_SID"), requireServerEnv("TWILIO_AUTH_TOKEN"));
-  const result = await client.messages.create({
-    from: requireServerEnv("TWILIO_WHATSAPP_FROM"),
-    to: params.to.startsWith("whatsapp:") ? params.to : `whatsapp:${params.to}`,
-    body: params.body,
-  });
+  try {
+    const client = twilio(requireServerEnv("TWILIO_ACCOUNT_SID"), requireServerEnv("TWILIO_AUTH_TOKEN"));
+    const from = requireServerEnv("TWILIO_WHATSAPP_FROM");
+    const to = normalizeWhatsAppPhone(params.to);
+    const result = await client.messages.create({
+      from: from.startsWith("whatsapp:") ? from : `whatsapp:${from}`,
+      to: `whatsapp:${to}`,
+      body: params.body,
+    });
 
-  return { ok: true, status: "SENT", provider: "twilio", sid: result.sid };
+    return { ok: true, status: "SENT", provider: "twilio", sid: result.sid };
+  } catch (error) {
+    return { ok: false, status: "FAILED", provider: "twilio", reason: twilioErrorMessage(error) };
+  }
 }

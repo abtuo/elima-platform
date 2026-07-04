@@ -2,7 +2,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { AttendanceAreaChart, GradesBarChart } from "@/components/ui/KpiCharts";
+import { ClassAttendanceFocusChart, GradeDistributionByClassChart, SubjectAverageChart } from "@/components/ui/KpiCharts";
 import { MonthlyAverageChart, ClassPerformanceBars } from "@/components/dashboard/AnalyticsCharts";
 import { getSchoolKpisForCurrentUserSchool } from "@/lib/dashboard/kpis";
 import { getAdminCockpitData } from "@/lib/dashboard/cockpit";
@@ -15,7 +15,6 @@ import {
   Timer,
   TrendingUp,
   UserX,
-  Users,
 } from "lucide-react";
 
 function formatDate(d: Date) {
@@ -47,6 +46,15 @@ export default async function DashboardKpisPage() {
   ]);
 
   const { academicPerformance, attendance, kpis: cockpitKpis } = cockpit;
+  const prioritySubject = kpis.subjectAverages[0] ?? null;
+  const attendanceFocus = kpis.classAttendance[0] ?? null;
+  const gradeFocus =
+    [...kpis.classGradeDistributions].sort(
+      (a, b) =>
+        b.buckets.below8 +
+        b.buckets.from8To10 -
+        (a.buckets.below8 + a.buckets.from8To10),
+    )[0] ?? null;
 
   return (
     <div className="space-y-5">
@@ -85,7 +93,7 @@ export default async function DashboardKpisPage() {
       {/* Grade evolution */}
       <DashboardSection
         title="Évolution de la moyenne générale"
-        subtitle="Moyenne mensuelle, comparée au trimestre précédent"
+        subtitle="Année scolaire de septembre à juin, comparaison à date"
         action={
           academicPerformance.comparisonPct !== null ? (
             <span className="text-sm font-semibold text-[var(--primary)]">
@@ -126,10 +134,63 @@ export default async function DashboardKpisPage() {
         />
       </section>
 
-      {/* Charts: attendance over 30 days + grades per day */}
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+        <GradeDistributionByClassChart rows={kpis.classGradeDistributions} />
+        <SubjectAverageChart rows={kpis.subjectAverages} />
+      </section>
+
       <section className="grid gap-4 lg:grid-cols-2">
-        <AttendanceAreaChart present={kpis.attendanceDailyPresent} absent={kpis.attendanceDailyAbsent} />
-        <GradesBarChart averageByDay={kpis.gradesDailyAverage} />
+        <ClassAttendanceFocusChart rows={kpis.classAttendance} />
+        <DashboardSection title="Synthèse académique" subtitle="Points saillants sur la période">
+          <div className="space-y-3 text-sm text-slate-600">
+            <div className="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2.5">
+              <p className="font-semibold text-slate-800">Matière prioritaire</p>
+              <p className="mt-1 truncate">
+                {prioritySubject ? (
+                  <>
+                    <span>{prioritySubject.subjectName}</span>
+                    <span className="text-slate-400"> · </span>
+                    <span className={prioritySubject.average < 10 ? "font-semibold text-rose-700" : "font-semibold text-amber-700"}>
+                      {prioritySubject.average}/20
+                    </span>
+                  </>
+                ) : (
+                  "Aucune note sur la période."
+                )}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2.5">
+              <p className="font-semibold text-slate-800">Classe à suivre</p>
+              <p className="mt-1 truncate">
+                {gradeFocus ? (
+                  <>
+                    <span>{gradeFocus.className}</span>
+                    <span className="text-slate-400"> · </span>
+                    <span className="font-semibold text-amber-700">{gradeFocus.buckets.below8 + gradeFocus.buckets.from8To10} notes sous 10</span>
+                  </>
+                ) : (
+                  "Aucune classe à signaler."
+                )}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2.5">
+              <p className="font-semibold text-slate-800">Assiduité</p>
+              <p className="mt-1 truncate">
+                {attendanceFocus ? (
+                  <>
+                    <span>{attendanceFocus.className}</span>
+                    <span className="text-slate-400"> · </span>
+                    <span className="font-semibold text-amber-700">{attendanceFocus.absent} absences</span>
+                    <span className="text-slate-400">, </span>
+                    <span className="font-semibold text-rose-700">{attendanceFocus.late} retards</span>
+                  </>
+                ) : (
+                  "Aucun incident d'assiduité sur la période."
+                )}
+              </p>
+            </div>
+          </div>
+        </DashboardSection>
       </section>
 
       {/* Class rankings */}
@@ -175,10 +236,6 @@ export default async function DashboardKpisPage() {
         )}
       </DashboardSection>
 
-      <div className="flex items-center gap-2 text-xs text-slate-400">
-        <Users size={12} />
-        Données calculées en direct depuis la base Supabase de votre établissement.
-      </div>
     </div>
   );
 }

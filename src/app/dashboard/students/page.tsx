@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Banknote, PencilLine, TrendingDown } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Banknote, Download, Eye, PencilLine, Receipt, TrendingDown } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 const PREFERRED_ACADEMIC_YEAR = "2025 - 2026";
@@ -23,6 +23,7 @@ type StudentAlerts = {
 type StudentItem = {
   id: string;
   fullName: string;
+  photoUrl?: string | null;
   registrationNumber?: string | null;
   birthDate?: string | null;
   classId: string;
@@ -31,6 +32,80 @@ type StudentItem = {
   academicYear: string;
   alerts?: StudentAlerts;
 };
+
+type StudentDetail = {
+  student: StudentItem;
+  summary: {
+    average: number | null;
+    attendanceRate: number | null;
+    absent: number;
+    late: number;
+    totalDue: number;
+    totalPaid: number;
+    balance: number;
+    riskLevel: string | null;
+    performanceTrend: string | null;
+    alertFlag: boolean;
+  };
+  grades: Array<{
+    id: string;
+    score: number;
+    maxScore: number;
+    coefficient: number;
+    comment: string | null;
+    evaluationTitle: string;
+    evaluationDate: string | null;
+    subjectName: string;
+    teacherName: string | null;
+  }>;
+  attendance: Array<{
+    id: string;
+    status: string;
+    reason: string | null;
+    date: string;
+  }>;
+  reports: Array<{
+    id: string;
+    term: string;
+    averageScore: number;
+    attendanceRate: number;
+    pdfUrl: string | null;
+    createdAt: string;
+  }>;
+  payments: Array<{
+    id: string;
+    amount: number;
+    method: string;
+    status: string;
+    receiptNo: string | null;
+    paidAt: string;
+    label?: string | null;
+    receiptHref?: string | null;
+  }>;
+};
+
+function initials(fullName: string) {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? "E";
+  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
+  return `${first}${last}`.toUpperCase();
+}
+
+function formatDate(value: string | null | undefined) {
+  if (!value) return "-";
+  return new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(value));
+}
+
+function formatMoney(value: number) {
+  return `${value.toLocaleString("fr-FR")} FCFA`;
+}
+
+function attendanceLabel(status: string) {
+  if (status === "PRESENT") return "Present";
+  if (status === "ABSENT") return "Absent";
+  if (status === "LATE") return "Retard";
+  return status;
+}
 
 function academicYearKey(y: string | null | undefined): string {
   return String(y ?? "")
@@ -66,8 +141,12 @@ export default function DashboardStudentsPage() {
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedClassId, setSelectedClassId] = useState("");
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [studentDetail, setStudentDetail] = useState<StudentDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
   const academicYearOptions = useMemo(() => uniqueAcademicYearOptions(classes), [classes]);
 
@@ -119,9 +198,58 @@ export default function DashboardStudentsPage() {
     }
   }, []);
 
+  const openStudentProfile = useCallback((studentId: string) => {
+    const nextUrl = `/dashboard/students?student=${encodeURIComponent(studentId)}`;
+    window.history.pushState({}, "", nextUrl);
+    setSelectedStudentId(studentId);
+  }, []);
+
+  const closeStudentProfile = useCallback(() => {
+    window.history.pushState({}, "", "/dashboard/students");
+    setSelectedStudentId(null);
+    setStudentDetail(null);
+    setDetailError(null);
+  }, []);
+
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    const readSelectedStudent = () => {
+      const params = new URLSearchParams(window.location.search);
+      setSelectedStudentId(params.get("student"));
+    };
+    readSelectedStudent();
+    window.addEventListener("popstate", readSelectedStudent);
+    return () => window.removeEventListener("popstate", readSelectedStudent);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedStudentId) return;
+    let alive = true;
+    setDetailLoading(true);
+    setDetailError(null);
+    fetch(`/api/dashboard/students?studentId=${encodeURIComponent(selectedStudentId)}`)
+      .then(async (res) => {
+        const body = (await res.json().catch(() => null)) as (StudentDetail & { message?: string }) | null;
+        if (!res.ok) throw new Error(body?.message ?? "Impossible de charger le profil eleve.");
+        if (!body) throw new Error("Profil eleve introuvable.");
+        if (alive) setStudentDetail(body);
+      })
+      .catch((err) => {
+        if (alive) {
+          setStudentDetail(null);
+          setDetailError(err instanceof Error ? err.message : "Erreur de chargement.");
+        }
+      })
+      .finally(() => {
+        if (alive) setDetailLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [selectedStudentId]);
 
   useEffect(() => {
     if (classes.length === 0) return;
@@ -145,6 +273,228 @@ export default function DashboardStudentsPage() {
       setSelectedClassId("");
     }
   }, [levels, selectedLevel]);
+
+  if (selectedStudentId) {
+    const detail = studentDetail;
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <PageHeader
+            title={detail?.student.fullName ?? "Profil eleve"}
+            subtitle={
+              detail
+                ? `${detail.student.className || "Classe"} - ${detail.student.level || "Niveau"}`
+                : "Chargement du dossier scolaire et financier."
+            }
+          />
+          <button
+            type="button"
+            onClick={closeStudentProfile}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            Retour aux eleves
+          </button>
+        </div>
+
+        {detailLoading ? <p className="text-sm text-slate-500">Chargement du profil...</p> : null}
+        {detailError ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{detailError}</p> : null}
+
+        {detail ? (
+          <>
+            <section className="elima-card">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex min-w-0 items-start gap-3">
+                  {detail.student.photoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={detail.student.photoUrl}
+                      alt={`Photo de ${detail.student.fullName}`}
+                      className="h-16 w-16 shrink-0 rounded-2xl border border-slate-200 object-cover"
+                    />
+                  ) : (
+                    <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[var(--primary)]/10 text-lg font-bold text-[var(--primary)]">
+                      {initials(detail.student.fullName)}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <h2 className="truncate text-xl font-bold text-[var(--accent)]">{detail.student.fullName}</h2>
+                    <p className="text-sm text-slate-500">
+                      {detail.student.registrationNumber ? `Matricule ${detail.student.registrationNumber}` : "Matricule non renseigne"}
+                    </p>
+                    <p className="text-sm text-slate-500">Naissance : {formatDate(detail.student.birthDate)}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:min-w-80">
+                  <div className="rounded-xl bg-slate-50 p-3">
+                    <p className="text-xs font-semibold text-slate-500">Moyenne</p>
+                    <p className="text-xl font-bold text-slate-900">
+                      {detail.summary.average !== null ? `${detail.summary.average}/20` : "-"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-3">
+                    <p className="text-xs font-semibold text-slate-500">Presence</p>
+                    <p className="text-xl font-bold text-slate-900">
+                      {detail.summary.attendanceRate !== null ? `${detail.summary.attendanceRate}%` : "-"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-3">
+                    <p className="text-xs font-semibold text-slate-500">Absences / retards</p>
+                    <p className="text-xl font-bold text-slate-900">
+                      {detail.summary.absent} / {detail.summary.late}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-3">
+                    <p className="text-xs font-semibold text-slate-500">Solde</p>
+                    <p className="text-xl font-bold text-slate-900">{formatMoney(detail.summary.balance)}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+              <section className="elima-card space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-lg font-semibold text-[var(--accent)]">Historique des notes</h2>
+                  <span className="text-xs font-semibold text-slate-500">{detail.grades.length} note(s)</span>
+                </div>
+                {detail.grades.length === 0 ? (
+                  <p className="text-sm text-slate-500">Aucune note enregistree pour cet eleve.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-left text-sm">
+                      <thead className="text-xs uppercase text-slate-500">
+                        <tr>
+                          <th className="py-2 pr-3">Date</th>
+                          <th className="py-2 pr-3">Matiere</th>
+                          <th className="py-2 pr-3">Evaluation</th>
+                          <th className="py-2 pr-3">Note</th>
+                          <th className="py-2 pr-3">Coef.</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {detail.grades.map((grade) => (
+                          <tr key={grade.id} className="border-t border-slate-100">
+                            <td className="py-2 pr-3 text-slate-500">{formatDate(grade.evaluationDate)}</td>
+                            <td className="py-2 pr-3 font-medium text-slate-800">{grade.subjectName}</td>
+                            <td className="py-2 pr-3 text-slate-600">
+                              <p>{grade.evaluationTitle}</p>
+                              {grade.teacherName ? <p className="text-xs text-slate-400">{grade.teacherName}</p> : null}
+                            </td>
+                            <td className="py-2 pr-3 font-semibold text-slate-900">
+                              {grade.score}/{grade.maxScore}
+                            </td>
+                            <td className="py-2 pr-3 text-slate-500">{grade.coefficient}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+
+              <section className="elima-card space-y-3">
+                <h2 className="text-lg font-semibold text-[var(--accent)]">Presence recente</h2>
+                {detail.attendance.length === 0 ? (
+                  <p className="text-sm text-slate-500">Aucun historique de presence.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {detail.attendance.slice(0, 10).map((row) => (
+                      <div key={row.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 px-3 py-2">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">{attendanceLabel(row.status)}</p>
+                          <p className="text-xs text-slate-500">{row.reason ?? "Aucun motif"}</p>
+                        </div>
+                        <p className="shrink-0 text-xs text-slate-500">{formatDate(row.date)}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <section className="elima-card space-y-3">
+                <h2 className="text-lg font-semibold text-[var(--accent)]">Bulletins</h2>
+                {detail.reports.length === 0 ? (
+                  <p className="text-sm text-slate-500">Aucun bulletin disponible.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {detail.reports.map((report) => (
+                      <div key={report.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 px-3 py-2">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">{report.term}</p>
+                          <p className="text-xs text-slate-500">
+                            Moyenne {report.averageScore}/20 - Presence {report.attendanceRate}%
+                          </p>
+                        </div>
+                        {report.pdfUrl ? (
+                          <a
+                            href={report.pdfUrl}
+                            className="inline-flex h-9 items-center gap-1 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                          >
+                            <Download className="h-3.5 w-3.5" aria-hidden />
+                            PDF
+                          </a>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="elima-card space-y-3">
+                <h2 className="text-lg font-semibold text-[var(--accent)]">Paiements</h2>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="rounded-xl bg-slate-50 p-3">
+                    <p className="text-xs font-semibold text-slate-500">Du</p>
+                    <p className="font-bold text-slate-900">{formatMoney(detail.summary.totalDue)}</p>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-3">
+                    <p className="text-xs font-semibold text-slate-500">Paye</p>
+                    <p className="font-bold text-slate-900">{formatMoney(detail.summary.totalPaid)}</p>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-3">
+                    <p className="text-xs font-semibold text-slate-500">Reste</p>
+                    <p className="font-bold text-slate-900">{formatMoney(detail.summary.balance)}</p>
+                  </div>
+                </div>
+                {detail.payments.length === 0 ? (
+                  <p className="text-sm text-slate-500">Aucun paiement enregistre.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {detail.payments.slice(0, 6).map((payment) => (
+                      <div key={payment.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 px-3 py-2">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">{formatMoney(payment.amount)}</p>
+                          <p className="text-xs text-slate-500">
+                            {payment.method} - {formatDate(payment.paidAt)}
+                          </p>
+                        </div>
+                        {payment.receiptHref ? (
+                          <a
+                            href={payment.receiptHref}
+                            className="inline-flex h-9 items-center gap-1 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                          >
+                            <Receipt className="h-3.5 w-3.5" aria-hidden />
+                            Recu
+                          </a>
+                        ) : (
+                          <span className="rounded-lg bg-slate-50 px-2 py-1 text-xs font-medium text-slate-500">
+                            {payment.label ?? payment.status}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+          </>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -262,7 +612,27 @@ export default function DashboardStudentsPage() {
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium text-slate-700">{student.fullName}</p>
+                    <div className="flex min-w-0 items-start gap-2.5">
+                      {student.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={student.photoUrl}
+                          alt={`Photo de ${student.fullName}`}
+                          className="h-9 w-9 shrink-0 rounded-full border border-slate-200 object-cover"
+                        />
+                      ) : (
+                        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--primary)]/10 text-xs font-bold text-[var(--primary)]">
+                          {initials(student.fullName)}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-slate-700">{student.fullName}</p>
+                        <p className="text-xs text-slate-500">{student.className} - {student.level}</p>
+                        <p className="hidden text-xs text-slate-500">
+                          {student.className} Â· {student.level}
+                        </p>
+                      </div>
+                    </div>
                     {hasAlert ? (
                       <span
                         className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800"
@@ -273,7 +643,7 @@ export default function DashboardStudentsPage() {
                       </span>
                     ) : null}
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p className="hidden text-xs text-slate-500">
                     {student.className} · {student.level}
                   </p>
                   {a && (a.lowGrades || a.highAbsences || a.paymentPending) ? (
@@ -298,6 +668,14 @@ export default function DashboardStudentsPage() {
                       ) : null}
                     </ul>
                   ) : null}
+                  <button
+                    type="button"
+                    onClick={() => openStudentProfile(student.id)}
+                    className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-[var(--primary)] transition hover:bg-slate-50"
+                  >
+                    <Eye className="h-3.5 w-3.5" aria-hidden />
+                    Voir profil
+                  </button>
                 </div>
               );
             })}

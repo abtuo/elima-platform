@@ -6,6 +6,7 @@ import { resolveFinanceActor } from "@/lib/finance/server";
 import { getStudentBalance } from "@/lib/finance/queries";
 import { assertStudentAccess } from "@/lib/portal/queries";
 import { buildPaymentReceiptPdf } from "@/lib/finance/receipt-pdf";
+import { brandingStoragePathFromUrl } from "@/lib/school-branding";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ paymentId: string }> }) {
   try {
@@ -39,18 +40,28 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pay
 
     const studentWrap = (payment as { student?: Array<{ full_name?: string; class?: Array<{ name?: string }>; school?: Array<{ name?: string; city?: string; country?: string; phone?: string; currency?: string; logo_url?: string | null }> }> }).student?.[0];
     const schoolRow = studentWrap?.school?.[0];
-    const currency = String(schoolRow?.currency ?? "XOF");
+    const rawCurrency = String(schoolRow?.currency ?? "XOF");
+    const currency = rawCurrency === "XOF" ? "FCFA" : rawCurrency;
 
     const balance = await getStudentBalance(paymentSchoolId, paymentStudentId);
 
     let logo: { bytes: Uint8Array; type: "png" | "jpg" } | undefined;
     if (schoolRow?.logo_url) {
       try {
-        const res = await fetch(String(schoolRow.logo_url));
-        if (res.ok) {
-          const ct = (res.headers.get("content-type") ?? "").toLowerCase();
-          const type = ct.includes("png") ? "png" : ct.includes("jpeg") || ct.includes("jpg") ? "jpg" : null;
-          if (type) logo = { bytes: new Uint8Array(await res.arrayBuffer()), type };
+        const logoUrl = String(schoolRow.logo_url);
+        const storagePath = brandingStoragePathFromUrl(logoUrl);
+        if (storagePath) {
+          const { data } = await admin.storage.from("documents").download(storagePath);
+          const lower = storagePath.toLowerCase();
+          const type = lower.endsWith(".png") ? "png" : lower.endsWith(".jpg") || lower.endsWith(".jpeg") ? "jpg" : null;
+          if (data && type) logo = { bytes: new Uint8Array(await data.arrayBuffer()), type };
+        } else {
+          const res = await fetch(logoUrl.startsWith("/") ? new URL(logoUrl, _request.url).toString() : logoUrl);
+          if (res.ok) {
+            const ct = (res.headers.get("content-type") ?? "").toLowerCase();
+            const type = ct.includes("png") ? "png" : ct.includes("jpeg") || ct.includes("jpg") ? "jpg" : null;
+            if (type) logo = { bytes: new Uint8Array(await res.arrayBuffer()), type };
+          }
         }
       } catch {
         // ignore remote logo failures
