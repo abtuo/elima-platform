@@ -15,8 +15,6 @@ import {
   CheckCircle2,
   ClipboardCheck,
   CreditCard,
-  FileBarChart2,
-  FileText,
   FolderArchive,
   GraduationCap,
   Headphones,
