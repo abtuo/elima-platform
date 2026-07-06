@@ -19,6 +19,8 @@ import {
   FileText,
   FolderArchive,
   GraduationCap,
+  Headphones,
+  Mail,
   MessageCircleMore,
   Phone,
   ShieldCheck,
@@ -523,13 +525,13 @@ export default function Home() {
                   <p className="text-sm text-slate-600">Plateforme de gestion scolaire intelligente.</p>
                   <div className="space-y-2 text-sm">
                     <p className="flex items-center gap-2">
-                      <Ticket size={16} className="text-[var(--primary)]" />
+                      <Mail size={16} className="text-[var(--primary)]" />
                       <a className="hover:text-slate-900" href="mailto:contact@elima.africa">
                         contact@elima.africa
                       </a>
                     </p>
                     <p className="flex items-center gap-2">
-                      <Ticket size={16} className="text-[var(--primary)]" />
+                      <Headphones size={16} className="text-[var(--primary)]" />
                       <a className="hover:text-slate-900" href="mailto:support@elima.africa">
                         support@elima.africa
                       </a>
@@ -572,18 +574,20 @@ export default function Home() {
                 <div>
                   <p className="mb-3 font-semibold text-[var(--accent)]">Modules inclus</p>
                   <ul className="space-y-3">
-                    <li className="flex items-center gap-3">
-                      <IconBadge icon={ClipboardCheck} size="sm" /> Présences
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <IconBadge icon={FileText} size="sm" /> Notes et bulletins
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <IconBadge icon={MessageCircleMore} size="sm" /> Communication parents
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <IconBadge icon={FileBarChart2} size="sm" /> Analyse de performance
-                    </li>
+                    {PILOT_MODULES.map((mod) => (
+                      <li key={mod.title} className="flex items-center gap-3">
+                        <IconBadge icon={mod.icon} size="sm" />
+                        <span className="flex flex-wrap items-center gap-2">
+                          {mod.title}
+                          {mod.ai ? (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-700">
+                              <Sparkles size={9} />
+                              IA
+                            </span>
+                          ) : null}
+                        </span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
 
