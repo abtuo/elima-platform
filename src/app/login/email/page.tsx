@@ -2,7 +2,6 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { resolveAppMode } from "@/lib/app-mode";
 
 const demoAccounts = [
@@ -86,12 +85,6 @@ function EmailLoginInner() {
             </div>
           </div>
         ) : null}
-        <p className="text-xs text-slate-500">
-          Enseignant avec code provisoire ?{" "}
-          <Link href="/login/teacher-code" className="font-semibold text-[var(--primary)]">
-            Connexion par matricule + code
-          </Link>
-        </p>
 
         <div className="space-y-3">
           <label className="block text-sm font-medium text-slate-700">Email</label>
