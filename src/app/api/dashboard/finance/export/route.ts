@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { resolveFinanceActor } from "@/lib/finance/server";
 import { getAllUnpaidStudents } from "@/lib/finance/queries";
+import { checkSchoolFeature } from "@/lib/plans-server";
 
 /** Export the outstanding-balance list as CSV or Excel (?format=csv|xlsx). */
 export async function GET(request: Request) {
   try {
     const actor = await resolveFinanceActor();
     if ("error" in actor) return actor.error;
+    const planErr = await checkSchoolFeature(actor.schoolId, "finance", actor.role);
+    if (planErr) return planErr;
 
     const format = new URL(request.url).searchParams.get("format") === "csv" ? "csv" : "xlsx";
     const rows = await getAllUnpaidStudents(actor.schoolId);

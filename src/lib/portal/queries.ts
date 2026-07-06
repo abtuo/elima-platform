@@ -1,5 +1,7 @@
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { getStudentBalance, type StudentBalance } from "@/lib/finance/queries";
+import { getSchoolPlanContext } from "@/lib/plans-server";
+import { resolveEffectivePlan, type SchoolPlan } from "@/lib/plans";
 import type { AppRole } from "@/lib/types";
 
 export type AccessibleStudent = {
@@ -15,6 +17,7 @@ export type PortalContext = {
   role: AppRole | null;
   schoolId: string | null;
   fullName: string | null;
+  effectivePlan: SchoolPlan;
   students: AccessibleStudent[];
 };
 
@@ -101,7 +104,16 @@ export async function getPortalContext(): Promise<PortalContext | null> {
     );
   }
 
-  return { userId, role, schoolId, fullName, students };
+  let effectivePlan: SchoolPlan = "basic";
+  if (schoolId) {
+    const planCtx = await getSchoolPlanContext(schoolId);
+    effectivePlan = planCtx?.effectivePlan ?? resolveEffectivePlan("basic", false);
+  } else if (students.length > 0) {
+    const planCtx = await getSchoolPlanContext(students[0].schoolId);
+    effectivePlan = planCtx?.effectivePlan ?? resolveEffectivePlan("basic", false);
+  }
+
+  return { userId, role, schoolId, fullName, effectivePlan, students };
 }
 
 /** Ensure the current portal user may access the given student id. */

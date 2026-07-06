@@ -17,14 +17,17 @@ import {
   CreditCard,
   FileBarChart2,
   FileText,
+  FolderArchive,
   GraduationCap,
   MessageCircleMore,
   Phone,
   ShieldCheck,
+  Sparkles,
   Ticket,
   Users,
   Wallet,
 } from "lucide-react";
+import { MARKETING_PLANS } from "@/lib/marketing-plans";
 
 type IconBadgeProps = {
   icon: LucideIcon;
@@ -48,6 +51,51 @@ function IconBadge({ icon: Icon, size = "md", className = "" }: IconBadgeProps) 
   );
 }
 
+const PILOT_MODULES = [
+  {
+    title: "Gestion scolaire",
+    desc: "Élèves, classes, matières, enseignants, notes, absences et bulletins — avec import intelligent des listes par IA.",
+    icon: GraduationCap,
+    accent: "from-emerald-500/15 to-teal-400/10",
+    ai: true,
+  },
+  {
+    title: "Communication",
+    desc: "Messagerie parents-école, alertes utiles et informations partagées au bon moment.",
+    icon: MessageCircleMore,
+    accent: "from-sky-500/15 to-cyan-400/10",
+    ai: false,
+  },
+  {
+    title: "Paiements",
+    desc: "Suivi des frais, encaissements, factures et relances pour une trésorerie plus lisible.",
+    icon: Wallet,
+    accent: "from-amber-500/15 to-yellow-400/10",
+    ai: false,
+  },
+  {
+    title: "Tableau de bord",
+    desc: "Indicateurs clés, tendances et analyse prédictive : repérez tôt les élèves à risque et les classes à surveiller.",
+    icon: BarChart3,
+    accent: "from-violet-500/15 to-purple-400/10",
+    ai: true,
+  },
+  {
+    title: "Gestion des documents",
+    desc: "Archivage centralisé, OCR et recherche intelligente pour retrouver dossiers et pièces en quelques secondes.",
+    icon: FolderArchive,
+    accent: "from-rose-500/15 to-orange-400/10",
+    ai: true,
+  },
+  {
+    title: "Apprentissage personnalisé",
+    desc: "Recommandations IA par élève : points à renforcer, progression suivie et parcours adaptés au rythme de chacun.",
+    icon: Sparkles,
+    accent: "from-indigo-500/15 to-fuchsia-400/10",
+    ai: true,
+  },
+] as const;
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -67,11 +115,6 @@ export default function Home() {
         <header className="grid items-stretch gap-8 md:grid-cols-3">
           <Reveal className="flex h-full min-h-0 flex-col justify-between space-y-5" delayMs={50}>
             <div className="space-y-5">
-              <p className="inline-flex items-center gap-2 rounded-full bg-[var(--secondary)]/25 px-3 py-1 text-xs font-semibold text-[var(--accent)]">
-                <span className="h-2 w-2 rounded-full bg-[var(--primary)]" />
-                EdTech de gestion scolaire pour l&apos;Afrique de l&apos;Ouest
-              </p>
-
               <h1 className="text-4xl font-bold leading-tight tracking-tight text-[var(--accent)] md:text-5xl">
                 Pilotez votre école avec
                 <span className="text-[var(--primary)]"> plus de clarté</span>,
@@ -80,8 +123,8 @@ export default function Home() {
               </h1>
 
               <p className="max-w-xl text-base leading-7 text-slate-600">
-                Elima centralise la gestion des élèves, des absences, des bulletins, de la communication parents et des paiements
-                dans une seule plateforme. Un socle solide pour mieux administrer aujourd'hui et accélérer demain.
+                Elima centralise la gestion des élèves, des absences, des bulletins, de la communication parents et des
+                paiements dans une seule plateforme — enrichie par l&apos;IA pour mieux anticiper et décider.
               </p>
             </div>
 
@@ -211,58 +254,77 @@ export default function Home() {
         </Reveal>
 
         <Reveal>
-          <section id="produit" className="space-y-6">
-            <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-bold text-[var(--accent)]">Tout ce qu'il faut pour piloter une école</h2>
-              <p className="text-sm text-slate-600">
-                Des modules pensés pour votre réalité terrain: efficacité opérationnelle, communication fiable et décisions mieux informées.
+          <section id="produit" className="relative space-y-10 overflow-hidden rounded-[32px] border border-slate-200/80 bg-gradient-to-b from-white via-white to-[var(--primary)]/[0.04] p-6 shadow-sm md:p-10">
+            <div className="pointer-events-none absolute -right-20 top-0 h-64 w-64 rounded-full bg-[var(--secondary)]/20 blur-3xl" />
+            <div className="pointer-events-none absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-[var(--primary)]/10 blur-3xl" />
+
+            <div className="relative mx-auto max-w-2xl text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--primary)]">Modules Elima</p>
+              <h2 className="mt-2 text-2xl font-bold text-[var(--accent)] md:text-3xl">
+                Tout ce qu&apos;il faut pour piloter une école
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600 md:text-base">
+                Des modules pensés pour votre réalité terrain : efficacité opérationnelle, communication fiable,
+                décisions éclairées par l&apos;IA et analyse prédictive intégrée.
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                {
-                  title: "Gestion scolaire",
-                  desc: "Écoles, classes, matières, enseignants, élèves et parents centralisés.",
-                  icon: GraduationCap,
-                },
-                {
-                  title: "Présences",
-                  desc: "Appel rapide par classe, historique et suivi de l'absentéisme.",
-                  icon: Users,
-                },
-                {
-                  title: "Notes et bulletins",
-                  desc: "Saisie des notes, calcul des moyennes et génération des bulletins.",
-                  icon: FileText,
-                },
-                {
-                  title: "Communication parents",
-                  desc: "Alertes utiles sur les absences, résultats et informations scolaires.",
-                  icon: MessageCircleMore,
-                },
-                {
-                  title: "Paiements et recouvrement",
-                  desc: "Suivi des paiements, relances et meilleure visibilité de trésorerie.",
-                  icon: Wallet,
-                },
-                {
-                  title: "Tableau de bord direction",
-                  desc: "Indicateurs clés pour piloter les performances académiques et financières.",
-                  icon: BarChart3,
-                },
-                {
-                  title: "Reprise de données",
-                  desc: "Import intelligent de documents existants pour éviter la ressaisie massive.",
-                  icon: FileBarChart2,
-                },
-              ].map((feature, idx) => (
-                <Reveal key={feature.title} delayMs={idx * 70} className="elima-card space-y-3">
-                  <IconBadge icon={feature.icon} size="md" />
-                  <h3 className="text-lg font-semibold">{feature.title}</h3>
-                  <p className="text-sm text-slate-600">{feature.desc}</p>
-                </Reveal>
-              ))}
+            <div className="relative mx-auto max-w-3xl md:max-w-4xl">
+              <div
+                aria-hidden
+                className="absolute bottom-0 left-5 top-0 w-0.5 bg-gradient-to-b from-[var(--primary)]/50 via-[var(--primary)]/30 to-transparent md:left-1/2 md:-translate-x-1/2"
+              />
+
+              <div className="space-y-8 md:space-y-12">
+                {PILOT_MODULES.map((feature, idx) => {
+                  const isLeft = idx % 2 === 0;
+                  const Icon = feature.icon;
+                  return (
+                    <Reveal key={feature.title} delayMs={idx * 80}>
+                      <div
+                        className={`relative flex ${isLeft ? "md:justify-start" : "md:justify-end"}`}
+                      >
+                        <span
+                          className="absolute left-5 top-8 z-10 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-[var(--primary)] to-[#1d8a52] text-xs font-bold text-white shadow-lg shadow-[var(--primary)]/25 ring-4 ring-[var(--primary)]/10 md:left-1/2"
+                          aria-hidden
+                        >
+                          {idx + 1}
+                        </span>
+
+                        <article
+                          className={`group relative ml-12 w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:border-[var(--primary)]/35 hover:shadow-xl md:ml-0 md:w-[calc(50%-2.5rem)] ${
+                            isLeft ? "md:mr-10" : "md:ml-10"
+                          }`}
+                        >
+                          <div
+                            className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${feature.accent} opacity-60 transition group-hover:opacity-100`}
+                          />
+                          <div className={`relative flex items-start gap-4 ${isLeft ? "md:flex-row" : "md:flex-row-reverse md:text-right"}`}>
+                            <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[var(--primary)] shadow-sm ring-1 ring-[var(--primary)]/15 transition group-hover:scale-105 group-hover:bg-[var(--primary)] group-hover:text-white">
+                              <Icon size={22} strokeWidth={2} />
+                            </span>
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--primary)]">
+                                  Module {String(idx + 1).padStart(2, "0")}
+                                </p>
+                                {feature.ai ? (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700">
+                                    <Sparkles size={10} />
+                                    IA
+                                  </span>
+                                ) : null}
+                              </div>
+                              <h3 className="mt-1 text-lg font-semibold text-[var(--accent)]">{feature.title}</h3>
+                              <p className="mt-2 text-sm leading-relaxed text-slate-600">{feature.desc}</p>
+                            </div>
+                          </div>
+                        </article>
+                      </div>
+                    </Reveal>
+                  );
+                })}
+              </div>
             </div>
           </section>
         </Reveal>
@@ -367,81 +429,58 @@ export default function Home() {
             </div>
           </Reveal>
           <div className="grid gap-5 md:grid-cols-3">
-            {[
-              {
-                title: "Basic",
-                icon: ClipboardCheck,
-                highlight: true,
-                features: [
-                  "Gestion élèves et classes",
-                  "Notes et absences",
-                  "Bulletins",
-                  "Emploi du temps",
-                  "Communication avec les parents d'élève",
-                ],
-              },
-              {
-                title: "Premium",
-                icon: Ticket,
-                highlight: false,
-                features: [
-                  "Tout Basic",
-                  "Inscriptions en ligne",
-                  "Moyens de paiement",
-                  "Suivi des paiements",
-                  "Tableau de bord direction",
-                ],
-              },
-              {
-                title: "Sur mesure",
-                icon: ShieldCheck,
-                highlight: false,
-                features: [
-                  "Tout Premium",
-                  "Accompagnement renforcé",
-                  "Modules complémentaires",
-                  "Support prioritaire",
-                  "Autres fonctionnalités sur demande",
-                ],
-              },
-            ].map((plan) => (
-              <Reveal
-                key={plan.title}
-                className={`elima-card flex h-full flex-col gap-4 transition hover:-translate-y-1 hover:shadow-lg ${
-                  plan.highlight ? "border-[var(--primary)]/60 bg-[var(--primary)]/5" : ""
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <IconBadge icon={plan.icon} size="sm" />
-                    <h3 className="text-lg font-semibold">{plan.title}</h3>
+            {MARKETING_PLANS.map((plan) => {
+              const planIcons = {
+                basic: ClipboardCheck,
+                premium: Ticket,
+                custom: ShieldCheck,
+              } as const;
+              const PlanIcon = planIcons[plan.id];
+              return (
+                <Reveal
+                  key={plan.id}
+                  className={`elima-card flex h-full flex-col gap-4 transition hover:-translate-y-1 hover:shadow-lg ${
+                    plan.highlight ? "border-[var(--primary)]/60 bg-[var(--primary)]/5" : ""
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <IconBadge icon={PlanIcon} size="sm" />
+                      <h3 className="text-lg font-semibold">{plan.title}</h3>
+                    </div>
+                    {plan.highlight ? (
+                      <span className="rounded-full bg-[var(--primary)] px-3 py-1 text-xs font-semibold text-white">
+                        {plan.pill}
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                        {plan.pill}
+                      </span>
+                    )}
                   </div>
-                  {plan.highlight ? (
-                    <span className="rounded-full bg-[var(--primary)] px-3 py-1 text-xs font-semibold text-white">Gratuit</span>
-                  ) : null}
-                </div>
-                <ul className="space-y-2 text-sm text-slate-600">
-                  {plan.features.map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <CheckCircle2 size={16} className="mt-0.5 text-[var(--primary)]" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-auto">
-                  <Link
-                    href="/contact"
-                    className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ${
-                      plan.highlight
-                        ? "bg-[var(--primary)] text-white"
-                        : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
-                    }`}
-                  >
-                    {plan.title === "Basic" ? "Essayer maintenant" : "Demander un devis"}
-                  </Link>
-                </div>
-              </Reveal>
-            ))}
+                  <ul className="space-y-2 text-sm text-slate-600">
+                    {plan.features.map((item) => (
+                      <li key={item} className="flex items-start gap-2">
+                        <CheckCircle2 size={16} className="mt-0.5 text-[var(--primary)]" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto">
+                    <Link
+                      href={plan.id === "basic" ? "/signup/admin" : "/contact"}
+                      className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ${
+                        plan.highlight
+                          ? "bg-[var(--primary)] text-white"
+                          : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      {plan.cta}
+                    </Link>
+                  </div>
+                </Reveal>
+              );
+            })}
           </div>
         </section>
 

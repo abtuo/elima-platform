@@ -2,11 +2,30 @@ import { NextResponse } from "next/server";
 import { sendWhatsAppMessage, sendWhatsAppWelcome } from "@/lib/whatsapp";
 import { whatsappNotificationSchema } from "@/lib/validation";
 import { logEvent } from "@/lib/logger";
+import { isDemoMode } from "@/lib/app-mode";
+import { checkSchoolFeature } from "@/lib/plans-server";
 
 export async function POST(request: Request) {
   try {
     const json = await request.json();
     const payload = whatsappNotificationSchema.parse(json);
+
+    const planErr = await checkSchoolFeature(payload.schoolId, "whatsapp_reminders");
+    if (planErr) return planErr;
+
+    if (isDemoMode()) {
+      logEvent("INFO", "WHATSAPP_NOTIFICATION_DEMO_SIMULATED", {
+        type: payload.type,
+        schoolId: payload.schoolId,
+        studentId: payload.studentId,
+      });
+      return NextResponse.json({
+        ok: true,
+        notificationStatus: "SENT",
+        provider: "demo",
+        messageId: `demo-${Date.now()}`,
+      });
+    }
 
     const useWelcomeTemplate = payload.template === "welcome" || payload.type === "WELCOME";
     const result = useWelcomeTemplate

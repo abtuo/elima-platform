@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeBrandingUrl } from "@/lib/school-branding";
+import { normalizePlan, resolveEffectivePlan } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ export async function GET() {
 
     const { data: school, error: schoolErr } = await admin
       .from("schools")
-      .select("id, name, current_term_id, logo_url, stamp_url")
+      .select("id, name, current_term_id, logo_url, stamp_url, plan, is_demo")
       .eq("id", schoolId)
       .maybeSingle();
 
@@ -59,6 +60,12 @@ export async function GET() {
           ...school,
           logo_url: normalizeBrandingUrl((school as { logo_url?: string | null }).logo_url),
           stamp_url: normalizeBrandingUrl((school as { stamp_url?: string | null }).stamp_url),
+          plan: normalizePlan((school as { plan?: string | null }).plan),
+          is_demo: Boolean((school as { is_demo?: boolean }).is_demo),
+          effectivePlan: resolveEffectivePlan(
+            normalizePlan((school as { plan?: string | null }).plan),
+            Boolean((school as { is_demo?: boolean }).is_demo),
+          ),
         }
       : null;
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminServerClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { sendNotificationEmail } from "@/lib/email";
+import { checkSchoolFeature } from "@/lib/plans-server";
 
 const DEFAULT_COUNTRY = "Côte d'Ivoire";
 
@@ -81,7 +82,13 @@ export async function POST(request: Request) {
   if (role === "SCHOOL_ADMIN") {
     const { data: school, error: schoolError } = await admin
       .from("schools")
-      .insert({ name: schoolName, country: DEFAULT_COUNTRY, city: city || null, phone: phone || null })
+      .insert({
+        name: schoolName,
+        country: DEFAULT_COUNTRY,
+        city: city || null,
+        phone: phone || null,
+        plan: "basic",
+      })
       .select("id")
       .single();
 
@@ -98,10 +105,18 @@ export async function POST(request: Request) {
 
     if (existingSchool?.id) {
       schoolId = existingSchool.id;
+      const planErr = await checkSchoolFeature(String(schoolId), "online_enrollment");
+      if (planErr) return planErr;
     } else {
       const { data: newSchool, error: newSchoolError } = await admin
         .from("schools")
-        .insert({ name: schoolName, country: DEFAULT_COUNTRY, city: city || null, phone: phone || null })
+        .insert({
+          name: schoolName,
+          country: DEFAULT_COUNTRY,
+          city: city || null,
+          phone: phone || null,
+          plan: "basic",
+        })
         .select("id")
         .single();
 

@@ -3,12 +3,15 @@ import { createSupabaseAdminServerClient } from "@/lib/supabase/server";
 import { resolveFinanceActor, generateReceiptNo } from "@/lib/finance/server";
 import { getFinanceOverview, getUnpaidStudents } from "@/lib/finance/queries";
 import { paymentInputSchema } from "@/lib/validation";
+import { checkSchoolFeature } from "@/lib/plans-server";
 
 /** Finance dashboard payload: KPIs + top unpaid. */
 export async function GET() {
   try {
     const actor = await resolveFinanceActor();
     if ("error" in actor) return actor.error;
+    const planErr = await checkSchoolFeature(actor.schoolId, "finance", actor.role);
+    if (planErr) return planErr;
 
     const [overview, unpaid] = await Promise.all([
       getFinanceOverview(actor.schoolId),
@@ -31,6 +34,8 @@ export async function POST(request: Request) {
     }
     const actor = await resolveFinanceActor();
     if ("error" in actor) return actor.error;
+    const planErr = await checkSchoolFeature(actor.schoolId, "finance", actor.role);
+    if (planErr) return planErr;
     const admin = await createSupabaseAdminServerClient();
 
     // Ensure the student belongs to the actor's school.

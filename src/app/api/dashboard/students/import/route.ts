@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireServerEnv } from "@/lib/env";
+import { checkSchoolFeature } from "@/lib/plans-server";
 
 type ParsedStudent = {
   fullName: string;
@@ -177,6 +178,9 @@ export async function POST(request: Request) {
     if (userErr) return NextResponse.json({ message: userErr.message }, { status: 400 });
     if (!userRow?.school_id) return NextResponse.json({ message: "Aucune ecole associee" }, { status: 400 });
     const schoolId = String(userRow.school_id);
+
+    const planErr = await checkSchoolFeature(schoolId, "ai_import");
+    if (planErr) return planErr;
 
     const formData = await request.formData();
     const classId = String(formData.get("classId") ?? "").trim();
