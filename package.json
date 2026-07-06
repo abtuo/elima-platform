@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import tsx --test src/lib/__tests__/critical-calculations.test.ts src/lib/__tests__/app-mode-date.test.ts",
+    "test": "node --import tsx --test src/lib/__tests__",
     "test:whatsapp": "tsx scripts/test-whatsapp.ts",
     "seed": "tsx scripts/seed.ts",
     "seed:reset": "tsx scripts/seed.ts --reset",
