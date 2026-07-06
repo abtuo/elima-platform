@@ -1,20 +1,47 @@
 "use client";
 
+import { FileText, LayoutDashboard, MessageCircleMore, ShoppingBag, WalletCards } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, MessageCircleMore } from "lucide-react";
+import { MessagerieNavLabel } from "@/components/messaging/MessagerieNavLabel";
+import { useMessagingUnreadCount } from "@/hooks/useMessagingUnreadCount";
+import { hasFeature, PARENT_NAV_GATES, type SchoolPlan } from "@/lib/plans";
 
-export function PortalNavTabs({ basePath }: { basePath: "/parent" | "/student" }) {
+export function PortalNavTabs({
+  basePath,
+  effectivePlan = "basic",
+}: {
+  basePath: "/parent" | "/student";
+  effectivePlan?: SchoolPlan;
+}) {
   const pathname = usePathname();
-  const items = [
-    { href: basePath, label: "Tableau de bord", icon: LayoutDashboard },
-    { href: `${basePath}/messages`, label: "Messagerie", icon: MessageCircleMore },
-  ];
+  const unreadMessages = useMessagingUnreadCount(true);
+  const messagesHref = `${basePath}/messages`;
+
+  const allItems =
+    basePath === "/parent"
+      ? [
+          { href: basePath, label: "Tableau de bord", icon: LayoutDashboard },
+          { href: messagesHref, label: "Messagerie", icon: MessageCircleMore, isMessaging: true },
+          { href: `${basePath}/pay`, label: "Paiement", icon: WalletCards },
+          { href: `${basePath}/store`, label: "Fournitures", icon: ShoppingBag },
+          { href: `${basePath}/invoices`, label: "Factures", icon: FileText },
+        ]
+      : [
+          { href: basePath, label: "Tableau de bord", icon: LayoutDashboard },
+          { href: messagesHref, label: "Messagerie", icon: MessageCircleMore, isMessaging: true },
+        ];
+
+  const items = allItems.filter((item) => {
+    const feature = PARENT_NAV_GATES[item.href];
+    if (!feature) return true;
+    return hasFeature(effectivePlan, feature);
+  });
 
   return (
     <nav className="mb-5 flex gap-2 overflow-x-auto rounded-2xl border border-slate-200/80 bg-white p-1 shadow-sm">
       {items.map((item) => {
-        const active = pathname === item.href;
+        const active = pathname === item.href || (item.href !== basePath && pathname.startsWith(item.href));
         return (
           <Link
             key={item.href}
@@ -26,7 +53,11 @@ export function PortalNavTabs({ basePath }: { basePath: "/parent" | "/student" }
             }
           >
             <item.icon size={16} />
-            {item.label}
+            {"isMessaging" in item && item.isMessaging ? (
+              <MessagerieNavLabel count={unreadMessages} variant={active ? "tab-active" : "tab-inactive"} />
+            ) : (
+              item.label
+            )}
           </Link>
         );
       })}

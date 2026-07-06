@@ -18,6 +18,16 @@ function formatScore(value: number | undefined) {
   return value.toFixed(2);
 }
 
+/** Truncate to a single line that fits within maxWidth (WinAnsi-safe). */
+function truncateLine(text: string, font: PDFFont, size: number, maxWidth: number) {
+  if (font.widthOfTextAtSize(text, size) <= maxWidth) return text;
+  let trimmed = text;
+  while (trimmed.length > 1 && font.widthOfTextAtSize(`${trimmed}...`, size) > maxWidth) {
+    trimmed = trimmed.slice(0, -1);
+  }
+  return `${trimmed}...`;
+}
+
 function drawText(
   page: PDFPage,
   text: string,
@@ -260,7 +270,8 @@ export async function buildStudentReportPdf(input: {
   const tableW = A4[0] - margin * 2;
   const headerRowH = 17;
   const headerH = headerRowH * 2;
-  const rowH = 26;
+  const displayRows = input.rows.slice(0, 9);
+  const rowH = 28;
 
   const colW = {
     subject: 132,
@@ -352,8 +363,8 @@ export async function buildStudentReportPdf(input: {
 
   tableY = tableY - headerH;
 
-  // rows
-  input.rows.slice(0, 9).forEach((r, idx) => {
+  // rows — max 9 subjects for readable layout (subject + teacher on two lines)
+  displayRows.forEach((r, idx) => {
     const y = tableY - rowH;
     const bg = idx % 2 === 0 ? COLORS.white : COLORS.light;
     drawCell(page, { x: tableX, y, w: tableW, h: rowH, bg });
@@ -366,21 +377,20 @@ export async function buildStudentReportPdf(input: {
       page.drawLine({ start: { x, y }, end: { x, y: y + rowH }, color: COLORS.line, thickness: 1 });
     }
 
-    drawText(page, r.subject, {
+    const subjectMaxW = colW.subject - 16;
+    drawText(page, truncateLine(r.subject, bold, 9.2, subjectMaxW), {
       x: tableX + 8,
-      y: y + rowH - 12,
-      size: 9.4,
+      y: y + rowH - 15,
+      size: 9.2,
       font: bold,
-      maxWidth: colW.subject - 16,
     });
     if (r.teacher) {
-      drawText(page, r.teacher, {
+      drawText(page, truncateLine(r.teacher, font, 7.5, subjectMaxW), {
         x: tableX + 8,
-        y: y + 6,
-        size: 8.0,
+        y: y + 5,
+        size: 7.5,
         font,
         color: COLORS.muted,
-        maxWidth: colW.subject - 16,
       });
     }
 
@@ -473,15 +483,16 @@ export async function buildStudentReportPdf(input: {
       font: bold,
       color: COLORS.primary,
     });
-    drawText(page, "Moyenne des trois trimestres", { x: absX + 10, y: cursorY - finalH + 10, size: 8, font, color: COLORS.muted });
 
     cursorY = cursorY - finalH - 16;
   }
 
-  // ---- Council appreciation ----
+  // ---- Council appreciation (80% width — right zone reserved for stamp) ----
   const councilH = 56;
-  drawCell(page, { x: tableX, y: cursorY - councilH, w: tableW, h: councilH, bg: COLORS.white });
-  page.drawRectangle({ x: tableX, y: cursorY - 18, width: tableW, height: 18, color: COLORS.primary });
+  const councilTextW = tableW * 0.8;
+
+  drawCell(page, { x: tableX, y: cursorY - councilH, w: councilTextW, h: councilH, bg: COLORS.white });
+  page.drawRectangle({ x: tableX, y: cursorY - 18, width: councilTextW, height: 18, color: COLORS.primary });
   drawText(page, "Appréciation générale", { x: tableX + 10, y: cursorY - 14, size: 10, font: bold, color: COLORS.white });
 
   const effectiveAverage = input.schoolStats?.termAverage ?? input.student.average;
@@ -502,23 +513,25 @@ export async function buildStudentReportPdf(input: {
     y: cursorY - 36,
     size: 9.6,
     font,
-    maxWidth: tableW - 20,
+    maxWidth: councilTextW - 20,
     lineHeight: 12,
   });
 
-  // Stamp (illustration tampon)
+  cursorY = cursorY - councilH - 10;
+
+  // Stamp — below appreciation block, bottom-right (above footer)
   if (input.stamp) {
     const stamp = await embedImage(input.stamp);
-    const targetW = 110;
+    const targetW = 58;
     const scale = targetW / stamp.width;
     const w = targetW;
     const h = stamp.height * scale;
     page.drawImage(stamp, {
-      x: A4[0] - margin - w,
+      x: tableX + tableW - w,
       y: 44,
       width: w,
       height: h,
-      opacity: 0.9,
+      opacity: 0.88,
     });
   }
 

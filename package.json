@@ -10,10 +10,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import tsx --test src/lib/__tests__/critical-calculations.test.ts",
+    "test": "node --import tsx --test src/lib/__tests__/critical-calculations.test.ts src/lib/__tests__/app-mode-date.test.ts",
     "test:whatsapp": "tsx scripts/test-whatsapp.ts",
     "seed": "tsx scripts/seed.ts",
     "seed:reset": "tsx scripts/seed.ts --reset",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "reset:demo": "tsx scripts/reset-demo.ts",
+    "demo:refresh": "npm run reset:demo && npm run seed:demo",
+    "seed:store": "tsx scripts/seed-store-demo.ts",
     "seed:demo-attendance": "tsx scripts/seed-demo-attendance.ts"
   },
   "dependencies": {

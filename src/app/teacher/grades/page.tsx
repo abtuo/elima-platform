@@ -8,6 +8,7 @@ import { useTeacherContext } from "../TeacherContext";
 import { EditableTable } from "@/components/ui/EditableTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { useToast } from "@/components/ui/Toast";
+import { getAppNow } from "@/lib/app-date";
 
 type StudentRow = { id: string; name: string };
 type EvaluationRow = {
@@ -21,7 +22,7 @@ type EvaluationRow = {
 const COEFFICIENTS = [1, 1.5, 2, 3, 4];
 
 function todayLabel() {
-  return new Date().toISOString().slice(0, 10);
+  return getAppNow().toISOString().slice(0, 10);
 }
 
 export default function TeacherGradesPage() {
@@ -162,13 +163,20 @@ export default function TeacherGradesPage() {
           grades,
         }),
       });
-      const body = (await response.json().catch(() => null)) as { evaluationId?: string; saved?: number; cleared?: number; message?: string } | null;
+      const body = (await response.json().catch(() => null)) as {
+        evaluationId?: string;
+        saved?: number;
+        cleared?: number;
+        notificationsSent?: number;
+        message?: string;
+      } | null;
       if (!response.ok) throw new Error(body?.message ?? "Echec");
 
       await refreshEvaluations(body?.evaluationId ?? evaluationId);
+      const notified = body?.notificationsSent ?? 0;
       success(
         evaluationId ? "Evaluation mise a jour" : "Evaluation enregistree",
-        `${body?.saved ?? 0} note(s) - ${body?.cleared ?? 0} vide(s)`,
+        `${body?.saved ?? 0} note(s) - ${body?.cleared ?? 0} vide(s)${notified > 0 ? ` - ${notified} parent(s) notifie(s)` : ""}`,
       );
     } catch (err) {
       success("Echec de l'enregistrement", err instanceof Error ? err.message : "Veuillez reessayer.");

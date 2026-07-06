@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { getPortalContext } from "@/lib/portal/queries";
 import { getRoleHomePath } from "@/lib/auth";
 import { PortalNavTabs } from "@/components/ui/PortalNavTabs";
+import { DemoModeBanner } from "@/components/ui/DemoModeBanner";
+import { ToastProvider } from "@/components/ui/Toast";
 
 export default async function ParentLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getPortalContext();
@@ -11,6 +13,7 @@ export default async function ParentLayout({ children }: { children: React.React
   if (ctx.role !== "PARENT") redirect(getRoleHomePath(ctx.role ?? "STUDENT"));
 
   return (
+    <ToastProvider>
     <div className="min-h-screen bg-[var(--background)] text-foreground">
       <div className="mx-auto w-full max-w-5xl px-4 py-5 md:py-8">
         <header className="mb-5 flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm">
@@ -27,9 +30,11 @@ export default async function ParentLayout({ children }: { children: React.React
             </button>
           </form>
         </header>
-        <PortalNavTabs basePath="/parent" />
+        <DemoModeBanner />
+        <PortalNavTabs basePath="/parent" effectivePlan={ctx.effectivePlan} />
         <main>{children}</main>
       </div>
     </div>
+    </ToastProvider>
   );
 }

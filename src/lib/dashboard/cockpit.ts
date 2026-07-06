@@ -3,6 +3,7 @@ import type { DashboardStats } from "@/lib/dashboard/queries";
 import { getDashboardStatsForCurrentUserSchool } from "@/lib/dashboard/queries";
 import type { AnalyticsAlert } from "@/lib/types";
 import { getRecommendations } from "@/lib/analytics/recommendationService";
+import { getAppNow } from "@/lib/app-date";
 
 export type TrendDirection = "up" | "down" | "neutral";
 
@@ -267,7 +268,7 @@ export async function getAdminCockpitData(): Promise<AdminCockpitData> {
 
   const admin = await createSupabaseAdminServerClient();
   const schoolId = stats.schoolId;
-  const today = new Date();
+  const today = getAppNow();
   const todayStr = isoDate(today);
   const weekStart = startOfWeek(today);
   const weekStartIso = weekStart.toISOString();

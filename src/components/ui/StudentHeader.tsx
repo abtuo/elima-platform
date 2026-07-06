@@ -1,4 +1,4 @@
-import { BookOpen, CalendarRange, GraduationCap, User } from "lucide-react";
+import { CalendarRange, GraduationCap, User } from "lucide-react";
 
 export function StudentHeader({
   title,
@@ -37,10 +37,6 @@ export function StudentHeader({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-        <BookOpen size={14} className="text-slate-400" />
-        Lecture seule : notes officielles, moyennes et présences.
-      </div>
     </header>
   );
 }

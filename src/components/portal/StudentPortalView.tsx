@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Mail,
   Receipt,
+  ShoppingBag,
   WalletCards,
 } from "lucide-react";
 import {
@@ -140,13 +141,9 @@ export async function StudentPortalView({
                   external={Boolean(latestReport)}
                 />
                 <QuickAction href="#devoirs" icon={<BookOpen size={16} />} label="Devoirs" />
-                <QuickAction href="#paiements" icon={<WalletCards size={16} />} label="Paiements" />
-                <QuickAction
-                  href={latestReceipt ? `/api/finance/receipt/${latestReceipt.id}` : "#paiements"}
-                  icon={<Receipt size={16} />}
-                  label="Recu"
-                  external={Boolean(latestReceipt)}
-                />
+                <QuickAction href={`/parent/pay?child=${student.id}`} icon={<WalletCards size={16} />} label="Payer en ligne" />
+                <QuickAction href={`/parent/store?child=${student.id}`} icon={<ShoppingBag size={16} />} label="Fournitures" />
+                <QuickAction href="#paiements" icon={<Receipt size={16} />} label="Historique" />
                 <QuickAction href="mailto:contact@elima.africa" icon={<Mail size={16} />} label="Contacter" external />
               </>
             ) : (
@@ -381,6 +378,16 @@ export async function StudentPortalView({
               status={finance.balance.remaining > 0 ? "warning" : "success"}
             />
           </div>
+          {finance.balance.remaining > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href={`/parent/pay?child=${student.id}`}
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                <WalletCards size={16} /> Régler {money(finance.balance.remaining, finance.currency)}
+              </Link>
+            </div>
+          ) : null}
           {finance.payments.length === 0 ? (
             <div className="mt-3">
               <EmptyState title="Aucun paiement enregistre" />

@@ -40,6 +40,7 @@ export default function FinanceDashboardPage() {
   const [unpaid, setUnpaid] = useState<UnpaidRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [collecting, setCollecting] = useState<string | null>(null);
+  const [reminding, setReminding] = useState<string | null>(null);
   const [amountDraft, setAmountDraft] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
@@ -90,16 +91,25 @@ export default function FinanceDashboardPage() {
     }
   }
 
-  function relancer(row: UnpaidRow) {
-    if (!row.parentPhone) {
-      success("Téléphone manquant", "Aucun numéro parent enregistré.");
-      return;
+  async function relancer(row: UnpaidRow) {
+    setReminding(row.studentId);
+    try {
+      const res = await fetch("/api/dashboard/finance/remind", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId: row.studentId }),
+      });
+      const body = (await res.json().catch(() => null)) as { message?: string } | null;
+      if (!res.ok) throw new Error(body?.message ?? "Envoi impossible");
+      success(
+        "Relance envoyée",
+        `${row.fullName} : message ajouté dans la messagerie interne (parent + admin).`,
+      );
+    } catch (err) {
+      success("Échec", err instanceof Error ? err.message : "Envoi impossible.");
+    } finally {
+      setReminding(null);
     }
-    const phone = row.parentPhone.replace(/[^0-9]/g, "");
-    const message = encodeURIComponent(
-      `Bonjour, rappel concernant la scolarité de ${row.fullName} (${row.className}). Reste à payer : ${money(row.remaining, currency)}. Merci.`,
-    );
-    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
   }
 
   return (
@@ -207,10 +217,11 @@ export default function FinanceDashboardPage() {
                     </td>
                     <td className="py-2 pr-3">
                       <button
+                        disabled={reminding === r.studentId}
                         onClick={() => relancer(r)}
-                        className="flex items-center gap-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                        className="flex items-center gap-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-50"
                       >
-                        <Send size={13} /> WhatsApp
+                        <Send size={13} /> {reminding === r.studentId ? "…" : "Envoyer"}
                       </button>
                     </td>
                   </tr>

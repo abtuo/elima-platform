@@ -7,6 +7,7 @@ import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { useTeacherContext } from "../TeacherContext";
 import { EditableTable } from "@/components/ui/EditableTable";
 import { useToast } from "@/components/ui/Toast";
+import { getAppNow } from "@/lib/app-date";
 
 type Status = "PRESENT" | "ABSENT" | "LATE";
 
@@ -110,7 +111,7 @@ export default function TeacherAttendancePage() {
             onClick={async () => {
               if (!selectedClassId || students.length === 0) return;
               setSaving(true);
-              const todayISO = new Date().toISOString().slice(0, 10);
+              const todayISO = getAppNow().toISOString().slice(0, 10);
               const statuses = students.map((s) => {
                 const st = (status[s.id] ?? "PRESENT") as Status;
                 return { studentId: s.id, status: st, reason: st === "PRESENT" ? null : (reason[s.id] ?? null) };
@@ -122,6 +123,7 @@ export default function TeacherAttendancePage() {
                   body: JSON.stringify({ classId: selectedClassId, date: todayISO, statuses }),
                 });
                 if (!res.ok) throw new Error("save failed");
+                const body = (await res.json().catch(() => null)) as { notificationsSent?: number } | null;
                 const present = statuses.filter((s) => s.status === "PRESENT").length;
                 const absent = statuses.filter((s) => s.status === "ABSENT").length;
                 const late = statuses.filter((s) => s.status === "LATE").length;
@@ -129,7 +131,11 @@ export default function TeacherAttendancePage() {
                   { dateISO: todayISO, present, absent, late },
                   ...h.filter((r) => r.dateISO !== todayISO),
                 ]);
-                success("Appel enregistré", `${present} présents · ${absent} absents · ${late} retards`);
+                const notified = body?.notificationsSent ?? 0;
+                success(
+                  "Appel enregistré",
+                  `${present} présents · ${absent} absents · ${late} retards${notified > 0 ? ` · ${notified} notification(s) envoyée(s)` : ""}`,
+                );
               } catch {
                 success("Échec de l’enregistrement", "Veuillez réessayer.");
               } finally {

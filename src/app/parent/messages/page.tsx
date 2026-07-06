@@ -1,7 +1,9 @@
 import { MessageCircleMore } from "lucide-react";
-import { EmptyState } from "@/components/dashboard/EmptyState";
+import { ConversationInbox } from "@/components/messaging/ConversationInbox";
+import { getConversationsForCurrentUser, getMessagingActor } from "@/lib/messaging/queries";
 
-export default function ParentMessagesPage() {
+export default async function ParentMessagesPage() {
+  const [conversations, actor] = await Promise.all([getConversationsForCurrentUser(), getMessagingActor()]);
   return (
     <div className="space-y-4">
       <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:p-5">
@@ -16,7 +18,7 @@ export default function ParentMessagesPage() {
           </div>
         </div>
       </section>
-      <EmptyState title="Aucun message" description="Les messages de l&apos;ecole apparaitront ici." />
+      <ConversationInbox conversations={conversations} userId={actor?.userId ?? ""} canReply />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { Edit3, Paperclip, Plus, Trash2, Upload, X } from "lucide-react";
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { useTeacherContext } from "../TeacherContext";
 import { useToast } from "@/components/ui/Toast";
+import { getAppNow } from "@/lib/app-date";
 
 type HomeworkRow = {
   id: string;
@@ -29,7 +30,7 @@ export default function TeacherHomeworkPage() {
   const [description, setDescription] = useState("");
   const [resourceUrl, setResourceUrl] = useState("");
   const [resourceFile, setResourceFile] = useState<File | null>(null);
-  const [dueDate, setDueDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [dueDate, setDueDate] = useState(() => getAppNow().toISOString().slice(0, 10));
 
   const selectedClass = classes.find((item) => item.id === selectedClassId);
   const selectedSubject = subjects.find((item) => item.id === selectedSubjectId);
@@ -59,7 +60,7 @@ export default function TeacherHomeworkPage() {
     setDescription("");
     setResourceUrl("");
     setResourceFile(null);
-    setDueDate(new Date().toISOString().slice(0, 10));
+    setDueDate(getAppNow().toISOString().slice(0, 10));
   }
 
   function editHomework(homework: HomeworkRow) {

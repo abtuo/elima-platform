@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getPortalContext } from "@/lib/portal/queries";
 import { getRoleHomePath } from "@/lib/auth";
 import { PortalNavTabs } from "@/components/ui/PortalNavTabs";
+import { DemoModeBanner } from "@/components/ui/DemoModeBanner";
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getPortalContext();
@@ -27,6 +28,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
             </button>
           </form>
         </header>
+        <DemoModeBanner />
         <PortalNavTabs basePath="/student" />
         <main>{children}</main>
       </div>

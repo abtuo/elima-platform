@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminServerClient } from "@/lib/supabase/server";
 import { assertTeacherAssignment, resolveTeacher, resolveTermId } from "@/lib/teacher/server";
+import { notifyStudentThread, recordInternalNotification } from "@/lib/messaging/create";
 
 type GradeEntry = { studentId: string; score: number | null };
 
@@ -220,16 +221,23 @@ export async function POST(request: Request) {
     const toUpsert = entries.filter((grade) => grade.score !== null && Number.isFinite(Number(grade.score)));
     const toDelete = entries.filter((grade) => grade.score === null).map((grade) => grade.studentId);
 
+    let notificationsSent = 0;
+
     if (toUpsert.length > 0) {
       const studentIds = toUpsert.map((grade) => grade.studentId);
       const { data: allowedStudents, error: studentsErr } = await admin
         .from("students")
-        .select("id")
+        .select("id, full_name")
         .eq("school_id", ctx.schoolId)
         .eq("class_id", classId)
         .in("id", studentIds);
       if (studentsErr) return NextResponse.json({ message: studentsErr.message }, { status: 400 });
-      const allowed = new Set(((allowedStudents as Array<{ id: string }>) ?? []).map((student) => String(student.id)));
+      const allowed = new Map(
+        ((allowedStudents as Array<{ id: string; full_name: string }>) ?? []).map((student) => [
+          String(student.id),
+          String(student.full_name),
+        ]),
+      );
 
       const rows = toUpsert
         .filter((grade) => allowed.has(grade.studentId))
@@ -245,6 +253,45 @@ export async function POST(request: Request) {
           .from("grades")
           .upsert(rows as never, { onConflict: "evaluation_id,student_id" });
         if (upsertErr) return NextResponse.json({ message: upsertErr.message }, { status: 400 });
+
+        const { data: subjectRow } = await admin.from("subjects").select("name").eq("id", subjectId).maybeSingle();
+        const subjectName = String((subjectRow as { name?: string } | null)?.name ?? "Matière");
+
+        for (const grade of rows) {
+          const studentId = String(grade.student_id);
+          const fullName = allowed.get(studentId) ?? "Élève";
+          const firstName = fullName.split(/\s+/)[0] ?? fullName;
+          const score = Number(grade.score);
+          const systemText = `Nouvelle note publiée : ${fullName} a obtenu ${score}/20 en ${subjectName}.`;
+
+          await notifyStudentThread(admin, {
+            schoolId: ctx.schoolId,
+            studentId,
+            classId,
+            type: "grade_notification",
+            title: `Nouvelle note — ${subjectName}`,
+            extraParticipantUserIds: [ctx.userId],
+            messages: [
+              { senderId: null, senderRole: "SYSTEM", content: systemText, type: "grade_alert" },
+              {
+                senderId: ctx.userId,
+                senderRole: "TEACHER",
+                content:
+                  score >= 15
+                    ? `Bonsoir, très bon travail de ${firstName} sur l'évaluation de ${subjectName.toLowerCase()}.`
+                    : `Bonsoir, la note de ${subjectName} pour ${fullName} a été publiée. N'hésitez pas à nous contacter si besoin.`,
+              },
+            ],
+          });
+
+          await recordInternalNotification(admin, {
+            schoolId: ctx.schoolId,
+            studentId,
+            type: "GRADE_PUBLISHED",
+            message: systemText,
+          });
+          notificationsSent += 1;
+        }
       }
     }
 
@@ -257,7 +304,7 @@ export async function POST(request: Request) {
       if (deleteErr) return NextResponse.json({ message: deleteErr.message }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true, evaluationId, saved: toUpsert.length, cleared: toDelete.length });
+    return NextResponse.json({ ok: true, evaluationId, saved: toUpsert.length, cleared: toDelete.length, notificationsSent });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur serveur";
     return NextResponse.json({ message }, { status: 500 });

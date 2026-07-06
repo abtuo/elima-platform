@@ -3,14 +3,30 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { resolveAppMode } from "@/lib/app-mode";
+
+const demoAccounts = [
+  { label: "Admin Abidjan", email: "admin.abidjan@seed-elima.invalid", password: "ElimaSeed!2026" },
+  { label: "Parent Mariam", email: "parent.mariam@elima.school", password: "ElimaSeed!2026" },
+  { label: "Parent Aboubacar", email: "parent.aboubacar@elima.school", password: "ElimaSeed!2026" },
+  { label: "Enseignant Serge", email: "enseignant.serge@elima.school", password: "ElimaSeed!2026" },
+  { label: "Élève Awa", email: "eleve.awa@elima.school", password: "ElimaSeed!2026" },
+  { label: "Élève Yao", email: "eleve.yao@elima.school", password: "ElimaSeed!2026" },
+  { label: "Élève Lina", email: "eleve.lina@elima.school", password: "ElimaSeed!2026" },
+  { label: "Élève Eli", email: "eleve.eli@elima.school", password: "ElimaSeed!2026" },
+];
 
 function EmailLoginInner() {
   const router = useRouter();
   const sp = useSearchParams();
   const redirectTo = sp.get("redirect") ?? "/dashboard";
+  const isDemo = resolveAppMode({
+    NEXT_PUBLIC_ELIMA_APP_MODE: process.env.NEXT_PUBLIC_ELIMA_APP_MODE,
+    NODE_ENV: process.env.NODE_ENV,
+  }) === "demo";
 
-  const [email, setEmail] = useState("admin.yakro@elima.demo");
-  const [password, setPassword] = useState("Password123!");
+  const [email, setEmail] = useState(isDemo ? "admin.abidjan@seed-elima.invalid" : "");
+  const [password, setPassword] = useState(isDemo ? "ElimaSeed!2026" : "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +66,26 @@ function EmailLoginInner() {
       <section className="elima-card mx-auto w-full max-w-lg space-y-5">
         <h1 className="text-2xl font-bold">Connexion</h1>
         <p className="text-sm text-slate-600">Saisissez vos identifiants.</p>
+        {isDemo ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-900">Comptes de demo</p>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              {demoAccounts.map((account) => (
+                <button
+                  key={account.email}
+                  type="button"
+                  onClick={() => {
+                    setEmail(account.email);
+                    setPassword(account.password);
+                  }}
+                  className="rounded-lg border border-amber-200 bg-white px-2 py-1.5 text-left text-xs font-semibold text-slate-700 hover:bg-amber-100"
+                >
+                  {account.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
         <p className="text-xs text-slate-500">
           Enseignant avec code provisoire ?{" "}
           <Link href="/login/teacher-code" className="font-semibold text-[var(--primary)]">

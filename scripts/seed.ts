@@ -48,9 +48,9 @@ const SCHOOL_SPECS = [
     motto: "L’excellence notre objectif",
     plan: "premium",
     currency: "FCFA",
-    // Principal demo school: the richest dataset (~70% of the quality lives here).
+    // Principal demo school: keep this school because real logo/stamp assets exist.
     principal: true,
-    studentTarget: 760,
+    studentTarget: 320,
     richness: 1,
   },
   {
@@ -61,7 +61,7 @@ const SCHOOL_SPECS = [
     plan: "basic",
     currency: "FCFA",
     principal: false,
-    studentTarget: 460,
+    studentTarget: 280,
     richness: 0.75,
   },
   {
@@ -99,6 +99,7 @@ const SCHOOL_SPECS = [
   },
 ] as const;
 
+// Demo/staging seed: keep the two requested schools active.
 const ACTIVE_SCHOOL_SPECS = SCHOOL_SPECS.slice(0, 2);
 
 const SUBJECT_NAMES = [
@@ -141,6 +142,26 @@ const LEVEL_WEIGHTS: Record<string, number> = {
 function subjectAppliesToLevel(subject: string, level: string): boolean {
   if (subject === "Philosophie") return /Terminale|1ère/.test(level);
   return true;
+}
+
+function targetStudentsForClass(spec: (typeof SCHOOL_SPECS)[number], level: string, index: number): number {
+  const base =
+    level.includes("Terminale")
+      ? 16
+      : level.includes("1Ã¨re")
+        ? 18
+        : level.includes("2nde")
+          ? 20
+          : level.includes("3Ã¨me")
+            ? 22
+            : level.includes("4Ã¨me")
+              ? 23
+              : level.includes("5Ã¨me")
+                ? 24
+                : 25;
+  const variance = (index * 3 + spec.city.length) % 4;
+  const principalBoost = spec.principal ? 2 : 0;
+  return base + variance + principalBoost;
 }
 
 /** Class templates (name + level) — varied per school by rotation. */
@@ -638,14 +659,14 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
     subjectIds[row.name] = row.id;
   }
 
-  const classCount = spec.principal ? Math.min(14, CLASS_BLUEPRINTS.length) : Math.min(12, CLASS_BLUEPRINTS.length);
+  const classCount = Math.min(14, CLASS_BLUEPRINTS.length);
   const blueprints = CLASS_BLUEPRINTS.slice(0, classCount);
-  const classIns = blueprints.map((bp) => ({
+  const classIns = blueprints.map((bp, index) => ({
     school_id: spec.id,
     name: bp.name,
     level: bp.level,
     academic_year: ACADEMIC_YEAR,
-    capacity: faker.number.int({ min: 30, max: 40 }),
+    capacity: targetStudentsForClass(spec, bp.level, index) + 4,
   }));
   const { data: clsData, error: clsErr } = await supabase.from("classes").insert(classIns as never).select("id,name,level,capacity");
   if (clsErr || !clsData) throw new Error(`classes: ${clsErr?.message}`);
@@ -763,7 +784,7 @@ async function seedSchool(supabase: SupabaseClient, spec: (typeof SCHOOL_SPECS)[
   await insertBatched(supabase, "class_teachers", classTeacherRows, 400);
   await insertBatched(supabase, "teacher_subject_classes", teacherSubjectClassRows, 400);
 
-  const classSlots = new Map(classRows.map((cls, index) => [cls.id, 24 + ((index * 7 + spec.city.length) % 13)]));
+  const classSlots = new Map(classRows.map((cls, index) => [cls.id, targetStudentsForClass(spec, cls.level, index)]));
   const studentsHasPhotoUrl = await hasColumn(supabase, "students", "photo_url");
 
   const studentBulk: Record<string, unknown>[] = [];

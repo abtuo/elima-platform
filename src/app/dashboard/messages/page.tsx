@@ -1,12 +1,13 @@
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ConversationInbox } from "@/components/messaging/ConversationInbox";
+import { getConversationsForCurrentUser, getMessagingActor } from "@/lib/messaging/queries";
 
-export default function DashboardMessagesPage() {
+export default async function DashboardMessagesPage() {
+  const [conversations, actor] = await Promise.all([getConversationsForCurrentUser(), getMessagingActor()]);
   return (
     <div className="space-y-6">
       <PageHeader title="Messagerie" subtitle="Messages de l'etablissement, annonces et echanges avec les familles." />
-      <div className="elima-card">
-        <p className="text-sm text-slate-600">Cette section centralisera les conversations de l&apos;etablissement.</p>
-      </div>
+      <ConversationInbox conversations={conversations} userId={actor?.userId ?? ""} canReply />
     </div>
   );
 }

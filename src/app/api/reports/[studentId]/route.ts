@@ -16,6 +16,26 @@ function slugSegment(value: string, fallback: string) {
   return normalized || fallback;
 }
 
+/** Core subjects first — bulletin PDF shows at most 9 rows. */
+const BULLETIN_SUBJECT_PRIORITY = [
+  "Mathématiques",
+  "Français",
+  "Anglais",
+  "Physique-Chimie",
+  "SVT",
+  "Histoire-Géographie",
+  "Espagnol",
+  "EPS",
+  "Technologie",
+  "Informatique",
+  "Philosophie",
+] as const;
+
+function bulletinSubjectRank(name: string) {
+  const idx = BULLETIN_SUBJECT_PRIORITY.indexOf(name as (typeof BULLETIN_SUBJECT_PRIORITY)[number]);
+  return idx === -1 ? 999 : idx;
+}
+
 function pickOne<T>(value: T | T[] | null | undefined): T | null {
   if (Array.isArray(value)) return value[0] ?? null;
   return value ?? null;
@@ -281,8 +301,11 @@ export async function GET(
         ...classBySubject.keys(),
       ]);
 
-      rows = Array.from(subjectNames)
-        .sort((a, b) => a.localeCompare(b, "fr"))
+      const allRows = Array.from(subjectNames)
+        .sort(
+          (a, b) =>
+            bulletinSubjectRank(a) - bulletinSubjectRank(b) || a.localeCompare(b, "fr"),
+        )
         .map((subjectName) => {
           const classScores = classBySubject.get(subjectName) ?? [];
           const studentScores = studentCurrentBySubject.get(subjectName) ?? [];
@@ -317,14 +340,17 @@ export async function GET(
           };
         });
 
-      if (rows.length > 0) {
-        const weighted = rows
+      if (allRows.length > 0) {
+        const weighted = allRows
           .filter((r) => typeof r.score === "number")
           .map((r) => ({ score: Number(r.score), coeff: Number(r.coefficient ?? 1) }));
         const coeffSum = weighted.reduce((sum, r) => sum + r.coeff, 0);
         const weightedSum = weighted.reduce((sum, r) => sum + r.score * r.coeff, 0);
         termAverage = coeffSum ? weightedSum / coeffSum : null;
       }
+
+      // Bulletin PDF: max 9 subjects (prioritized above), full average uses all rows.
+      rows = allRows.slice(0, 9);
 
       // Class ranking for the current term (same weighting as the term average:
       // per-subject average weighted by subject coefficient).

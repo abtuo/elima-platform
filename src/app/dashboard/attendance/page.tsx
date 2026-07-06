@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { createSupabaseAdminServerClient } from "@/lib/supabase/server";
 import { resolveCurrentSchoolId } from "@/lib/finance/queries";
+import { getAppNow } from "@/lib/app-date";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatCard } from "@/components/dashboard/StatCard";
 
@@ -18,7 +19,7 @@ function pickOne<T>(v: T[] | T | null | undefined): T | null {
 
 export default async function DashboardAttendancePage() {
   const schoolId = await resolveCurrentSchoolId();
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = getAppNow().toISOString().slice(0, 10);
 
   let rows: Row[] = [];
   if (schoolId) {

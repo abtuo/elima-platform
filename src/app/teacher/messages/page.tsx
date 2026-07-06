@@ -1,7 +1,10 @@
 import { MessageCircleMore } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ConversationInbox } from "@/components/messaging/ConversationInbox";
+import { getConversationsForCurrentUser, getMessagingActor } from "@/lib/messaging/queries";
 
-export default function TeacherMessagesPage() {
+export default async function TeacherMessagesPage() {
+  const [conversations, actor] = await Promise.all([getConversationsForCurrentUser(), getMessagingActor()]);
   return (
     <div className="space-y-6">
       <PageHeader title="Messagerie" subtitle="Echanges avec les classes, les familles et l'administration." />
@@ -18,6 +21,7 @@ export default function TeacherMessagesPage() {
           </div>
         </div>
       </section>
+      <ConversationInbox conversations={conversations} userId={actor?.userId ?? ""} />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { MonthlyAverageChart, ClassPerformanceBars } from "@/components/dashboar
 import { getSchoolKpisForCurrentUserSchool } from "@/lib/dashboard/kpis";
 import { getAdminCockpitData } from "@/lib/dashboard/cockpit";
 import { getSessionRole } from "@/lib/auth";
+import { getAppNow } from "@/lib/app-date";
 import {
   BookOpen,
   CalendarDays,
@@ -34,7 +35,7 @@ export default async function DashboardKpisPage() {
     );
   }
 
-  const toDate = new Date();
+  const toDate = getAppNow();
   const fromDate = new Date(toDate);
   fromDate.setDate(fromDate.getDate() - 29);
   const to = formatDate(toDate);
