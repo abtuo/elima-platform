@@ -54,6 +54,9 @@ export function MarketingHeader() {
           <Link href="/#tarifs" className="rounded-lg px-3 py-2 hover:bg-slate-100">
             Offres
           </Link>
+          <Link href="/a-propos" className="rounded-lg px-3 py-2 hover:bg-slate-100">
+            À propos
+          </Link>
           <Link href="/contact" className="rounded-lg px-3 py-2 hover:bg-slate-100">
             Contact
           </Link>

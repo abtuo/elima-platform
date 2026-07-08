@@ -24,6 +24,7 @@ import { DemoModeBanner } from "@/components/ui/DemoModeBanner";
 import { MessagerieNavLabel } from "@/components/messaging/MessagerieNavLabel";
 import { useMessagingUnreadCount } from "@/hooks/useMessagingUnreadCount";
 import { getRoleHomePath } from "@/lib/role-home";
+import { resolveAppMode } from "@/lib/app-mode";
 import type { AppRole } from "@/lib/types";
 import {
   isNavItemLocked,
@@ -33,6 +34,16 @@ import {
 } from "@/lib/plans";
 
 const DASHBOARD_ROLES = new Set<AppRole>(["SUPER_ADMIN", "SCHOOL_ADMIN", "COMPTABLE"]);
+
+const isAppDemoMode =
+  resolveAppMode({
+    NEXT_PUBLIC_ELIMA_APP_MODE: process.env.NEXT_PUBLIC_ELIMA_APP_MODE,
+    NODE_ENV: process.env.NODE_ENV,
+  }) === "demo";
+
+function fallbackEffectivePlan(stored?: SchoolPlan): SchoolPlan {
+  return stored ?? (isAppDemoMode ? "custom" : "basic");
+}
 
 const nav = [
   { href: "/dashboard", label: "Vue d'ensemble", icon: LayoutDashboard },
@@ -199,7 +210,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setSchool({
           name: String(body.school.name ?? ""),
           logoUrl: body.school.logo_url ?? null,
-          effectivePlan: body.school.effectivePlan ?? "basic",
+          effectivePlan: fallbackEffectivePlan(body.school.effectivePlan),
         });
       })
       .catch(() => {});
@@ -215,7 +226,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setSchool((prev) =>
           prev
             ? { ...prev, logoUrl: detail.url! }
-            : { name: "", logoUrl: detail.url!, effectivePlan: "basic" },
+            : { name: "", logoUrl: detail.url!, effectivePlan: fallbackEffectivePlan() },
         );
       }
     };
@@ -231,7 +242,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  const effectivePlan = school?.effectivePlan ?? "basic";
+  const effectivePlan = fallbackEffectivePlan(school?.effectivePlan);
   const bypassPlanGating = role === "SUPER_ADMIN";
 
   return (
