@@ -8,25 +8,21 @@ import { Reveal } from "@/components/Reveal";
 import { MarketingHeader } from "@/components/ui/MarketingHeader";
 import type { LucideIcon } from "lucide-react";
 import {
-  ArrowRight,
-  BarChart3,
   BookOpen,
   Building2,
   CheckCircle2,
   ClipboardCheck,
   CreditCard,
-  FolderArchive,
   GraduationCap,
   Headphones,
   Mail,
-  MessageCircleMore,
   Phone,
   ShieldCheck,
   Sparkles,
   Ticket,
   Users,
-  Wallet,
 } from "lucide-react";
+import { FEATURE_MODULES } from "@/lib/feature-modules";
 import { MARKETING_PLANS } from "@/lib/marketing-plans";
 
 type IconBadgeProps = {
@@ -50,51 +46,6 @@ function IconBadge({ icon: Icon, size = "md", className = "" }: IconBadgeProps) 
     </span>
   );
 }
-
-const PILOT_MODULES = [
-  {
-    title: "Gestion scolaire",
-    desc: "Élèves, classes, matières, enseignants, notes, absences et bulletins — avec import intelligent des listes par IA.",
-    icon: GraduationCap,
-    accent: "from-emerald-500/15 to-teal-400/10",
-    ai: true,
-  },
-  {
-    title: "Communication",
-    desc: "Messagerie parents-école, alertes utiles et informations partagées au bon moment.",
-    icon: MessageCircleMore,
-    accent: "from-sky-500/15 to-cyan-400/10",
-    ai: false,
-  },
-  {
-    title: "Paiements",
-    desc: "Suivi des frais, encaissements, factures et relances pour une trésorerie plus lisible.",
-    icon: Wallet,
-    accent: "from-amber-500/15 to-yellow-400/10",
-    ai: false,
-  },
-  {
-    title: "Tableau de bord",
-    desc: "Indicateurs clés, tendances et analyse prédictive : repérez tôt les élèves à risque et les classes à surveiller.",
-    icon: BarChart3,
-    accent: "from-violet-500/15 to-purple-400/10",
-    ai: true,
-  },
-  {
-    title: "Gestion des documents",
-    desc: "Archivage centralisé, OCR et recherche intelligente pour retrouver dossiers et pièces en quelques secondes.",
-    icon: FolderArchive,
-    accent: "from-rose-500/15 to-orange-400/10",
-    ai: true,
-  },
-  {
-    title: "Apprentissage personnalisé",
-    desc: "Recommandations IA par élève : points à renforcer, progression suivie et parcours adaptés au rythme de chacun.",
-    icon: Sparkles,
-    accent: "from-indigo-500/15 to-fuchsia-400/10",
-    ai: true,
-  },
-] as const;
 
 export default function Home() {
   return (
@@ -124,22 +75,22 @@ export default function Home() {
 
               <p className="max-w-xl text-base leading-7 text-slate-600">
                 Elima centralise la gestion des élèves, des absences, des bulletins, de la communication parents et des
-                paiements dans une seule plateforme — enrichie par l&apos;IA pour mieux anticiper et décider.
+                paiements, des achats de fournitures dans une seule plateforme — enrichie par l&apos;IA pour mieux anticiper et décider.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
               <Link
-                href="/contact"
+                href="/signup"
                 className="inline-flex items-center gap-2 rounded-xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white hover:opacity-90"
               >
-                Demander une démo <Ticket size={16} />
+                S'inscrire
               </Link>
               <Link
-                href="/#tarifs"
+                href="/login"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
               >
-                Voir les offres <ArrowRight size={16} />
+                Se connecter
               </Link>
             </div>
           </Reveal>
@@ -162,7 +113,7 @@ export default function Home() {
               <div className="grid gap-3 sm:grid-cols-3">
                 {[
                   { k: "Moins d'admin", v: "Des heures économisées chaque semaine sur les tâches répétitives." },
-                  { k: "Plus de revenus", v: "Un suivi des paiements plus net pour réduire les impayés." },
+                  { k: "Plus de revenus", v: "Un suivi des paiements et achats plus net pour réduire les impayés." },
                   { k: "Parents engagés", v: "Une communication régulière via les canaux qu'ils utilisent déjà." },
                 ].map((stat) => (
                   <div key={stat.v} className="rounded-2xl border border-slate-200/70 bg-white/70 p-4 shadow-sm">
@@ -180,7 +131,7 @@ export default function Home() {
             <div className="relative aspect-[16/9] w-full md:aspect-[21/9]">
               <Image
                 src="/illustration_web_2.png"
-                alt="Elima: gestion scolaire, communication parents et paiements en une seule plateforme"
+                alt="Elima: gestion scolaire, communication parents, paiements et achats de fournitures en une seule plateforme"
                 fill
                 priority
                 sizes="100vw"
@@ -198,57 +149,11 @@ export default function Home() {
                       De la direction aux familles, tout converge dans Elima.
                     </h2>
                     <p className="text-sm text-slate-700 md:text-base">
-                      Pilotage scolaire, communication parents et paiements connectés dans une expérience pensée pour l'Afrique.
+                      Pilotage scolaire, communication parents, paiements et achats de fournitures connectés dans une expérience pensée pour l'Afrique.
                     </p>
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
-        </Reveal>
-
-        <Reveal>
-          <section id="impact" className="space-y-6">
-            <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-bold text-[var(--accent)]">Le problème est connu. La réponse doit être concrète.</h2>
-              <p className="text-sm text-slate-600">
-                Trop d'écoles gèrent encore l'information entre papier, fichiers dispersés et messages non centralisés.
-                Elima transforme cette complexité en pilotage clair et actionnable.
-              </p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <article className="elima-card">
-                <h3 className="text-lg font-semibold text-[var(--accent)]">Ce qui freine les établissements</h3>
-                <ul className="mt-3 space-y-2 text-sm text-slate-700">
-                  {[
-                    "Temps administratif élevé et ressaisie répétée.",
-                    "Suivi difficile des absences, des performances et des impayés.",
-                    "Communication parents irrégulière ou trop manuelle.",
-                    "Décisions prises sans vue d'ensemble fiable.",
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <CheckCircle2 size={16} className="mt-0.5 text-[var(--primary)]" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-              <article className="elima-card">
-                <h3 className="text-lg font-semibold text-[var(--accent)]">Ce qu'Elima change</h3>
-                <ul className="mt-3 space-y-2 text-sm text-slate-700">
-                  {[
-                    "Gestion unifiée des élèves, classes, notes et absences.",
-                    "Parents mieux informés via des canaux déjà adoptés.",
-                    "Suivi des paiements plus lisible pour sécuriser la trésorerie.",
-                    "Indicateurs clairs pour agir plus tôt et plus vite.",
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <CheckCircle2 size={16} className="mt-0.5 text-[var(--primary)]" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
             </div>
           </section>
         </Reveal>
@@ -276,7 +181,7 @@ export default function Home() {
               />
 
               <div className="space-y-8 md:space-y-12">
-                {PILOT_MODULES.map((feature, idx) => {
+                {FEATURE_MODULES.map((feature, idx) => {
                   const isLeft = idx % 2 === 0;
                   const Icon = feature.icon;
                   return (
@@ -291,8 +196,9 @@ export default function Home() {
                           {idx + 1}
                         </span>
 
-                        <article
-                          className={`group relative ml-12 w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:border-[var(--primary)]/35 hover:shadow-xl md:ml-0 md:w-[calc(50%-2.5rem)] ${
+                        <Link
+                          href={feature.href}
+                          className={`group relative ml-12 block w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:border-[var(--primary)]/35 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/60 md:ml-0 md:w-[calc(50%-2.5rem)] ${
                             isLeft ? "md:mr-10" : "md:ml-10"
                           }`}
                         >
@@ -306,7 +212,7 @@ export default function Home() {
                             <div>
                               <div className="flex flex-wrap items-center gap-2">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--primary)]">
-                                  Module {String(idx + 1).padStart(2, "0")}
+                                  Module {feature.number}
                                 </p>
                                 {feature.ai ? (
                                   <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700">
@@ -319,7 +225,7 @@ export default function Home() {
                               <p className="mt-2 text-sm leading-relaxed text-slate-600">{feature.desc}</p>
                             </div>
                           </div>
-                        </article>
+                        </Link>
                       </div>
                     </Reveal>
                   );
@@ -396,7 +302,7 @@ export default function Home() {
                   },
                   {
                     title: "Revenus récurrents",
-                    desc: "Abonnements annuels et services complémentaires autour des paiements.",
+                    desc: "Abonnements annuels et services complémentaires autour des paiements et achats.",
                     icon: CreditCard,
                   },
                   {
@@ -495,16 +401,16 @@ export default function Home() {
               </div>
               <div className="flex flex-wrap gap-3 md:justify-end">
                 <Link
-                  href="/contact"
-                  className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                >
-                  Demander une démo
-                </Link>
-                <Link
                   href="/signup"
                   className="rounded-xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white hover:opacity-90"
                 >
-                  Créer un compte
+                  S'inscrire
+                </Link>
+                <Link
+                  href="/login"
+                  className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                >
+                  Se connecter
                 </Link>
               </div>
             </div>
@@ -514,7 +420,7 @@ export default function Home() {
         <footer className="pb-10 pt-2 text-sm text-slate-600">
           <Reveal>
             <div className="mt-2 rounded-[28px] border border-slate-200/70 bg-white/70 p-6 shadow-sm backdrop-blur md:p-10">
-              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-[1.2fr_2fr_1fr_1fr]">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Image src="/logo.png" alt="Logo Elima" width={30} height={30} className="rounded-full" />
@@ -544,35 +450,9 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <p className="mb-3 font-semibold text-[var(--accent)]">Nous contacter</p>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link className="hover:text-slate-900" href="/contact">
-                        Démo et rendez-vous
-                      </Link>
-                    </li>
-                    <li>
-                      <Link className="hover:text-slate-900" href="/contact">
-                        Devis gratuit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link className="hover:text-slate-900" href="/contact">
-                        Partenariats
-                      </Link>
-                    </li>
-                    <li>
-                      <Link className="hover:text-slate-900" href="/contact">
-                        Centre d'aide
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-
-                <div>
                   <p className="mb-3 font-semibold text-[var(--accent)]">Modules inclus</p>
-                  <ul className="space-y-3">
-                    {PILOT_MODULES.map((mod) => (
+                  <ul className="grid gap-3 sm:grid-cols-2">
+                    {FEATURE_MODULES.map((mod) => (
                       <li key={mod.title} className="flex items-center gap-3">
                         <IconBadge icon={mod.icon} size="sm" />
                         <span className="flex flex-wrap items-center gap-2">
@@ -621,8 +501,18 @@ export default function Home() {
                       </Link>
                     </li>
                     <li>
+                      <Link className="hover:text-slate-900" href="/signup">
+                        S'inscrire
+                      </Link>
+                    </li>
+                    <li>
                       <Link className="hover:text-slate-900" href="/contact">
-                        Demander une démo
+                        Centre d'aide
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="hover:text-slate-900" href="/contact">
+                        Contact
                       </Link>
                     </li>
                     <li className="text-slate-500">Mentions légales</li>

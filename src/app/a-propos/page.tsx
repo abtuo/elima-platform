@@ -15,7 +15,6 @@ import {
   GraduationCap,
   HeartHandshake,
   MessageCircleMore,
-  PhoneCall,
   School,
   ShieldCheck,
   Sparkles,
@@ -25,29 +24,34 @@ import type { LucideIcon } from "lucide-react";
 
 const platformCards: Array<{ title: string; text: string; icon: LucideIcon; image?: string }> = [
   {
-    title: "Gestion scolaire",
-    text: "Centraliser les élèves, classes, enseignants, parents, inscriptions, documents et emplois du temps.",
+    title: "Gestion administrative",
+    text: "Centraliser les élèves, classes, enseignants, parents, inscriptions et informations essentielles de l'établissement.",
     icon: School,
     image: "/dashbord.png",
   },
   {
-    title: "Suivi pédagogique",
+    title: "Suivi des élèves",
     text: "Suivre les notes, absences, progressions et signaux importants pour mieux accompagner chaque élève.",
     icon: BookOpenCheck,
   },
   {
-    title: "Communication école-famille",
+    title: "Communication",
     text: "Informer les parents, partager les messages importants et renforcer le lien entre l'école et les familles.",
     icon: MessageCircleMore,
   },
   {
-    title: "Paiements intégrés",
-    text: "Faciliter le suivi des frais scolaires, améliorer la transparence et réduire les relances manuelles.",
+    title: "Paiements et achats",
+    text: "Faciliter le suivi des frais scolaires, des achats de fournitures, améliorer la transparence et réduire les relances manuelles.",
     icon: CreditCard,
   },
   {
-    title: "Intelligence artificielle utile",
-    text: "Analyser les données, générer des documents, aider au scoring et proposer des révisions adaptées au niveau des élèves.",
+    title: "Organisation scolaire",
+    text: "Structurer les documents, emplois du temps, salles, disponibilités et informations pratiques de la vie scolaire.",
+    icon: ClipboardList,
+  },
+  {
+    title: "IA responsable",
+    text: "Aider à analyser les données, générer des documents et proposer des recommandations utiles, tout en gardant l'humain au centre.",
     icon: Bot,
     image: "/image_illustration_elima_1.png",
   },
@@ -109,28 +113,28 @@ export default function AboutPage() {
               <div className="space-y-4">
                 <h1 className="text-4xl font-bold leading-tight text-[var(--accent)] md:text-6xl">
                   Plus qu'un logiciel scolaire, une infrastructure pour{" "}
-                  <span className="bg-gradient-to-r from-[var(--primary)] via-emerald-500 to-amber-400 bg-clip-text text-transparent">
+                  <span className="text-[var(--primary)]">
                     faire réussir les élèves.
                   </span>
                 </h1>
                 <p className="max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
                   Elima accompagne les établissements scolaires africains dans leur transformation numérique :
-                  gestion scolaire, suivi pédagogique, communication avec les familles, paiements et outils
+                  gestion scolaire, suivi pédagogique, communication avec les familles, paiements, achats de fournitures et outils
                   d'intelligence artificielle utiles au quotidien.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href="/contact"
+                  href="/signup"
                   className="inline-flex items-center gap-2 rounded-xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-emerald-900/15 hover:opacity-90"
                 >
-                  Demander une démonstration <ArrowRight size={16} />
+                  S'inscrire <ArrowRight size={16} />
                 </Link>
                 <Link
-                  href="/contact"
+                  href="/login"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
-                  Devenir école pilote
+                  Se connecter
                 </Link>
               </div>
             </Reveal>
@@ -148,7 +152,7 @@ export default function AboutPage() {
                     className="w-full object-cover"
                   />
                   <div className="absolute bottom-4 left-4 right-4 grid gap-3 sm:grid-cols-3">
-                    {["Suivi élèves", "Messages familles", "Paiements"].map((item) => (
+                    {["Suivi élèves", "Messages familles", "Paiements et achats"].map((item) => (
                       <div key={item} className="rounded-2xl border border-white/60 bg-white/85 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur">
                         {item}
                       </div>
@@ -362,11 +366,11 @@ export default function AboutPage() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-3 lg:justify-end">
-                <Link href="/contact" className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50">
-                  Demander une démonstration <PhoneCall size={16} />
+                <Link href="/signup" className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50">
+                  S'inscrire <ArrowRight size={16} />
                 </Link>
-                <Link href="/contact" className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur hover:bg-white/20">
-                  Nous contacter <ArrowRight size={16} />
+                <Link href="/login" className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur hover:bg-white/20">
+                  Se connecter
                 </Link>
               </div>
             </div>
