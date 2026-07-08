@@ -12,11 +12,9 @@ import {
   ClipboardList,
   CreditCard,
   FileText,
-  GraduationCap,
   HeartHandshake,
   MessageCircleMore,
   School,
-  ShieldCheck,
   Sparkles,
   UsersRound,
 } from "lucide-react";
@@ -27,33 +25,37 @@ const platformCards: Array<{ title: string; text: string; icon: LucideIcon; imag
     title: "Gestion administrative",
     text: "Centraliser les élèves, classes, enseignants, parents, inscriptions et informations essentielles de l'établissement.",
     icon: School,
-    image: "/dashbord.png",
+    image: "/gestion_admin.png",
   },
   {
     title: "Suivi des élèves",
     text: "Suivre les notes, absences, progressions et signaux importants pour mieux accompagner chaque élève.",
     icon: BookOpenCheck,
+    image: "/suivi_eleve.png",
   },
   {
     title: "Communication",
     text: "Informer les parents, partager les messages importants et renforcer le lien entre l'école et les familles.",
     icon: MessageCircleMore,
+    image: "/communication.png",
   },
   {
     title: "Paiements et achats",
     text: "Faciliter le suivi des frais scolaires, des achats de fournitures, améliorer la transparence et réduire les relances manuelles.",
     icon: CreditCard,
+    image: "/paiement.png",
   },
   {
     title: "Organisation scolaire",
     text: "Structurer les documents, emplois du temps, salles, disponibilités et informations pratiques de la vie scolaire.",
     icon: ClipboardList,
+    image: "/orga_school.png",
   },
   {
     title: "IA responsable",
     text: "Aider à analyser les données, générer des documents et proposer des recommandations utiles, tout en gardant l'humain au centre.",
     icon: Bot,
-    image: "/image_illustration_elima_1.png",
+    image: "/responsible_ai.png",
   },
 ];
 
@@ -78,13 +80,6 @@ const impactCards = [
     text: "Rendre progressivement les outils numériques accessibles à davantage d'établissements.",
     icon: HeartHandshake,
   },
-];
-
-const visionSteps = [
-  { title: "Données scolaires", icon: ClipboardList },
-  { title: "Tableaux de bord", icon: BarChart3 },
-  { title: "Décisions", icon: ShieldCheck },
-  { title: "Meilleur accompagnement", icon: GraduationCap },
 ];
 
 function IconTile({ icon: Icon, className = "" }: { icon: LucideIcon; className?: string }) {
@@ -194,66 +189,6 @@ export default function AboutPage() {
           </Reveal>
         </section>
 
-        <section className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm md:p-8">
-          <div className="grid items-center gap-8 lg:grid-cols-[0.85fr_1.15fr]">
-            <Reveal>
-              <div className="relative overflow-hidden rounded-[30px] bg-gradient-to-br from-emerald-900 via-emerald-700 to-amber-400 p-6 text-white shadow-lg">
-                <div className="relative z-10 flex min-h-[360px] flex-col justify-between">
-                  <div className="flex items-center gap-3">
-                    <Image src="/logo_wo_bg.png" alt="" width={64} height={64} className="rounded-2xl bg-white/90 p-2" />
-                    <div>
-                      <p className="text-lg font-bold">Aboubacar Tuo</p>
-                      <p className="text-sm text-white/80">Fondateur d'Elima</p>
-                    </div>
-                  </div>
-                  <div className="rounded-3xl border border-white/20 bg-white/15 p-5 backdrop-blur">
-                    <p className="text-sm font-semibold uppercase tracking-wide text-white/70">Crédibilité</p>
-                    <p className="mt-2 text-xl font-bold leading-tight">
-                      Ingénieur-chercheur en IA · Boursier de la Côte d'Ivoire
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal delayMs={120} className="space-y-5">
-              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--primary)]">Le mot du fondateur</p>
-              <h2 className="text-3xl font-bold leading-tight text-[var(--accent)] md:text-4xl">
-                Une histoire personnelle devenue projet collectif.
-              </h2>
-              <div className="space-y-4 text-sm leading-7 text-slate-600 md:text-base">
-                <p>Je suis Aboubacar Tuo, ingénieur-chercheur en intelligence artificielle et fondateur d'Elima.</p>
-                <p>
-                  Mon parcours est profondément lié à l'école publique ivoirienne et à la confiance que mon pays a
-                  placée en moi. Boursier de la Côte d'Ivoire, j'ai eu la chance de poursuivre des études scientifiques
-                  exigeantes, de me former en France, puis de consacrer mon travail de recherche à l'intelligence artificielle.
-                </p>
-                <p>
-                  Ce parcours n'est pas seulement une réussite personnelle. Il est surtout la preuve qu'un élève bien
-                  accompagné, bien orienté et soutenu au bon moment peut aller très loin. C'est cette conviction qui a
-                  donné naissance à Elima.
-                </p>
-              </div>
-              <blockquote className="rounded-3xl bg-emerald-50 p-5 text-lg font-semibold leading-8 text-[var(--accent)] ring-1 ring-emerald-100">
-                “Elima est une manière de rendre à l'éducation une partie de ce qu'elle m'a donné.”
-              </blockquote>
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700">
-                  Fondateur d'Elima · Ingénieur-chercheur en IA · Boursier de la Côte d'Ivoire
-                </span>
-                <a
-                  href="https://www.notrevoix.info/info/articles/technologies-aboubacar-tuo-1er-ivoirien-dr-en-intelligence-artificielle-a-26-ans"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--primary)] hover:text-emerald-800"
-                >
-                  Lire le portrait du fondateur <ArrowRight size={15} />
-                </a>
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
         <section className="space-y-8">
           <Reveal className="mx-auto max-w-3xl text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-[var(--primary)]">La plateforme</p>
@@ -331,24 +266,15 @@ export default function AboutPage() {
             </p>
           </Reveal>
           <Reveal delayMs={120}>
-            <div className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {visionSteps.map((step, index) => {
-                  const Icon = step.icon;
-                  return (
-                    <div key={step.title} className="relative rounded-3xl bg-slate-50 p-4 text-center ring-1 ring-slate-200">
-                      <IconTile icon={Icon} className="mx-auto" />
-                      <p className="mt-3 text-sm font-semibold text-[var(--accent)]">{step.title}</p>
-                      {index < visionSteps.length - 1 ? (
-                        <ArrowRight
-                          aria-hidden
-                          className="absolute -right-5 top-1/2 hidden -translate-y-1/2 text-[var(--primary)] lg:block"
-                          size={22}
-                        />
-                      ) : null}
-                    </div>
-                  );
-                })}
+            <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-white p-3 shadow-sm">
+              <div className="relative overflow-hidden rounded-[26px] bg-slate-50">
+                <Image
+                  src="/image_illustration_elima_1.png"
+                  alt="Illustration Elima d'une infrastructure éducative intelligente"
+                  width={1600}
+                  height={1000}
+                  className="h-[360px] w-full object-cover object-center"
+                />
               </div>
             </div>
           </Reveal>

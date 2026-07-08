@@ -20,6 +20,7 @@ export type FeatureModule = {
   description: string;
   benefits: string[];
   useCases: Array<{ audience: string; text: string }>;
+  image: string;
   icon: LucideIcon;
   accent: string;
   ai: boolean;
@@ -49,6 +50,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
       { audience: "Parents", text: "Consulter les informations importantes liées à la scolarité." },
       { audience: "Élèves", text: "Bénéficier d'un suivi plus clair et mieux organisé." },
     ],
+    image: "/module_1.png",
     icon: GraduationCap,
     accent: "from-emerald-500/15 to-teal-400/10",
     ai: true,
@@ -76,6 +78,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
       { audience: "Parents", text: "Recevoir les informations essentielles." },
       { audience: "Élèves", text: "Bénéficier d'un meilleur relais entre l'école et la maison." },
     ],
+    image: "/module_2.png",
     icon: MessageCircleMore,
     accent: "from-sky-500/15 to-cyan-400/10",
     ai: false,
@@ -102,6 +105,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
       { audience: "Parents", text: "Mieux visualiser les frais, échéances et achats de fournitures." },
       { audience: "Direction", text: "Piloter les finances et les services associés avec plus de clarté." },
     ],
+    image: "/module_3.png",
     icon: Wallet,
     accent: "from-amber-500/15 to-yellow-400/10",
     ai: false,
@@ -129,6 +133,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
       { audience: "Enseignants", text: "Mieux comprendre les dynamiques de classe." },
       { audience: "Parents", text: "Bénéficier indirectement d'un meilleur suivi de leur enfant." },
     ],
+    image: "/module_4.png",
     icon: BarChart3,
     accent: "from-violet-500/15 to-purple-400/10",
     ai: true,
@@ -156,6 +161,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
       { audience: "Parents", text: "Transmettre ou recevoir certains documents plus simplement." },
       { audience: "Enseignants", text: "Accéder aux documents utiles selon les droits." },
     ],
+    image: "/module_5.png",
     icon: FolderArchive,
     accent: "from-rose-500/15 to-orange-400/10",
     ai: true,
@@ -183,6 +189,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
       { audience: "Parents", text: "Suivre les progrès et points à travailler." },
       { audience: "Direction", text: "Mieux comprendre les besoins pédagogiques globaux." },
     ],
+    image: "/module_6.png",
     icon: Sparkles,
     accent: "from-indigo-500/15 to-fuchsia-400/10",
     ai: true,
@@ -210,6 +217,7 @@ export const FEATURE_MODULES: FeatureModule[] = [
       { audience: "Élèves", text: "Accéder facilement à leur emploi du temps." },
       { audience: "Parents", text: "Suivre l'organisation scolaire de leur enfant." },
     ],
+    image: "/module_7.png",
     icon: CalendarClock,
     accent: "from-cyan-500/15 to-emerald-400/10",
     ai: true,

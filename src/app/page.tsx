@@ -9,10 +9,8 @@ import { MarketingHeader } from "@/components/ui/MarketingHeader";
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
-  Building2,
   CheckCircle2,
   ClipboardCheck,
-  CreditCard,
   GraduationCap,
   Headphones,
   Mail,
@@ -158,6 +156,70 @@ export default function Home() {
           </section>
         </Reveal>
 
+        <section id="roles">
+          <Reveal>
+            <article className="elima-card overflow-hidden p-0">
+              <div className="grid gap-0 lg:grid-cols-[1.15fr_0.85fr]">
+                <div className="p-5 md:p-7">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-[var(--primary)]">Espaces utilisateurs</p>
+                  <h2 className="mt-2 text-2xl font-bold text-[var(--accent)]">Des espaces adaptés à chaque profil</h2>
+                  <p className="mt-3 text-sm leading-7 text-slate-600 md:text-base">
+                    Elima organise les informations selon les besoins de chacun : la direction pilote, les enseignants
+                    suivent leurs classes, les parents restent informés et les élèves avancent avec plus de clarté.
+                  </p>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    {[
+                      {
+                        title: "Direction",
+                        desc: "Une vision claire sur l'activité, les priorités et les décisions à prendre.",
+                        icon: Users,
+                      },
+                      {
+                        title: "Enseignants",
+                        desc: "Des outils simples pour l'appel, les notes, les devoirs et le suivi des classes.",
+                        icon: GraduationCap,
+                      },
+                      {
+                        title: "Parents",
+                        desc: "Les messages, paiements, achats et informations scolaires au bon endroit.",
+                        icon: Users,
+                      },
+                      {
+                        title: "Élèves",
+                        desc: "Une progression plus visible, mieux suivie et mieux accompagnée.",
+                        icon: BookOpen,
+                      },
+                    ].map((profile) => (
+                      <div key={profile.title} className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <div className="flex items-center gap-3">
+                          <IconBadge icon={profile.icon} size="sm" />
+                          <p className="font-semibold text-[var(--accent)]">{profile.title}</p>
+                        </div>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">{profile.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="relative m-4 min-h-[260px] overflow-hidden rounded-3xl bg-white">
+                  <Image
+                    src="/african-kid-enjoying-life.jpg"
+                    alt="Élève souriant accompagné dans son parcours scolaire"
+                    width={800}
+                    height={600}
+                    className="h-full min-h-[260px] w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
+                  <p className="absolute bottom-5 left-5 right-5 text-sm font-semibold text-white">
+                    Une expérience plus lisible pour toute la communauté éducative.
+                  </p>
+                </div>
+              </div>
+            </article>
+          </Reveal>
+        </section>
+
         <Reveal>
           <section id="produit" className="relative space-y-10 overflow-hidden rounded-[32px] border border-slate-200/80 bg-gradient-to-b from-white via-white to-[var(--primary)]/[0.04] p-6 shadow-sm md:p-10">
             <div className="pointer-events-none absolute -right-20 top-0 h-64 w-64 rounded-full bg-[var(--secondary)]/20 blur-3xl" />
@@ -183,7 +245,6 @@ export default function Home() {
               <div className="space-y-8 md:space-y-12">
                 {FEATURE_MODULES.map((feature, idx) => {
                   const isLeft = idx % 2 === 0;
-                  const Icon = feature.icon;
                   return (
                     <Reveal key={feature.title} delayMs={idx * 80}>
                       <div
@@ -206,8 +267,14 @@ export default function Home() {
                             className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${feature.accent} opacity-60 transition group-hover:opacity-100`}
                           />
                           <div className={`relative flex items-start gap-4 ${isLeft ? "md:flex-row" : "md:flex-row-reverse md:text-right"}`}>
-                            <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[var(--primary)] shadow-sm ring-1 ring-[var(--primary)]/15 transition group-hover:scale-105 group-hover:bg-[var(--primary)] group-hover:text-white">
-                              <Icon size={22} strokeWidth={2} />
+                            <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[var(--primary)]/15 transition group-hover:scale-105">
+                              <Image
+                                src={feature.image}
+                                alt=""
+                                fill
+                                sizes="64px"
+                                className="object-cover"
+                              />
                             </span>
                             <div>
                               <div className="flex flex-wrap items-center gap-2">
@@ -234,95 +301,6 @@ export default function Home() {
             </div>
           </section>
         </Reveal>
-
-        <section id="roles" className="grid gap-6 lg:grid-cols-2">
-          <Reveal>
-            <article className="elima-card">
-              <h2 className="text-xl font-semibold">Des espaces adaptés à chaque profil</h2>
-              <p className="mt-2 text-sm text-slate-600">
-                Direction, enseignant, parent ou élève: chacun accède aux informations utiles à son rôle.
-              </p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                  <Image
-                    src="/african-woman-teaching-children-class.jpg"
-                    alt="Enseignante"
-                    width={800}
-                    height={600}
-                    className="h-40 w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-                  <p className="absolute bottom-3 left-3 text-xs font-semibold text-white">Enseignants • Appel et notes</p>
-                </div>
-                <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                  <Image
-                    src="/african-kid-enjoying-life.jpg"
-                    alt="Élève"
-                    width={800}
-                    height={600}
-                    className="h-40 w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-                  <p className="absolute bottom-3 left-3 text-xs font-semibold text-white">Élèves • Résultats et progression</p>
-                </div>
-              </div>
-              <ul className="mt-4 space-y-2 text-sm text-slate-700">
-                {[
-                  "Direction: vision claire sur l'activité et les priorités.",
-                  "Enseignant: saisie simple et suivi régulier des classes.",
-                  "Parent: informations utiles reçues rapidement.",
-                  "Élève: progression plus visible et mieux accompagnée.",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-[var(--primary)]" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          </Reveal>
-
-          <Reveal delayMs={120}>
-            <article className="elima-card">
-              <h2 className="text-xl font-semibold">Une proposition lisible pour écoles et investisseurs</h2>
-              <p className="mt-2 text-sm text-slate-600">
-                Elima répond à un besoin de marché clair avec une offre utile au quotidien et une vision de croissance durable.
-              </p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {[
-                  {
-                    title: "Marché adressable",
-                    desc: "Un besoin massif de digitalisation des établissements privés.",
-                    icon: Building2,
-                  },
-                  {
-                    title: "Usage quotidien",
-                    desc: "Direction, enseignants et parents utilisent la solution sur des besoins concrets.",
-                    icon: Users,
-                  },
-                  {
-                    title: "Revenus récurrents",
-                    desc: "Abonnements annuels et services complémentaires autour des paiements et achats.",
-                    icon: CreditCard,
-                  },
-                  {
-                    title: "Confiance renforcée",
-                    desc: "Visibilité, traçabilité et communication plus fiable avec les familles.",
-                    icon: ShieldCheck,
-                  },
-                ].map((it) => (
-                  <div key={it.title} className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <div className="flex items-center gap-3">
-                      <IconBadge icon={it.icon} size="sm" />
-                      <p className="font-semibold">{it.title}</p>
-                    </div>
-                    <p className="mt-2 text-sm text-slate-600">{it.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </article>
-          </Reveal>
-        </section>
 
         <section id="tarifs" className="space-y-6">
           <Reveal>

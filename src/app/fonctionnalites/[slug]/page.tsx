@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Reveal } from "@/components/Reveal";
@@ -35,8 +36,6 @@ export default async function FeaturePage({ params }: FeaturePageProps) {
   if (!feature) {
     notFound();
   }
-
-  const Icon = feature.icon;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -78,8 +77,15 @@ export default async function FeaturePage({ params }: FeaturePageProps) {
               </div>
             </div>
 
-            <div className="flex h-28 w-28 items-center justify-center rounded-[28px] bg-white text-[var(--primary)] shadow-lg ring-1 ring-[var(--primary)]/15 md:h-36 md:w-36">
-              <Icon size={56} strokeWidth={1.8} />
+            <div className="relative h-36 w-36 overflow-hidden rounded-[28px] bg-white shadow-lg ring-1 ring-[var(--primary)]/15 md:h-44 md:w-44">
+              <Image
+                src={feature.image}
+                alt=""
+                fill
+                sizes="(min-width: 768px) 176px, 144px"
+                className="object-cover"
+                priority
+              />
             </div>
           </Reveal>
         </section>
