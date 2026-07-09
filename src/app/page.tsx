@@ -127,14 +127,14 @@ export default function Home() {
         <Reveal>
           <section className="relative -mx-4 overflow-hidden md:-mx-8">
             <div className="relative md:aspect-[21/9]">
-              <div className="relative aspect-[4/3] w-full sm:aspect-[16/9] md:absolute md:inset-0 md:aspect-auto">
+              <div className="relative aspect-[16/10] w-full sm:aspect-[16/9] md:absolute md:inset-0 md:aspect-auto">
                 <Image
                   src="/illustration_web_2.png"
                   alt="Elima: gestion scolaire, communication parents, paiements et achats de fournitures en une seule plateforme"
                   fill
                   priority
                   sizes="100vw"
-                  className="object-cover object-center"
+                  className="object-cover object-[left_center] sm:object-[30%_center] md:object-[38%_center]"
                 />
                 <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-l from-white/85 via-white/40 to-transparent md:block" />
               </div>
