@@ -126,27 +126,29 @@ export default function Home() {
 
         <Reveal>
           <section className="relative -mx-4 overflow-hidden md:-mx-8">
-            <div className="relative aspect-[16/9] w-full md:aspect-[21/9]">
-              <Image
-                src="/illustration_web_2.png"
-                alt="Elima: gestion scolaire, communication parents, paiements et achats de fournitures en une seule plateforme"
-                fill
-                priority
-                sizes="100vw"
-                className="object-cover object-center"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-l from-white/85 via-white/40 to-transparent" />
-              <div className="absolute inset-0 flex items-center">
-                <div className="mx-auto w-full max-w-6xl px-4 md:px-8">
-                  <div className="ml-auto w-full space-y-3 md:w-1/3">
-                    <p className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-[var(--accent)] shadow-sm">
+            <div className="relative md:aspect-[21/9]">
+              <div className="relative aspect-[4/3] w-full sm:aspect-[16/9] md:absolute md:inset-0 md:aspect-auto">
+                <Image
+                  src="/illustration_web_2.png"
+                  alt="Elima: gestion scolaire, communication parents, paiements et achats de fournitures en une seule plateforme"
+                  fill
+                  priority
+                  sizes="100vw"
+                  className="object-cover object-center"
+                />
+                <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-l from-white/85 via-white/40 to-transparent md:block" />
+              </div>
+              <div className="relative bg-white px-4 py-6 md:absolute md:inset-0 md:flex md:items-center md:bg-transparent md:px-0 md:py-0">
+                <div className="mx-auto w-full max-w-6xl md:px-8">
+                  <div className="w-full space-y-3 md:ml-auto md:w-1/3 md:rounded-2xl md:bg-white/90 md:p-6 md:shadow-sm md:backdrop-blur-sm">
+                    <p className="inline-flex items-center gap-2 rounded-full bg-[var(--secondary)]/15 px-3 py-1 text-xs font-semibold text-[var(--accent)] md:bg-white/80 md:shadow-sm">
                       <span className="h-2 w-2 rounded-full bg-[var(--primary)]" />
                       Une école connectée
                     </p>
                     <h2 className="text-2xl font-bold leading-tight text-[var(--accent)] md:text-3xl">
                       De la direction aux familles, tout converge dans Elima.
                     </h2>
-                    <p className="text-sm text-slate-700 md:text-base">
+                    <p className="text-sm leading-relaxed text-slate-700 md:text-base">
                       Pilotage scolaire, communication parents, paiements et achats de fournitures connectés dans une expérience pensée pour l'Afrique.
                     </p>
                   </div>
