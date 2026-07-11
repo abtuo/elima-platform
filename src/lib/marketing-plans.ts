@@ -3,19 +3,23 @@ export type MarketingPlanId = "basic" | "premium" | "custom";
 export type MarketingPlan = {
   id: MarketingPlanId;
   title: string;
-  pill: string;
+  price?: string;
   cta: string;
+  ctaHref: string;
   highlight?: boolean;
   features: string[];
 };
+
+export const PRICING_FLEXIBILITY_NOTE =
+  "Quelle que soit la formule choisie, nous ajustons l'offre à la réalité de votre établissement : effectifs, priorités pédagogiques et contraintes budgétaires.";
 
 export const MARKETING_PLANS: MarketingPlan[] = [
   {
     id: "basic",
     title: "Basic",
-    pill: "Gratuit",
-    cta: "Essayer maintenant",
-    highlight: true,
+    price: "À partir de 100 000 FCFA/an",
+    cta: "Commencer l'essai gratuit",
+    ctaHref: "/signup/admin",
     features: [
       "Gestion élèves, classes et matières",
       "Gestion enseignants et codes d'accès",
@@ -28,13 +32,16 @@ export const MARKETING_PLANS: MarketingPlan[] = [
       "Portails parent et élève",
       "Branding école (logo, cachet)",
       "Cockpit de direction",
+      "Support technique 24h/24",
     ],
   },
   {
     id: "premium",
     title: "Premium",
-    pill: "Populaire",
-    cta: "Demander une démo",
+    price: "À partir de 300 000 FCFA/an",
+    cta: "Commencer l'essai gratuit",
+    ctaHref: "/signup/admin",
+    highlight: true,
     features: [
       "Tout Basic",
       "Inscriptions en ligne",
@@ -46,13 +53,14 @@ export const MARKETING_PLANS: MarketingPlan[] = [
       "Relances impayés (WhatsApp et messagerie)",
       "KPIs, analytics et analyse prédictive",
       "Espace comptable dédié",
+      "Support prioritaire",
     ],
   },
   {
     id: "custom",
     title: "Sur mesure",
-    pill: "Entreprise",
-    cta: "Demander une démo",
+    cta: "Demander un devis",
+    ctaHref: "/contact",
     features: [
       "Tout Premium",
       "Import intelligent des listes d'élèves",

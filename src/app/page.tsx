@@ -21,7 +21,7 @@ import {
   Users,
 } from "lucide-react";
 import { FEATURE_MODULES } from "@/lib/feature-modules";
-import { MARKETING_PLANS } from "@/lib/marketing-plans";
+import { MARKETING_PLANS, PRICING_FLEXIBILITY_NOTE } from "@/lib/marketing-plans";
 
 type IconBadgeProps = {
   icon: LucideIcon;
@@ -312,6 +312,9 @@ export default function Home() {
                 Des offres adaptées à chaque école
               </h2>
               <p className="text-sm text-slate-600">Choisissez la formule idéale pour votre croissance.</p>
+              <p className="mx-auto mt-1 max-w-2xl text-sm leading-relaxed text-slate-500">
+                {PRICING_FLEXIBILITY_NOTE}
+              </p>
             </div>
           </Reveal>
           <div className="grid gap-5 md:grid-cols-3">
@@ -329,20 +332,21 @@ export default function Home() {
                     plan.highlight ? "border-[var(--primary)]/60 bg-[var(--primary)]/5" : ""
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <IconBadge icon={PlanIcon} size="sm" />
-                      <h3 className="text-lg font-semibold">{plan.title}</h3>
+                  <div className="flex items-start gap-3">
+                    <IconBadge icon={PlanIcon} size="sm" />
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-lg font-semibold text-[var(--accent)]">{plan.title}</h3>
+                        {plan.highlight ? (
+                          <span className="rounded-full bg-[var(--primary)]/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--primary)]">
+                            Recommandé
+                          </span>
+                        ) : null}
+                      </div>
+                      {plan.price ? (
+                        <p className="mt-2 text-sm font-semibold leading-snug text-slate-600">{plan.price}</p>
+                      ) : null}
                     </div>
-                    {plan.highlight ? (
-                      <span className="rounded-full bg-[var(--primary)] px-3 py-1 text-xs font-semibold text-white">
-                        {plan.pill}
-                      </span>
-                    ) : (
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                        {plan.pill}
-                      </span>
-                    )}
                   </div>
                   <ul className="space-y-2 text-sm text-slate-600">
                     {plan.features.map((item) => (
@@ -354,7 +358,7 @@ export default function Home() {
                   </ul>
                   <div className="mt-auto">
                     <Link
-                      href={plan.id === "basic" ? "/signup/admin" : "/contact"}
+                      href={plan.ctaHref}
                       className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ${
                         plan.highlight
                           ? "bg-[var(--primary)] text-white"

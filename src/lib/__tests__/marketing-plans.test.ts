@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { MARKETING_PLANS } from "../marketing-plans";
+import { MARKETING_PLANS, PRICING_FLEXIBILITY_NOTE } from "../marketing-plans";
 
 test("MARKETING_PLANS exposes three tiers in order", () => {
   assert.deepEqual(
@@ -10,20 +10,33 @@ test("MARKETING_PLANS exposes three tiers in order", () => {
   );
 });
 
-test("basic plan is highlighted and free", () => {
+test("basic plan shows annual starting price and 24h support only there", () => {
   const basic = MARKETING_PLANS.find((p) => p.id === "basic");
   assert.ok(basic);
-  assert.equal(basic!.pill, "Gratuit");
-  assert.equal(basic!.highlight, true);
-  assert.equal(basic!.cta, "Essayer maintenant");
+  assert.equal(basic!.price, "À partir de 100 000 FCFA/an");
+  assert.equal(basic!.highlight, undefined);
+  assert.equal(basic!.cta, "Commencer l'essai gratuit");
+  assert.ok(basic!.features.some((f) => f.includes("24h/24")));
   assert.ok(basic!.features.length >= 10);
 });
 
-test("premium and custom use demo CTA", () => {
+test("premium is highlighted with starting price and priority support only", () => {
   const premium = MARKETING_PLANS.find((p) => p.id === "premium");
+  assert.ok(premium);
+  assert.equal(premium!.price, "À partir de 300 000 FCFA/an");
+  assert.equal(premium!.highlight, true);
+  assert.equal(premium!.cta, "Commencer l'essai gratuit");
+  assert.ok(premium!.features.some((f) => f.toLowerCase().includes("prioritaire")));
+  assert.ok(!premium!.features.some((f) => f.includes("24h/24")));
+});
+
+test("custom has no public price and uses devis CTA", () => {
   const custom = MARKETING_PLANS.find((p) => p.id === "custom");
-  assert.equal(premium!.cta, "Demander une démo");
-  assert.equal(custom!.cta, "Demander une démo");
+  assert.ok(custom);
+  assert.equal(custom!.price, undefined);
+  assert.equal(custom!.cta, "Demander un devis");
+  assert.equal(custom!.ctaHref, "/contact");
+  assert.ok(!custom!.features.some((f) => f.includes("24h/24")));
 });
 
 test("premium includes predictive analytics mention", () => {
@@ -36,4 +49,8 @@ test("custom includes IA and flexible offer line", () => {
   assert.ok(custom.features.some((f) => f.includes("IA")));
   assert.ok(custom.features.some((f) => f.toLowerCase().includes("plus encore")));
   assert.ok(custom.features[0].startsWith("Tout Premium"));
+});
+
+test("pricing flexibility note is exposed for marketing pages", () => {
+  assert.ok(PRICING_FLEXIBILITY_NOTE.toLowerCase().includes("formule"));
 });
