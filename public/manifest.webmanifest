@@ -1,0 +1,12 @@
+{
+  "name": "Elima Mobile",
+  "short_name": "Elima",
+  "description": "Portail mobile Elima — scolaire et révision",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F9FAFB",
+  "theme_color": "#2E8B57",
+  "icons": [
+    { "src": "/icons/elima-app.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
