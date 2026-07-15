@@ -34,6 +34,18 @@ export type MessagePreview = {
   sender: string;
   date: string;
   read: boolean;
+  conversationType?: string;
+  kind?: "message" | "alert";
+  canReply?: boolean;
+};
+
+export type ConversationThreadMessage = {
+  id: string;
+  content: string;
+  sender: string;
+  senderId: string | null;
+  sentByCurrentUser: boolean;
+  date: string;
 };
 
 export type PaymentSummary = {
@@ -73,6 +85,8 @@ export type StudentDirectoryItem = {
   id: string;
   name: string;
   className: string;
+  classId?: string;
+  level?: string;
   registrationNumber?: string;
   photoUrl?: string;
 };
@@ -83,6 +97,40 @@ export type TeacherDirectoryItem = {
   email?: string;
   phone?: string;
   classes: string[];
+  subjects: string[];
+};
+
+export type StudentSubjectAverage = {
+  subject: string;
+  average: number;
+  gradeCount: number;
+};
+
+export type StudentRecentGrade = {
+  id: string;
+  subject: string;
+  title: string;
+  score: number;
+  maxScore: number;
+  normalizedScore: number;
+  date: string;
+};
+
+export type StudentAdminProfile = StudentDirectoryItem & {
+  birthDate?: string;
+  attendance: {
+    total: number;
+    present: number;
+    absent: number;
+    late: number;
+    rate: number;
+  };
+  overallAverage: number | null;
+  previousAverage: number | null;
+  evolution: number | null;
+  trend: "improving" | "stable" | "declining" | "unknown";
+  subjectAverages: StudentSubjectAverage[];
+  recentGrades: StudentRecentGrade[];
 };
 
 export type SubjectOption = { id: string; name: string };

@@ -33,6 +33,7 @@ import { AdminMessagesPage } from "@/features/admin/AdminMessagesPage";
 import { AdminAlertsPage } from "@/features/admin/AdminAlertsPage";
 import { SuppliesPage } from "@/features/supplies/SuppliesPage";
 import { AccountPage } from "@/features/profile/AccountPage";
+import { CommunicationsPage } from "@/features/messages/CommunicationsPage";
 
 import { useAuth } from "@/features/auth/AuthProvider";
 import { ROLE_HOME } from "@/types/roles";
@@ -57,6 +58,7 @@ export function AppRouter() {
               <Route index element={<ParentHomePage />} />
               <Route path="enfants" element={<ParentChildrenPage />} />
               <Route path="messages" element={<ParentMessagesPage />} />
+              <Route path="alertes" element={<CommunicationsPage kind="alert" />} />
               <Route path="paiements" element={<ParentPaymentsPage />} />
               <Route path="fournitures" element={<SuppliesPage />} />
               <Route path="profil" element={<ParentProfilePage />} />
@@ -72,6 +74,7 @@ export function AppRouter() {
               <Route path="reviser/fiches/:id" element={<CourseSheetDetailPage />} />
               <Route path="documents" element={<ScannerPage />} />
               <Route path="messages" element={<StudentMessagesPage />} />
+              <Route path="alertes" element={<CommunicationsPage kind="alert" />} />
               <Route path="scanner" element={<Navigate to="/student/documents" replace />} />
               <Route path="profil" element={<StudentProfilePage />} />
             </Route>
@@ -82,6 +85,7 @@ export function AppRouter() {
               <Route path="devoirs" element={<TeacherAssignmentsPage />} />
               <Route path="ressources" element={<TeacherResourcesPage />} />
               <Route path="messages" element={<TeacherMessagesPage />} />
+              <Route path="alertes" element={<CommunicationsPage kind="alert" />} />
               <Route path="fournitures" element={<SuppliesPage />} />
               <Route path="sync" element={<TeacherSyncPage />} />
               <Route path="profil" element={<AccountPage />} />

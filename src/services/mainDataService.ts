@@ -1,7 +1,8 @@
-import type { AdminTrendPoint, Assignment, ChildSummary, ClassInfo, GradeSummary, MessagePreview, PaymentSummary, ResourceItem, StudentDirectoryItem, SubjectOption, TeacherDirectoryItem, TimetableEvent } from "../types/school";
+import type { AdminTrendPoint, Assignment, ChildSummary, ClassInfo, GradeSummary, MessagePreview, PaymentSummary, ResourceItem, StudentAdminProfile, StudentDirectoryItem, SubjectOption, TeacherDirectoryItem, TimetableEvent } from "../types/school";
 import { demoAssignments, demoChildren, demoClasses, demoGrades, demoMessages, demoPayments, demoResources } from "../constants/demoData";
 import { isDemoModeActive } from "./env";
 import { mainDbClient } from "./mainDbClient";
+import { communicationKind, type CommunicationKind } from "@/lib/communications";
 
 function useDemo() { return isDemoModeActive() || !mainDbClient; }
 function queryFailed(scope: string, error: unknown) { console.error(`[Elima data] ${scope}`, error); }
@@ -85,66 +86,100 @@ export async function getRecentGrades(studentId?: string): Promise<GradeSummary[
 
 export type MessageScope = "mine" | "school";
 
-export async function getMessages(scope: MessageScope = "mine"): Promise<MessagePreview[]> {
-  if (useDemo()) return demoMessages;
+function hiddenDemoConversationIds() {
+  if (typeof window === "undefined") return new Set<string>();
+  try { return new Set<string>(JSON.parse(localStorage.getItem("elima_hidden_conversations") ?? "[]")); }
+  catch { return new Set<string>(); }
+}
+
+function readDemoConversationIds() {
+  if (typeof window === "undefined") return new Set<string>();
+  try { return new Set<string>(JSON.parse(localStorage.getItem("elima_read_conversations") ?? "[]")); }
+  catch { return new Set<string>(); }
+}
+
+export async function getCommunications(kind: CommunicationKind, scope: MessageScope = "mine"): Promise<MessagePreview[]> {
+  if (useDemo()) {
+    const hidden = hiddenDemoConversationIds();
+    const read = readDemoConversationIds();
+    return demoMessages
+      .filter((item) => (item.kind ?? communicationKind(item.conversationType)) === kind && !hidden.has(item.conversationId))
+      .map((item) => read.has(item.conversationId) ? { ...item, read: true } : item);
+  }
   const tenant = await currentTenant();
   if (!tenant?.school_id) return [];
   const adminRoles = ["SUPER_ADMIN", "SCHOOL_ADMIN"];
-  let conversationIds: string[] = [];
+  let conversations: Array<{ id: string; title: string | null; type: string | null; last_message_at: string | null }> = [];
 
   if (scope === "school" && adminRoles.includes(tenant.role)) {
     const { error: auditError } = await mainDbClient!.rpc("mobile_log_school_message_access");
     if (auditError) { queryFailed("audit consultation messagerie", auditError); return []; }
-    const { data, error } = await mainDbClient!.from("conversations").select("id").eq("school_id", tenant.school_id);
+    const { data, error } = await mainDbClient!.from("conversations").select("id, title, type, last_message_at").eq("school_id", tenant.school_id);
     if (error) { queryFailed("conversations établissement", error); return []; }
-    conversationIds = (data ?? []).map((row) => String(row.id));
-  } else {
+    conversations = data ?? [];
+  } else if (adminRoles.includes(tenant.role)) {
     const { data: memberships, error } = await mainDbClient!.from("conversation_participants").select("conversation_id").eq("participant_type", "USER").eq("user_id", tenant.id);
     if (error) { queryFailed("conversations utilisateur", error); return []; }
-    conversationIds = (memberships ?? []).map((row) => String(row.conversation_id));
-
-    const classIds: string[] = [];
-    if (tenant.role === "STUDENT") {
-      const { data: student } = await mainDbClient!.from("students").select("class_id").eq("user_id", tenant.id).maybeSingle();
-      if (student?.class_id) classIds.push(String(student.class_id));
-    } else if (tenant.role === "TEACHER") {
-      const { data: teacher } = await mainDbClient!.from("teachers").select("id").eq("user_id", tenant.id).maybeSingle();
-      if (teacher?.id) {
-        const [{ data: primaryClasses }, { data: subjectClasses }] = await Promise.all([
-          mainDbClient!.from("class_teachers").select("class_id").eq("teacher_id", teacher.id),
-          mainDbClient!.from("teacher_subject_classes").select("class_id").eq("teacher_id", teacher.id),
-        ]);
-        classIds.push(...(primaryClasses ?? []).map((row) => String(row.class_id)), ...(subjectClasses ?? []).map((row) => String(row.class_id)));
-      }
+    const ids = [...new Set((memberships ?? []).map((row) => String(row.conversation_id)))];
+    if (ids.length) {
+      const { data, error: conversationsError } = await mainDbClient!.from("conversations").select("id, title, type, last_message_at").in("id", ids);
+      if (conversationsError) { queryFailed("conversations utilisateur", conversationsError); return []; }
+      conversations = data ?? [];
     }
-    const uniqueClassIds = [...new Set(classIds)];
-    if (uniqueClassIds.length) {
-      const { data: classMemberships } = await mainDbClient!.from("conversation_participants").select("conversation_id").eq("participant_type", "CLASS").in("class_id", uniqueClassIds);
-      conversationIds.push(...(classMemberships ?? []).map((row) => String(row.conversation_id)));
-    }
+  } else {
+    // Les règles RLS calculent les conversations explicites, de classe et de famille.
+    const { data, error } = await mainDbClient!.from("conversations").select("id, title, type, last_message_at").eq("school_id", tenant.school_id);
+    if (error) { queryFailed("conversations accessibles", error); return []; }
+    conversations = data ?? [];
   }
 
-  conversationIds = [...new Set(conversationIds)];
+  conversations = conversations.filter((conversation) => communicationKind(conversation.type) === kind);
+  const conversationIds = conversations.map((conversation) => String(conversation.id));
   if (!conversationIds.length) return [];
-  const { data, error } = await mainDbClient!.from("messages").select("id, conversation_id, content, created_at, sender_id, read_by, sender:users(full_name), conversation:conversations(id, title)").in("conversation_id", conversationIds).order("created_at", { ascending: false }).limit(30);
+  const { data, error } = await mainDbClient!.from("messages").select("id, conversation_id, content, created_at, sender_id, read_by, sender:users(full_name)").in("conversation_id", conversationIds).order("created_at", { ascending: false }).limit(500);
   if (error) { queryFailed("messages", error); return []; }
-  return (data ?? []).map((row: Record<string, unknown>) => {
+  const conversationById = new Map(conversations.map((conversation) => [String(conversation.id), conversation]));
+  const previews = new Map<string, MessagePreview>();
+  for (const row of (data ?? []) as Array<Record<string, unknown>>) {
     const readBy = Array.isArray(row.read_by) ? row.read_by.map(String) : [];
-    const conversation = row.conversation as { id?: string; title?: string } | null;
-    return { id: String(row.id), conversationId: String(conversation?.id ?? row.conversation_id ?? ""), subject: conversation?.title ?? "Message", preview: String(row.content).slice(0, 160), sender: (row.sender as { full_name?: string } | null)?.full_name ?? "Établissement", date: String(row.created_at).slice(0, 10), read: String(row.sender_id ?? "") === tenant.id || readBy.includes(tenant.id) };
-  });
+    const conversationId = String(row.conversation_id ?? "");
+    const conversation = conversationById.get(conversationId);
+    const rowIsRead = String(row.sender_id ?? "") === tenant.id || readBy.includes(tenant.id);
+    const existing = previews.get(conversationId);
+    if (existing) {
+      if (!rowIsRead) existing.read = false;
+      continue;
+    }
+    previews.set(conversationId, {
+      id: String(row.id), conversationId,
+      subject: conversation?.title ?? (kind === "alert" ? "Alerte" : "Conversation"),
+      preview: String(row.content).slice(0, 160),
+      sender: (row.sender as { full_name?: string } | null)?.full_name ?? "Établissement",
+      date: String(row.created_at).slice(0, 10), read: rowIsRead,
+      conversationType: conversation?.type ?? undefined,
+      kind, canReply: kind === "message",
+    });
+  }
+  return [...previews.values()];
 }
+
+export function getMessages(scope: MessageScope = "mine") { return getCommunications("message", scope); }
+export function getAlerts(scope: MessageScope = "mine") { return getCommunications("alert", scope); }
 
 export async function getAdminTeachers(): Promise<TeacherDirectoryItem[]> {
   if (useDemo()) return [];
   const tenant = await currentTenant();
   if (!tenant?.school_id) return [];
-  const { data, error } = await mainDbClient!.from("teachers").select("id, user:users(full_name, email, phone), assignments:teacher_subject_classes(class:classes(name))").eq("school_id", tenant.school_id);
+  const { data, error } = await mainDbClient!.from("teachers").select("id, user:users(full_name, email, phone), assignments:teacher_subject_classes(class:classes(name), subject:subjects(name))").eq("school_id", tenant.school_id);
   if (error) { queryFailed("annuaire professeurs", error); return []; }
   return (data ?? []).map((row: Record<string, unknown>) => {
     const user = row.user as { full_name?: string; email?: string; phone?: string } | null;
-    const assignments = (row.assignments ?? []) as Array<{ class?: { name?: string } | null }>;
-    return { id: String(row.id), name: user?.full_name ?? "Professeur", email: user?.email, phone: user?.phone, classes: [...new Set(assignments.map((item) => item.class?.name).filter((name): name is string => Boolean(name)))] };
+    const assignments = (row.assignments ?? []) as Array<{ class?: { name?: string } | null; subject?: { name?: string } | null }>;
+    return {
+      id: String(row.id), name: user?.full_name ?? "Professeur", email: user?.email, phone: user?.phone,
+      classes: [...new Set(assignments.map((item) => item.class?.name).filter((name): name is string => Boolean(name)))],
+      subjects: [...new Set(assignments.map((item) => item.subject?.name).filter((name): name is string => Boolean(name)))],
+    };
   }).sort((a, b) => a.name.localeCompare(b.name, "fr"));
 }
 
@@ -205,43 +240,127 @@ export async function getAdminStats() {
 }
 
 export async function getAdminStudents(): Promise<StudentDirectoryItem[]> {
-  if (useDemo()) return demoChildren.map((student) => ({ id: student.id, name: student.name, className: student.className }));
+  if (useDemo()) return demoChildren.map((student) => ({ id: student.id, name: student.name, className: student.className, classId: `demo-${student.className}`, level: student.className.split(" ")[0] }));
   const tenant = await currentTenant();
   if (!tenant?.school_id) return [];
   const { data, error } = await mainDbClient!
     .from("students")
-    .select("id, full_name, registration_number, photo_url, class:classes(name)")
+    .select("id, full_name, registration_number, photo_url, class_id, class:classes(id, name, level)")
     .eq("school_id", tenant.school_id)
     .order("full_name", { ascending: true });
   if (error) { queryFailed("annuaire élèves", error); return []; }
-  return (data ?? []).map((row: Record<string, unknown>) => ({
+  return (data ?? []).map((row: Record<string, unknown>) => {
+    const klass = row.class as { id?: string; name?: string; level?: string } | null;
+    return {
     id: String(row.id),
     name: String(row.full_name ?? "Élève"),
-    className: (row.class as { name?: string } | null)?.name ?? "Classe non renseignée",
+    className: klass?.name ?? "Classe non renseignée",
+    classId: klass?.id ?? (row.class_id ? String(row.class_id) : undefined),
+    level: klass?.level ?? "Niveau non renseigné",
     registrationNumber: row.registration_number ? String(row.registration_number) : undefined,
     photoUrl: row.photo_url ? String(row.photo_url) : undefined,
-  }));
+  }; });
+}
+
+function rounded(value: number) { return Math.round(value * 10) / 10; }
+
+export async function getStudentAdminProfile(studentId: string): Promise<StudentAdminProfile | null> {
+  if (useDemo()) {
+    const student = demoChildren.find((item) => item.id === studentId);
+    if (!student) return null;
+    const normalizedGrades = demoGrades.map((grade) => ({ ...grade, normalizedScore: rounded((grade.score / grade.maxScore) * 20) }));
+    const subjectAverages = [...new Set(normalizedGrades.map((grade) => grade.subject))].map((subject) => {
+      const grades = normalizedGrades.filter((grade) => grade.subject === subject);
+      return { subject, average: rounded(grades.reduce((sum, grade) => sum + grade.normalizedScore, 0) / grades.length), gradeCount: grades.length };
+    });
+    const overallAverage = rounded(normalizedGrades.reduce((sum, grade) => sum + grade.normalizedScore, 0) / normalizedGrades.length);
+    return {
+      id: student.id, name: student.name, className: student.className, classId: `demo-${student.className}`, level: student.className.split(" ")[0],
+      attendance: { total: 30, present: 30 - student.absences, absent: student.absences, late: 0, rate: rounded(((30 - student.absences) / 30) * 100) },
+      overallAverage, previousAverage: overallAverage - 0.8, evolution: 0.8, trend: "improving", subjectAverages,
+      recentGrades: normalizedGrades.map((grade) => ({ id: grade.id, subject: grade.subject, title: grade.title, score: grade.score, maxScore: grade.maxScore, normalizedScore: grade.normalizedScore, date: grade.date })),
+    };
+  }
+  const tenant = await currentTenant();
+  if (!tenant?.school_id) return null;
+  const { data: student, error: studentError } = await mainDbClient!
+    .from("students")
+    .select("id, full_name, registration_number, photo_url, birth_date, class_id, class:classes(id, name, level)")
+    .eq("id", studentId)
+    .eq("school_id", tenant.school_id)
+    .maybeSingle();
+  if (studentError || !student) { if (studentError) queryFailed("profil élève", studentError); return null; }
+
+  const [{ data: attendance, error: attendanceError }, { data: grades, error: gradesError }] = await Promise.all([
+    mainDbClient!.from("attendance").select("status, date").eq("student_id", studentId).order("date", { ascending: false }),
+    mainDbClient!.from("grades").select("id, score, created_at, evaluation:evaluations(title, max_score, coefficient, evaluation_date, subject:subjects(name))").eq("student_id", studentId).order("created_at", { ascending: false }).limit(80),
+  ]);
+  if (attendanceError) queryFailed("assiduité élève", attendanceError);
+  if (gradesError) queryFailed("notes élève", gradesError);
+
+  const attendanceRows = attendance ?? [];
+  const present = attendanceRows.filter((row) => row.status === "PRESENT").length;
+  const absent = attendanceRows.filter((row) => row.status === "ABSENT").length;
+  const late = attendanceRows.filter((row) => row.status === "LATE").length;
+  const total = attendanceRows.length;
+  const normalizedGrades = ((grades ?? []) as Array<Record<string, unknown>>).map((row) => {
+    const evaluation = row.evaluation as { title?: string; max_score?: number; coefficient?: number; evaluation_date?: string; subject?: { name?: string } | null } | null;
+    const score = Number(row.score);
+    const maxScore = Math.max(1, Number(evaluation?.max_score ?? 20));
+    return {
+      id: String(row.id), subject: evaluation?.subject?.name ?? "Matière", title: evaluation?.title ?? "Évaluation",
+      score, maxScore, normalizedScore: rounded((score / maxScore) * 20),
+      coefficient: Math.max(0.1, Number(evaluation?.coefficient ?? 1)),
+      date: evaluation?.evaluation_date ?? String(row.created_at).slice(0, 10),
+    };
+  }).sort((a, b) => b.date.localeCompare(a.date));
+
+  const weightedAverage = (rows: typeof normalizedGrades) => rows.length ? rounded(rows.reduce((sum, grade) => sum + grade.normalizedScore * grade.coefficient, 0) / rows.reduce((sum, grade) => sum + grade.coefficient, 0)) : null;
+  const subjectAverages = [...new Set(normalizedGrades.map((grade) => grade.subject))].map((subject) => {
+    const subjectGrades = normalizedGrades.filter((grade) => grade.subject === subject);
+    return { subject, average: weightedAverage(subjectGrades) ?? 0, gradeCount: subjectGrades.length };
+  }).sort((a, b) => b.average - a.average);
+  const recentWindow = normalizedGrades.slice(0, Math.min(8, normalizedGrades.length));
+  const previousWindow = normalizedGrades.slice(recentWindow.length, recentWindow.length * 2);
+  const overallAverage = weightedAverage(recentWindow);
+  const previousAverage = weightedAverage(previousWindow);
+  const evolution = overallAverage !== null && previousAverage !== null ? rounded(overallAverage - previousAverage) : null;
+  const trend = evolution === null ? "unknown" : evolution > 0.5 ? "improving" : evolution < -0.5 ? "declining" : "stable";
+  const klass = student.class as { id?: string; name?: string; level?: string } | null;
+  return {
+    id: String(student.id), name: String(student.full_name), className: klass?.name ?? "Classe non renseignée",
+    classId: klass?.id ?? String(student.class_id), level: klass?.level ?? "Niveau non renseigné",
+    registrationNumber: student.registration_number ?? undefined, photoUrl: student.photo_url ?? undefined,
+    birthDate: student.birth_date ?? undefined,
+    attendance: { total, present, absent, late, rate: total ? rounded((present / total) * 100) : 0 },
+    overallAverage, previousAverage, evolution, trend, subjectAverages,
+    recentGrades: normalizedGrades.slice(0, 6).map(({ coefficient: _coefficient, ...grade }) => grade),
+  };
 }
 
 export async function getClassStudents(classId: string): Promise<StudentDirectoryItem[]> {
-  if (useDemo()) return demoChildren.map((student) => ({ id: student.id, name: student.name, className: student.className }));
+  if (useDemo()) return demoChildren.map((student) => ({ id: student.id, name: student.name, className: student.className, classId: `demo-${student.className}`, level: student.className.split(" ")[0] }));
   if (!classId) return [];
   const tenant = await currentTenant();
   if (!tenant?.school_id) return [];
   const { data, error } = await mainDbClient!
     .from("students")
-    .select("id, full_name, registration_number, photo_url, class:classes(name)")
+    .select("id, full_name, registration_number, photo_url, class_id, class:classes(id, name, level)")
     .eq("school_id", tenant.school_id)
     .eq("class_id", classId)
     .order("full_name", { ascending: true });
   if (error) { queryFailed("élèves de la classe", error); return []; }
-  return (data ?? []).map((row: Record<string, unknown>) => ({
+  return (data ?? []).map((row: Record<string, unknown>) => {
+    const klass = row.class as { id?: string; name?: string; level?: string } | null;
+    return {
     id: String(row.id),
     name: String(row.full_name ?? "Élève"),
-    className: (row.class as { name?: string } | null)?.name ?? "Classe",
+    className: klass?.name ?? "Classe",
+    classId: klass?.id ?? (row.class_id ? String(row.class_id) : undefined),
+    level: klass?.level ?? "Niveau non renseigné",
     registrationNumber: row.registration_number ? String(row.registration_number) : undefined,
     photoUrl: row.photo_url ? String(row.photo_url) : undefined,
-  }));
+  }; });
 }
 
 export async function getTimetable(days = 2): Promise<TimetableEvent[]> {

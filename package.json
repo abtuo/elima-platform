@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "db:bundle": "node scripts/prepare-unified-db.mjs",
     "db:migrate": "node --env-file=.env scripts/apply-unified-db.mjs",
+    "db:migrate:communications": "node --env-file=.env scripts/apply-migration-file.mjs --file=supabase/migrations/20260715120000_communications_split_and_user_delete.sql",
     "db:seed:quizzes:dry": "node scripts/seed-unified-quizzes.mjs --dry-run",
     "db:seed:quizzes:strict": "node scripts/seed-unified-quizzes.mjs --dry-run --strict",
     "db:seed:quizzes": "node --env-file=.env scripts/seed-unified-quizzes.mjs",

@@ -9,8 +9,8 @@ import {
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getNavItems } from "@/constants/navigation";
 import type { MobileSpace } from "@/types/roles";
-import { ElimaLogo } from "@/components/common/ElimaLogo";
 import { MessageShortcut } from "@/components/navigation/MessageShortcut";
+import { AlertShortcut } from "@/components/navigation/AlertShortcut";
 import { SyncShortcut } from "@/components/navigation/SyncShortcut";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -73,9 +73,9 @@ export function BottomNav() {
       </nav>
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-gray-200 bg-white p-5 lg:flex lg:flex-col">
         <div className="mb-8 px-3">
-          <div className="flex items-center gap-3">{profile.schoolLogoUrl ? <img src={profile.schoolLogoUrl} alt="" className="h-12 w-12 rounded-2xl border border-gray-100 bg-white object-contain p-1" /> : <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-white">{profile.schoolName?.charAt(0) ?? "E"}</span>}<div className="min-w-0"><p className="truncate text-sm font-semibold text-accent">{profile.schoolName ?? "Établissement"}</p><div className="mt-1 flex items-center gap-1 text-[10px] text-gray-400">Propulsé par <ElimaLogo className="w-10" /></div></div></div>
+          {profile.schoolLogoUrl ? <img src={profile.schoolLogoUrl} alt={profile.schoolName ?? "Logo de l’établissement"} className="h-12 w-12 rounded-2xl border border-gray-100 bg-white object-contain p-1" /> : <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-white" aria-label={profile.schoolName ?? "Établissement"}>{profile.schoolName?.charAt(0) ?? "E"}</span>}
         </div>
-        <div className="mb-4 space-y-2 px-3"><MessageShortcut />{profile.role === "TEACHER" ? <SyncShortcut /> : null}</div>
+        <div className="mb-4 space-y-2 px-3"><MessageShortcut /><AlertShortcut />{profile.role === "TEACHER" ? <SyncShortcut /> : null}</div>
         <nav className="space-y-2">
           {items.map((item) => {
             const active = pathname === item.href || (item.href !== `/${activeSpace}` && pathname.startsWith(item.href));
