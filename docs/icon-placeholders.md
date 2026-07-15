@@ -199,12 +199,22 @@ L’icône actuelle `public/icons/elima-app.png` peut rester, mais si une nouvel
 ```text
 public/icons/generated/
   subjects/
-    subject-mathematics.webp
-    subject-french.webp
-    ...
+    subject-mathematics.png
+    subject-french.png
+    subject-english.png
+    subject-spanish.png
+    subject-svt.png
+    subject-physics-chemistry.png
+    subject-history-geography.png
+    subject-philosophy.png
+    subject-ses.png
+    subject-computer-science.png
+    subject-eps.png
+    subject-arts.png
   features/
     feature-home.webp
-    feature-revision.webp
+    feature-revision.png
+    feature-payments.png
     ...
   actions/
     action-random-quiz.webp
@@ -234,4 +244,4 @@ Le symbole doit rester identifiable à 32 px et occuper environ 76 % du canevas.
 [PROMPT NÉGATIF]
 ```
 
-Pour garder une vraie cohérence, générer d’abord quatre icônes pilotes — Mathématiques, Français, Révision et Paiements — puis figer le style retenu comme image de référence pour toutes les générations suivantes.
+Les douze icônes de matières ainsi que les icônes Révision et Paiements sont intégrées dans l’application. Leurs sources originales sont conservées dans `assets/icon-sources/` et servent désormais de références de style pour les générations suivantes.

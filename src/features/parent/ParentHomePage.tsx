@@ -6,6 +6,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { AssignmentCard } from "@/components/cards/AssignmentCard";
 import { MessageCard } from "@/components/cards/MessageCard";
 import { PaymentStatusCard } from "@/components/cards/PaymentStatusCard";
+import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getAssignments, getChildren, getMessages, getPayments, getRecentGrades, getTimetable } from "@/services/mainDataService";
 import type { Assignment, ChildSummary, GradeSummary, MessagePreview, PaymentSummary } from "@/types/school";
@@ -61,7 +62,7 @@ export function ParentHomePage() {
       <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Link to="/parent/enfants" className="group rounded-3xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><UserRound className="h-5 w-5 text-primary" /><p className="mt-3 font-semibold text-accent">Résultats</p><p className="mt-1 text-xs text-gray-500">Notes et absences</p></Link>
         <Link to="/parent/messages" className="group rounded-3xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><MessageCircle className="h-5 w-5 text-primary" /><p className="mt-3 font-semibold text-accent">Messages</p><p className="mt-1 text-xs text-gray-500">{unread ? `${unread} non lu` : "Tout est à jour"}</p></Link>
-        <Link to="/parent/paiements" className="group rounded-3xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><CreditCard className="h-5 w-5 text-primary" /><p className="mt-3 font-semibold text-accent">Paiements</p><p className="mt-1 text-xs text-gray-500">Reçus et échéances</p></Link>
+        <Link to="/parent/paiements" className="group rounded-3xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><GeneratedFeatureIcon name="payments" className="h-10 w-10" /><p className="mt-3 font-semibold text-accent">Paiements</p><p className="mt-1 text-xs text-gray-500">Reçus et échéances</p></Link>
         <Link to="/parent/enfants" className="group rounded-3xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><BookOpen className="h-5 w-5 text-primary" /><p className="mt-3 font-semibold text-accent">Bulletins</p><p className="mt-1 text-xs text-gray-500">Documents scolaires</p></Link>
         <Link to="/parent/fournitures" className="group rounded-3xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><PackageOpen className="h-5 w-5 text-primary" /><p className="mt-3 font-semibold text-accent">Fournitures</p><p className="mt-1 text-xs text-gray-500">Listes et commandes</p></Link>
       </div>

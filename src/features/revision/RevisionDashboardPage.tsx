@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Brain, Dices, FilePlus2, Flame, Search, Sparkles, Star } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { QuizCard } from "@/components/cards/QuizCard";
 import { RevisionProgressCard } from "@/components/cards/RevisionProgressCard";
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -109,9 +110,14 @@ export function RevisionDashboardPage() {
         <RevisionProgressCard progress={progress} />
 
         <section className="rounded-[2rem] bg-gradient-to-br from-[#5b2da8] to-[#7c3aed] p-5 text-white">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Génération en temps réel</p>
-          <h2 className="mt-2 font-title text-xl font-semibold">Crée ta révision</h2>
-          <p className="mt-1 text-xs text-white/70">Niveau détecté : {level}</p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Génération en temps réel</p>
+              <h2 className="mt-2 font-title text-xl font-semibold">Crée ta révision</h2>
+              <p className="mt-1 text-xs text-white/70">Niveau détecté : {level}</p>
+            </div>
+            <GeneratedFeatureIcon name="revision" className="h-20 w-20 shrink-0 drop-shadow-lg sm:h-24 sm:w-24" />
+          </div>
 
           <label className="mt-5 block">
             <span className="mb-2 block text-xs font-semibold text-white/80">Matière obligatoire pour une génération ciblée</span>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle2, Lightbulb, LogOut, Star, XCircle } from "lucide-react";
+import { CheckCircle2, Lightbulb, Star, X, XCircle } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
 import { EmptyState } from "@/components/common/EmptyState";
 import { LoadingState } from "@/components/common/LoadingState";
@@ -152,7 +152,7 @@ export function QuizPage() {
           <SubjectIcon subject={subject} />
           <div className="min-w-0"><p className="truncate text-sm font-semibold text-accent">{subject}</p>{topic ? <p className="truncate text-xs text-gray-500">{topic}</p> : null}</div>
         </div>
-        <button type="button" onClick={abandon} className="flex shrink-0 items-center gap-1.5 rounded-xl px-2 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"><LogOut className="h-4 w-4" />Abandonner</button>
+        <button type="button" onClick={abandon} className="flex shrink-0 items-center gap-1.5 rounded-xl px-2 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"><X className="h-4 w-4" />Abandonner</button>
       </div>
 
       <div className="mb-4 h-2 overflow-hidden rounded-full bg-gray-100"><div className="h-full rounded-full bg-revision transition-all" style={{ width: `${((index + 1) / questions.length) * 100}%` }} /></div>
