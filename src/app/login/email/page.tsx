@@ -36,7 +36,7 @@ function EmailLoginInner() {
     const res = await fetch("/api/auth/email/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, redirect: redirectTo }),
     });
 
     setLoading(false);

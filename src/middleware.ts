@@ -18,6 +18,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/api/auth/logout") ||
     pathname.startsWith("/api/auth/email/login") ||
     pathname.startsWith("/api/auth/signup") ||
+    pathname.startsWith("/api/mobile/me") ||
+    pathname.startsWith("/api/mobile/activate-school") ||
     pathname.startsWith("/api/demo-requests") ||
     pathname.startsWith("/api/schools")
   ) {
@@ -40,7 +42,9 @@ export function middleware(request: NextRequest) {
     if (pathname.startsWith("/api")) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login/email", request.url);
+    loginUrl.searchParams.set("redirect", `${request.nextUrl.pathname}${request.nextUrl.search}`);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, ArrowLeft, Banknote, Download, Eye, PencilLine, Receipt, TrendingDown } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Banknote, Download, Eye, KeyRound, PencilLine, Receipt, TrendingDown } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 const PREFERRED_ACADEMIC_YEAR = "2025 - 2026";
@@ -147,6 +147,8 @@ export default function DashboardStudentsPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [activationCode, setActivationCode] = useState("");
+  const [activationLoading, setActivationLoading] = useState(false);
 
   const academicYearOptions = useMemo(() => uniqueAcademicYearOptions(classes), [classes]);
 
@@ -203,6 +205,16 @@ export default function DashboardStudentsPage() {
     window.history.pushState({}, "", nextUrl);
     setSelectedStudentId(studentId);
   }, []);
+
+  async function generateActivationCode() {
+    if (!selectedStudentId) return;
+    setActivationLoading(true); setDetailError(null); setActivationCode("");
+    const response = await fetch("/api/dashboard/students/activation-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ studentId: selectedStudentId }) });
+    const body = await response.json().catch(() => null) as { code?: string; message?: string } | null;
+    setActivationLoading(false);
+    if (!response.ok || !body?.code) return setDetailError(body?.message ?? "Génération du code impossible.");
+    setActivationCode(body.code);
+  }
 
   const closeStudentProfile = useCallback(() => {
     window.history.pushState({}, "", "/dashboard/students");
@@ -303,6 +315,10 @@ export default function DashboardStudentsPage() {
         {detail ? (
           <>
             <section className="elima-card">
+              <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><div className="flex items-center gap-2"><KeyRound className="h-4 w-4 text-emerald-700" /><p className="text-sm font-semibold text-emerald-900">Activation du compte élève</p></div><p className="mt-1 text-xs text-emerald-700">Génère un code individuel à remettre à l’élève. Il expire après 30 jours et ne fonctionne qu’une fois.</p></div><button type="button" onClick={generateActivationCode} disabled={activationLoading} className="rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{activationLoading ? "Génération…" : "Générer un code"}</button></div>
+                {activationCode ? <div className="mt-3 flex items-center justify-between rounded-xl bg-white px-4 py-3"><span className="font-mono text-xl font-bold tracking-widest text-emerald-900">{activationCode}</span><button type="button" onClick={() => navigator.clipboard.writeText(activationCode)} className="text-xs font-semibold text-emerald-700">Copier</button></div> : null}
+              </div>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex min-w-0 items-start gap-3">
                   {detail.student.photoUrl ? (

@@ -2,6 +2,11 @@ import Link from "next/link";
 
 const roles = [
   {
+    href: "/signup/student",
+    title: "Élève",
+    description: "Réviser avec Elima, avec ou sans établissement partenaire.",
+  },
+  {
     href: "/signup/admin",
     title: "Administrateur d’école",
     description: "Créer l’établissement et piloter la plateforme.",
@@ -28,7 +33,7 @@ export default function SignupRolePage() {
           <p className="text-sm text-slate-600">Choisissez le rôle correspondant à votre profil.</p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {roles.map((role) => (
             <Link
               key={role.href}

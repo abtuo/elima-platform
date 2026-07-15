@@ -37,10 +37,14 @@ export async function POST(request: Request) {
     lastName?: string;
     email?: string;
     password?: string;
-    role?: "SCHOOL_ADMIN" | "TEACHER" | "PARENT";
+    role?: "SCHOOL_ADMIN" | "TEACHER" | "PARENT" | "STUDENT";
     schoolName?: string;
     phone?: string;
     city?: string;
+    schoolLevel?: string;
+    declaredSchoolName?: string;
+    declaredSchoolCity?: string;
+    returnTo?: string;
   };
 
   const firstName = String(body?.firstName ?? "").trim();
@@ -52,7 +56,8 @@ export async function POST(request: Request) {
   const phone = String(body?.phone ?? "").trim();
   const city = String(body?.city ?? "").trim();
 
-  if (!firstName || !lastName || !email || !password || !role || !schoolName) {
+  const isStandaloneStudent = role === "STUDENT";
+  if (!firstName || !lastName || !email || !password || !role || (!isStandaloneStudent && !schoolName)) {
     return NextResponse.json(
       { message: "Nom, prénom, email, mot de passe, rôle et établissement requis." },
       { status: 400 },
@@ -79,7 +84,9 @@ export async function POST(request: Request) {
   const fullName = `${firstName} ${lastName}`.trim();
 
   let schoolId: string | null = null;
-  if (role === "SCHOOL_ADMIN") {
+  if (role === "STUDENT") {
+    schoolId = null;
+  } else if (role === "SCHOOL_ADMIN") {
     const { data: school, error: schoolError } = await admin
       .from("schools")
       .insert({
@@ -147,6 +154,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: signupAuthErrorToMessage(error.message) }, { status });
   }
 
+  if (role === "STUDENT" && data.user?.id) {
+    const { error: prospectError } = await admin.from("student_prospects").upsert({
+      user_id: data.user.id,
+      declared_school_name: String(body?.declaredSchoolName ?? "").trim() || null,
+      declared_school_city: String(body?.declaredSchoolCity ?? "").trim() || null,
+      school_level: String(body?.schoolLevel ?? "").trim() || null,
+      updated_at: new Date().toISOString(),
+    });
+    if (prospectError) return NextResponse.json({ message: `Compte créé, mais profil incomplet : ${prospectError.message}` }, { status: 500 });
+  }
+
   try {
     await sendNotificationEmail({
       subject: "Nouvelle inscription Elima",
@@ -165,7 +183,9 @@ export async function POST(request: Request) {
     console.error("Signup email error", mailError);
   }
 
-  return NextResponse.json({ ok: true, userId: data.user?.id ?? null });
+  const requestedReturn = safeStudentReturn(String(body?.returnTo ?? ""));
+  const loginUrl = requestedReturn ? `/login/email?redirect=${encodeURIComponent(requestedReturn)}` : "/login/email";
+  return NextResponse.json({ ok: true, userId: data.user?.id ?? null, loginUrl });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur serveur";
     console.error("[signup]", err);
@@ -179,4 +199,13 @@ export async function POST(request: Request) {
       { status: 500 },
     );
   }
+}
+
+function safeStudentReturn(value: string) {
+  try {
+    const url = new URL(value);
+    if (url.origin === "https://app.elima.ci" && url.pathname === "/auth/elima/start") return url.toString();
+    if (process.env.NODE_ENV !== "production" && url.origin === "http://localhost:5173" && url.pathname === "/auth/elima/start") return url.toString();
+  } catch { /* URL absente ou invalide */ }
+  return null;
 }
