@@ -42,6 +42,25 @@ export function enqueueAction(type: OfflineAction["type"], payload: Record<strin
   writeQueue(queue);
 }
 
+export function enqueueAttendanceSheet(rows: Array<Record<string, unknown>>) {
+  if (!rows.length) return;
+  const classId = rows[0].class_id;
+  const date = rows[0].date;
+  const retained = readQueue().filter((action) => !(
+    action.type === "attendance" && action.status !== "synced" &&
+    action.payload.class_id === classId && action.payload.date === date
+  ));
+  const createdAt = new Date().toISOString();
+  const actions: OfflineAction[] = rows.map((payload, index) => ({
+    id: `attendance-${Date.now()}-${index}`,
+    type: "attendance",
+    payload,
+    createdAt,
+    status: "pending",
+  }));
+  writeQueue([...actions, ...retained]);
+}
+
 export function markActionSynced(id: string) {
   const queue = readQueue().map((a) => (a.id === id ? { ...a, status: "synced" as const } : a));
   writeQueue(queue);
@@ -56,4 +75,13 @@ export function markActionError(id: string, errorMessage: string) {
 
 export function clearSyncedActions() {
   writeQueue(readQueue().filter((a) => a.status !== "synced"));
+}
+
+export function removeActions(ids: string[]) {
+  const removed = new Set(ids);
+  writeQueue(readQueue().filter((action) => !removed.has(action.id)));
+}
+
+export function clearFailedActions() {
+  writeQueue(readQueue().filter((action) => action.status !== "error"));
 }

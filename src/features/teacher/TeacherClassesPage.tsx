@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/common/AppHeader";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ElimaCard } from "@/components/common/ElimaCard";
-import { enqueueAction } from "@/services/offlineQueueService";
+import { enqueueAttendanceSheet } from "@/services/offlineQueueService";
+import { syncPendingActions } from "@/services/syncService";
+import { isOnline } from "@/services/networkStatusService";
 import { getClassStudents, getTeacherClasses } from "@/services/mainDataService";
 import type { ClassInfo, StudentDirectoryItem } from "@/types/school";
-import { Check, X, Clock } from "lucide-react";
+import { Check, CheckCircle2, X, Clock } from "lucide-react";
 import { EmptyState } from "@/components/common/EmptyState";
 
 export function TeacherClassesPage() {
@@ -13,6 +15,8 @@ export function TeacherClassesPage() {
   const [selectedClass, setSelectedClass] = useState<ClassInfo | null>(null);
   const [students, setStudents] = useState<StudentDirectoryItem[]>([]);
   const [attendance, setAttendance] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     getTeacherClasses().then((c) => {
@@ -23,12 +27,30 @@ export function TeacherClassesPage() {
 
   useEffect(() => {
     if (!selectedClass) { setStudents([]); return; }
-    getClassStudents(selectedClass.id).then(setStudents);
+    getClassStudents(selectedClass.id).then((nextStudents) => {
+      setStudents(nextStudents);
+      setAttendance(Object.fromEntries(nextStudents.map((student) => [student.id, "PRESENT"])));
+      setNotice("");
+    });
   }, [selectedClass]);
 
   function markStatus(student: StudentDirectoryItem, status: string) {
     setAttendance((prev) => ({ ...prev, [student.id]: status }));
-    enqueueAction("attendance", { student_id: student.id, student_name: student.name, status, class_id: selectedClass?.id, date: new Date().toISOString().slice(0, 10) });
+    setNotice("");
+  }
+
+  async function validateAttendance() {
+    if (!selectedClass || !students.length) return;
+    setSaving(true);
+    const date = new Date().toISOString().slice(0, 10);
+    enqueueAttendanceSheet(students.map((student) => ({ student_id: student.id, student_name: student.name, status: attendance[student.id] ?? "PRESENT", class_id: selectedClass.id, date })));
+    if (isOnline()) {
+      const result = await syncPendingActions();
+      setNotice(result.errors ? "Appel enregistré, mais la synchronisation devra être relancée." : "Appel validé et synchronisé.");
+    } else {
+      setNotice("Appel validé hors ligne. Il sera synchronisé au retour du réseau.");
+    }
+    setSaving(false);
   }
 
   return (
@@ -45,6 +67,7 @@ export function TeacherClassesPage() {
       {selectedClass ? (
         <section className="space-y-3">
           <h2 className="font-title text-lg font-semibold text-accent">Appel — {selectedClass.name}</h2>
+          <p className="text-sm text-gray-500">Tous les élèves sont présents par défaut. Modifiez uniquement les absences et retards.</p>
           {students.map((student) => (
             <ElimaCard key={student.id}>
               <div className="flex items-center justify-between">
@@ -65,6 +88,7 @@ export function TeacherClassesPage() {
               </div>
             </ElimaCard>
           ))}
+          {students.length ? <div className="sticky bottom-20 rounded-3xl border border-gray-100 bg-white/95 p-4 shadow-lg backdrop-blur lg:bottom-4"><div className="mb-3 flex items-center justify-between text-sm"><span className="text-gray-500">{Object.values(attendance).filter((status) => status === "ABSENT").length} absent(s) · {Object.values(attendance).filter((status) => status === "LATE").length} retard(s)</span>{notice ? <span className="flex items-center gap-1 font-semibold text-primary"><CheckCircle2 className="h-4 w-4" />{notice}</span> : null}</div><button type="button" onClick={validateAttendance} disabled={saving} className="tap flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3 text-sm font-semibold text-white disabled:opacity-60"><Check className="h-4 w-4" />{saving ? "Validation…" : "Valider l’appel"}</button></div> : null}
           {!students.length ? <EmptyState title="Aucun élève dans cette classe" description="La liste se mettra à jour dès que des élèves seront affectés à la classe." /> : null}
         </section>
       ) : null}

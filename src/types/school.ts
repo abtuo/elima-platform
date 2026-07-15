@@ -160,6 +160,9 @@ export type TimetableEvent = {
   startsAt: string;
   endsAt: string;
   room?: string;
+  referenceDate?: string;
+  eventType?: "course" | "evaluation";
+  title?: string;
 };
 
 export type AdminTrendPoint = {

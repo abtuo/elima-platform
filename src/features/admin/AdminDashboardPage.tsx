@@ -3,11 +3,12 @@ import { ArrowRight, BookOpenCheck, CircleCheck, CreditCard, GraduationCap, Mess
 import { Link } from "react-router-dom";
 import { AppHeader } from "@/components/common/AppHeader";
 import { PaymentStatusCard } from "@/components/cards/PaymentStatusCard";
+import { TimetableCard } from "@/components/cards/TimetableCard";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { StatCard } from "@/components/revision/RevisionUI";
 import { useAuth } from "@/features/auth/AuthProvider";
-import { getAdminStats, getAdminTrends, getMessages, getPayments } from "@/services/mainDataService";
-import type { AdminTrendPoint, MessagePreview, PaymentSummary } from "@/types/school";
+import { getAdminStats, getAdminTrends, getMessages, getPayments, getTimetable } from "@/services/mainDataService";
+import type { AdminTrendPoint, MessagePreview, PaymentSummary, TimetableEvent } from "@/types/school";
 
 export function AdminDashboardPage() {
   const { profile } = useAuth();
@@ -15,6 +16,7 @@ export function AdminDashboardPage() {
   const [messages, setMessages] = useState<MessagePreview[]>([]);
   const [payments, setPayments] = useState<PaymentSummary[]>([]);
   const [trends, setTrends] = useState<AdminTrendPoint[]>([]);
+  const [timetable, setTimetable] = useState<TimetableEvent[]>([]);
 
   useEffect(() => {
     Promise.all([getAdminStats(), getMessages(), getPayments()]).then(([nextStats, nextMessages, nextPayments]) => {
@@ -23,6 +25,7 @@ export function AdminDashboardPage() {
       setPayments(nextPayments);
     });
     getAdminTrends().then(setTrends);
+    getTimetable().then(setTimetable);
   }, []);
 
   const unreadMessages = messages.filter((item) => !item.read).length;
@@ -52,6 +55,8 @@ export function AdminDashboardPage() {
       </section>
 
       <section className="mt-7 rounded-[2rem] bg-white p-5 shadow-sm"><div className="mb-5"><h2 className="font-title text-lg font-semibold text-accent">Activité sur 7 jours</h2><p className="text-sm text-gray-500">Absences et retards enregistrés quotidiennement</p></div><div className="flex h-44 items-end gap-2 sm:gap-4">{trends.map((point) => { const max = Math.max(1, ...trends.map((item) => item.attendance)); return <div key={point.label} className="flex h-full flex-1 flex-col items-center justify-end gap-2"><span className="text-xs font-semibold text-accent">{point.attendance}</span><div className="w-full max-w-10 rounded-t-xl bg-gradient-to-t from-primary to-emerald-300" style={{ height: `${Math.max(8, (point.attendance / max) * 110)}px` }} /><span className="text-[11px] capitalize text-gray-400">{point.label}</span></div>; })}</div></section>
+
+      <div className="mt-7"><TimetableCard events={timetable} title="Cours aujourd’hui et demain" /></div>
 
       <section className="mt-7">
         <div className="mb-3 flex items-center justify-between"><h2 className="font-title text-lg font-semibold text-accent">Derniers encaissements</h2><Link to="/admin/paiements" className="text-sm font-semibold text-primary">Voir les finances</Link></div>

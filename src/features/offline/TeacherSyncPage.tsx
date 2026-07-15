@@ -1,16 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/common/AppHeader";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { SyncStatus } from "@/components/common/SyncStatus";
 import { ElimaCard } from "@/components/common/ElimaCard";
-import { getAllActions } from "@/services/offlineQueueService";
+import { clearFailedActions, getAllActions } from "@/services/offlineQueueService";
 import { syncPendingActions } from "@/services/syncService";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Trash2 } from "lucide-react";
 
 export function TeacherSyncPage() {
   const [syncing, setSyncing] = useState(false);
   const [result, setResult] = useState("");
+  const [, refresh] = useState(0);
   const actions = getAllActions();
+  const failedCount = actions.filter((action) => action.status === "error").length;
+
+  useEffect(() => { const update = () => refresh((value) => value + 1); window.addEventListener("elima:sync-queue-updated", update); return () => window.removeEventListener("elima:sync-queue-updated", update); }, []);
 
   async function handleSync() {
     setSyncing(true);
@@ -19,6 +23,7 @@ export function TeacherSyncPage() {
     else if (res.synced > 0) setResult(`${res.synced} action${res.synced > 1 ? "s" : ""} synchronisée${res.synced > 1 ? "s" : ""}.`);
     else setResult("Tout est à jour.");
     if (res.errors > 0) setResult((prev) => `${prev} ${res.errors} erreur${res.errors > 1 ? "s" : ""}.`);
+    if (res.discarded > 0) setResult((prev) => `${prev} ${res.discarded} ancienne${res.discarded > 1 ? "s" : ""} action${res.discarded > 1 ? "s" : ""} invalide${res.discarded > 1 ? "s" : ""} supprimée${res.discarded > 1 ? "s" : ""}.`);
     setSyncing(false);
   }
 
@@ -32,13 +37,14 @@ export function TeacherSyncPage() {
       </button>
       {result ? <p className="mb-5 text-center text-sm text-gray-600">{result}</p> : null}
       <section className="space-y-3">
-        <h2 className="font-title text-lg font-semibold text-accent">File d'actions</h2>
+        <div className="flex items-center justify-between"><h2 className="font-title text-lg font-semibold text-accent">File d'actions</h2>{failedCount ? <button type="button" onClick={() => { clearFailedActions(); setResult("Actions en erreur supprimées."); }} className="flex items-center gap-1 text-xs font-semibold text-red-600"><Trash2 className="h-4 w-4" />Effacer les erreurs</button> : null}</div>
         {actions.length ? actions.map((a) => (
           <ElimaCard key={a.id}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-accent capitalize">{a.type.replace("_", " ")}</p>
                 <p className="text-xs text-gray-500">{new Date(a.createdAt).toLocaleString("fr-FR")}</p>
+                {a.errorMessage ? <p className="mt-1 max-w-md text-xs text-red-600">{a.errorMessage}</p> : null}
               </div>
               <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                 a.status === "pending" ? "bg-amber-50 text-amber-700" :

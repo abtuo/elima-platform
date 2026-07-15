@@ -7,6 +7,8 @@ import type {
   MessagePreview,
   PaymentSummary,
   ResourceItem,
+  StudentDirectoryItem,
+  TimetableEvent,
 } from "../types/school";
 import type { RevisionProgress, CourseSheet, QuizItem } from "../types/revision";
 
@@ -39,9 +41,9 @@ export const demoChildren: ChildSummary[] = [
 ];
 
 export const demoAssignments: Assignment[] = [
-  { id: "a1", title: "Exercices chapitre 4", subject: "Mathématiques", className: "3ème A", dueDate: "2026-07-14", status: "pending" },
-  { id: "a2", title: "Rédaction : mon héros", subject: "Français", className: "3ème A", dueDate: "2026-07-16", status: "pending" },
-  { id: "a3", title: "Carte de l'Afrique", subject: "Géographie", className: "6ème B", dueDate: "2026-07-12", status: "done" },
+  { id: "a1", title: "Exercices chapitre 4", subject: "Mathématiques", className: "3ème A", dueDate: "2026-06-25", status: "pending" },
+  { id: "a2", title: "Rédaction : mon héros", subject: "Français", className: "3ème A", dueDate: "2026-06-26", status: "pending" },
+  { id: "a3", title: "Carte de l'Afrique", subject: "Géographie", className: "6ème B", dueDate: "2026-06-24", status: "done" },
 ];
 
 export const demoGrades: GradeSummary[] = [
@@ -66,10 +68,57 @@ export const demoResources: ResourceItem[] = [
   { id: "r2", title: "Correction exercice 3", subject: "Mathématiques", className: "3ème A", type: "correction", publishedAt: "2026-07-08" },
 ];
 
+const demoRosterNames = {
+  "demo-6b": ["Awa Koné", "Yao Kouamé", "Eli Tuo", "Adama Diarra", "Aïcha Coulibaly", "Amadou Koffi", "Aya N'Dri", "Bintou Traoré", "Cheick Fofana", "Clarisse Yao", "Djeneba Konan", "Emmanuel Assi", "Fatoumata Bamba", "Franck Gnahoré", "Grâce Brou", "Ibrahim Dosso", "Inès Akissi", "Jean-Philippe Zadi", "Kader Ouattara", "Kouadio Kassi", "Mariama Touré", "Mohamed Bakayoko", "Nadia Yapi", "Ruth N'Guessan", "Souleymane Diallo"],
+  "demo-3a": ["Lina Traoré", "Abel Kacou", "Aminata Koné", "Armand Kouassi", "Carine Aka", "Cédric Dago", "Christelle Niamké", "David Koffi", "Esther Yoboué", "Fabrice Amani", "Gisèle N'Cho", "Hamed Cissé", "Ismaël Doumbia", "Joëlle Goli", "Kevin Beugré", "Mariam Sangaré", "Merveille Kobenan", "Nathanaël Ahoua", "Prisca Djedje", "Raïssa Zamble", "Wilfried Kanga"],
+} as const;
+
+export const demoClassStudents: Record<string, StudentDirectoryItem[]> = Object.fromEntries(
+  Object.entries(demoRosterNames).map(([classId, names]) => {
+    const className = classId === "demo-6b" ? "6ème B" : "3ème A";
+    return [classId, names.map((name, index) => ({ id: `${classId}-${index + 1}`, name, className, classId, level: className.split(" ")[0] }))];
+  }),
+);
+
 export const demoClasses: ClassInfo[] = [
-  { id: "cl1", name: "3ème A", subject: "Mathématiques", studentCount: 32, time: "08:00" },
-  { id: "cl2", name: "4ème B", subject: "Mathématiques", studentCount: 28, time: "10:30" },
-  { id: "cl3", name: "5ème C", subject: "Mathématiques", studentCount: 30, time: "14:00" },
+  { id: "demo-6b", name: "6ème B", subject: "Mathématiques", studentCount: demoClassStudents["demo-6b"].length },
+  { id: "demo-3a", name: "3ème A", subject: "Mathématiques", studentCount: demoClassStudents["demo-3a"].length },
+];
+
+const DEMO_REFERENCE_DATE = "2026-06-25";
+const demoCourse = (id: string, date: string, start: string, end: string, subject: string, className: string, room: string): TimetableEvent => ({
+  id, subject, className, room, referenceDate: DEMO_REFERENCE_DATE,
+  startsAt: `${date}T${start}:00.000Z`, endsAt: `${date}T${end}:00.000Z`,
+});
+
+export const demoTimetableEvents: TimetableEvent[] = [
+  demoCourse("tt-01", "2026-06-22", "08:00", "09:30", "Mathématiques", "6ème B", "Bâtiment A · Salle 3"),
+  demoCourse("tt-02", "2026-06-22", "09:45", "10:45", "Français", "6ème B", "Bâtiment A · Salle 3"),
+  demoCourse("tt-03", "2026-06-22", "11:00", "12:30", "Histoire-Géographie", "6ème B", "Bâtiment A · Salle 3"),
+  demoCourse("tt-04", "2026-06-22", "08:00", "09:00", "Français", "3ème A", "Bâtiment B · Salle 6"),
+  demoCourse("tt-05", "2026-06-22", "09:45", "11:15", "Mathématiques", "3ème A", "Bâtiment B · Salle 6"),
+  demoCourse("tt-06", "2026-06-22", "11:30", "13:00", "Physique-Chimie", "3ème A", "Laboratoire Physique-Chimie"),
+  demoCourse("tt-07", "2026-06-23", "08:00", "09:00", "Anglais", "6ème B", "Bâtiment A · Salle 3"),
+  demoCourse("tt-08", "2026-06-23", "09:15", "10:45", "SVT", "6ème B", "Laboratoire SVT"),
+  demoCourse("tt-09", "2026-06-23", "14:00", "15:30", "EPS", "6ème B", "Terrain multisports"),
+  demoCourse("tt-10", "2026-06-23", "08:00", "09:30", "Mathématiques", "3ème A", "Bâtiment B · Salle 6"),
+  demoCourse("tt-11", "2026-06-23", "09:45", "10:45", "Histoire-Géographie", "3ème A", "Bâtiment B · Salle 6"),
+  demoCourse("tt-12", "2026-06-23", "11:00", "12:00", "Anglais", "3ème A", "Bâtiment B · Salle 6"),
+  demoCourse("tt-13", "2026-06-24", "08:00", "09:30", "Français", "6ème B", "Bâtiment A · Salle 3"),
+  demoCourse("tt-14", "2026-06-24", "10:00", "11:00", "Mathématiques", "6ème B", "Bâtiment A · Salle 3"),
+  demoCourse("tt-15", "2026-06-24", "08:00", "09:30", "Physique-Chimie", "3ème A", "Laboratoire Physique-Chimie"),
+  demoCourse("tt-16", "2026-06-24", "10:00", "11:30", "Français", "3ème A", "Bâtiment B · Salle 6"),
+  demoCourse("tt-17", "2026-06-25", "08:00", "09:30", "Mathématiques", "6ème B", "Bâtiment A · Salle 3"),
+  demoCourse("tt-18", "2026-06-25", "10:00", "11:00", "Français", "6ème B", "Bâtiment A · Salle 3"),
+  demoCourse("tt-19", "2026-06-25", "14:00", "15:30", "SVT", "6ème B", "Laboratoire SVT"),
+  demoCourse("tt-20", "2026-06-25", "08:00", "09:00", "Histoire-Géographie", "3ème A", "Bâtiment B · Salle 6"),
+  demoCourse("tt-21", "2026-06-25", "09:45", "11:15", "Mathématiques", "3ème A", "Bâtiment B · Salle 6"),
+  demoCourse("tt-22", "2026-06-25", "11:30", "12:30", "Anglais", "3ème A", "Bâtiment B · Salle 6"),
+  demoCourse("tt-23", "2026-06-26", "08:00", "09:00", "Anglais", "6ème B", "Bâtiment A · Salle 3"),
+  demoCourse("tt-24", "2026-06-26", "10:00", "11:30", "EPS", "6ème B", "Terrain multisports"),
+  demoCourse("tt-25", "2026-06-26", "08:00", "09:30", "Français", "3ème A", "Bâtiment B · Salle 6"),
+  demoCourse("tt-26", "2026-06-26", "10:00", "11:30", "SVT", "3ème A", "Laboratoire SVT"),
+  demoCourse("tt-27", "2026-06-26", "14:00", "15:00", "EPS", "3ème A", "Terrain multisports"),
 ];
 
 export const demoRevisionProgress: RevisionProgress = {
