@@ -2,9 +2,19 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { beginElimaSignIn, completeElimaSignIn } from "@/services/elimaIdentityService";
 
+let oauthStartTriggered = false;
+const oauthCodesInProgress = new Set<string>();
+
 export function ElimaOAuthStartPage() {
   const [error, setError] = useState("");
-  useEffect(() => { beginElimaSignIn("/").catch((caught) => setError(caught instanceof Error ? caught.message : "Connexion impossible.")); }, []);
+  useEffect(() => {
+    if (oauthStartTriggered) return;
+    oauthStartTriggered = true;
+    beginElimaSignIn("/").catch((caught) => {
+      oauthStartTriggered = false;
+      setError(caught instanceof Error ? caught.message : "Connexion impossible.");
+    });
+  }, []);
   return <AuthTransition title="Connexion à Elima…" error={error} />;
 }
 
@@ -16,6 +26,8 @@ export function ElimaOAuthCallbackPage() {
     const oauthError = params.get("error_description") || params.get("error");
     const code = params.get("code"); const state = params.get("state");
     if (oauthError || !code || !state) { setError(oauthError ?? "Réponse OAuth incomplète."); return; }
+    if (oauthCodesInProgress.has(code)) return;
+    oauthCodesInProgress.add(code);
     completeElimaSignIn(code, state).then((path) => navigate(path, { replace: true })).catch((caught) => setError(caught instanceof Error ? caught.message : "Connexion impossible."));
   }, [navigate, params]);
   return <AuthTransition title="Finalisation de la connexion…" error={error} />;

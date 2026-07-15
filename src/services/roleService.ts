@@ -42,6 +42,14 @@ export async function fetchUserProfile(userId: string): Promise<UserProfile | nu
   const { data: studentProfile } = userRow.role === "STUDENT"
     ? await mainDbClient.from("student_profiles").select("school_membership_status, declared_school_name, declared_school_city, school_level_id").eq("id", userId).maybeSingle()
     : { data: null };
+  const { data: identityLink } = await mainDbClient
+    .from("identity_links")
+    .select("external_school_id, external_school_name, external_school_logo_url")
+    .eq("local_user_id", userId)
+    .maybeSingle();
+
+  schoolName = schoolName ?? identityLink?.external_school_name ?? null;
+  schoolLogoUrl = schoolLogoUrl ?? identityLink?.external_school_logo_url ?? null;
 
   return {
     id: userRow.id,
@@ -53,7 +61,7 @@ export async function fetchUserProfile(userId: string): Promise<UserProfile | nu
     schoolLogoUrl,
     currency,
     plan,
-    schoolMembershipStatus: studentProfile?.school_membership_status === "linked" || userRow.school_id ? "linked" : "standalone",
+    schoolMembershipStatus: studentProfile?.school_membership_status === "linked" || userRow.school_id || identityLink?.external_school_id ? "linked" : "standalone",
     declaredSchoolName: studentProfile?.declared_school_name ?? null,
     declaredSchoolCity: studentProfile?.declared_school_city ?? null,
     schoolLevelId: studentProfile?.school_level_id || null,

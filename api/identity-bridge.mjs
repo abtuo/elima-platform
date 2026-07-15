@@ -21,6 +21,10 @@ export default async function handler(request, response) {
   } catch { /* le profil minimal OIDC reste utilisable */ }
 
   const issuer = `${identityUrl}/auth/v1`;
+  const schoolRelation = Array.isArray(profile?.school) ? profile.school[0] : profile?.school;
+  const externalSchoolName = schoolRelation?.name ? String(schoolRelation.name) : null;
+  const rawSchoolLogo = schoolRelation?.logo_url ? String(schoolRelation.logo_url) : null;
+  const externalSchoolLogoUrl = rawSchoolLogo && rawSchoolLogo.startsWith("/") ? `https://www.elima.ci${rawSchoolLogo}` : rawSchoolLogo;
   const admin = createClient(localUrl, localSecret, { auth: { persistSession: false, autoRefreshToken: false } });
   let { data: link } = await admin.from("identity_links").select("local_user_id").eq("issuer", issuer).eq("external_subject", identity.sub).maybeSingle();
   let localUserId = link?.local_user_id ?? null;
@@ -32,10 +36,10 @@ export default async function handler(request, response) {
       if (created.error || !created.data.user) return response.status(400).json({ error: created.error?.message ?? "Création du profil Révision impossible." });
       localUserId = created.data.user.id;
     }
-    const inserted = await admin.from("identity_links").insert({ local_user_id: localUserId, issuer, external_subject: identity.sub, external_school_id: profile?.schoolId ?? null, external_student_id: profile?.student?.id ?? null });
+    const inserted = await admin.from("identity_links").insert({ local_user_id: localUserId, issuer, external_subject: identity.sub, external_school_id: profile?.schoolId ?? null, external_student_id: profile?.student?.id ?? null, external_school_name: externalSchoolName, external_school_logo_url: externalSchoolLogoUrl });
     if (inserted.error) return response.status(400).json({ error: inserted.error.message });
   } else {
-    await admin.from("identity_links").update({ external_school_id: profile?.schoolId ?? null, external_student_id: profile?.student?.id ?? null, updated_at: new Date().toISOString() }).eq("local_user_id", localUserId);
+    await admin.from("identity_links").update({ external_school_id: profile?.schoolId ?? null, external_student_id: profile?.student?.id ?? null, external_school_name: externalSchoolName, external_school_logo_url: externalSchoolLogoUrl, updated_at: new Date().toISOString() }).eq("local_user_id", localUserId);
   }
   const generated = await admin.auth.admin.generateLink({ type: "magiclink", email: identity.email, options: { data: { identity_provider: "elima.ci" } } });
   const tokenHash = generated.data?.properties?.hashed_token;
