@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BookOpen, Brain, Camera, FileText, School, Upload } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ResourceCard } from "@/components/cards/ResourceCard";
 import { AssignmentCard } from "@/components/cards/AssignmentCard";
@@ -68,7 +69,7 @@ export function ScannerPage() {
 
   return (
     <PageContainer>
-      <AppHeader title="Mes documents" subtitle="Ressources de l’école et documents personnels" accent="#7C3AED" />
+      <AppHeader title="Mes documents" subtitle="Ressources de l’école et documents personnels" accent="#7C3AED" action={<GeneratedFeatureIcon name="scanner" className="h-14 w-14" />} />
       <div className="mb-5 grid grid-cols-4 rounded-2xl bg-gray-100 p-1">
         <button onClick={() => setTab("school")} className={`rounded-xl px-2 py-2.5 text-xs font-semibold ${tab === "school" ? "bg-white text-revision shadow-sm" : "text-gray-500"}`}>École</button>
         <button onClick={() => setTab("assignments")} className={`rounded-xl px-1 py-2.5 text-xs font-semibold ${tab === "assignments" ? "bg-white text-revision shadow-sm" : "text-gray-500"}`}>Devoirs</button>

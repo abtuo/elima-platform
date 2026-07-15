@@ -175,7 +175,8 @@ Ne pas demander d’illustration générée pour ces commandes. Utiliser Lucide 
 - répondre et envoyer `Reply`, `Send` ;
 - chargement `LoaderCircle`, `RefreshCw` ;
 - lien externe `ExternalLink` ;
-- déconnexion et abandon `LogOut` ;
+- déconnexion `LogOut` ;
+- abandon et fermeture `X` ;
 - localisation et heure `MapPin`, `Clock` ;
 - étoiles de notation `Star` ;
 - coches/croix de réponse `CheckCircle`, `XCircle` ;
@@ -215,6 +216,13 @@ public/icons/generated/
     feature-home.webp
     feature-revision.png
     feature-payments.png
+    feature-results.png
+    feature-messages.png
+    feature-publish.png
+    feature-supplies.png
+    feature-sync.png
+    feature-admin-dashboard.png
+    feature-scanner.png
     ...
   actions/
     action-random-quiz.webp
@@ -244,4 +252,4 @@ Le symbole doit rester identifiable à 32 px et occuper environ 76 % du canevas.
 [PROMPT NÉGATIF]
 ```
 
-Les douze icônes de matières ainsi que les icônes Révision et Paiements sont intégrées dans l’application. Leurs sources originales sont conservées dans `assets/icon-sources/` et servent désormais de références de style pour les générations suivantes.
+Les douze icônes de matières et neuf icônes de fonctions sont intégrées dans l’application. Leurs sources originales et les variantes non retenues sont conservées dans `assets/icon-sources/`. Le prochain lot sans doublon est détaillé dans `docs/next-icons-batch.md`.

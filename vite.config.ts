@@ -1,31 +1,63 @@
 import path from "node:path";
-import { defineConfig, loadEnv } from "vite";
+import { pathToFileURL } from "node:url";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-export default defineConfig(({ mode }) => {
+const SERVER_ENV_KEYS = [
+  "VITE_SUPABASE_URL",
+  "VITE_SUPABASE_PUBLISHABLE_KEY",
+  "VITE_SUPABASE_ANON_KEY",
+  "SUPABASE_URL",
+  "SUPABASE_ANON_KEY",
+  "AZURE_OPENAI_ENDPOINT",
+  "AZURE_OPENAI_DEPLOYMENT",
+  "AZURE_OPENAI_API_VERSION",
+  "AZURE_OPENAI_API_KEY",
+] as const;
+
+function localRevisionApi(enabled: boolean): Plugin {
+  return {
+    name: "elima-local-revision-api",
+    configureServer(server) {
+      if (!enabled) return;
+      server.middlewares.use("/api/revision-generate", async (request, response, next) => {
+        try {
+          const chunks: Buffer[] = [];
+          for await (const chunk of request) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+          const body = Buffer.concat(chunks).toString("utf8");
+          const handlerUrl = pathToFileURL(path.resolve(__dirname, "api/revision-generate.mjs")).href;
+          const handler = (await import(handlerUrl)).default as (request: unknown, response: unknown) => Promise<unknown>;
+          const requestAdapter = Object.assign(request, { body });
+          const responseAdapter = {
+            setHeader(name: string, value: string) { response.setHeader(name, value); return responseAdapter; },
+            status(statusCode: number) { response.statusCode = statusCode; return responseAdapter; },
+            json(payload: unknown) {
+              if (!response.hasHeader("Content-Type")) response.setHeader("Content-Type", "application/json; charset=utf-8");
+              response.end(JSON.stringify(payload));
+              return responseAdapter;
+            },
+          };
+          await handler(requestAdapter, responseAdapter);
+        } catch (error) {
+          next(error as Error);
+        }
+      });
+    },
+  };
+}
+
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const azureEndpoint = env.AZURE_OPENAI_ENDPOINT?.replace(/\/+$/, "");
   const azureKey = env.AZURE_OPENAI_API_KEY;
-
-  const azureProxy =
-    azureEndpoint && azureKey
-      ? {
-          "/api/azure-openai": {
-            target: azureEndpoint,
-            changeOrigin: true,
-            rewrite: (p: string) => p.replace(/^\/api\/azure-openai/, ""),
-            configure: (proxyServer: { on: (event: string, handler: (proxyReq: { setHeader: (k: string, v: string) => void }) => void) => void }) => {
-              proxyServer.on("proxyReq", (proxyReq) => {
-                proxyReq.setHeader("api-key", azureKey);
-              });
-            },
-          },
-        }
-      : undefined;
+  for (const key of SERVER_ENV_KEYS) {
+    if (env[key] && !process.env[key]) process.env[key] = env[key];
+  }
 
   return {
     plugins: [
+      localRevisionApi(command === "serve" && Boolean(azureEndpoint && azureKey)),
       react(),
       VitePWA({
         registerType: "autoUpdate",
@@ -52,7 +84,5 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    server: azureProxy ? { proxy: azureProxy } : {},
-    preview: azureProxy ? { proxy: azureProxy } : {},
   };
 });
