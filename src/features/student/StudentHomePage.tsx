@@ -29,7 +29,7 @@ export function StudentHomePage() {
 
   return (
     <PageContainer>
-      <AppHeader title={`Bonjour, ${profile.fullName.split(" ")[0]}`} subtitle="Tableau de bord scolaire" accent="#7C3AED" action={<Link to="/student/profil" aria-label="Mon parcours" className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-revision shadow-sm"><UserRound className="h-5 w-5" /></Link>} />
+      <AppHeader title={`Bonjour, ${profile.fullName.split(" ")[0]}`} subtitle="Tableau de bord scolaire" accent="#7C3AED" action={<Link to="/student/profil" aria-label="Mon profil" className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-revision shadow-sm"><UserRound className="h-5 w-5" /></Link>} />
       <div className="space-y-5">
         <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#5b2da8] to-[#7c3aed] p-6 text-white shadow-[0_24px_60px_rgba(124,58,237,.22)]">
           <div className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10" />

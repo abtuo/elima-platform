@@ -20,7 +20,7 @@ const studentNav: NavItem[] = [
   { id: "timetable", href: "/student/emploi-du-temps", label: "Emploi du temps", mobileLabel: "Planning" },
   { id: "revision", href: "/student/reviser", label: "Réviser", mobileLabel: "Réviser" },
   { id: "documents", href: "/student/documents", label: "Mes documents", mobileLabel: "Documents" },
-  { id: "profile", href: "/student/profil", label: "Mon parcours", mobileLabel: "Parcours" },
+  { id: "profile", href: "/student/profil", label: "Profil", mobileLabel: "Profil" },
 ];
 
 const teacherNav: NavItem[] = [
