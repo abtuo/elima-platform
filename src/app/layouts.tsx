@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth, useRequiresAuth } from "@/features/auth/AuthProvider";
 import { AppShell } from "@/components/layout/AppShell";
-import { ROLE_HOME } from "@/types/roles";
+import { getProfileHomePath, isStandaloneStudent, ROLE_HOME } from "@/types/roles";
 import type { MobileSpace } from "@/types/roles";
 
 function ProtectedLayout() {
@@ -29,9 +29,13 @@ function ProtectedLayout() {
 
 function SpaceRedirect({ space }: { space: MobileSpace }) {
   const { profile } = useAuth();
+  const location = useLocation();
   const home = ROLE_HOME[profile.role];
   if (home !== space) {
     return <Navigate to={`/${home}`} replace />;
+  }
+  if (isStandaloneStudent(profile) && !location.pathname.startsWith("/student/reviser") && location.pathname !== "/student/profil") {
+    return <Navigate to={getProfileHomePath(profile)} replace />;
   }
   return <Outlet />;
 }

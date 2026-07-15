@@ -33,6 +33,10 @@ export const demoProfile = {
   schoolLogoUrl: null,
   currency: "FCFA",
   plan: "premium" as const,
+  schoolMembershipStatus: "linked" as const,
+  declaredSchoolName: null,
+  declaredSchoolCity: null,
+  schoolLevelId: null,
 };
 
 export const demoChildren: ChildSummary[] = [

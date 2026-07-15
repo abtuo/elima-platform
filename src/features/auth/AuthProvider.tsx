@@ -6,6 +6,7 @@ import { isMainDbConfigured, isDemoModeActive, isDemoModeEnabled } from "@/servi
 import { fetchUserProfile, getDemoProfile, getHomeSpace, shouldUseDemoProfile } from "@/services/roleService";
 import { signInWithIdentifier, signOut as authSignOut } from "@/services/authService";
 import { demoAccounts } from "@/constants/demoData";
+import { clearElimaIdentitySession } from "@/services/elimaIdentityService";
 
 type AuthContextValue = {
   session: Session | null;
@@ -16,6 +17,7 @@ type AuthContextValue = {
   authenticated: boolean;
   signIn: (identifier: string, password: string) => Promise<UserProfile>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<UserProfile | null>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -84,12 +86,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("elima_demo_session");
     setDemoAuthenticated(false);
     setProfile(getDemoProfile());
+    clearElimaIdentitySession();
+  };
+
+  const refreshProfile = async () => {
+    const userId = session?.user.id;
+    if (!userId) return null;
+    const nextProfile = await fetchUserProfile(userId);
+    if (nextProfile) setProfile(nextProfile);
+    return nextProfile;
   };
 
   const activeSpace = getHomeSpace(profile.role);
 
   return (
-    <AuthContext.Provider value={{ session, profile, loading, isDemo, authenticated: Boolean(session) || demoAuthenticated, activeSpace, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, profile, loading, isDemo, authenticated: Boolean(session) || demoAuthenticated, activeSpace, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

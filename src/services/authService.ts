@@ -29,6 +29,38 @@ export async function signInWithIdentifier(identifier: string, password: string)
   return signInWithEmailPassword(phoneToEmail(cleaned), password);
 }
 
+export type StudentSignUpInput = {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  schoolLevelId: string;
+  declaredSchoolName?: string;
+  declaredSchoolCity?: string;
+};
+
+export async function signUpStandaloneStudent(input: StudentSignUpInput) {
+  if (!mainDbClient) throw new Error("Inscription indisponible. Vérifiez la configuration Elima.");
+  const fullName = `${input.firstName.trim()} ${input.lastName.trim()}`.trim();
+  return mainDbClient.auth.signUp({
+    email: input.email.trim().toLowerCase(),
+    password: input.password,
+    options: {
+      data: {
+        role: "STUDENT",
+        full_name: fullName,
+        first_name: input.firstName.trim(),
+        last_name: input.lastName.trim(),
+        school_level_id: input.schoolLevelId,
+        declared_school_name: input.declaredSchoolName?.trim() || null,
+        declared_school_city: input.declaredSchoolCity?.trim() || null,
+        cgu_accepted: true,
+        cgu_version: "2026-07",
+      },
+    },
+  });
+}
+
 export async function signOut() {
   if (!mainDbClient) return;
   await mainDbClient.auth.signOut();

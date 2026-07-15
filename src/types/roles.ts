@@ -20,7 +20,19 @@ export type UserProfile = {
   schoolLogoUrl: string | null;
   currency: string;
   plan: SchoolPlan;
+  schoolMembershipStatus: "standalone" | "linked";
+  declaredSchoolName: string | null;
+  declaredSchoolCity: string | null;
+  schoolLevelId: string | null;
 };
+
+export function isStandaloneStudent(profile: UserProfile) {
+  return profile.role === "STUDENT" && profile.schoolMembershipStatus === "standalone";
+}
+
+export function getProfileHomePath(profile: UserProfile) {
+  return isStandaloneStudent(profile) ? "/student/reviser" : `/${ROLE_HOME[profile.role]}`;
+}
 
 export const ROLE_HOME: Record<UserRole, MobileSpace> = {
   PARENT: "parent",

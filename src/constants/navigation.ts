@@ -1,4 +1,5 @@
-import type { MobileSpace } from "../types/roles";
+import type { MobileSpace, UserProfile } from "../types/roles";
+import { isStandaloneStudent } from "../types/roles";
 
 export type NavItem = {
   id: string;
@@ -39,7 +40,10 @@ const adminNav: NavItem[] = [
   { id: "profile", href: "/admin/profil", label: "Profil", mobileLabel: "Profil" },
 ];
 
-export function getNavItems(space: MobileSpace): NavItem[] {
+export function getNavItems(space: MobileSpace, profile?: UserProfile): NavItem[] {
+  if (profile && isStandaloneStudent(profile)) {
+    return studentNav.filter((item) => item.id === "revision" || item.id === "profile");
+  }
   switch (space) {
     case "parent": return parentNav;
     case "student": return studentNav;

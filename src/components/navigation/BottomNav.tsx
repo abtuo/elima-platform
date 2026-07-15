@@ -12,6 +12,7 @@ import type { MobileSpace } from "@/types/roles";
 import { MessageShortcut } from "@/components/navigation/MessageShortcut";
 import { AlertShortcut } from "@/components/navigation/AlertShortcut";
 import { SyncShortcut } from "@/components/navigation/SyncShortcut";
+import { isStandaloneStudent } from "@/types/roles";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   home: Home,
@@ -38,7 +39,7 @@ export function BottomNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { activeSpace, profile, signOut } = useAuth();
-  const items = getNavItems(activeSpace as MobileSpace);
+  const items = getNavItems(activeSpace as MobileSpace, profile);
 
   async function handleSignOut() {
     await signOut();
@@ -48,12 +49,12 @@ export function BottomNav() {
   return (
     <>
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white p-2 lg:hidden">
-        <ul className="mx-auto grid max-w-lg grid-cols-5 gap-1">
+        <ul className="mx-auto flex max-w-lg justify-around gap-1">
         {items.map((item) => {
           const active = pathname === item.href || (item.href !== `/${activeSpace}` && pathname.startsWith(item.href));
           const Icon = iconMap[item.id] ?? Home;
           return (
-            <li key={item.href}>
+            <li key={item.href} className="min-w-20 flex-1">
               <NavLink
                 to={item.href}
                 className={clsx(
@@ -75,7 +76,7 @@ export function BottomNav() {
         <div className="mb-8 px-3">
           {profile.schoolLogoUrl ? <img src={profile.schoolLogoUrl} alt={profile.schoolName ?? "Logo de l’établissement"} className="h-12 w-12 rounded-2xl border border-gray-100 bg-white object-contain p-1" /> : <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-white" aria-label={profile.schoolName ?? "Établissement"}>{profile.schoolName?.charAt(0) ?? "E"}</span>}
         </div>
-        <div className="mb-4 space-y-2 px-3"><MessageShortcut /><AlertShortcut />{profile.role === "TEACHER" ? <SyncShortcut /> : null}</div>
+        <div className="mb-4 space-y-2 px-3">{!isStandaloneStudent(profile) ? <><MessageShortcut /><AlertShortcut /></> : null}{profile.role === "TEACHER" ? <SyncShortcut /> : null}</div>
         <nav className="space-y-2">
           {items.map((item) => {
             const active = pathname === item.href || (item.href !== `/${activeSpace}` && pathname.startsWith(item.href));

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BarChart3, BookOpenCheck, LogOut, Trophy } from "lucide-react";
+import { BarChart3, BookOpenCheck, Building2, CheckCircle2, KeyRound, LogOut, Save, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/common/AppHeader";
 import { ElimaCard } from "@/components/common/ElimaCard";
@@ -12,6 +12,8 @@ import { getRecentGrades } from "@/services/mainDataService";
 import { getQuizAttempts, getRevisionProgress } from "@/services/revisionDataService";
 import type { QuizAttemptSummary, RevisionProgress } from "@/types/revision";
 import type { GradeSummary } from "@/types/school";
+import { isStandaloneStudent } from "@/types/roles";
+import { activateStudentSchoolCode, updateStandaloneStudentProfile } from "@/services/studentAccountService";
 
 type Tab = "grades" | "quiz" | "averages";
 
@@ -22,20 +24,49 @@ const barStyles = {
 } as const;
 
 export function StudentProfilePage() {
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>("grades");
+  const standalone = isStandaloneStudent(profile);
+  const [tab, setTab] = useState<Tab>(standalone ? "quiz" : "grades");
   const [grades, setGrades] = useState<GradeSummary[]>([]);
   const [attempts, setAttempts] = useState<QuizAttemptSummary[]>([]);
   const [progress, setProgress] = useState<RevisionProgress | null>(null);
+  const [schoolName, setSchoolName] = useState(profile.declaredSchoolName ?? "");
+  const [schoolCity, setSchoolCity] = useState(profile.declaredSchoolCity ?? "");
+  const [level, setLevel] = useState(profile.schoolLevelId ?? "");
+  const [activationCode, setActivationCode] = useState("");
+  const [accountMessage, setAccountMessage] = useState("");
+  const [accountError, setAccountError] = useState("");
+  const [accountLoading, setAccountLoading] = useState(false);
 
   useEffect(() => {
-    Promise.all([getRecentGrades(profile.id), getQuizAttempts(profile.id), getRevisionProgress(profile.id)]).then(([nextGrades, nextAttempts, nextProgress]) => {
+    Promise.all([standalone ? Promise.resolve([]) : getRecentGrades(profile.id), getQuizAttempts(profile.id), getRevisionProgress(profile.id)]).then(([nextGrades, nextAttempts, nextProgress]) => {
       setGrades(nextGrades);
       setAttempts(nextAttempts);
       setProgress(nextProgress);
     });
-  }, [profile.id]);
+  }, [profile.id, standalone]);
+
+  async function saveDeclaredSchool() {
+    setAccountLoading(true); setAccountError(""); setAccountMessage("");
+    try {
+      await updateStandaloneStudentProfile({ schoolLevelId: level, declaredSchoolName: schoolName, declaredSchoolCity: schoolCity });
+      await refreshProfile();
+      setAccountMessage("Profil enregistré.");
+    } catch (error) { setAccountError(error instanceof Error ? error.message : "Enregistrement impossible."); }
+    finally { setAccountLoading(false); }
+  }
+
+  async function activateSchool() {
+    setAccountLoading(true); setAccountError(""); setAccountMessage("");
+    try {
+      const result = await activateStudentSchoolCode(activationCode);
+      await refreshProfile();
+      setAccountMessage(`Compte rattaché à ${result.school_name}. Les services scolaires sont maintenant disponibles.`);
+      setActivationCode("");
+    } catch (error) { setAccountError(error instanceof Error ? error.message : "Activation impossible."); }
+    finally { setAccountLoading(false); }
+  }
 
   const averages = useMemo(() => Object.entries(
     grades.reduce<Record<string, number[]>>((result, grade) => {
@@ -64,8 +95,21 @@ export function StudentProfilePage() {
         </div>
       </ElimaCard>
 
-      <div className="my-5 grid grid-cols-3 rounded-2xl bg-gray-100 p-1">
-        {([{ id: "grades", label: "Notes" }, { id: "quiz", label: "Quiz" }, { id: "averages", label: "Moyennes" }] as const).map((item) => (
+      <ElimaCard className="mt-5">
+        <div className="flex items-start gap-3">
+          <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${standalone ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"}`}>{standalone ? <Building2 className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}</span>
+          <div><h2 className="font-title text-lg font-semibold text-accent">{standalone ? "Compte Révision" : "Compte rattaché"}</h2><p className="mt-1 text-xs leading-5 text-gray-500">{standalone ? "Tu utilises Elima indépendamment. Le nom renseigné ci-dessous ne donne aucun accès aux données d’une école." : `Ton compte est associé à ${profile.schoolName}.`}</p></div>
+        </div>
+        {standalone ? <div className="mt-5 space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2"><ProfileInput label="Nom de mon école (facultatif)" value={schoolName} onChange={setSchoolName} /><ProfileInput label="Ville" value={schoolCity} onChange={setSchoolCity} /><ProfileInput label="Niveau scolaire" value={level} onChange={setLevel} /></div>
+          <button type="button" disabled={accountLoading} onClick={saveDeclaredSchool} className="flex items-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-accent disabled:opacity-50"><Save className="h-4 w-4" /> Enregistrer mon profil</button>
+          <div className="border-t border-gray-100 pt-4"><div className="flex items-center gap-2"><KeyRound className="h-4 w-4 text-primary" /><h3 className="text-sm font-semibold text-accent">Mon école utilise Elima</h3></div><p className="mt-1 text-xs leading-5 text-gray-500">Saisis le code individuel remis par ton établissement pour obtenir ton planning, tes notes, tes devoirs et tes messages.</p><div className="mt-3 flex flex-col gap-2 sm:flex-row"><input value={activationCode} onChange={(event) => setActivationCode(event.target.value.toUpperCase())} placeholder="EX. A1B2-C3D4" className="min-w-0 flex-1 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold uppercase tracking-wider outline-none focus:border-primary" /><button type="button" disabled={accountLoading || activationCode.replace(/[^A-Z0-9]/g, "").length < 6} onClick={activateSchool} className="rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">Activer</button></div></div>
+          {accountMessage ? <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{accountMessage}</p> : null}{accountError ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">{accountError}</p> : null}
+        </div> : null}
+      </ElimaCard>
+
+      <div className={`my-5 grid ${standalone ? "grid-cols-1" : "grid-cols-3"} rounded-2xl bg-gray-100 p-1`}>
+        {([{ id: "grades", label: "Notes" }, { id: "quiz", label: "Quiz" }, { id: "averages", label: "Moyennes" }] as const).filter((item) => !standalone || item.id === "quiz").map((item) => (
           <button key={item.id} type="button" onClick={() => setTab(item.id)} className={`rounded-xl px-2 py-2.5 text-xs font-semibold ${tab === item.id ? "bg-white text-revision shadow-sm" : "text-gray-500"}`}>{item.label}</button>
         ))}
       </div>
@@ -154,6 +198,10 @@ function PerformanceCard({ title, subject, meta, value, percent, gradient }: {
 
 function ProfileMetric({ value, label }: { value: string | number; label: string }) {
   return <div className="rounded-2xl bg-gray-50 p-3 text-center"><p className="font-bold text-accent">{value}</p><p className="text-[10px] text-gray-500">{label}</p></div>;
+}
+
+function ProfileInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return <label className="block"><span className="mb-1.5 block text-xs font-semibold text-gray-600">{label}</span><input value={value} onChange={(event) => onChange(event.target.value)} className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary" /></label>;
 }
 
 function formatDate(value: string) {

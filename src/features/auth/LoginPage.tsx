@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
-import { ROLE_HOME } from "@/types/roles";
+import { getProfileHomePath } from "@/types/roles";
 import { demoAccounts } from "@/constants/demoData";
 import { ElimaLogo } from "@/components/common/ElimaLogo";
 import { ArrowRight, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { beginElimaSignIn, isElimaIdentityConfigured, openElimaStudentSignup } from "@/services/elimaIdentityService";
 
 export function LoginPage() {
   const { signIn, isDemo } = useAuth();
@@ -22,7 +23,7 @@ export function LoginPage() {
     setLoading(true);
     try {
       const profile = await signIn(identifier, password);
-      navigate(`/${ROLE_HOME[profile.role]}`, { replace: true });
+      navigate(getProfileHomePath(profile), { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Connexion impossible.");
     } finally {
@@ -65,6 +66,7 @@ export function LoginPage() {
             </div>
           </details>
         ) : null}
+        {isElimaIdentityConfigured() ? <><button type="button" onClick={() => beginElimaSignIn("/").catch((caught) => setError(caught instanceof Error ? caught.message : "Connexion impossible."))} className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary/20">Continuer avec mon compte Elima <ArrowRight className="h-4 w-4" /></button><div className="mb-5 flex items-center gap-3 text-xs text-gray-400"><span className="h-px flex-1 bg-gray-200" />ou connexion existante<span className="h-px flex-1 bg-gray-200" /></div></> : null}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">Email ou téléphone</label>
@@ -96,6 +98,10 @@ export function LoginPage() {
             {loading ? "Connexion…" : <>Se connecter <ArrowRight className="h-4 w-4" /></>}
           </button>
         </form>
+        <div className="mt-5 border-t border-gray-100 pt-5 text-center">
+          <p className="text-sm text-gray-500">Tu veux réviser sans compte école ?</p>
+          <button type="button" onClick={openElimaStudentSignup} className="mt-2 text-sm font-semibold text-revision">Créer un compte élève</button>
+        </div>
         <p className="mt-6 text-center text-xs leading-5 text-gray-400">Connexion sécurisée · Vos données restent protégées par votre établissement.</p>
       </div>
       </section>

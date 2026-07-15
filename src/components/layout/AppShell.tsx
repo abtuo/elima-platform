@@ -8,6 +8,7 @@ import { AlertShortcut } from "@/components/navigation/AlertShortcut";
 import { MessageShortcut } from "@/components/navigation/MessageShortcut";
 import { SyncShortcut } from "@/components/navigation/SyncShortcut";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { isStandaloneStudent } from "@/types/roles";
 
 type AppShellProps = {
   children: ReactNode;
@@ -45,8 +46,8 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </div>
         <div className="ml-2 flex shrink-0 items-center gap-2">
-          <MessageShortcut compact />
-          <AlertShortcut compact />
+          {!isStandaloneStudent(profile) ? <MessageShortcut compact /> : null}
+          {!isStandaloneStudent(profile) ? <AlertShortcut compact /> : null}
           {profile.role === "TEACHER" ? <SyncShortcut compact /> : null}
           <button
             type="button"

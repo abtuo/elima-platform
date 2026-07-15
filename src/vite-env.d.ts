@@ -15,6 +15,9 @@ interface ImportMetaEnv {
   readonly VITE_ENABLE_STUDENT_SCANNER: string;
   readonly VITE_ENABLE_TEACHER_OFFLINE: string;
   readonly VITE_ENABLE_WHATSAPP_OPTION: string;
+  readonly VITE_ELIMA_IDENTITY_URL?: string;
+  readonly VITE_ELIMA_OAUTH_CLIENT_ID?: string;
+  readonly VITE_ELIMA_OAUTH_REDIRECT_URI?: string;
 }
 
 interface ImportMeta {

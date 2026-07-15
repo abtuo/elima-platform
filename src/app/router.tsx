@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { LoginPage } from "@/features/auth/LoginPage";
+import { StudentRegisterPage } from "@/features/auth/StudentRegisterPage";
+import { ElimaOAuthCallbackPage, ElimaOAuthStartPage } from "@/features/auth/ElimaOAuthPages";
 import { ProtectedLayout, SpaceRedirect } from "@/app/layouts";
 
 import { ParentHomePage } from "@/features/parent/ParentHomePage";
@@ -36,12 +38,12 @@ import { AccountPage } from "@/features/profile/AccountPage";
 import { CommunicationsPage } from "@/features/messages/CommunicationsPage";
 
 import { useAuth } from "@/features/auth/AuthProvider";
-import { ROLE_HOME } from "@/types/roles";
+import { getProfileHomePath } from "@/types/roles";
 
 function RootRedirect() {
   const { profile, loading } = useAuth();
   if (loading) return null;
-  return <Navigate to={`/${ROLE_HOME[profile.role]}`} replace />;
+  return <Navigate to={getProfileHomePath(profile)} replace />;
 }
 
 export function AppRouter() {
@@ -50,6 +52,9 @@ export function AppRouter() {
       <AuthProvider>
         <Routes>
           <Route path="/auth/login" element={<LoginPage />} />
+          <Route path="/auth/inscription-eleve" element={<StudentRegisterPage />} />
+          <Route path="/auth/elima/start" element={<ElimaOAuthStartPage />} />
+          <Route path="/auth/elima/callback" element={<ElimaOAuthCallbackPage />} />
 
           <Route element={<ProtectedLayout />}>
             <Route path="/" element={<RootRedirect />} />

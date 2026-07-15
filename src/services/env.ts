@@ -10,6 +10,9 @@ export const env = {
   enableStudentScanner: import.meta.env.VITE_ENABLE_STUDENT_SCANNER !== "false",
   enableTeacherOffline: import.meta.env.VITE_ENABLE_TEACHER_OFFLINE !== "false",
   enableWhatsappOption: import.meta.env.VITE_ENABLE_WHATSAPP_OPTION === "true",
+  elimaIdentityUrl: import.meta.env.VITE_ELIMA_IDENTITY_URL ?? "",
+  elimaOAuthClientId: import.meta.env.VITE_ELIMA_OAUTH_CLIENT_ID ?? "",
+  elimaOAuthRedirectUri: import.meta.env.VITE_ELIMA_OAUTH_REDIRECT_URI ?? "",
 } as const;
 
 export function isMainDbConfigured() {
