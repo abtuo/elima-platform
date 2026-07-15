@@ -99,7 +99,6 @@ export function LoginPage() {
           </button>
         </form>
         <div className="mt-5 border-t border-gray-100 pt-5 text-center">
-          <p className="text-sm text-gray-500">Tu veux réviser sans compte école ?</p>
           <button type="button" onClick={openElimaStudentSignup} className="mt-2 text-sm font-semibold text-revision">Créer un compte élève</button>
         </div>
         <p className="mt-6 text-center text-xs leading-5 text-gray-400">Connexion sécurisée · Vos données restent protégées par votre établissement.</p>
