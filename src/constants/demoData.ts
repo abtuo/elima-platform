@@ -31,6 +31,7 @@ export const demoProfile = {
   schoolId: "demo-school",
   schoolName: "Lycée Sainte Marie de Cocody",
   schoolLogoUrl: null,
+  avatarUrl: null,
   currency: "FCFA",
   plan: "premium" as const,
   schoolMembershipStatus: "linked" as const,

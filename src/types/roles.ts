@@ -18,6 +18,7 @@ export type UserProfile = {
   schoolId: string | null;
   schoolName: string | null;
   schoolLogoUrl: string | null;
+  avatarUrl: string | null;
   currency: string;
   plan: SchoolPlan;
   schoolMembershipStatus: "standalone" | "linked";

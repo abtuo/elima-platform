@@ -4,6 +4,46 @@ import { mainDbClient } from "./mainDbClient";
 const FLOW_KEY = "elima_oauth_flow";
 const SESSION_KEY = "elima_identity_session";
 
+export type ElimaCentralProfile = {
+  id?: string;
+  fullName?: string;
+  role?: string;
+  schoolId?: string | null;
+  schoolName?: string | null;
+  schoolLogoUrl?: string | null;
+  avatarUrl?: string | null;
+  studentId?: string | null;
+  schoolLevel?: string | null;
+};
+
+function absoluteWebAsset(value: unknown) {
+  const url = typeof value === "string" ? value.trim() : "";
+  if (!url) return null;
+  return url.startsWith("/") ? `${env.webBaseUrl.replace(/\/+$/, "")}${url}` : url;
+}
+
+function normalizeCentralProfile(raw: unknown): ElimaCentralProfile | null {
+  if (!raw || typeof raw !== "object") return null;
+  const profile = raw as Record<string, unknown>;
+  const schoolValue = Array.isArray(profile.school) ? profile.school[0] : profile.school;
+  const school = schoolValue && typeof schoolValue === "object" ? schoolValue as Record<string, unknown> : null;
+  const studentValue = Array.isArray(profile.student) ? profile.student[0] : profile.student;
+  const student = studentValue && typeof studentValue === "object" ? studentValue as Record<string, unknown> : null;
+  const classValue = Array.isArray(student?.class) ? student.class[0] : student?.class;
+  const schoolClass = classValue && typeof classValue === "object" ? classValue as Record<string, unknown> : null;
+  return {
+    id: profile.id ? String(profile.id) : undefined,
+    fullName: profile.fullName ? String(profile.fullName) : undefined,
+    role: profile.role ? String(profile.role) : undefined,
+    schoolId: profile.schoolId ? String(profile.schoolId) : null,
+    schoolName: school?.name ? String(school.name) : null,
+    schoolLogoUrl: absoluteWebAsset(school?.logo_url),
+    avatarUrl: absoluteWebAsset(student?.photo_url),
+    studentId: student?.id ? String(student.id) : null,
+    schoolLevel: schoolClass?.level ? String(schoolClass.level) : null,
+  };
+}
+
 function base64Url(bytes: Uint8Array) {
   let value = "";
   bytes.forEach((byte) => { value += String.fromCharCode(byte); });
@@ -43,11 +83,11 @@ export async function completeElimaSignIn(code: string, state: string) {
   const tokens = await tokenResponse.json().catch(() => null) as { access_token?: string; refresh_token?: string; expires_in?: number; error_description?: string } | null;
   if (!tokenResponse.ok || !tokens?.access_token) throw new Error(tokens?.error_description ?? "Échange OAuth impossible.");
   const bridgeResponse = await fetch("/api/identity-bridge", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accessToken: tokens.access_token }) });
-  const bridge = await bridgeResponse.json().catch(() => null) as { tokenHash?: string; error?: string } | null;
+  const bridge = await bridgeResponse.json().catch(() => null) as { tokenHash?: string; profile?: unknown; error?: string } | null;
   if (!bridgeResponse.ok || !bridge?.tokenHash) throw new Error(bridge?.error ?? "Liaison du compte impossible.");
   const verified = await mainDbClient.auth.verifyOtp({ token_hash: bridge.tokenHash, type: "magiclink" });
   if (verified.error) throw verified.error;
-  localStorage.setItem(SESSION_KEY, JSON.stringify({ accessToken: tokens.access_token, refreshToken: tokens.refresh_token, expiresAt: Date.now() + Number(tokens.expires_in ?? 3600) * 1000 }));
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ accessToken: tokens.access_token, refreshToken: tokens.refresh_token, expiresAt: Date.now() + Number(tokens.expires_in ?? 3600) * 1000, profile: normalizeCentralProfile(bridge.profile) }));
   sessionStorage.removeItem(FLOW_KEY);
   return flow.returnTo || "/";
 }
@@ -55,6 +95,22 @@ export async function completeElimaSignIn(code: string, state: string) {
 export function getElimaIdentityAccessToken() {
   try { return (JSON.parse(localStorage.getItem(SESSION_KEY) ?? "null") as { accessToken?: string } | null)?.accessToken ?? null; }
   catch { return null; }
+}
+export function getCachedElimaIdentityProfile(): ElimaCentralProfile | null {
+  try { return (JSON.parse(localStorage.getItem(SESSION_KEY) ?? "null") as { profile?: ElimaCentralProfile } | null)?.profile ?? null; }
+  catch { return null; }
+}
+
+export async function refreshElimaIdentityProfile() {
+  const token = await getValidElimaIdentityAccessToken();
+  if (!token) return getCachedElimaIdentityProfile();
+  const response = await fetch("/api/elima-profile", { headers: { Authorization: `Bearer ${token}` } });
+  if (!response.ok) return getCachedElimaIdentityProfile();
+  const profile = normalizeCentralProfile(await response.json().catch(() => null));
+  if (!profile) return getCachedElimaIdentityProfile();
+  const session = JSON.parse(localStorage.getItem(SESSION_KEY) ?? "{}") as Record<string, unknown>;
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ ...session, profile }));
+  return profile;
 }
 export async function getValidElimaIdentityAccessToken() {
   try {
@@ -65,7 +121,7 @@ export async function getValidElimaIdentityAccessToken() {
     const response = await fetch(`${env.elimaIdentityUrl.replace(/\/+$/, "")}/auth/v1/oauth/token`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: session.refreshToken, client_id: env.elimaOAuthClientId }) });
     const tokens = await response.json().catch(() => null) as { access_token?: string; refresh_token?: string; expires_in?: number } | null;
     if (!response.ok || !tokens?.access_token) return null;
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ accessToken: tokens.access_token, refreshToken: tokens.refresh_token ?? session.refreshToken, expiresAt: Date.now() + Number(tokens.expires_in ?? 3600) * 1000 }));
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ accessToken: tokens.access_token, refreshToken: tokens.refresh_token ?? session.refreshToken, expiresAt: Date.now() + Number(tokens.expires_in ?? 3600) * 1000, profile: (session as { profile?: ElimaCentralProfile }).profile ?? null }));
     return tokens.access_token;
   } catch { return null; }
 }

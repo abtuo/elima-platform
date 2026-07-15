@@ -6,7 +6,7 @@ import { isMainDbConfigured, isDemoModeActive, isDemoModeEnabled } from "@/servi
 import { fetchUserProfile, getDemoProfile, getHomeSpace, shouldUseDemoProfile } from "@/services/roleService";
 import { signInWithIdentifier, signOut as authSignOut } from "@/services/authService";
 import { demoAccounts } from "@/constants/demoData";
-import { clearElimaIdentitySession } from "@/services/elimaIdentityService";
+import { clearElimaIdentitySession, refreshElimaIdentityProfile } from "@/services/elimaIdentityService";
 
 type AuthContextValue = {
   session: Session | null;
@@ -48,13 +48,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     mainDbClient.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
-      if (data.session?.user) await loadProfile(data.session.user.id);
+      if (data.session?.user) {
+        await refreshElimaIdentityProfile();
+        await loadProfile(data.session.user.id);
+      }
       setLoading(false);
     });
 
     const { data: sub } = mainDbClient.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      if (newSession?.user) loadProfile(newSession.user.id);
+      if (newSession?.user) refreshElimaIdentityProfile().finally(() => loadProfile(newSession.user.id));
       else if (isDemoModeActive()) setProfile(getDemoProfile());
     });
 
