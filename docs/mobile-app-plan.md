@@ -48,8 +48,8 @@ Supabase Auth JWT côté client, refresh token, `getBearerToken()` pour APIs fut
 
 ## Stratégie bases
 
-- `mainDbClient` → elima.tech
-- `revisionDbClient` → elima.app (peut être identique)
+- `mainDbClient` → base Elima commune
+- `revisionDbClient` → alias du client principal avec le même `auth.uid()`
 - Pas de base mobile séparée
 
 ## Phases

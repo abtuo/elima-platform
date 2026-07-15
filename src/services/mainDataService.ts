@@ -83,13 +83,18 @@ export async function getRecentGrades(studentId?: string): Promise<GradeSummary[
   return (data ?? []).map((row: Record<string, unknown>) => { const evaluation = row.evaluation as { title?: string; max_score?: number; evaluation_date?: string; subject?: { name?: string } | null } | null; return { id: String(row.id), subject: evaluation?.subject?.name ?? "Matière", title: evaluation?.title ?? "Évaluation", score: Number(row.score), maxScore: Number(evaluation?.max_score ?? 20), date: evaluation?.evaluation_date ?? "" }; });
 }
 
-export async function getMessages(): Promise<MessagePreview[]> {
+export type MessageScope = "mine" | "school";
+
+export async function getMessages(scope: MessageScope = "mine"): Promise<MessagePreview[]> {
   if (useDemo()) return demoMessages;
   const tenant = await currentTenant();
   if (!tenant?.school_id) return [];
-  const staffRoles = ["SUPER_ADMIN", "SCHOOL_ADMIN", "COMPTABLE", "TEACHER"];
+  const adminRoles = ["SUPER_ADMIN", "SCHOOL_ADMIN"];
   let conversationIds: string[] = [];
-  if (staffRoles.includes(tenant.role)) {
+
+  if (scope === "school" && adminRoles.includes(tenant.role)) {
+    const { error: auditError } = await mainDbClient!.rpc("mobile_log_school_message_access");
+    if (auditError) { queryFailed("audit consultation messagerie", auditError); return []; }
     const { data, error } = await mainDbClient!.from("conversations").select("id").eq("school_id", tenant.school_id);
     if (error) { queryFailed("conversations établissement", error); return []; }
     conversationIds = (data ?? []).map((row) => String(row.id));
@@ -97,19 +102,37 @@ export async function getMessages(): Promise<MessagePreview[]> {
     const { data: memberships, error } = await mainDbClient!.from("conversation_participants").select("conversation_id").eq("participant_type", "USER").eq("user_id", tenant.id);
     if (error) { queryFailed("conversations utilisateur", error); return []; }
     conversationIds = (memberships ?? []).map((row) => String(row.conversation_id));
+
+    const classIds: string[] = [];
     if (tenant.role === "STUDENT") {
       const { data: student } = await mainDbClient!.from("students").select("class_id").eq("user_id", tenant.id).maybeSingle();
-      if (student?.class_id) {
-        const { data: classMemberships } = await mainDbClient!.from("conversation_participants").select("conversation_id").eq("participant_type", "CLASS").eq("class_id", student.class_id);
-        conversationIds.push(...(classMemberships ?? []).map((row) => String(row.conversation_id)));
+      if (student?.class_id) classIds.push(String(student.class_id));
+    } else if (tenant.role === "TEACHER") {
+      const { data: teacher } = await mainDbClient!.from("teachers").select("id").eq("user_id", tenant.id).maybeSingle();
+      if (teacher?.id) {
+        const [{ data: primaryClasses }, { data: subjectClasses }] = await Promise.all([
+          mainDbClient!.from("class_teachers").select("class_id").eq("teacher_id", teacher.id),
+          mainDbClient!.from("teacher_subject_classes").select("class_id").eq("teacher_id", teacher.id),
+        ]);
+        classIds.push(...(primaryClasses ?? []).map((row) => String(row.class_id)), ...(subjectClasses ?? []).map((row) => String(row.class_id)));
       }
     }
+    const uniqueClassIds = [...new Set(classIds)];
+    if (uniqueClassIds.length) {
+      const { data: classMemberships } = await mainDbClient!.from("conversation_participants").select("conversation_id").eq("participant_type", "CLASS").in("class_id", uniqueClassIds);
+      conversationIds.push(...(classMemberships ?? []).map((row) => String(row.conversation_id)));
+    }
   }
+
   conversationIds = [...new Set(conversationIds)];
   if (!conversationIds.length) return [];
-  const { data, error } = await mainDbClient!.from("messages").select("id, content, created_at, sender_id, read_by, sender:users(full_name), conversation:conversations(title)").in("conversation_id", conversationIds).order("created_at", { ascending: false }).limit(30);
+  const { data, error } = await mainDbClient!.from("messages").select("id, conversation_id, content, created_at, sender_id, read_by, sender:users(full_name), conversation:conversations(id, title)").in("conversation_id", conversationIds).order("created_at", { ascending: false }).limit(30);
   if (error) { queryFailed("messages", error); return []; }
-  return (data ?? []).map((row: Record<string, unknown>) => { const readBy = Array.isArray(row.read_by) ? row.read_by.map(String) : []; return { id: String(row.id), subject: (row.conversation as { title?: string } | null)?.title ?? "Message", preview: String(row.content).slice(0, 160), sender: (row.sender as { full_name?: string } | null)?.full_name ?? "Établissement", date: String(row.created_at).slice(0, 10), read: String(row.sender_id ?? "") === tenant.id || readBy.includes(tenant.id) }; });
+  return (data ?? []).map((row: Record<string, unknown>) => {
+    const readBy = Array.isArray(row.read_by) ? row.read_by.map(String) : [];
+    const conversation = row.conversation as { id?: string; title?: string } | null;
+    return { id: String(row.id), conversationId: String(conversation?.id ?? row.conversation_id ?? ""), subject: conversation?.title ?? "Message", preview: String(row.content).slice(0, 160), sender: (row.sender as { full_name?: string } | null)?.full_name ?? "Établissement", date: String(row.created_at).slice(0, 10), read: String(row.sender_id ?? "") === tenant.id || readBy.includes(tenant.id) };
+  });
 }
 
 export async function getAdminTeachers(): Promise<TeacherDirectoryItem[]> {

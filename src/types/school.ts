@@ -28,6 +28,7 @@ export type GradeSummary = {
 
 export type MessagePreview = {
   id: string;
+  conversationId: string;
   subject: string;
   preview: string;
   sender: string;

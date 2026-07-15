@@ -8,8 +8,8 @@ export async function getMessageDetail(messageId: string) {
   return messages.find((m) => m.id === messageId) ?? null;
 }
 
-export async function markAllMessagesRead() {
-  if (!mainDbClient) return;
-  const { error } = await mainDbClient.rpc("mobile_mark_all_messages_read");
+export async function markAllMessagesRead(conversationIds: string[]) {
+  if (!mainDbClient || !conversationIds.length) return;
+  const { error } = await mainDbClient.rpc("mobile_mark_messages_read", { target_conversation_ids: conversationIds });
   if (!error) window.dispatchEvent(new Event("elima:messages-read"));
 }

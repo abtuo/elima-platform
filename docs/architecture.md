@@ -14,8 +14,8 @@
 UI (features/) → services/ → Supabase (RLS) ou demoData
 ```
 
-- `mainDbClient` — données scolaires (`elima.tech`)
-- `revisionDbClient` — quiz, fiches, scans (`elima.app`)
+- `mainDbClient` — données scolaires et authentification commune
+- `revisionDbClient` — alias du client principal pour quiz, fiches et scans
 - `authService` — JWT session, Bearer token pour API futures
 
 ## Navigation
@@ -38,6 +38,6 @@ Mode démo : sélecteur de rôle sans Supabase, données dans `constants/demoDat
 
 Design inspiré `elima.app` : dashboard gamifié, quiz, fiches Markdown/KaTeX, scanner.
 
-## Mapping utilisateurs (futur)
+## Identité commune
 
-Si auth scolaire ≠ auth révision, table proposée `revision_user_links` (voir backlog).
+Le même `auth.uid()` est utilisé pour le scolaire et la révision. Les anciennes données personnelles Révision sont remappées par email uniquement pendant la migration.

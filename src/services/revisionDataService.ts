@@ -2,6 +2,7 @@ import type { RevisionProgress, QuizAttemptSummary, QuizItem, CourseSheet, QuizQ
 import { isDemoModeActive } from "./env";
 import { revisionDbClient } from "./revisionDbClient";
 import { demoRevisionProgress, demoQuizzes, demoCourseSheets, demoQuizQuestions } from "../constants/demoData";
+import { seededShuffle } from "../lib/seededShuffle";
 
 const PROGRESS_KEY = "elima-mobile-progress";
 const ATTEMPTS_KEY = "elima-mobile-quiz-attempts";
@@ -39,16 +40,36 @@ export async function getRevisionProgress(userId?: string): Promise<RevisionProg
   };
 }
 
-export async function recordQuizCompletion(score: number, subject = "Quiz") {
+export async function recordQuizCompletion(input: {
+  quizRef: string;
+  subject: string;
+  score: number;
+  totalQuestions: number;
+  correctAnswers: number;
+}) {
+  if (revisionDbClient && !isDemoModeActive()) {
+    const { error } = await revisionDbClient.rpc("record_quiz_attempt", {
+      p_quiz_ref: input.quizRef,
+      p_subject_label: input.subject,
+      p_score: input.score,
+      p_total_questions: input.totalQuestions,
+      p_correct_answers: input.correctAnswers,
+      p_completed_at: new Date().toISOString(),
+    });
+    if (error) throw error;
+    const { data } = await revisionDbClient.auth.getUser();
+    return getRevisionProgress(data.user?.id);
+  }
+
   const progress = readLocalProgress();
-  const xpGain = Math.max(10, Math.round(score * 0.5));
+  const xpGain = Math.max(10, Math.round(input.score * 0.5));
   progress.xp += xpGain;
   progress.level = Math.floor(progress.xp / 100) + 1;
   progress.completedQuizCount += 1;
-  progress.averageScore = Math.round((progress.averageScore + score) / 2);
+  progress.averageScore = Math.round((progress.averageScore + input.score) / 2);
   writeLocalProgress(progress);
   const attempts = readLocalAttempts();
-  attempts.unshift({ id: crypto.randomUUID(), subject, score, completedAt: new Date().toISOString() });
+  attempts.unshift({ id: crypto.randomUUID(), subject: input.subject, score: input.score, completedAt: new Date().toISOString() });
   localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(attempts.slice(0, 50)));
   return progress;
 }
@@ -106,7 +127,7 @@ export async function getCourseSheets(userId?: string): Promise<CourseSheet[]> {
 
   const { data, error } = await revisionDbClient
     .from("user_course_summaries")
-    .select("id, title, subject, topic, content, created_at")
+    .select("id, subject_label, topic, content, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(20);
@@ -115,17 +136,23 @@ export async function getCourseSheets(userId?: string): Promise<CourseSheet[]> {
 
   return data.map((row: Record<string, unknown>) => ({
     id: String(row.id),
-    title: String(row.title ?? ""),
-    subject: String(row.subject ?? "—"),
+    title: String(row.topic ?? "Fiche de révision"),
+    subject: String(row.subject_label ?? "—"),
     topic: String(row.topic ?? "—"),
     content: String(row.content ?? ""),
     createdAt: String(row.created_at ?? "").slice(0, 10),
   }));
 }
 
-export async function getQuizQuestions(quizSetId?: string): Promise<QuizQuestion[]> {
+export async function getQuizQuestions(quizSetId?: string, shuffleSeed = "guest"): Promise<QuizQuestion[]> {
   if (isDemoModeActive() || !revisionDbClient) {
-    return demoQuizQuestions.map((question) => ({ ...question }));
+    return demoQuizQuestions.map((question) => {
+      const answers = seededShuffle(
+        question.options.map((text, index) => ({ text, correct: index === question.correctIndex })),
+        `${shuffleSeed}|${question.id}`,
+      );
+      return { ...question, options: answers.map((answer) => answer.text), correctIndex: answers.findIndex((answer) => answer.correct) };
+    });
   }
   let selectedId = quizSetId;
   if (!selectedId) {
@@ -136,7 +163,10 @@ export async function getQuizQuestions(quizSetId?: string): Promise<QuizQuestion
   const { data, error } = await revisionDbClient.from("quiz_questions").select("id, prompt, hint, explanation, answers:quiz_answers(id, answer_text, is_correct, answer_order)").eq("quiz_set_id", selectedId).order("question_order");
   if (error || !data) return [];
   return data.map((row: Record<string, unknown>) => {
-    const answers = ((row.answers ?? []) as Array<{ answer_text: string; is_correct: boolean; answer_order: number }>).sort((a, b) => a.answer_order - b.answer_order);
+    const answers = seededShuffle(
+      ((row.answers ?? []) as Array<{ answer_text: string; is_correct: boolean; answer_order: number }>).sort((a, b) => a.answer_order - b.answer_order),
+      `${shuffleSeed}|${String(row.id)}`,
+    );
     return { id: String(row.id), question: String(row.prompt), options: answers.map((answer) => answer.answer_text), correctIndex: Math.max(0, answers.findIndex((answer) => answer.is_correct)), hint: row.hint ? String(row.hint) : undefined, explanation: row.explanation ? String(row.explanation) : undefined };
   });
 }

@@ -6,10 +6,8 @@
 |----------|-------------|---------|
 | `VITE_APP_ENV` | Environnement | `development` |
 | `VITE_WEB_BASE_URL` | Portail web Elima | `https://www.elima.ci` |
-| `VITE_MAIN_SUPABASE_URL` | URL Supabase scolaire | |
-| `VITE_MAIN_SUPABASE_ANON_KEY` | Anon key scolaire | |
-| `VITE_REVISION_SUPABASE_URL` | URL Supabase révision | |
-| `VITE_REVISION_SUPABASE_ANON_KEY` | Anon key révision | |
+| `VITE_MAIN_SUPABASE_URL` | URL Supabase commune scolaire + révision | |
+| `VITE_MAIN_SUPABASE_ANON_KEY` | Anon key de la base commune | |
 | `VITE_MAIN_API_BASE_URL` | Backend HTTPS principal : uploads et opérations sécurisées | À renseigner |
 | `VITE_REVISION_API_BASE_URL` | Backend HTTPS Révision : IA et OCR | À renseigner |
 | `VITE_ENABLE_DEMO_MODE` | Affiche les comptes seed ; sans base principale, active aussi les données locales de secours | `true` |
@@ -18,11 +16,9 @@
 | `VITE_ENABLE_TEACHER_OFFLINE` | Offline prof | `true` |
 | `VITE_ENABLE_WHATSAPP_OPTION` | WhatsApp premium | `false` |
 
-## Deux ensembles Supabase indépendants
+## Projet Supabase commun
 
-La base scolaire utilise `VITE_MAIN_SUPABASE_URL`, `VITE_MAIN_SUPABASE_ANON_KEY` et, uniquement sur le backend, `SUPABASE_MAIN_SERVICE_ROLE_KEY`.
-
-La base Révision utilise `VITE_REVISION_SUPABASE_URL`, `VITE_REVISION_SUPABASE_ANON_KEY` et, uniquement sur le backend, `SUPABASE_REVISION_SERVICE_ROLE_KEY`. Les deux ensembles peuvent pointer vers des projets Supabase différents.
+Le scolaire et la révision utilisent `VITE_MAIN_SUPABASE_URL` et `VITE_MAIN_SUPABASE_ANON_KEY`. Le backend et les scripts de seed utilisent une seule `SUPABASE_SERVICE_ROLE_KEY`, jamais exposée au client ni versionnée.
 
 ## Variables serveur à renseigner
 

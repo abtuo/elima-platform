@@ -3,18 +3,30 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:bundle": "node scripts/prepare-unified-db.mjs",
+    "db:migrate": "node --env-file=.env scripts/apply-unified-db.mjs",
+    "db:seed:quizzes:dry": "node scripts/seed-unified-quizzes.mjs --dry-run",
+    "db:seed:quizzes:strict": "node scripts/seed-unified-quizzes.mjs --dry-run --strict",
+    "db:seed:quizzes": "node --env-file=.env scripts/seed-unified-quizzes.mjs",
+    "db:seed:demo": "node --env-file=.env scripts/seed-school-demo.mjs",
+    "db:seed:demo-history": "node --env-file=.env scripts/seed-demo-quiz-history.mjs",
+    "db:verify": "node --env-file=.env scripts/verify-unified-db.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.0",
+    "@supabase/supabase-js": "^2.110.5",
     "clsx": "^2.1.1",
     "katex": "^0.16.11",
     "lucide-react": "^0.475.0",
+    "postgres": "^3.4.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^9.0.1",
@@ -24,6 +36,7 @@
     "remark-math": "^6.0.0"
   },
   "devDependencies": {
+    "@rolldown/binding-win32-x64-msvc": "^1.1.5",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
@@ -32,7 +45,7 @@
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.6.3",
-    "vite": "^5.4.11",
+    "vite": "^8.1.4",
     "vite-plugin-pwa": "^0.21.1"
   }
 }

@@ -9,8 +9,8 @@
 ## Priorité moyenne
 
 4. **Proxy IA production** — Déployer `VITE_REVISION_API_BASE_URL` avec forward Azure OpenAI
-5. **Mapping users** — Table `revision_user_links` si deux auth distinctes
-6. **Messagerie temps réel** — Subscriptions Supabase, statut lu/non lu
+5. **Migration utilisateurs Révision** — Remapper les anciennes progressions vers l'identité scolaire par email
+6. **Messagerie temps réel** — Subscriptions Supabase après sécurisation RLS v2
 7. **Gating branché** — Plans école depuis `schools.plan` en production
 
 ## Priorité basse

@@ -51,9 +51,9 @@ export const demoGrades: GradeSummary[] = [
 ];
 
 export const demoMessages: MessagePreview[] = [
-  { id: "m1", subject: "Réunion parents-professeurs", preview: "La réunion est prévue le 18 juillet à 15h.", sender: "Direction", date: "2026-07-10", read: false },
-  { id: "m2", subject: "Devoir de maths", preview: "Le chapitre 4 est à rendre pour lundi.", sender: "M. Diallo", date: "2026-07-09", read: true },
-  { id: "m3", subject: "Absence signalée", preview: "Retard enregistré ce matin.", sender: "Vie scolaire", date: "2026-07-08", read: true },
+  { id: "m1", conversationId: "c1", subject: "Réunion parents-professeurs", preview: "La réunion est prévue le 18 juillet à 15h.", sender: "Direction", date: "2026-07-10", read: false },
+  { id: "m2", conversationId: "c2", subject: "Devoir de maths", preview: "Le chapitre 4 est à rendre pour lundi.", sender: "M. Diallo", date: "2026-07-09", read: true },
+  { id: "m3", conversationId: "c3", subject: "Absence signalée", preview: "Retard enregistré ce matin.", sender: "Vie scolaire", date: "2026-07-08", read: true },
 ];
 
 export const demoPayments: PaymentSummary[] = [

@@ -1,8 +1,8 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { env, isRevisionDbConfigured } from "./env";
+import { mainDbClient } from "./mainDbClient";
 
-export const revisionDbClient: SupabaseClient | null = isRevisionDbConfigured()
-  ? createClient(env.revisionSupabaseUrl, env.revisionSupabaseAnonKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-    })
-  : null;
+/**
+ * La révision et le scolaire partagent le même projet et la même session.
+ * auth.uid() est ainsi identique pour les données scolaires, la progression,
+ * les quiz, les fiches et les scans.
+ */
+export const revisionDbClient = mainDbClient;

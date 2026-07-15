@@ -27,8 +27,7 @@ npm run preview
 
 Copier `.env.example` vers `.env` et renseigner les clés publiques Supabase :
 
-- `VITE_MAIN_SUPABASE_URL` / `VITE_MAIN_SUPABASE_ANON_KEY` — base scolaire (`elima.tech`)
-- `VITE_REVISION_SUPABASE_URL` / `VITE_REVISION_SUPABASE_ANON_KEY` — base révision (`elima.app`)
+- `VITE_MAIN_SUPABASE_URL` / `VITE_MAIN_SUPABASE_ANON_KEY` — base commune scolaire + révision
 - `VITE_WEB_BASE_URL` — portail web (`https://www.elima.ci`)
 - `VITE_MAIN_API_BASE_URL` — API `elima.tech` pour uploads (Bearer JWT)
 
