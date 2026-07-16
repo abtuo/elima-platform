@@ -14,6 +14,7 @@ const generatedSubjectIcons: Partial<Record<string, string>> = {
   informatique: "/icons/generated/subjects/subject-computer-science.png",
   eps: "/icons/generated/subjects/subject-eps.png",
   arts: "/icons/generated/subjects/subject-arts.png",
+  autre: "/icons/generated/subjects/subject-other.png",
 };
 
 export function SubjectIcon({ subject, className }: { subject: string; className?: string }) {

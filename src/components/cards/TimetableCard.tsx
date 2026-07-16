@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { BellRing, CalendarDays, MapPin } from "lucide-react";
+import { CalendarDays, MapPin } from "lucide-react";
+import { GeneratedActionIcon } from "@/components/common/GeneratedActionIcon";
 import { calendarDayDifference, formatSchoolDate, formatSchoolTime, schoolDateKey } from "@/lib/schoolDateTime";
 import { enableCourseNotifications, notifyUpcomingCourses } from "@/services/notificationService";
 import type { TimetableEvent } from "@/types/school";
@@ -12,7 +13,7 @@ export function TimetableCard({ events, title = "Prochains cours", maxItems = 4,
     <section>
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2"><CalendarDays className="h-5 w-5 text-primary" /><h2 className="font-title text-lg font-semibold text-accent">{title}</h2></div>
-        {permission === "default" ? <button type="button" onClick={async () => setPermission(await enableCourseNotifications())} className="flex items-center gap-1 text-xs font-semibold text-primary"><BellRing className="h-4 w-4" />Activer les rappels</button> : null}
+        {permission === "default" ? <button type="button" onClick={async () => setPermission(await enableCourseNotifications())} className="flex items-center gap-1 text-xs font-semibold text-primary"><GeneratedActionIcon name="reminder" className="h-8 w-8" />Activer les rappels</button> : null}
       </div>
       <div className="overflow-hidden rounded-3xl bg-white shadow-sm">
         {events.length ? events.slice(0, maxItems).map((event, index) => {

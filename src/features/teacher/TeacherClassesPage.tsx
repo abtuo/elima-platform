@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
+import { GeneratedActionIcon } from "@/components/common/GeneratedActionIcon";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ElimaCard } from "@/components/common/ElimaCard";
 import { enqueueAttendanceSheet } from "@/services/offlineQueueService";
@@ -55,7 +57,7 @@ export function TeacherClassesPage() {
 
   return (
     <PageContainer>
-      <AppHeader title="Classes" subtitle="Liste et appel" />
+      <AppHeader title="Classes" subtitle="Liste et appel" action={<GeneratedFeatureIcon name="classes" className="h-14 w-14" />} />
       <div className="mb-4 flex gap-2 overflow-x-auto">
         {classes.map((c) => (
           <button key={c.id} type="button" onClick={() => setSelectedClass(c)}
@@ -88,7 +90,7 @@ export function TeacherClassesPage() {
               </div>
             </ElimaCard>
           ))}
-          {students.length ? <div className="sticky bottom-20 rounded-3xl border border-gray-100 bg-white/95 p-4 shadow-lg backdrop-blur lg:bottom-4"><div className="mb-3 flex items-center justify-between text-sm"><span className="text-gray-500">{Object.values(attendance).filter((status) => status === "ABSENT").length} absent(s) · {Object.values(attendance).filter((status) => status === "LATE").length} retard(s)</span>{notice ? <span className="flex items-center gap-1 font-semibold text-primary"><CheckCircle2 className="h-4 w-4" />{notice}</span> : null}</div><button type="button" onClick={validateAttendance} disabled={saving} className="tap flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3 text-sm font-semibold text-white disabled:opacity-60"><Check className="h-4 w-4" />{saving ? "Validation…" : "Valider l’appel"}</button></div> : null}
+          {students.length ? <div className="sticky bottom-20 rounded-3xl border border-gray-100 bg-white/95 p-4 shadow-lg backdrop-blur lg:bottom-4"><div className="mb-3 flex items-center justify-between text-sm"><span className="text-gray-500">{Object.values(attendance).filter((status) => status === "ABSENT").length} absent(s) · {Object.values(attendance).filter((status) => status === "LATE").length} retard(s)</span>{notice ? <span className="flex items-center gap-1 font-semibold text-primary"><CheckCircle2 className="h-4 w-4" />{notice}</span> : null}</div><button type="button" onClick={validateAttendance} disabled={saving} className="tap flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-2 text-sm font-semibold text-white disabled:opacity-60"><GeneratedActionIcon name="attendance" className="h-9 w-9" />{saving ? "Validation…" : "Valider l’appel"}</button></div> : null}
           {!students.length ? <EmptyState title="Aucun élève dans cette classe" description="La liste se mettra à jour dès que des élèves seront affectés à la classe." /> : null}
         </section>
       ) : null}

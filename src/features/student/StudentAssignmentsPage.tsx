@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { AssignmentCard } from "@/components/cards/AssignmentCard";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -13,7 +14,7 @@ export function StudentAssignmentsPage() {
 
   return (
     <PageContainer>
-      <AppHeader title="Devoirs" subtitle="À rendre et terminés" accent="#7C3AED" />
+      <AppHeader title="Devoirs" subtitle="À rendre et terminés" accent="#7C3AED" action={<GeneratedFeatureIcon name="assignments" className="h-14 w-14" />} />
       <div className="space-y-3">
         {assignments.length ? assignments.map((a) => <AssignmentCard key={a.id} assignment={a} />) : (
           <EmptyState title="Aucun devoir" description="Les devoirs publiés apparaîtront ici." />

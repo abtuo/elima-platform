@@ -252,4 +252,4 @@ Le symbole doit rester identifiable à 32 px et occuper environ 76 % du canevas.
 [PROMPT NÉGATIF]
 ```
 
-Les douze icônes de matières et neuf icônes de fonctions sont intégrées dans l’application. Leurs sources originales et les variantes non retenues sont conservées dans `assets/icon-sources/`. Le prochain lot sans doublon est détaillé dans `docs/next-icons-batch.md`.
+Les treize icônes de matières, vingt icônes de fonctions et huit icônes d’actions sont intégrées dans l’application. Il reste `action-bulletin`, les statuts, les états vides et les icônes d’application détaillés dans `docs/next-icons-batch.md`. Les sources originales et les variantes non retenues sont conservées dans `assets/icon-sources/`.

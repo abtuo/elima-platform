@@ -82,14 +82,36 @@ export async function completeElimaSignIn(code: string, state: string) {
   const tokenResponse = await fetch(`${env.elimaIdentityUrl.replace(/\/+$/, "")}/auth/v1/oauth/token`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ grant_type: "authorization_code", code, client_id: env.elimaOAuthClientId, redirect_uri: env.elimaOAuthRedirectUri, code_verifier: flow.verifier }) });
   const tokens = await tokenResponse.json().catch(() => null) as { access_token?: string; refresh_token?: string; expires_in?: number; error_description?: string } | null;
   if (!tokenResponse.ok || !tokens?.access_token) throw new Error(tokens?.error_description ?? "Échange OAuth impossible.");
+  await bridgeElimaIdentitySession({ access_token: tokens.access_token, refresh_token: tokens.refresh_token, expires_in: tokens.expires_in });
+  sessionStorage.removeItem(FLOW_KEY);
+  return flow.returnTo || "/";
+}
+
+type ElimaIdentityTokens = { access_token: string; refresh_token?: string; expires_in?: number };
+
+async function bridgeElimaIdentitySession(tokens: ElimaIdentityTokens) {
+  if (!mainDbClient) throw new Error("La base Révision n’est pas configurée.");
   const bridgeResponse = await fetch("/api/identity-bridge", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accessToken: tokens.access_token }) });
   const bridge = await bridgeResponse.json().catch(() => null) as { tokenHash?: string; profile?: unknown; error?: string } | null;
   if (!bridgeResponse.ok || !bridge?.tokenHash) throw new Error(bridge?.error ?? "Liaison du compte impossible.");
   const verified = await mainDbClient.auth.verifyOtp({ token_hash: bridge.tokenHash, type: "magiclink" });
   if (verified.error) throw verified.error;
   localStorage.setItem(SESSION_KEY, JSON.stringify({ accessToken: tokens.access_token, refreshToken: tokens.refresh_token, expiresAt: Date.now() + Number(tokens.expires_in ?? 3600) * 1000, profile: normalizeCentralProfile(bridge.profile) }));
-  sessionStorage.removeItem(FLOW_KEY);
-  return flow.returnTo || "/";
+  return {
+    centralProfile: normalizeCentralProfile(bridge.profile),
+    localUserId: verified.data.user?.id ?? verified.data.session?.user.id ?? null,
+  };
+}
+
+export async function signInWithElimaPassword(identifier: string, password: string) {
+  const response = await fetch("/api/elima-password-login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ identifier: identifier.trim(), password }),
+  });
+  const tokens = await response.json().catch(() => null) as (ElimaIdentityTokens & { message?: string }) | null;
+  if (!response.ok || !tokens?.access_token) throw new Error(tokens?.message ?? "Email, téléphone ou mot de passe incorrect.");
+  return bridgeElimaIdentitySession(tokens);
 }
 
 export function getElimaIdentityAccessToken() {

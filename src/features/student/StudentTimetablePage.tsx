@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Clock3, MapPin } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { formatSchoolDate, formatSchoolTime, schoolDateKey } from "@/lib/schoolDateTime";
@@ -14,7 +15,7 @@ export function StudentTimetablePage() {
   const subtitle = events.some((event) => event.referenceDate) ? "Semaine de démonstration" : "Mes deux prochaines semaines";
 
   return <PageContainer>
-    <AppHeader title="Emploi du temps" subtitle={subtitle} accent="#7C3AED" />
+    <AppHeader title="Emploi du temps" subtitle={subtitle} accent="#7C3AED" action={<GeneratedFeatureIcon name="planning" className="h-14 w-14" />} />
     {days.length ? <div className="space-y-6">{days.map((day) => <section key={day}>
       <h2 className="mb-3 font-title text-lg font-semibold capitalize text-accent">{formatSchoolDate(`${day}T12:00:00.000Z`, { weekday: "long", day: "numeric", month: "long" })}</h2>
       <div className="space-y-2">{events.filter((event) => schoolDateKey(event.startsAt) === day).map((event) => <article key={event.id} className="flex gap-3 rounded-3xl bg-white p-4 shadow-sm">

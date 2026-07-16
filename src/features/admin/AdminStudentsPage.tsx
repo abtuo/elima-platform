@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { ChevronDown, ChevronRight, GraduationCap, Mail, Search, UserRound, Users } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { EmptyState } from "@/components/common/EmptyState";
 import { LoadingState } from "@/components/common/LoadingState";
 import { WebLinkButton } from "@/components/common/WebLinkButton";
@@ -73,11 +75,11 @@ export function AdminStudentsPage() {
 
   return (
     <PageContainer>
-      <AppHeader title="Annuaire" subtitle={`${students.length} élèves · ${teachers.length} professeurs`} />
+      <AppHeader title="Annuaire" subtitle={`${students.length} élèves · ${teachers.length} professeurs`} action={<GeneratedFeatureIcon name="directory" className="h-14 w-14" />} />
 
       <div className="mb-4 grid grid-cols-2 rounded-2xl bg-gray-100 p-1">
-        <TabButton active={view === "students"} onClick={() => switchView("students")}>Élèves</TabButton>
-        <TabButton active={view === "teachers"} onClick={() => switchView("teachers")}>Professeurs</TabButton>
+        <TabButton active={view === "students"} onClick={() => switchView("students")}><GeneratedFeatureIcon name="students" className="h-8 w-8" />Élèves</TabButton>
+        <TabButton active={view === "teachers"} onClick={() => switchView("teachers")}><GeneratedFeatureIcon name="teachers" className="h-8 w-8" />Professeurs</TabButton>
       </div>
 
       <label className="mb-5 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
@@ -199,8 +201,8 @@ function StudentRow({ student, onClick }: { student: StudentDirectoryItem; onCli
   );
 }
 
-function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: string }) {
-  return <button type="button" onClick={onClick} className={`rounded-xl px-4 py-2.5 text-sm font-semibold ${active ? "bg-white text-primary shadow-sm" : "text-gray-500"}`}>{children}</button>;
+function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
+  return <button type="button" onClick={onClick} className={`flex items-center justify-center gap-2 rounded-xl px-4 py-1.5 text-sm font-semibold ${active ? "bg-white text-primary shadow-sm" : "text-gray-500"}`}>{children}</button>;
 }
 
 function studentLevel(student: StudentDirectoryItem) {

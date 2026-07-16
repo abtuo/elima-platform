@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle2, Lightbulb, Star, X, XCircle } from "lucide-react";
+import { CheckCircle2, Star, X, XCircle } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedActionIcon } from "@/components/common/GeneratedActionIcon";
 import { EmptyState } from "@/components/common/EmptyState";
 import { LoadingState } from "@/components/common/LoadingState";
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -167,7 +168,7 @@ export function QuizPage() {
             disabled={hintBusy || hintOpen || showResult || !question.hint || hintRemaining === 0}
             className="relative flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 py-2 pl-3 pr-10 text-xs font-semibold text-amber-900 disabled:cursor-not-allowed disabled:opacity-45"
           >
-            <Lightbulb className="h-4 w-4" />{hintBusy ? "Ouverture…" : "Indice"}
+            <GeneratedActionIcon name="hint" className="h-7 w-7" />{hintBusy ? "Ouverture…" : "Indice"}
             <span className="absolute right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-700 px-1 text-[10px] font-bold text-white">{hintRemaining ?? "…"}</span>
           </button>
         </div>

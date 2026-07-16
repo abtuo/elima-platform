@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Brain, Dices, FilePlus2, Flame, Search, Sparkles, Star } from "lucide-react";
+import { BookOpen, Brain, Flame, Search, Star } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedActionIcon } from "@/components/common/GeneratedActionIcon";
 import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { QuizCard } from "@/components/cards/QuizCard";
 import { RevisionProgressCard } from "@/components/cards/RevisionProgressCard";
@@ -138,9 +139,9 @@ export function RevisionDashboardPage() {
           {error ? <p className="mt-3 rounded-2xl bg-red-500/20 px-3 py-2 text-xs text-white">{error}</p> : null}
 
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
-            <button type="button" disabled={Boolean(launching)} onClick={launchRandomQuiz} className="flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-3 py-3 text-sm font-semibold disabled:opacity-50"><Dices className="h-4 w-4" />{launching === "random" ? "Chargement…" : "Quiz aléatoire"}</button>
-            <button type="button" disabled={Boolean(launching) || !subject || !topic.trim()} onClick={launchSpecificQuiz} className="flex items-center justify-center gap-2 rounded-2xl bg-white px-3 py-3 text-sm font-semibold text-revision disabled:opacity-40"><Sparkles className="h-4 w-4" />{launching === "quiz" ? "Génération…" : "Générer le quiz"}</button>
-            <button type="button" disabled={Boolean(launching) || !subject || !topic.trim()} onClick={createSheet} className="flex items-center justify-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-3 py-3 text-sm font-semibold disabled:opacity-40"><FilePlus2 className="h-4 w-4" />{launching === "sheet" ? "Génération…" : "Créer une fiche"}</button>
+            <button type="button" disabled={Boolean(launching)} onClick={launchRandomQuiz} className="flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-3 py-2 text-sm font-semibold disabled:opacity-50"><GeneratedActionIcon name="randomQuiz" className="h-8 w-8" />{launching === "random" ? "Chargement…" : "Quiz aléatoire"}</button>
+            <button type="button" disabled={Boolean(launching) || !subject || !topic.trim()} onClick={launchSpecificQuiz} className="flex items-center justify-center gap-2 rounded-2xl bg-white px-3 py-2 text-sm font-semibold text-revision disabled:opacity-40"><GeneratedActionIcon name="generateQuiz" className="h-8 w-8" />{launching === "quiz" ? "Génération…" : "Générer le quiz"}</button>
+            <button type="button" disabled={Boolean(launching) || !subject || !topic.trim()} onClick={createSheet} className="flex items-center justify-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-3 py-2 text-sm font-semibold disabled:opacity-40"><GeneratedActionIcon name="generateSheet" className="h-8 w-8" />{launching === "sheet" ? "Génération…" : "Créer une fiche"}</button>
           </div>
           {launching === "quiz" || launching === "sheet" ? <p className="mt-3 text-center text-xs text-white/70">L’IA prépare le contenu. Cela peut prendre quelques secondes.</p> : null}
         </section>

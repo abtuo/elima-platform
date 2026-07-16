@@ -18,6 +18,7 @@
     "db:migrate:quiz-feedback": "node --env-file=.env scripts/apply-migration-file.mjs --file=supabase/migrations/20260715130000_quiz_feedback.sql",
     "db:migrate:timetable": "node --env-file=.env scripts/apply-migration-file.mjs --file=supabase/migrations/20260715140000_demo_timetable_structure.sql",
     "db:migrate:attendance-sync": "node --env-file=.env scripts/apply-migration-file.mjs --file=supabase/migrations/20260715150000_teacher_attendance_sync.sql",
+    "db:migrate:registration-requests": "node --env-file=.env scripts/apply-migration-file.mjs --file=supabase/migrations/20260716090000_school_registration_requests.sql",
     "db:reload:schema": "node --env-file=.env scripts/apply-migration-file.mjs --file=supabase/migrations/20260715151000_reload_attendance_sync_schema.sql",
     "db:seed:quizzes:dry": "node scripts/seed-unified-quizzes.mjs --dry-run",
     "db:seed:quizzes:strict": "node scripts/seed-unified-quizzes.mjs --dry-run --strict",

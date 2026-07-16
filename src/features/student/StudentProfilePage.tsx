@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BarChart3, BookOpenCheck, Building2, CheckCircle2, KeyRound, LogOut, Save, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { ElimaCard } from "@/components/common/ElimaCard";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -81,7 +82,7 @@ export function StudentProfilePage() {
 
   return (
     <PageContainer>
-      <AppHeader title="Mon profil" subtitle="Résultats scolaires et révisions" accent="#7C3AED" />
+      <AppHeader title="Mon profil" subtitle="Résultats scolaires et révisions" accent="#7C3AED" action={<GeneratedFeatureIcon name="profile" className="h-14 w-14" />} />
 
       <ElimaCard>
         <div className="flex items-center gap-4">

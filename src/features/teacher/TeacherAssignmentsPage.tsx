@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CalendarPlus } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { AssignmentCard } from "@/components/cards/AssignmentCard";
 import { ElimaCard } from "@/components/common/ElimaCard";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -49,7 +50,7 @@ export function TeacherAssignmentsPage() {
 
   return (
     <PageContainer>
-      <AppHeader title="Devoirs" subtitle="Devoirs et évaluations" />
+      <AppHeader title="Devoirs" subtitle="Devoirs et évaluations" action={<GeneratedFeatureIcon name="assignments" className="h-14 w-14" />} />
       <ElimaCard className="mb-5">
         <form onSubmit={addEvaluation} className="space-y-4">
           <div className="flex items-center gap-2"><CalendarPlus className="h-5 w-5 text-primary" /><div><h2 className="font-title text-lg font-semibold text-accent">Planifier une évaluation</h2><p className="text-xs text-gray-500">La date apparaîtra dans l’emploi du temps de la classe.</p></div></div>

@@ -1,7 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { LoginPage } from "@/features/auth/LoginPage";
-import { StudentRegisterPage } from "@/features/auth/StudentRegisterPage";
+import { RegistrationPage } from "@/features/auth/RegistrationPage";
+import { PublicWelcomePage } from "@/features/auth/PublicWelcomePage";
 import { ElimaOAuthCallbackPage, ElimaOAuthStartPage } from "@/features/auth/ElimaOAuthPages";
 import { ProtectedLayout, SpaceRedirect } from "@/app/layouts";
 
@@ -39,11 +40,13 @@ import { CommunicationsPage } from "@/features/messages/CommunicationsPage";
 
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getProfileHomePath } from "@/types/roles";
+import { isPublicLandingEnabled } from "@/services/env";
 
-function RootRedirect() {
-  const { profile, loading } = useAuth();
+function EntryPage() {
+  const { authenticated, profile, loading } = useAuth();
+  if (isPublicLandingEnabled()) return <PublicWelcomePage />;
   if (loading) return null;
-  return <Navigate to={getProfileHomePath(profile)} replace />;
+  return <Navigate to={authenticated ? getProfileHomePath(profile) : "/auth/login"} replace />;
 }
 
 export function AppRouter() {
@@ -51,14 +54,14 @@ export function AppRouter() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<EntryPage />} />
           <Route path="/auth/login" element={<LoginPage />} />
-          <Route path="/auth/inscription-eleve" element={<StudentRegisterPage />} />
+          <Route path="/auth/inscription" element={<RegistrationPage />} />
+          <Route path="/auth/inscription-eleve" element={<Navigate to="/auth/inscription" replace />} />
           <Route path="/auth/elima/start" element={<ElimaOAuthStartPage />} />
           <Route path="/auth/elima/callback" element={<ElimaOAuthCallbackPage />} />
 
           <Route element={<ProtectedLayout />}>
-            <Route path="/" element={<RootRedirect />} />
-
             <Route path="/parent" element={<SpaceRedirect space="parent" />}>
               <Route index element={<ParentHomePage />} />
               <Route path="enfants" element={<ParentChildrenPage />} />

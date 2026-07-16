@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedActionIcon } from "@/components/common/GeneratedActionIcon";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ResourceCard } from "@/components/cards/ResourceCard";
 import { EmptyState } from "@/components/common/EmptyState";
 import { listPublishedResources, publishTeacherResource } from "@/services/resourceService";
 import { DOCUMENT_TYPES } from "@/constants/demoData";
 import type { ClassInfo, ResourceItem, SubjectOption } from "@/types/school";
-import { Upload } from "lucide-react";
 import { getSchoolSubjects, getTeacherClasses } from "@/services/mainDataService";
 
 export function TeacherResourcesPage() {
@@ -57,7 +57,7 @@ export function TeacherResourcesPage() {
         subtitle="Documents partagés"
         action={
           <button type="button" onClick={() => setShowForm(!showForm)} className="tap rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-white">
-            <Upload className="mr-1 inline h-4 w-4" /> Publier
+            <GeneratedActionIcon name="upload" className="mr-1 inline h-8 w-8" /> Publier
           </button>
         }
       />
@@ -80,8 +80,8 @@ export function TeacherResourcesPage() {
             <span>Visible également par les parents</span>
             <input type="checkbox" checked={visibleToParents} onChange={(e) => setVisibleToParents(e.target.checked)} className="h-5 w-5 accent-primary" />
           </label>
-          <button type="button" onClick={handlePublish} disabled={loading || !file || !title || !classId || !subject} className="tap w-full rounded-2xl bg-primary py-3 text-sm font-semibold text-white disabled:opacity-50">
-            {loading ? "Publication..." : "Publier le document"}
+          <button type="button" onClick={handlePublish} disabled={loading || !file || !title || !classId || !subject} className="tap flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-2 text-sm font-semibold text-white disabled:opacity-50">
+            <GeneratedActionIcon name="upload" className="h-8 w-8" />{loading ? "Publication..." : "Publier le document"}
           </button>
           {status ? <p className="text-center text-sm text-gray-600">{status}</p> : null}
         </div>

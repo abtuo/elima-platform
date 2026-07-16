@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ChildSummaryCard } from "@/components/cards/ChildSummaryCard";
 import { GradeSummaryCard } from "@/components/cards/GradeSummaryCard";
@@ -26,7 +27,7 @@ export function ParentChildrenPage() {
 
   return (
     <PageContainer>
-      <AppHeader title="Enfants" subtitle="Suivi scolaire par enfant" />
+      <AppHeader title="Enfants" subtitle="Suivi scolaire par enfant" action={<GeneratedFeatureIcon name="children" className="h-14 w-14" />} />
       <div className="mb-4 flex gap-2 overflow-x-auto">
         {children.map((c) => (
           <button

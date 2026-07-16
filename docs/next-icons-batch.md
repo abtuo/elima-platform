@@ -1,127 +1,100 @@
-# Prochain lot d’icônes Elima — 10 fichiers
+# Lots d’icônes Elima — séries de 10
 
-Ce lot a été établi après comparaison entre le code, le cahier des charges et les fichiers déjà présents dans `public/icons/generated/`. Ne pas régénérer les matières, Révision, Paiements, Résultats, Messages, Publication, Fournitures, Synchronisation, Pilotage admin ou Scanner.
+Cette liste a été recalculée après comparaison du cahier des charges avec les fichiers réellement présents dans `public/icons/generated/`. Une icône marquée comme intégrée ne doit pas être régénérée.
 
-Chaque bloc ci-dessous est autonome et peut être copié-collé tel quel dans le générateur. Export attendu : PNG carré 1024 × 1024, fond réellement transparent.
-
-## 1. `feature-home.png` — Accueil
+## Style commun à rappeler au générateur
 
 ```text
-Crée une icône d’application éducative premium et chaleureuse pour Elima : illustration 2.5D douce, formes géométriques très arrondies, volumes légers, surfaces satinées avec un reflet discret, ombres internes subtiles, composition simple et centrée, lisible à 32 px. Identité africaine francophone moderne, professionnelle et accueillante. Palette : vert Elima #2E8B57, vert forêt #153F30 et petit accent jaune or #FFD700.
+Icône d’application éducative premium et chaleureuse pour Elima, illustration 2.5D douce, formes géométriques très arrondies, volumes légers, surfaces satinées, reflets discrets, ombres internes subtiles, composition simple et centrée, lisible à 32 px. Un seul symbole principal et deux détails secondaires maximum. Identité africaine francophone moderne, professionnelle, universelle et accueillante. Sujet occupant environ 76 % du canevas avec 12 % de marge de sécurité. PNG carré 1024 × 1024, sRGB, fond réellement transparent avec canal alpha propre.
 
-Sujet : une maison-école accueillante, avec un toit simple évoquant discrètement une toque de diplômé et une petite porte centrale. Un seul symbole principal, deux détails secondaires maximum, aucun personnage.
-
-Le sujet occupe environ 76 % du canevas avec 12 % de marge de sécurité. Fond réellement transparent avec canal alpha propre, aucun carré blanc ou décor de fond.
-
-À éviter : texte, lettres, chiffres, filigrane, logo, drapeau, photoréalisme, emoji, clipart, lignes fines, détails excessifs, cadre extérieur, ombre portée sur un sol, fond blanc intégré.
+À éviter : texte, lettres, chiffres, filigrane, logo, drapeau, photoréalisme, emoji, clipart, lignes fines, détails excessifs, cadre extérieur, ombre portée sur un sol, carré blanc ou décor de fond intégré.
 ```
 
-## 2. `feature-planning.png` — Planning
+Palette de marque à utiliser selon le sujet : vert Elima `#2E8B57`, vert forêt `#153F30`, jaune or `#FFD700`, encre `#1F2937`, violet Révision `#7C3AED`, bleu `#2563EB`, ambre `#F59E0B`, rouge `#EF4444` et succès `#22C55E`.
 
-```text
-Crée une icône d’application éducative premium et chaleureuse pour Elima : illustration 2.5D douce, formes géométriques très arrondies, volumes légers, surfaces satinées avec un reflet discret, ombres internes subtiles, composition simple et centrée, lisible à 32 px. Palette : bleu #2563EB, violet Révision #7C3AED et petit accent jaune or #FFD700.
+## Lot 1 — intégré le 15 juillet 2026
 
-Sujet : un calendrier scolaire arrondi accompagné d’un petit repère horaire circulaire. Les cases du calendrier sont abstraites, sans date, lettre ni chiffre. Un seul symbole principal, deux détails secondaires maximum.
+| # | Fichier | Usage |
+|---:|---|---|
+| 1 | `feature-home.png` | Accueil |
+| 2 | `feature-planning.png` | Emploi du temps |
+| 3 | `feature-documents.png` | Documents |
+| 4 | `feature-profile.png` | Profil |
+| 5 | `feature-children.png` | Enfants |
+| 6 | `feature-directory.png` | Annuaire |
+| 7 | `feature-students.png` | Élèves |
+| 8 | `feature-teachers.png` | Professeurs |
+| 9 | `feature-classes.png` | Classes |
+| 10 | `feature-assignments.png` | Devoirs |
 
-Le sujet occupe environ 76 % du canevas avec 12 % de marge de sécurité. Fond réellement transparent avec canal alpha propre, aucun carré blanc ou décor de fond.
+## Lot 2 — intégré le 16 juillet 2026
 
-À éviter : texte, lettres, chiffres, filigrane, logo, photoréalisme, emoji, clipart, lignes fines, détails excessifs, cadre extérieur, fond blanc intégré.
-```
+Copier le style commun, puis ajouter le sujet et la palette de la ligne choisie.
 
-## 3. `feature-documents.png` — Documents
+| # | Fichier attendu | Sujet précis | Palette dominante |
+|---:|---|---|---|
+| 1 | `subject-other.png` | Petite pile de trois livres scolaires arrondis avec une étincelle dorée, symbole générique de matière | Violet, encre, or |
+| 2 | `feature-alerts.png` | Cloche scolaire arrondie avec un petit point d’attention, sans chiffre ni badge lisible | Ambre, rouge discret, or |
+| 3 | `action-random-quiz.png` | Deux dés arrondis en mouvement avec une petite étincelle, points non assimilables à une réponse A/B/C | Violet, blanc, or |
+| 4 | `action-generate-quiz.png` | Baguette lumineuse au-dessus d’un mini questionnaire abstrait, aucune lettre de réponse | Violet, bleu, or |
+| 5 | `action-generate-sheet.png` | Feuille de synthèse avec trois lignes abstraites et une étincelle IA | Bleu, violet, or |
+| 6 | `action-hint.png` | Ampoule ronde et chaleureuse avec une petite étoile | Ambre, jaune or, encre |
+| 7 | `action-scan-camera.png` | Appareil photo visant une feuille entre quatre coins de scan | Violet, vert Elima, bleu |
+| 8 | `action-upload.png` | Document arrondi avec une flèche montante vers un petit nuage | Vert professeur, bleu, or |
+| 9 | `action-attendance.png` | Clipboard avec trois silhouettes abstraites et une coche | Vert professeur, encre, or |
+| 10 | `action-reminder.png` | Cloche douce accompagnée d’un petit calendrier sans date | Vert Elima, ambre, or |
 
-```text
-Crée une icône d’application éducative premium et chaleureuse pour Elima : illustration 2.5D douce, formes géométriques très arrondies, volumes légers, surfaces satinées avec un reflet discret, ombres internes subtiles, composition simple et centrée, lisible à 32 px. Palette : bleu #2563EB, vert Elima #2E8B57 et petit accent jaune or #FFD700.
+## Lot 3 — prochain lot à générer (10)
 
-Sujet : un dossier scolaire ouvert contenant une seule feuille aux lignes abstraites, sans texte. Ajouter une petite languette de classement ou une étincelle discrète, pas les deux.
+Ces pictogrammes doivent être encore plus simples et rester lisibles entre 20 et 32 px.
 
-Le sujet occupe environ 76 % du canevas avec 12 % de marge de sécurité. Fond réellement transparent avec canal alpha propre, aucun carré blanc ou décor de fond.
+| # | Fichier attendu | Sujet précis | Palette dominante |
+|---:|---|---|---|
+| 1 | `action-bulletin.png` | Bulletin scolaire abstrait avec un ruban ou un sceau, aucun texte ni note chiffrée | Bleu, or, vert Elima |
+| 2 | `status-present.png` | Coche pleine dans un cercle doux | Succès `#22C55E`, vert forêt |
+| 3 | `status-absent.png` | Petit calendrier avec une silhouette abstraite barrée | Rouge `#EF4444`, encre |
+| 4 | `status-late.png` | Horloge arrondie avec un point d’attention | Ambre `#F59E0B`, encre |
+| 5 | `status-unpaid.png` | Reçu abstrait avec un point d’exclamation, sans devise ni montant | Rouge, ambre, encre |
+| 6 | `status-grade.png` | Bulletin abstrait avec une étoile, sans chiffre | Bleu, or |
+| 7 | `status-pending.png` | Sablier doux ou cercle de progression incomplet | Ambre, encre |
+| 8 | `status-offline.png` | Petit nuage déconnecté par une ligne douce | Gris `#6B7280`, encre |
+| 9 | `status-synced.png` | Nuage arrondi avec une coche | Succès, bleu |
+| 10 | `status-error.png` | Croix claire dans un cercle plein | Rouge, blanc |
 
-À éviter : texte, lettres, chiffres, filigrane, logo, photoréalisme, emoji, clipart, accumulation de feuilles, lignes fines, cadre extérieur, fond blanc intégré.
-```
+## Lot 4 — après le lot 3 (10)
 
-## 4. `feature-profile.png` — Profil
+Ce sont des illustrations d’état vide : garder davantage d’espace autour du sujet et une lecture optimale vers 120–220 px.
 
-```text
-Crée une icône d’application éducative premium et chaleureuse pour Elima : illustration 2.5D douce, formes géométriques très arrondies, volumes légers, surfaces satinées avec un reflet discret, ombres internes subtiles, composition simple et centrée, lisible à 32 px. Palette : encre anthracite #1F2937, vert Elima #2E8B57 et petit accent jaune or #FFD700.
+| # | Fichier attendu | Sujet précis | Palette dominante |
+|---:|---|---|---|
+| 1 | `empty-messages.png` | Deux bulles vides près d’un petit cartable fermé | Vert, encre, or |
+| 2 | `empty-alerts.png` | Cloche calme avec une petite coche | Vert, ambre |
+| 3 | `empty-quiz.png` | Livre ouvert et cerveau violet en attente | Violet, bleu, or |
+| 4 | `empty-sheets.png` | Dossier bleu vide avec une feuille et une étincelle | Bleu, violet |
+| 5 | `empty-documents.png` | Scanner face à une feuille blanche | Vert, violet |
+| 6 | `empty-assignments.png` | Checklist entièrement cochée avec crayon rangé | Vert, ambre |
+| 7 | `empty-schedule.png` | Calendrier paisible avec un petit soleil | Bleu, or |
+| 8 | `empty-payments.png` | Reçu rangé dans un portefeuille fermé, sans devise | Vert, or |
+| 9 | `success-quiz.png` | Trophée doux, étoile et quelques confettis | Violet, or, succès |
+| 10 | `offline-sync.png` | Nuage et téléphone reliés par des flèches interrompues | Ardoise, bleu, vert |
 
-Sujet : une silhouette humaine totalement neutre et abstraite dans un médaillon scolaire arrondi, avec une petite étoile de progression. Aucun visage, aucune caractéristique de genre ou d’origine.
+## Lot 5 — icônes d’application (3 fichiers)
 
-Le sujet occupe environ 76 % du canevas avec 12 % de marge de sécurité. Fond réellement transparent avec canal alpha propre, aucun carré blanc ou décor de fond.
+Ce dernier lot n’a que trois exports, car les lots précédents couvrent toutes les icônes manquantes du cahier des charges.
 
-À éviter : visage, portrait réaliste, texte, lettres, chiffres, filigrane, logo, photoréalisme, emoji, clipart, détails vestimentaires, cadre carré, fond blanc intégré.
-```
+| # | Fichier attendu | Export |
+|---:|---|---|
+| 1 | `app-icon-192.png` | Icône launcher 192 × 192 |
+| 2 | `app-icon-512.png` | Icône launcher 512 × 512 |
+| 3 | `app-icon-maskable-512.png` | Version maskable 512 × 512 avec zone de sécurité de 20 % |
 
-## 5. `feature-children.png` — Enfants et suivi familial
+Sujet commun du lot 5 : reprendre uniquement le « e » Elima et la toque du logo officiel, sur fond vert Elima `#2E8B57` ou vert forêt `#153F30`, avec un accent jaune `#FFD700`. Ne pas écrire le mot « Elima » dans l’icône.
 
-```text
-Crée une icône d’application éducative premium et chaleureuse pour Elima : illustration 2.5D douce, formes géométriques très arrondies, volumes légers, surfaces satinées avec un reflet discret, ombres internes subtiles, composition simple et centrée, lisible à 32 px. Palette : vert Elima #2E8B57, bleu #2563EB et petit accent jaune or #FFD700.
+## Suivi
 
-Sujet : deux silhouettes abstraites côte à côte, une grande et une petite, accompagnées d’un petit livre scolaire. Les silhouettes sont sans visage et universelles, le livre ne contient aucun signe lisible.
-
-Le sujet occupe environ 76 % du canevas avec 12 % de marge de sécurité. Fond réellement transparent avec canal alpha propre, aucun carré blanc ou décor de fond.
-
-À éviter : visages, personnages réalistes, stéréotypes, texte, lettres, chiffres, filigrane, logo, photoréalisme, emoji, clipart, foule, fond blanc intégré.
-```
-
-## 6. `feature-directory.png` — Annuaire
-
-```text
-Crée une icône d’application éducative premium et chaleureuse pour Elima : illustration 2.5D douce, formes géométriques très arrondies, volumes légers, surfaces satinées avec un reflet discret, ombres internes subtiles, composition simple et centrée, lisible à 32 px. Palette : encre anthracite #1F2937, vert Elima #2E8B57 et petit accent jaune or #FFD700.
-
-Sujet : trois silhouettes humaines abstraites organisées comme un petit annuaire, accompagnées d’un badge école minimaliste sans texte. Aucun visage ni détail identitaire.
-
-Le sujet occupe environ 76 % du canevas avec 12 % de marge de sécurité. Fond réellement transparent avec canal alpha propre, aucun carré blanc ou décor de fond.
-
-À éviter : visages, portraits, texte, lettres, chiffres, filigrane, logo, photoréalisme, emoji, clipart, foule, petits détails fragiles, fond blanc intégré.
-```
-
-## 7. `feature-students.png` — Élèves
-
-```text
-Crée une icône d’application éducative premium et chaleureuse pour Elima : illustration 2.5D douce, formes géométriques très arrondies, volumes légers, surfaces satinées avec un reflet discret, ombres internes subtiles, composition simple et centrée, lisible à 32 px. Palette : vert Elima #2E8B57, bleu #2563EB et petit accent jaune or #FFD700.
-
-Sujet : deux silhouettes d’élèves abstraites et sans visage derrière un petit livre ouvert, avec une minuscule étoile de réussite. Aucun uniforme spécifique et aucun texte.
-
-Le sujet occupe environ 76 % du canevas avec 12 % de marge de sécurité. Fond réellement transparent avec canal alpha propre, aucun carré blanc ou décor de fond.
-
-À éviter : visages, portraits, stéréotypes, texte, lettres, chiffres, filigrane, logo, photoréalisme, emoji, clipart, foule, fond blanc intégré.
-```
-
-## 8. `feature-teachers.png` — Professeurs
-
-```text
-Crée une icône d’application éducative premium et chaleureuse pour Elima : illustration 2.5D douce, formes géométriques très arrondies, volumes légers, surfaces satinées avec un reflet discret, ombres internes subtiles, composition simple et centrée, lisible à 32 px. Palette : vert professeur #256F47, vert forêt #153F30 et petit accent jaune or #FFD700.
-
-Sujet : un petit tableau scolaire arrondi accompagné d’un livre fermé et d’une toque académique simplifiée. Aucun enseignant humain, aucune écriture sur le tableau.
-
-Le sujet occupe environ 76 % du canevas avec 12 % de marge de sécurité. Fond réellement transparent avec canal alpha propre, aucun carré blanc ou décor de fond.
-
-À éviter : personnage, visage, texte, lettres, chiffres, équations, filigrane, logo, photoréalisme, emoji, clipart, détails excessifs, fond blanc intégré.
-```
-
-## 9. `feature-classes.png` — Classes et appel
-
-```text
-Crée une icône d’application éducative premium et chaleureuse pour Elima : illustration 2.5D douce, formes géométriques très arrondies, volumes légers, surfaces satinées avec un reflet discret, ombres internes subtiles, composition simple et centrée, lisible à 32 px. Palette : vert professeur #256F47, bleu #2563EB et petit accent jaune or #FFD700.
-
-Sujet : un tableau de classe arrondi avec exactement trois petites silhouettes abstraites sans visage et une coche de présence. Aucun texte ni écriture sur le tableau.
-
-Le sujet occupe environ 76 % du canevas avec 12 % de marge de sécurité. Fond réellement transparent avec canal alpha propre, aucun carré blanc ou décor de fond.
-
-À éviter : visages, foule, texte, lettres, chiffres, filigrane, logo, photoréalisme, emoji, clipart, lignes fines, fond blanc intégré.
-```
-
-## 10. `feature-assignments.png` — Devoirs
-
-```text
-Crée une icône d’application éducative premium et chaleureuse pour Elima : illustration 2.5D douce, formes géométriques très arrondies, volumes légers, surfaces satinées avec un reflet discret, ombres internes subtiles, composition simple et centrée, lisible à 32 px. Palette : ambre #F59E0B, vert Elima #2E8B57, encre #1F2937 et petit accent jaune or #FFD700.
-
-Sujet : une feuille checklist arrondie avec trois coches abstraites et un crayon épais posé en diagonale. Aucun mot, aucune lettre et aucun chiffre sur la feuille.
-
-Le sujet occupe environ 76 % du canevas avec 12 % de marge de sécurité. Fond réellement transparent avec canal alpha propre, aucun carré blanc ou décor de fond.
-
-À éviter : texte, lettres, chiffres, filigrane, logo, photoréalisme, emoji, clipart, lignes fines, liste trop longue, cadre extérieur, fond blanc intégré.
-```
-
-Après ce lot, la prochaine fonction principale encore manquante sera `feature-alerts`.
+- Lot 1 : **intégré**.
+- Lot 2 : **intégré**.
+- Lot 3 : **à générer ensuite**.
+- Lot 4 : en attente.
+- Lot 5 : en attente.
+- Total restant : **23 fichiers**.

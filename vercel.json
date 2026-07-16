@@ -3,6 +3,12 @@
   "functions": {
     "api/revision-generate.mjs": {
       "maxDuration": 60
+    },
+    "api/elima-password-login.mjs": {
+      "maxDuration": 15
+    },
+    "api/elima-signup.mjs": {
+      "maxDuration": 15
     }
   },
   "rewrites": [

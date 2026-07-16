@@ -10,11 +10,53 @@ const SERVER_ENV_KEYS = [
   "VITE_SUPABASE_ANON_KEY",
   "SUPABASE_URL",
   "SUPABASE_ANON_KEY",
+  "SUPABASE_SECRET_KEY",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "VITE_ELIMA_IDENTITY_URL",
+  "ELIMA_IDENTITY_PUBLISHABLE_KEY",
+  "VITE_ELIMA_IDENTITY_PUBLISHABLE_KEY",
+  "VITE_WEB_BASE_URL",
   "AZURE_OPENAI_ENDPOINT",
   "AZURE_OPENAI_DEPLOYMENT",
   "AZURE_OPENAI_API_VERSION",
   "AZURE_OPENAI_API_KEY",
 ] as const;
+
+const LOCAL_API_HANDLERS = ["identity-bridge", "elima-profile", "activate-school", "elima-password-login", "elima-signup", "registration-request"] as const;
+
+function localServerlessApis(enabled: boolean): Plugin {
+  return {
+    name: "elima-local-serverless-apis",
+    configureServer(server) {
+      if (!enabled) return;
+      for (const endpoint of LOCAL_API_HANDLERS) {
+        server.middlewares.use(`/api/${endpoint}`, async (request, response, next) => {
+          try {
+            const chunks: Buffer[] = [];
+            for await (const chunk of request) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+            const rawBody = Buffer.concat(chunks).toString("utf8");
+            const body = rawBody ? JSON.parse(rawBody) : {};
+            const handlerUrl = pathToFileURL(path.resolve(__dirname, `api/${endpoint}.mjs`)).href;
+            const handler = (await import(handlerUrl)).default as (request: unknown, response: unknown) => Promise<unknown>;
+            const requestAdapter = Object.assign(request, { body });
+            const responseAdapter = {
+              setHeader(name: string, value: string) { response.setHeader(name, value); return responseAdapter; },
+              status(statusCode: number) { response.statusCode = statusCode; return responseAdapter; },
+              json(payload: unknown) {
+                if (!response.hasHeader("Content-Type")) response.setHeader("Content-Type", "application/json; charset=utf-8");
+                response.end(JSON.stringify(payload));
+                return responseAdapter;
+              },
+            };
+            await handler(requestAdapter, responseAdapter);
+          } catch (error) {
+            next(error as Error);
+          }
+        });
+      }
+    },
+  };
+}
 
 function localRevisionApi(enabled: boolean): Plugin {
   return {
@@ -58,6 +100,7 @@ export default defineConfig(({ mode, command }) => {
   return {
     plugins: [
       localRevisionApi(command === "serve" && Boolean(azureEndpoint && azureKey)),
+      localServerlessApis(command === "serve"),
       react(),
       VitePWA({
         registerType: "autoUpdate",

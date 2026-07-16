@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!mainDbClient) {
+    if (usesLocalDemo || !mainDbClient) {
       const demoEmail = localStorage.getItem("elima_demo_session");
       if (demoEmail) {
         setProfile(getDemoProfile(demoEmail));
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => sub.subscription.unsubscribe();
-  }, [loadProfile]);
+  }, [loadProfile, usesLocalDemo]);
 
   const signIn = async (identifier: string, password: string) => {
     if (usesLocalDemo) {

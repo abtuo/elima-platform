@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, Brain, Camera, FileText, School, Upload } from "lucide-react";
+import { BookOpen, FileText, School } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedActionIcon } from "@/components/common/GeneratedActionIcon";
 import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ResourceCard } from "@/components/cards/ResourceCard";
@@ -69,7 +70,7 @@ export function ScannerPage() {
 
   return (
     <PageContainer>
-      <AppHeader title="Mes documents" subtitle="Ressources de l’école et documents personnels" accent="#7C3AED" action={<GeneratedFeatureIcon name="scanner" className="h-14 w-14" />} />
+      <AppHeader title="Mes documents" subtitle="Ressources de l’école et documents personnels" accent="#7C3AED" action={<GeneratedFeatureIcon name="documents" className="h-14 w-14" />} />
       <div className="mb-5 grid grid-cols-4 rounded-2xl bg-gray-100 p-1">
         <button onClick={() => setTab("school")} className={`rounded-xl px-2 py-2.5 text-xs font-semibold ${tab === "school" ? "bg-white text-revision shadow-sm" : "text-gray-500"}`}>École</button>
         <button onClick={() => setTab("assignments")} className={`rounded-xl px-1 py-2.5 text-xs font-semibold ${tab === "assignments" ? "bg-white text-revision shadow-sm" : "text-gray-500"}`}>Devoirs</button>
@@ -90,13 +91,13 @@ export function ScannerPage() {
           <div className="card p-5">
             <label onDragOver={(event) => { event.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={(event) => { event.preventDefault(); setIsDragging(false); setFile(event.dataTransfer.files[0] ?? null); }} className={`block cursor-pointer rounded-xl3 border-2 border-dashed p-8 text-center transition ${isDragging ? "border-primary bg-primary/5" : "border-gray-300"}`}>
               <input type="file" accept="image/*,.pdf" className="hidden" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
-              <Upload className="mx-auto h-10 w-10 text-gray-400" />
+              <GeneratedFeatureIcon name="scanner" className="mx-auto h-16 w-16" />
               <p className="mt-3 font-semibold text-accent">Choisir une image ou un PDF</p>
               <p className="mt-1 text-sm text-gray-500">Glissez-déposez ou cliquez</p>
             </label>
             <label className="tap mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-revision/10 px-4 py-3 text-sm font-semibold text-revision">
               <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
-              <Camera className="h-5 w-5" /> Photographier un document
+              <GeneratedActionIcon name="scanCamera" className="h-8 w-8" /> Photographier un document
             </label>
             {previewUrl ? <img src={previewUrl} alt="Aperçu du document" className="mt-4 max-h-48 w-full rounded-2xl object-contain" /> : null}
             {file && !previewUrl ? <div className="mt-4 flex items-center gap-2 text-sm text-gray-600"><FileText className="h-5 w-5" /> {file.name}</div> : null}
@@ -113,7 +114,7 @@ export function ScannerPage() {
         {tab === "mine" ? (
           <section className="space-y-3">
             {message ? <p className="rounded-2xl bg-primary/5 p-3 text-center text-sm text-primary">{message}</p> : null}
-            {history.length ? history.map((scan) => <div key={scan.id} className="space-y-2"><ScanCard scan={scan} /><div className="flex gap-2"><button type="button" onClick={() => handleAction("sheet", scan.id)} className="tap flex flex-1 items-center justify-center gap-1 rounded-2xl border border-primary/20 py-2 text-xs font-semibold text-primary"><BookOpen className="h-3.5 w-3.5" /> Créer une fiche</button><button type="button" onClick={() => handleAction("quiz", scan.id)} className="tap flex flex-1 items-center justify-center gap-1 rounded-2xl border border-revision/20 py-2 text-xs font-semibold text-revision"><Brain className="h-3.5 w-3.5" /> Créer un quiz</button></div></div>) : <EmptyState title="Aucun document" description="Vos documents personnels apparaîtront ici." icon={FileText} />}
+            {history.length ? history.map((scan) => <div key={scan.id} className="space-y-2"><ScanCard scan={scan} /><div className="flex gap-2"><button type="button" onClick={() => handleAction("sheet", scan.id)} className="tap flex flex-1 items-center justify-center gap-1 rounded-2xl border border-primary/20 py-2 text-xs font-semibold text-primary"><GeneratedActionIcon name="generateSheet" className="h-7 w-7" /> Créer une fiche</button><button type="button" onClick={() => handleAction("quiz", scan.id)} className="tap flex flex-1 items-center justify-center gap-1 rounded-2xl border border-revision/20 py-2 text-xs font-semibold text-revision"><GeneratedActionIcon name="generateQuiz" className="h-7 w-7" /> Créer un quiz</button></div></div>) : <EmptyState title="Aucun document" description="Vos documents personnels apparaîtront ici." icon={FileText} />}
           </section>
         ) : null}
       </div>
