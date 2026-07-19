@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getNavItems } from "@/constants/navigation";
-import type { MobileSpace } from "@/types/roles";
+import { getRoleLabel, type MobileSpace } from "@/types/roles";
 import { MessageShortcut } from "@/components/navigation/MessageShortcut";
 import { AlertShortcut } from "@/components/navigation/AlertShortcut";
 import { SyncShortcut } from "@/components/navigation/SyncShortcut";
@@ -90,7 +90,7 @@ export function BottomNav() {
         </nav>
         <div className="mt-auto border-t border-gray-100 pt-4">
           <p className="truncate px-3 text-sm font-semibold text-accent">{profile.fullName}</p>
-          <p className="truncate px-3 text-xs text-gray-500">{profile.email}</p>
+          <p className="truncate px-3 text-xs text-gray-500">{getRoleLabel(profile.role)}</p>
           <button type="button" onClick={handleSignOut} className="tap mt-3 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50">
             <LogOut className="h-5 w-5" /> Se déconnecter
           </button>

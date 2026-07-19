@@ -13,9 +13,9 @@ import type {
 import type { RevisionProgress, CourseSheet, QuizItem } from "../types/revision";
 
 export const demoAccounts = [
-  { label: "Admin Abidjan", email: "admin.abidjan@seed-elima.invalid", password: "ElimaSeed!2026", fullName: "Admin Collège Moderne d'Abidjan", role: "SCHOOL_ADMIN" as UserRole },
-  { label: "Parent Mariam", email: "parent.mariam@elima.school", password: "ElimaSeed!2026", fullName: "Mariam Koné", role: "PARENT" as UserRole },
-  { label: "Parent Aboubacar", email: "parent.aboubacar@elima.school", password: "ElimaSeed!2026", fullName: "Aboubacar Tuo", role: "PARENT" as UserRole },
+  { label: "Admin Abidjan", email: "admin.abidjan@seed-elima.invalid", password: "ElimaSeed!2026", fullName: "Kouakou Léon Kobenan", role: "SCHOOL_ADMIN" as UserRole },
+  { label: "Parent Mariam", email: "parent.mariam@elima.school", password: "ElimaSeed!2026", fullName: "Mme Mariam Koné", role: "PARENT" as UserRole },
+  { label: "Parent Aboubacar", email: "parent.aboubacar@elima.school", password: "ElimaSeed!2026", fullName: "M. Aboubacar Tuo", role: "PARENT" as UserRole },
   { label: "Enseignant Serge", email: "enseignant.serge@elima.school", password: "ElimaSeed!2026", fullName: "M. Serge N'Guessan", role: "TEACHER" as UserRole },
   { label: "Élève Awa", email: "eleve.awa@elima.school", password: "ElimaSeed!2026", fullName: "Awa Koné", role: "STUDENT" as UserRole },
   { label: "Élève Yao", email: "eleve.yao@elima.school", password: "ElimaSeed!2026", fullName: "Yao Kouamé", role: "STUDENT" as UserRole },

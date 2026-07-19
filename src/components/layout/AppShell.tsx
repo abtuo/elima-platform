@@ -8,7 +8,7 @@ import { AlertShortcut } from "@/components/navigation/AlertShortcut";
 import { MessageShortcut } from "@/components/navigation/MessageShortcut";
 import { SyncShortcut } from "@/components/navigation/SyncShortcut";
 import { useAuth } from "@/features/auth/AuthProvider";
-import { isStandaloneStudent } from "@/types/roles";
+import { getRoleLabel, isStandaloneStudent } from "@/types/roles";
 
 type AppShellProps = {
   children: ReactNode;
@@ -42,7 +42,7 @@ export function AppShell({ children }: AppShellProps) {
           )}
           <div className="min-w-0 flex-1 text-left">
             <p className="truncate text-xs font-semibold text-accent">{profile.fullName}</p>
-            <p className="truncate text-[10px] text-gray-400">{profile.schoolName}</p>
+            <p className="truncate text-[10px] text-gray-400">{getRoleLabel(profile.role)}</p>
           </div>
         </div>
         <div className="ml-2 flex shrink-0 items-center gap-2">

@@ -50,7 +50,7 @@ export async function fetchUserProfile(userId: string): Promise<UserProfile | nu
   return {
     id: userRow.id,
     email: userRow.email ?? "",
-    fullName: userRow.full_name ?? "Utilisateur",
+    fullName: centralProfile?.fullName ?? userRow.full_name ?? "Utilisateur",
     role: userRow.role as UserRole,
     schoolId: userRow.school_id,
     schoolName,

@@ -43,3 +43,16 @@ export const ROLE_HOME: Record<UserRole, MobileSpace> = {
   SUPER_ADMIN: "admin",
   COMPTABLE: "admin",
 };
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  SUPER_ADMIN: "Super administrateur",
+  SCHOOL_ADMIN: "Chef d’établissement",
+  COMPTABLE: "Comptable",
+  TEACHER: "Enseignant",
+  PARENT: "Parent d’élève",
+  STUDENT: "Élève",
+};
+
+export function getRoleLabel(role: UserRole) {
+  return ROLE_LABELS[role];
+}
