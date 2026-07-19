@@ -25,7 +25,12 @@ export function LearningSolverPage({ contentType }: { contentType: "guided_exerc
   const [navOpen, setNavOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
   const mode = contentType === "exam" && params.get("session") === "exam" ? "exam" : "guided";
-  const questions = useMemo(() => exercises.flatMap((exercise) => exercise.questions.filter((question) => exercise.sourceType !== "guided_session_v3" || !["guided_solution", "orientation"].includes(question.questionType)).map((question) => ({ ...question, exercise }))), [exercises]);
+  const questions = useMemo(() => exercises.flatMap((exercise) => {
+    if (exercise.sourceType !== "guided_session_v3") return exercise.questions.map((question) => ({ ...question, exercise }));
+    const correction = exercise.questions.find((question) => question.questionType === "guided_solution");
+    const flow = exercise.questions.filter((question) => !["guided_solution", "orientation"].includes(question.questionType));
+    return [...flow, ...(correction ? [correction] : [])].map((question) => ({ ...question, exercise }));
+  }), [exercises]);
   const activeIndex = Math.min(session?.currentQuestion ?? 0, Math.max(0, questions.length - 1));
   const active = questions[activeIndex];
   const answer = active && session?.answers[active.id] ? session.answers[active.id] : { value: "", steps: [""], confidence: "medium" as const, hints: [], attempts: 0 };
@@ -101,9 +106,10 @@ export function LearningSolverPage({ contentType }: { contentType: "guided_exerc
 
   async function submit() {
     const guidedV3 = contentType === "guided_exercise" && exercises[0]?.sourceType === "guided_session_v3";
-    if (!session || !window.confirm(guidedV3 ? "Terminer et voir les réponses ?" : "Remettre définitivement ce devoir ? Tu pourras ensuite consulter le bilan et les corrections.")) return;
+    if (!session || (!guidedV3 && !window.confirm("Remettre définitivement ce devoir ? Tu pourras ensuite consulter le bilan et les corrections."))) return;
     setBusy(true);
     try {
+      if (guidedV3 && active?.questionType === "guided_solution") await autosaveLearningAnswer(session, active.id);
       let next = await submitLearningSession(session);
       if (mode === "exam" || guidedV3) {
         const questionsToValidate = guidedV3 ? questions.filter((question) => ["single_choice", "multiple_choice", "ordering"].includes(question.questionType)) : questions;
@@ -130,8 +136,10 @@ export function LearningSolverPage({ contentType }: { contentType: "guided_exerc
     answer={answer}
     busy={busy}
     error={error}
+    solution={solution}
     onPatchAnswer={patchAnswer}
     onHint={requestHint}
+    onRevealSolution={() => void revealSolution(true)}
     onGo={goTo}
     onCompleteStep={completeGuidedStep}
     onSubmit={submit}

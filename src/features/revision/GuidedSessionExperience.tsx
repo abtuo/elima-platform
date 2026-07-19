@@ -16,8 +16,10 @@ type Props = {
   answer: Answer;
   busy: boolean;
   error: string;
+  solution: string[];
   onPatchAnswer: (patch: Partial<Answer>) => void;
   onHint: () => void;
+  onRevealSolution: () => void;
   onGo: (index: number) => void;
   onCompleteStep: (value: string) => void;
   onSubmit: () => void;
@@ -26,12 +28,16 @@ type Props = {
 const CLOSED_TYPES = new Set(["single_choice", "multiple_choice", "ordering"]);
 
 export function GuidedSessionExperience(props: Props) {
-  const { exercise, active, activeIndex, answer, busy, error } = props;
+  const { exercise, active, activeIndex, answer, busy, error, solution } = props;
   const step = active.publicMetadata;
   const options = asOptions(step.options);
   const stepType = String(step.stepType || active.questionType);
-  const totalSteps = exercise.questions.filter((question) => !["guided_solution", "orientation"].includes(question.questionType)).length;
+  const totalSteps = exercise.questions.filter((question) => question.questionType !== "orientation").length;
   const isLast = activeIndex === totalSteps - 1;
+
+  useEffect(() => {
+    if (stepType === "guided_solution" && solution.length === 0) props.onRevealSolution();
+  }, [active.id, stepType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <PageContainer className="max-w-6xl">
     <AppHeader title={exercise.title} subtitle={`${exercise.subject} · ${exercise.level}`} backTo="/student/reviser?mode=devoirs" />
@@ -62,9 +68,10 @@ export function GuidedSessionExperience(props: Props) {
   </PageContainer>;
 }
 
-function StepBody({ active, answer, onPatchAnswer, stepType, options }: Props & { stepType: string; options: GuidedOption[] }) {
+function StepBody({ active, answer, solution, onPatchAnswer, stepType, options }: Props & { stepType: string; options: GuidedOption[] }) {
   const step = active.publicMetadata;
   if (stepType === "orientation" || stepType === "paper_work") return null;
+  if (stepType === "guided_solution") return <><GuidedCorrection blocks={solution} loading={!solution.length} /><div className="mt-6"><p className="text-sm font-semibold text-accent">Avais-tu trouvé la bonne réponse ?</p><OptionButtons options={[{ id: "found", label: "Oui, j’avais trouvé" }, { id: "not_found", label: "Non, je n’avais pas trouvé" }]} value={answer.value} onChange={(value) => onPatchAnswer({ value })} /></div></>;
   if (stepType === "self_validation") return <SelfValidation checklist={asStrings(step.checklist)} options={asOptions(step.responseOptions)} value={answer.value} onChange={(value) => onPatchAnswer({ value })} />;
   if (stepType === "self_assessment") return <OptionButtons options={options} value={answer.value} onChange={(value) => onPatchAnswer({ value })} />;
   if (stepType === "ordering") return <Ordering items={asOptions(step.items)} value={answer.value} onChange={(value) => onPatchAnswer({ value, result: undefined })} />;
@@ -77,6 +84,7 @@ function StepActions(props: Props & { stepType: string; isLast: boolean }) {
   const { stepType, answer, busy } = props;
   if (stepType === "statement" || stepType === "orientation" || stepType === "paper_work") return <button type="button" onClick={() => props.onCompleteStep("completed")} className="inline-flex items-center gap-1.5 rounded-xl bg-revision px-4 py-2.5 text-sm font-semibold text-white">{stepType === "statement" ? "Commencer" : "Valider"}<ChevronRight className="h-4 w-4" /></button>;
   if (stepType === "self_validation" || stepType === "self_assessment") return <button type="button" disabled={!answer.value} onClick={() => props.onCompleteStep(answer.value)} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">Continuer<ChevronRight className="h-4 w-4" /></button>;
+  if (stepType === "guided_solution") return <button type="button" disabled={busy || !answer.value || !props.solution.length} onClick={props.onSubmit} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40"><Send className="h-4 w-4" />Voir la synthèse</button>;
   if (CLOSED_TYPES.has(stepType)) return props.isLast ? <button type="button" disabled={busy || !answer.value} onClick={props.onSubmit} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40"><Send className="h-4 w-4" />Terminer</button> : <button type="button" disabled={!answer.value} onClick={() => props.onCompleteStep(answer.value)} className="inline-flex items-center gap-1.5 rounded-xl bg-revision px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">Valider<ChevronRight className="h-4 w-4" /></button>;
   return null;
 }
