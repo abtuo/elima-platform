@@ -1,0 +1,3166 @@
+{
+  "metadata": {
+    "name": "Elima — 10 sessions guidées de mathématiques 6ème avec énoncés complets",
+    "version": "3.0.0",
+    "generated_on": "2026-07-19",
+    "language": "fr",
+    "country": "Côte d’Ivoire",
+    "education_system": "Programme ivoirien",
+    "level": "6ème",
+    "subject": "Mathématiques",
+    "principles": [
+      "travail sur papier",
+      "questions fermées",
+      "indices progressifs",
+      "solution guidée",
+      "auto-évaluation",
+      "énoncé complet affiché avant le guidage",
+      "questions principales visibles dès le départ",
+      "supports structurés pour tableaux, figures et frises"
+    ],
+    "counts": {
+      "sessions": 10,
+      "steps": 96,
+      "statements": 10
+    },
+    "duration": {
+      "min": 22,
+      "max": 28
+    },
+    "statement_schema": {
+      "fields": [
+        "introduction",
+        "context",
+        "main_questions",
+        "paper_instructions",
+        "display"
+      ],
+      "displayed_before_guidance": true
+    }
+  },
+  "sessions": [
+    {
+      "id": "CI-6M-V2-01",
+      "title": "Organiser les livres de la bibliothèque",
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "6ème",
+      "subject": "Mathématiques",
+      "chapter": "Addition et soustraction",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 25,
+      "objective": "Choisir les bonnes opérations, poser les calculs et interpréter le résultat.",
+      "situation": "2 485 livres, puis 736 reçus et 928 prêtés.",
+      "materials": [
+        "feuille",
+        "crayon"
+      ],
+      "skills": [
+        "comprendre un problème",
+        "addition",
+        "soustraction",
+        "vérification"
+      ],
+      "paper_required": true,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Lis l’énoncé",
+          "prompt": "La bibliothèque du collège possède 2 485 livres. À l’occasion de la rentrée, elle reçoit 736 nouveaux livres. Quelques jours plus tard, elle prête 928 livres aux différentes classes.",
+          "main_questions": [
+            "Combien de livres la bibliothèque possède-t-elle juste après la livraison ?",
+            "Combien de livres reste-t-il après le prêt aux classes ?",
+            "Quelle opération permet de vérifier le dernier résultat ?"
+          ],
+          "paper_instructions": [
+            "Recopie les données utiles sur ta feuille.",
+            "Pose proprement les deux opérations.",
+            "Écris une phrase de conclusion après chaque calcul."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "J’ai lu et compris l’énoncé"
+        },
+        {
+          "id": "prep",
+          "type": "orientation",
+          "title": "Prépare ta feuille",
+          "prompt": "Écris 2 485, 736 et 928.",
+          "action_label": "C’est fait"
+        },
+        {
+          "id": "c1",
+          "type": "single_choice",
+          "title": "Comprendre",
+          "prompt": "Après la livraison, que cherche-t-on ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Les livres ajoutés"
+            },
+            {
+              "id": "b",
+              "label": "Le nouveau total"
+            },
+            {
+              "id": "c",
+              "label": "Les livres prêtés"
+            },
+            {
+              "id": "d",
+              "label": "Le prix"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c2",
+          "type": "single_choice",
+          "title": "Choisir l’opération",
+          "prompt": "Quelle opération utiliser ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "2 485+736"
+            },
+            {
+              "id": "b",
+              "label": "2 485-736"
+            },
+            {
+              "id": "c",
+              "label": "736-2 485"
+            },
+            {
+              "id": "d",
+              "label": "2 485×736"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p1",
+          "type": "paper_work",
+          "title": "Calcul sur papier",
+          "prompt": "Pose 2 485+736.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "Aligne les chiffres.",
+            "Commence par les unités.",
+            "Pense aux retenues."
+          ]
+        },
+        {
+          "id": "r1",
+          "type": "single_choice",
+          "title": "Vérifier",
+          "prompt": "Quel résultat ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "3 121"
+            },
+            {
+              "id": "b",
+              "label": "3 211"
+            },
+            {
+              "id": "c",
+              "label": "3 221"
+            },
+            {
+              "id": "d",
+              "label": "3 321"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {
+            "wrong": {
+              "a": "Vérifie les centaines.",
+              "b": "Vérifie l’ordre des chiffres.",
+              "d": "Vérifie la retenue."
+            }
+          }
+        },
+        {
+          "id": "c3",
+          "type": "single_choice",
+          "title": "Deuxième opération",
+          "prompt": "Après le prêt, quelle opération ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "3 221+928"
+            },
+            {
+              "id": "b",
+              "label": "3 221-928"
+            },
+            {
+              "id": "c",
+              "label": "928-3 221"
+            },
+            {
+              "id": "d",
+              "label": "3 221÷928"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p2",
+          "type": "paper_work",
+          "title": "Deuxième calcul",
+          "prompt": "Pose 3 221-928.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "Aligne les chiffres.",
+            "Il faut emprunter aux unités.",
+            "Vérifie par une addition."
+          ]
+        },
+        {
+          "id": "r2",
+          "type": "single_choice",
+          "title": "Résultat final",
+          "prompt": "Combien restent ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "2 193"
+            },
+            {
+              "id": "b",
+              "label": "2 293"
+            },
+            {
+              "id": "c",
+              "label": "2 303"
+            },
+            {
+              "id": "d",
+              "label": "4 149"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "sol",
+          "type": "guided_solution",
+          "title": "Correction guidée",
+          "prompt": "Compare avec ton travail sur papier.",
+          "solution_blocks": [
+            {
+              "kind": "method",
+              "content": "Livraison : addition. Prêt : soustraction."
+            },
+            {
+              "kind": "equation",
+              "content": "2 485+736=3 221"
+            },
+            {
+              "kind": "equation",
+              "content": "3 221-928=2 293"
+            },
+            {
+              "kind": "conclusion",
+              "content": "Il reste 2 293 livres."
+            }
+          ]
+        },
+        {
+          "id": "self",
+          "type": "self_assessment",
+          "title": "Auto-évaluation",
+          "prompt": "Après comparaison avec la correction, choisis ce qui te correspond.",
+          "options": [
+            {
+              "id": "alone",
+              "label": "J’avais compris et trouvé seul",
+              "mastery_weight": 1.0
+            },
+            {
+              "id": "calc_error",
+              "label": "J’avais compris mais j’ai fait une erreur",
+              "mastery_weight": 0.7
+            },
+            {
+              "id": "with_hints",
+              "label": "J’ai compris grâce aux indices",
+              "mastery_weight": 0.5
+            },
+            {
+              "id": "not_yet",
+              "label": "Je n’ai pas encore compris",
+              "mastery_weight": 0.1
+            }
+          ]
+        }
+      ],
+      "final_transfer_check": {
+        "type": "single_choice",
+        "prompt": "Comment vérifier 3 221-928=2 293 ?",
+        "options": [
+          "2 293+928=3 221",
+          "3 221+928=2 293",
+          "2 293-928=3 221"
+        ],
+        "correct_index": 0
+      },
+      "remediation": [
+        "Alignement",
+        "Retenues et emprunts",
+        "Problème similaire"
+      ],
+      "scoring": {
+        "knowledge": true,
+        "autonomy": true,
+        "self_assessment_is_not_mastery_proof": true
+      },
+      "statement": {
+        "introduction": "Dans cette session, tu vas résoudre un problème en deux étapes et vérifier ton résultat.",
+        "context": "La bibliothèque du collège possède 2 485 livres. À l’occasion de la rentrée, elle reçoit 736 nouveaux livres. Quelques jours plus tard, elle prête 928 livres aux différentes classes.",
+        "main_questions": [
+          "Combien de livres la bibliothèque possède-t-elle juste après la livraison ?",
+          "Combien de livres reste-t-il après le prêt aux classes ?",
+          "Quelle opération permet de vérifier le dernier résultat ?"
+        ],
+        "paper_instructions": [
+          "Recopie les données utiles sur ta feuille.",
+          "Pose proprement les deux opérations.",
+          "Écris une phrase de conclusion après chaque calcul."
+        ],
+        "display": {
+          "type": "text_problem"
+        }
+      },
+      "statement_before_guidance": true
+    },
+    {
+      "id": "CI-6M-V2-02",
+      "title": "Ranger les cahiers dans des cartons",
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "6ème",
+      "subject": "Mathématiques",
+      "chapter": "Division euclidienne",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 28,
+      "objective": "Trouver quotient et reste puis interpréter le résultat.",
+      "situation": "875 cahiers dans des cartons de 24.",
+      "materials": [
+        "feuille",
+        "crayon"
+      ],
+      "skills": [
+        "multiples",
+        "division euclidienne",
+        "quotient",
+        "reste"
+      ],
+      "paper_required": true,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Lis l’énoncé",
+          "prompt": "Pour la rentrée, l’école doit ranger 875 cahiers dans des cartons. Chaque carton peut contenir au maximum 24 cahiers.",
+          "main_questions": [
+            "Combien de cartons peut-on remplir complètement ?",
+            "Combien de cahiers restent après avoir rempli ces cartons ?",
+            "Combien de cartons faut-il réellement pour transporter tous les cahiers ?"
+          ],
+          "paper_instructions": [
+            "Cherche les multiples de 24 proches de 875.",
+            "Écris la division sous la forme : dividende = diviseur × quotient + reste.",
+            "Pense à interpréter le reste dans la situation."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "J’ai lu et compris l’énoncé"
+        },
+        {
+          "id": "c1",
+          "type": "single_choice",
+          "title": "Comprendre",
+          "prompt": "Que représente 24 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Total de cahiers"
+            },
+            {
+              "id": "b",
+              "label": "Cahiers par carton"
+            },
+            {
+              "id": "c",
+              "label": "Nombre de cartons"
+            },
+            {
+              "id": "d",
+              "label": "Reste"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c2",
+          "type": "single_choice",
+          "title": "Opération",
+          "prompt": "Quelle opération ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "875+24"
+            },
+            {
+              "id": "b",
+              "label": "875-24"
+            },
+            {
+              "id": "c",
+              "label": "875÷24"
+            },
+            {
+              "id": "d",
+              "label": "875×24"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c3",
+          "type": "single_choice",
+          "title": "Estimation",
+          "prompt": "Comme 24×30=720, le quotient est...",
+          "options": [
+            {
+              "id": "a",
+              "label": "<20"
+            },
+            {
+              "id": "b",
+              "label": "entre 20 et 30"
+            },
+            {
+              "id": "c",
+              "label": "entre 30 et 40"
+            },
+            {
+              "id": "d",
+              "label": ">50"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p1",
+          "type": "paper_work",
+          "title": "Recherche",
+          "prompt": "Cherche le plus grand multiple de 24 ≤875.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "Pars de 24×30=720.",
+            "Calcule le reste provisoire.",
+            "Teste 24×36."
+          ]
+        },
+        {
+          "id": "r1",
+          "type": "single_choice",
+          "title": "Multiple",
+          "prompt": "Le bon multiple est...",
+          "options": [
+            {
+              "id": "a",
+              "label": "24×35=840"
+            },
+            {
+              "id": "b",
+              "label": "24×36=864"
+            },
+            {
+              "id": "c",
+              "label": "24×37=888"
+            },
+            {
+              "id": "d",
+              "label": "24×38=912"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "r2",
+          "type": "single_choice",
+          "title": "Reste",
+          "prompt": "Quel est le reste ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "9"
+            },
+            {
+              "id": "b",
+              "label": "10"
+            },
+            {
+              "id": "c",
+              "label": "11"
+            },
+            {
+              "id": "d",
+              "label": "12"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "r3",
+          "type": "single_choice",
+          "title": "Interpréter",
+          "prompt": "Combien de cartons nécessaires ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "35"
+            },
+            {
+              "id": "b",
+              "label": "36"
+            },
+            {
+              "id": "c",
+              "label": "37"
+            },
+            {
+              "id": "d",
+              "label": "47"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "sol",
+          "type": "guided_solution",
+          "title": "Correction guidée",
+          "prompt": "Compare avec ton travail sur papier.",
+          "solution_blocks": [
+            {
+              "kind": "equation",
+              "content": "24×36=864"
+            },
+            {
+              "kind": "equation",
+              "content": "875=24×36+11"
+            },
+            {
+              "kind": "conclusion",
+              "content": "37 cartons : 36 pleins et 1 pour les 11 restants."
+            }
+          ]
+        },
+        {
+          "id": "self",
+          "type": "self_assessment",
+          "title": "Auto-évaluation",
+          "prompt": "Après comparaison avec la correction, choisis ce qui te correspond.",
+          "options": [
+            {
+              "id": "alone",
+              "label": "J’avais compris et trouvé seul",
+              "mastery_weight": 1.0
+            },
+            {
+              "id": "calc_error",
+              "label": "J’avais compris mais j’ai fait une erreur",
+              "mastery_weight": 0.7
+            },
+            {
+              "id": "with_hints",
+              "label": "J’ai compris grâce aux indices",
+              "mastery_weight": 0.5
+            },
+            {
+              "id": "not_yet",
+              "label": "Je n’ai pas encore compris",
+              "mastery_weight": 0.1
+            }
+          ]
+        }
+      ],
+      "final_transfer_check": {
+        "type": "single_choice",
+        "prompt": "Le reste doit être...",
+        "options": [
+          "plus grand que le diviseur",
+          "plus petit que le diviseur",
+          "égal au quotient"
+        ],
+        "correct_index": 1
+      },
+      "remediation": [
+        "Multiples de 24",
+        "Quotient et reste",
+        "Interprétation du reste"
+      ],
+      "scoring": {
+        "knowledge": true,
+        "autonomy": true,
+        "self_assessment_is_not_mastery_proof": true
+      },
+      "statement": {
+        "introduction": "Tu vas utiliser une division euclidienne et interpréter correctement son reste.",
+        "context": "Pour la rentrée, l’école doit ranger 875 cahiers dans des cartons. Chaque carton peut contenir au maximum 24 cahiers.",
+        "main_questions": [
+          "Combien de cartons peut-on remplir complètement ?",
+          "Combien de cahiers restent après avoir rempli ces cartons ?",
+          "Combien de cartons faut-il réellement pour transporter tous les cahiers ?"
+        ],
+        "paper_instructions": [
+          "Cherche les multiples de 24 proches de 875.",
+          "Écris la division sous la forme : dividende = diviseur × quotient + reste.",
+          "Pense à interpréter le reste dans la situation."
+        ],
+        "display": {
+          "type": "text_problem"
+        }
+      },
+      "statement_before_guidance": true
+    },
+    {
+      "id": "CI-6M-V2-03",
+      "title": "Faire les courses au marché",
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "6ème",
+      "subject": "Mathématiques",
+      "chapter": "Décimaux et monnaie",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 25,
+      "objective": "Multiplier par 2,5, additionner des prix et estimer.",
+      "situation": "2,5 kg de riz à 650 F/kg et une huile à 1 250 F.",
+      "materials": [
+        "feuille",
+        "crayon"
+      ],
+      "skills": [
+        "décimaux",
+        "prix unitaire",
+        "multiplication",
+        "estimation"
+      ],
+      "paper_required": true,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Lis l’énoncé",
+          "prompt": "Au marché, Awa achète 2,5 kg de riz à 650 F le kilogramme. Elle achète aussi une bouteille d’huile à 1 250 F.",
+          "main_questions": [
+            "Quel est le prix des 2,5 kg de riz ?",
+            "Combien Awa paie-t-elle au total ?",
+            "Comment vérifier rapidement que le total obtenu est raisonnable ?"
+          ],
+          "paper_instructions": [
+            "Écris les prix et les quantités avec leurs unités.",
+            "Fais les calculs sur ta feuille.",
+            "Avant de valider, estime mentalement le résultat."
+          ],
+          "display": {
+            "type": "structured_data",
+            "data": [
+              {
+                "item": "Riz",
+                "quantity": "2,5 kg",
+                "unit_price": "650 F/kg"
+              },
+              {
+                "item": "Huile",
+                "quantity": "1 bouteille",
+                "unit_price": "1 250 F"
+              }
+            ]
+          },
+          "action_label": "J’ai lu et compris l’énoncé"
+        },
+        {
+          "id": "c1",
+          "type": "single_choice",
+          "title": "Opération",
+          "prompt": "Prix du riz ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "2,5+650"
+            },
+            {
+              "id": "b",
+              "label": "650-2,5"
+            },
+            {
+              "id": "c",
+              "label": "2,5×650"
+            },
+            {
+              "id": "d",
+              "label": "650÷2,5"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c2",
+          "type": "single_choice",
+          "title": "Stratégie",
+          "prompt": "Méthode simple ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "650×5 puis ÷2"
+            },
+            {
+              "id": "b",
+              "label": "650+2,5"
+            },
+            {
+              "id": "c",
+              "label": "650÷5 puis ×2"
+            },
+            {
+              "id": "d",
+              "label": "650-2,5"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p1",
+          "type": "paper_work",
+          "title": "Calcul",
+          "prompt": "Calcule le prix du riz.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "2,5=5/2.",
+            "650×5=3 250.",
+            "Divise par 2."
+          ]
+        },
+        {
+          "id": "r1",
+          "type": "single_choice",
+          "title": "Prix du riz",
+          "prompt": "Résultat ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "1 300 F"
+            },
+            {
+              "id": "b",
+              "label": "1 625 F"
+            },
+            {
+              "id": "c",
+              "label": "2 500 F"
+            },
+            {
+              "id": "d",
+              "label": "3 250 F"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c3",
+          "type": "single_choice",
+          "title": "Prix total",
+          "prompt": "Opération ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "1 625+1 250"
+            },
+            {
+              "id": "b",
+              "label": "1 625-1 250"
+            },
+            {
+              "id": "c",
+              "label": "1 625×1 250"
+            },
+            {
+              "id": "d",
+              "label": "1 250÷1 625"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p2",
+          "type": "paper_work",
+          "title": "Addition",
+          "prompt": "Calcule le total.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "Aligne les unités.",
+            "1 600+1 200≈2 800.",
+            "Vérifie que le total dépasse 2 800."
+          ]
+        },
+        {
+          "id": "r2",
+          "type": "single_choice",
+          "title": "Total",
+          "prompt": "Résultat ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "2 775 F"
+            },
+            {
+              "id": "b",
+              "label": "2 875 F"
+            },
+            {
+              "id": "c",
+              "label": "3 875 F"
+            },
+            {
+              "id": "d",
+              "label": "4 125 F"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "sol",
+          "type": "guided_solution",
+          "title": "Correction guidée",
+          "prompt": "Compare avec ton travail sur papier.",
+          "solution_blocks": [
+            {
+              "kind": "equation",
+              "content": "2,5×650=(5×650)÷2=1 625 F"
+            },
+            {
+              "kind": "equation",
+              "content": "1 625+1 250=2 875 F"
+            },
+            {
+              "kind": "conclusion",
+              "content": "Total : 2 875 F."
+            }
+          ]
+        },
+        {
+          "id": "self",
+          "type": "self_assessment",
+          "title": "Auto-évaluation",
+          "prompt": "Après comparaison avec la correction, choisis ce qui te correspond.",
+          "options": [
+            {
+              "id": "alone",
+              "label": "J’avais compris et trouvé seul",
+              "mastery_weight": 1.0
+            },
+            {
+              "id": "calc_error",
+              "label": "J’avais compris mais j’ai fait une erreur",
+              "mastery_weight": 0.7
+            },
+            {
+              "id": "with_hints",
+              "label": "J’ai compris grâce aux indices",
+              "mastery_weight": 0.5
+            },
+            {
+              "id": "not_yet",
+              "label": "Je n’ai pas encore compris",
+              "mastery_weight": 0.1
+            }
+          ]
+        }
+      ],
+      "final_transfer_check": {
+        "type": "single_choice",
+        "prompt": "2 875 F est-il raisonnable ?",
+        "options": [
+          "Oui, environ 1 600+1 250",
+          "Non, inférieur à l’huile",
+          "Non, il faut multiplier les prix"
+        ],
+        "correct_index": 0
+      },
+      "remediation": [
+        "Multiplier par 2,5",
+        "Addition de prix",
+        "Estimation"
+      ],
+      "scoring": {
+        "knowledge": true,
+        "autonomy": true,
+        "self_assessment_is_not_mastery_proof": true
+      },
+      "statement": {
+        "introduction": "Tu vas calculer un prix à partir d’une masse décimale, puis vérifier si ton résultat est raisonnable.",
+        "context": "Au marché, Awa achète 2,5 kg de riz à 650 F le kilogramme. Elle achète aussi une bouteille d’huile à 1 250 F.",
+        "main_questions": [
+          "Quel est le prix des 2,5 kg de riz ?",
+          "Combien Awa paie-t-elle au total ?",
+          "Comment vérifier rapidement que le total obtenu est raisonnable ?"
+        ],
+        "paper_instructions": [
+          "Écris les prix et les quantités avec leurs unités.",
+          "Fais les calculs sur ta feuille.",
+          "Avant de valider, estime mentalement le résultat."
+        ],
+        "display": {
+          "type": "structured_data",
+          "data": [
+            {
+              "item": "Riz",
+              "quantity": "2,5 kg",
+              "unit_price": "650 F/kg"
+            },
+            {
+              "item": "Huile",
+              "quantity": "1 bouteille",
+              "unit_price": "1 250 F"
+            }
+          ]
+        }
+      },
+      "statement_before_guidance": true
+    },
+    {
+      "id": "CI-6M-V2-04",
+      "title": "Former les équipes du club",
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "6ème",
+      "subject": "Mathématiques",
+      "chapter": "Fractions d’une quantité",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 25,
+      "objective": "Calculer trois quarts d’une quantité et identifier le complément.",
+      "situation": "Une classe de 36 élèves ; les 3/4 participent.",
+      "materials": [
+        "feuille",
+        "crayon"
+      ],
+      "skills": [
+        "fraction",
+        "division",
+        "multiplication",
+        "complément"
+      ],
+      "paper_required": true,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Lis l’énoncé",
+          "prompt": "Une classe de 6ème compte 36 élèves. Les trois quarts des élèves participent au club sportif du mercredi.",
+          "main_questions": [
+            "Combien d’élèves participent au club sportif ?",
+            "Combien d’élèves ne participent pas ?",
+            "Quelle fraction de la classe ne participe pas ?"
+          ],
+          "paper_instructions": [
+            "Dessine une barre partagée en quatre parts égales.",
+            "Note la valeur d’un quart de la classe.",
+            "Utilise ensuite cette valeur pour calculer trois quarts."
+          ],
+          "display": {
+            "type": "fraction_bar",
+            "total_parts": 4,
+            "selected_parts": 3
+          },
+          "action_label": "J’ai lu et compris l’énoncé"
+        },
+        {
+          "id": "prep",
+          "type": "paper_work",
+          "title": "Représente",
+          "prompt": "Dessine une barre partagée en 4 parts égales.",
+          "action_label": "J’ai dessiné",
+          "hints": [
+            "Écris 36 au-dessus.",
+            "Chaque part représente un quart."
+          ]
+        },
+        {
+          "id": "c1",
+          "type": "single_choice",
+          "title": "Dénominateur",
+          "prompt": "Que signifie 4 dans 3/4 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Partager en 4 parts égales"
+            },
+            {
+              "id": "b",
+              "label": "Prendre 4 élèves"
+            },
+            {
+              "id": "c",
+              "label": "Ajouter 4"
+            },
+            {
+              "id": "d",
+              "label": "Multiplier par 4"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c2",
+          "type": "single_choice",
+          "title": "Un quart",
+          "prompt": "Quelle opération ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "36+4"
+            },
+            {
+              "id": "b",
+              "label": "36-4"
+            },
+            {
+              "id": "c",
+              "label": "36÷4"
+            },
+            {
+              "id": "d",
+              "label": "36×4"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p1",
+          "type": "paper_work",
+          "title": "Calcul",
+          "prompt": "Calcule 1/4 puis 3/4 de 36.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "36÷4.",
+            "Une part vaut 9.",
+            "Multiplie 9 par 3."
+          ]
+        },
+        {
+          "id": "r1",
+          "type": "single_choice",
+          "title": "Participants",
+          "prompt": "Combien ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "9"
+            },
+            {
+              "id": "b",
+              "label": "12"
+            },
+            {
+              "id": "c",
+              "label": "27"
+            },
+            {
+              "id": "d",
+              "label": "48"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "r2",
+          "type": "single_choice",
+          "title": "Non-participants",
+          "prompt": "Combien ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "7"
+            },
+            {
+              "id": "b",
+              "label": "9"
+            },
+            {
+              "id": "c",
+              "label": "12"
+            },
+            {
+              "id": "d",
+              "label": "27"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "r3",
+          "type": "single_choice",
+          "title": "Fraction restante",
+          "prompt": "Quelle fraction ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "1/4"
+            },
+            {
+              "id": "b",
+              "label": "2/4"
+            },
+            {
+              "id": "c",
+              "label": "3/4"
+            },
+            {
+              "id": "d",
+              "label": "4/4"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "sol",
+          "type": "guided_solution",
+          "title": "Correction guidée",
+          "prompt": "Compare avec ton travail sur papier.",
+          "solution_blocks": [
+            {
+              "kind": "visual_fraction",
+              "content": {
+                "parts": 4,
+                "selected": 3
+              }
+            },
+            {
+              "kind": "equation",
+              "content": "36÷4=9"
+            },
+            {
+              "kind": "equation",
+              "content": "9×3=27"
+            },
+            {
+              "kind": "conclusion",
+              "content": "27 participent ; 9, soit 1/4, ne participent pas."
+            }
+          ]
+        },
+        {
+          "id": "self",
+          "type": "self_assessment",
+          "title": "Auto-évaluation",
+          "prompt": "Après comparaison avec la correction, choisis ce qui te correspond.",
+          "options": [
+            {
+              "id": "alone",
+              "label": "J’avais compris et trouvé seul",
+              "mastery_weight": 1.0
+            },
+            {
+              "id": "calc_error",
+              "label": "J’avais compris mais j’ai fait une erreur",
+              "mastery_weight": 0.7
+            },
+            {
+              "id": "with_hints",
+              "label": "J’ai compris grâce aux indices",
+              "mastery_weight": 0.5
+            },
+            {
+              "id": "not_yet",
+              "label": "Je n’ai pas encore compris",
+              "mastery_weight": 0.1
+            }
+          ]
+        }
+      ],
+      "final_transfer_check": {
+        "type": "single_choice",
+        "prompt": "Les 2/3 de 30 valent...",
+        "options": [
+          "10",
+          "15",
+          "20",
+          "45"
+        ],
+        "correct_index": 2
+      },
+      "remediation": [
+        "Rôle du dénominateur",
+        "Fraction d’une quantité",
+        "Complément à 1"
+      ],
+      "scoring": {
+        "knowledge": true,
+        "autonomy": true,
+        "self_assessment_is_not_mastery_proof": true
+      },
+      "statement": {
+        "introduction": "Tu vas représenter une fraction et calculer cette fraction d’un nombre d’élèves.",
+        "context": "Une classe de 6ème compte 36 élèves. Les trois quarts des élèves participent au club sportif du mercredi.",
+        "main_questions": [
+          "Combien d’élèves participent au club sportif ?",
+          "Combien d’élèves ne participent pas ?",
+          "Quelle fraction de la classe ne participe pas ?"
+        ],
+        "paper_instructions": [
+          "Dessine une barre partagée en quatre parts égales.",
+          "Note la valeur d’un quart de la classe.",
+          "Utilise ensuite cette valeur pour calculer trois quarts."
+        ],
+        "display": {
+          "type": "fraction_bar",
+          "total_parts": 4,
+          "selected_parts": 3
+        }
+      },
+      "statement_before_guidance": true
+    },
+    {
+      "id": "CI-6M-V2-05",
+      "title": "Acheter des cahiers",
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "6ème",
+      "subject": "Mathématiques",
+      "chapter": "Proportionnalité",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 25,
+      "objective": "Calculer un prix unitaire puis un prix pour une autre quantité.",
+      "situation": "3 cahiers coûtent 900 F.",
+      "materials": [
+        "feuille",
+        "crayon"
+      ],
+      "skills": [
+        "prix unitaire",
+        "coefficient",
+        "tableau"
+      ],
+      "paper_required": true,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Lis l’énoncé",
+          "prompt": "Dans une papeterie, trois cahiers identiques coûtent 900 F. Tous les cahiers sont vendus au même prix.",
+          "main_questions": [
+            "Quel est le prix d’un cahier ?",
+            "Combien coûtent cinq cahiers ?",
+            "Quel nombre permet de passer du nombre de cahiers au prix ?"
+          ],
+          "paper_instructions": [
+            "Commence par calculer le prix d’un seul cahier.",
+            "Présente ensuite les résultats dans un petit tableau.",
+            "Vérifie que le prix augmente toujours de la même façon."
+          ],
+          "display": {
+            "type": "table",
+            "headers": [
+              "Nombre de cahiers",
+              "Prix"
+            ],
+            "rows": [
+              [
+                "1",
+                "?"
+              ],
+              [
+                "3",
+                "900 F"
+              ],
+              [
+                "5",
+                "?"
+              ]
+            ]
+          },
+          "action_label": "J’ai lu et compris l’énoncé"
+        },
+        {
+          "id": "c1",
+          "type": "single_choice",
+          "title": "Comprendre",
+          "prompt": "Même prix signifie...",
+          "options": [
+            {
+              "id": "a",
+              "label": "Le prix change"
+            },
+            {
+              "id": "b",
+              "label": "Chaque cahier coûte pareil"
+            },
+            {
+              "id": "c",
+              "label": "3 cahiers coûtent 300 F"
+            },
+            {
+              "id": "d",
+              "label": "Prix libre"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c2",
+          "type": "single_choice",
+          "title": "Prix unitaire",
+          "prompt": "Opération ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "900÷3"
+            },
+            {
+              "id": "b",
+              "label": "900×3"
+            },
+            {
+              "id": "c",
+              "label": "900-3"
+            },
+            {
+              "id": "d",
+              "label": "900+3"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p1",
+          "type": "paper_work",
+          "title": "Calcul",
+          "prompt": "Calcule le prix d’un cahier.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "Partage 900 en 3.",
+            "9 centaines ÷3.",
+            "Résultat : 3 centaines."
+          ]
+        },
+        {
+          "id": "r1",
+          "type": "single_choice",
+          "title": "Validation",
+          "prompt": "Prix d’un cahier ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "30 F"
+            },
+            {
+              "id": "b",
+              "label": "300 F"
+            },
+            {
+              "id": "c",
+              "label": "600 F"
+            },
+            {
+              "id": "d",
+              "label": "2 700 F"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c3",
+          "type": "single_choice",
+          "title": "Cinq cahiers",
+          "prompt": "Opération ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "5+300"
+            },
+            {
+              "id": "b",
+              "label": "5×300"
+            },
+            {
+              "id": "c",
+              "label": "300÷5"
+            },
+            {
+              "id": "d",
+              "label": "900-5"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p2",
+          "type": "paper_work",
+          "title": "Calcul",
+          "prompt": "Calcule le prix de 5 cahiers.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "5×3 centaines.",
+            "5×3=15.",
+            "15 centaines=1 500."
+          ]
+        },
+        {
+          "id": "r2",
+          "type": "single_choice",
+          "title": "Résultat",
+          "prompt": "Prix de 5 cahiers ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "1 200 F"
+            },
+            {
+              "id": "b",
+              "label": "1 500 F"
+            },
+            {
+              "id": "c",
+              "label": "2 700 F"
+            },
+            {
+              "id": "d",
+              "label": "4 500 F"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "sol",
+          "type": "guided_solution",
+          "title": "Correction guidée",
+          "prompt": "Compare avec ton travail sur papier.",
+          "solution_blocks": [
+            {
+              "kind": "table",
+              "content": {
+                "headers": [
+                  "Cahiers",
+                  "Prix"
+                ],
+                "rows": [
+                  [
+                    "1",
+                    "300"
+                  ],
+                  [
+                    "3",
+                    "900"
+                  ],
+                  [
+                    "5",
+                    "1 500"
+                  ]
+                ]
+              }
+            },
+            {
+              "kind": "conclusion",
+              "content": "Coefficient de proportionnalité : 300."
+            }
+          ]
+        },
+        {
+          "id": "self",
+          "type": "self_assessment",
+          "title": "Auto-évaluation",
+          "prompt": "Après comparaison avec la correction, choisis ce qui te correspond.",
+          "options": [
+            {
+              "id": "alone",
+              "label": "J’avais compris et trouvé seul",
+              "mastery_weight": 1.0
+            },
+            {
+              "id": "calc_error",
+              "label": "J’avais compris mais j’ai fait une erreur",
+              "mastery_weight": 0.7
+            },
+            {
+              "id": "with_hints",
+              "label": "J’ai compris grâce aux indices",
+              "mastery_weight": 0.5
+            },
+            {
+              "id": "not_yet",
+              "label": "Je n’ai pas encore compris",
+              "mastery_weight": 0.1
+            }
+          ]
+        }
+      ],
+      "final_transfer_check": {
+        "type": "single_choice",
+        "prompt": "8 cahiers coûtent...",
+        "options": [
+          "2 100 F",
+          "2 400 F",
+          "2 700 F",
+          "3 000 F"
+        ],
+        "correct_index": 1
+      },
+      "remediation": [
+        "Prix unitaire",
+        "Tableau",
+        "Multiplication"
+      ],
+      "scoring": {
+        "knowledge": true,
+        "autonomy": true,
+        "self_assessment_is_not_mastery_proof": true
+      },
+      "statement": {
+        "introduction": "Tu vas déterminer un prix unitaire et compléter une situation de proportionnalité.",
+        "context": "Dans une papeterie, trois cahiers identiques coûtent 900 F. Tous les cahiers sont vendus au même prix.",
+        "main_questions": [
+          "Quel est le prix d’un cahier ?",
+          "Combien coûtent cinq cahiers ?",
+          "Quel nombre permet de passer du nombre de cahiers au prix ?"
+        ],
+        "paper_instructions": [
+          "Commence par calculer le prix d’un seul cahier.",
+          "Présente ensuite les résultats dans un petit tableau.",
+          "Vérifie que le prix augmente toujours de la même façon."
+        ],
+        "display": {
+          "type": "table",
+          "headers": [
+            "Nombre de cahiers",
+            "Prix"
+          ],
+          "rows": [
+            [
+              "1",
+              "?"
+            ],
+            [
+              "3",
+              "900 F"
+            ],
+            [
+              "5",
+              "?"
+            ]
+          ]
+        }
+      },
+      "statement_before_guidance": true
+    },
+    {
+      "id": "CI-6M-V2-06",
+      "title": "Mesurer le parcours de course",
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "6ème",
+      "subject": "Mathématiques",
+      "chapter": "Conversions de longueurs",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 23,
+      "objective": "Convertir km en m, additionner puis reconvertir.",
+      "situation": "Un parcours mesure 1,8 km puis 650 m.",
+      "materials": [
+        "feuille",
+        "crayon"
+      ],
+      "skills": [
+        "km-m",
+        "addition de mesures",
+        "unités"
+      ],
+      "paper_required": true,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Lis l’énoncé",
+          "prompt": "Pour une course, les élèves parcourent d’abord 1,8 km, puis encore 650 m. Le professeur souhaite connaître la longueur totale du parcours.",
+          "main_questions": [
+            "Combien de mètres représentent 1,8 km ?",
+            "Quelle est la longueur totale du parcours en mètres ?",
+            "Quelle est cette longueur en kilomètres ?"
+          ],
+          "paper_instructions": [
+            "Choisis une unité commune avant d’additionner.",
+            "Écris chaque conversion avec son unité.",
+            "Vérifie le déplacement de la virgule."
+          ],
+          "display": {
+            "type": "route",
+            "segments": [
+              {
+                "label": "Première partie",
+                "length": "1,8 km"
+              },
+              {
+                "label": "Deuxième partie",
+                "length": "650 m"
+              }
+            ]
+          },
+          "action_label": "J’ai lu et compris l’énoncé"
+        },
+        {
+          "id": "c1",
+          "type": "single_choice",
+          "title": "Avant d’additionner",
+          "prompt": "Que faire ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Additionner directement"
+            },
+            {
+              "id": "b",
+              "label": "Même unité"
+            },
+            {
+              "id": "c",
+              "label": "Multiplier"
+            },
+            {
+              "id": "d",
+              "label": "Soustraire"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c2",
+          "type": "single_choice",
+          "title": "Conversion",
+          "prompt": "1,8 km =",
+          "options": [
+            {
+              "id": "a",
+              "label": "18 m"
+            },
+            {
+              "id": "b",
+              "label": "180 m"
+            },
+            {
+              "id": "c",
+              "label": "1 800 m"
+            },
+            {
+              "id": "d",
+              "label": "18 000 m"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p1",
+          "type": "paper_work",
+          "title": "Addition",
+          "prompt": "Calcule 1 800+650.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "1 800+600=2 400.",
+            "Ajoute 50.",
+            "Résultat >2 400."
+          ]
+        },
+        {
+          "id": "r1",
+          "type": "single_choice",
+          "title": "Total",
+          "prompt": "Longueur ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "1 850 m"
+            },
+            {
+              "id": "b",
+              "label": "2 350 m"
+            },
+            {
+              "id": "c",
+              "label": "2 450 m"
+            },
+            {
+              "id": "d",
+              "label": "8 300 m"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "r2",
+          "type": "single_choice",
+          "title": "En km",
+          "prompt": "2 450 m =",
+          "options": [
+            {
+              "id": "a",
+              "label": "0,245 km"
+            },
+            {
+              "id": "b",
+              "label": "2,45 km"
+            },
+            {
+              "id": "c",
+              "label": "24,5 km"
+            },
+            {
+              "id": "d",
+              "label": "245 km"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "sol",
+          "type": "guided_solution",
+          "title": "Correction guidée",
+          "prompt": "Compare avec ton travail sur papier.",
+          "solution_blocks": [
+            {
+              "kind": "conversion",
+              "content": "1 km=1 000 m"
+            },
+            {
+              "kind": "equation",
+              "content": "1,8 km=1 800 m"
+            },
+            {
+              "kind": "equation",
+              "content": "1 800+650=2 450 m"
+            },
+            {
+              "kind": "equation",
+              "content": "2 450 m=2,45 km"
+            }
+          ]
+        },
+        {
+          "id": "self",
+          "type": "self_assessment",
+          "title": "Auto-évaluation",
+          "prompt": "Après comparaison avec la correction, choisis ce qui te correspond.",
+          "options": [
+            {
+              "id": "alone",
+              "label": "J’avais compris et trouvé seul",
+              "mastery_weight": 1.0
+            },
+            {
+              "id": "calc_error",
+              "label": "J’avais compris mais j’ai fait une erreur",
+              "mastery_weight": 0.7
+            },
+            {
+              "id": "with_hints",
+              "label": "J’ai compris grâce aux indices",
+              "mastery_weight": 0.5
+            },
+            {
+              "id": "not_yet",
+              "label": "Je n’ai pas encore compris",
+              "mastery_weight": 0.1
+            }
+          ]
+        }
+      ],
+      "final_transfer_check": {
+        "type": "single_choice",
+        "prompt": "3,2 km =",
+        "options": [
+          "32 m",
+          "320 m",
+          "3 200 m",
+          "32 000 m"
+        ],
+        "correct_index": 2
+      },
+      "remediation": [
+        "Tableau des unités",
+        "Virgule",
+        "Conversion inverse"
+      ],
+      "scoring": {
+        "knowledge": true,
+        "autonomy": true,
+        "self_assessment_is_not_mastery_proof": true
+      },
+      "statement": {
+        "introduction": "Tu vas convertir des kilomètres en mètres avant d’additionner des longueurs.",
+        "context": "Pour une course, les élèves parcourent d’abord 1,8 km, puis encore 650 m. Le professeur souhaite connaître la longueur totale du parcours.",
+        "main_questions": [
+          "Combien de mètres représentent 1,8 km ?",
+          "Quelle est la longueur totale du parcours en mètres ?",
+          "Quelle est cette longueur en kilomètres ?"
+        ],
+        "paper_instructions": [
+          "Choisis une unité commune avant d’additionner.",
+          "Écris chaque conversion avec son unité.",
+          "Vérifie le déplacement de la virgule."
+        ],
+        "display": {
+          "type": "route",
+          "segments": [
+            {
+              "label": "Première partie",
+              "length": "1,8 km"
+            },
+            {
+              "label": "Deuxième partie",
+              "length": "650 m"
+            }
+          ]
+        }
+      },
+      "statement_before_guidance": true
+    },
+    {
+      "id": "CI-6M-V2-07",
+      "title": "Construire l’emploi du temps",
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "6ème",
+      "subject": "Mathématiques",
+      "chapter": "Durées et horaires",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 25,
+      "objective": "Ajouter une durée en franchissant une heure.",
+      "situation": "Atelier de 8 h 35 pendant 1 h 50.",
+      "materials": [
+        "feuille",
+        "crayon"
+      ],
+      "skills": [
+        "heure de fin",
+        "minutes",
+        "frise temporelle"
+      ],
+      "paper_required": true,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Lis l’énoncé",
+          "prompt": "Un atelier de mathématiques commence à 8 h 35. Il dure 1 h 50 min.",
+          "main_questions": [
+            "À quelle heure l’atelier se termine-t-il ?",
+            "Combien de minutes représente une durée de 1 h 50 min ?",
+            "Quelle décomposition du temps permet d’éviter une erreur ?"
+          ],
+          "paper_instructions": [
+            "Trace une petite frise du temps.",
+            "Ajoute d’abord une heure, puis les cinquante minutes.",
+            "N’écris jamais une heure avec plus de 59 minutes."
+          ],
+          "display": {
+            "type": "timeline",
+            "start": "8 h 35",
+            "duration": "1 h 50"
+          },
+          "action_label": "J’ai lu et compris l’énoncé"
+        },
+        {
+          "id": "c1",
+          "type": "single_choice",
+          "title": "Stratégie",
+          "prompt": "Méthode ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Ajouter 1 h puis 50 min"
+            },
+            {
+              "id": "b",
+              "label": "Multiplier les horaires"
+            },
+            {
+              "id": "c",
+              "label": "Soustraire"
+            },
+            {
+              "id": "d",
+              "label": "Ajouter seulement 50"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c2",
+          "type": "single_choice",
+          "title": "Après 1 h",
+          "prompt": "Il est...",
+          "options": [
+            {
+              "id": "a",
+              "label": "8 h 36"
+            },
+            {
+              "id": "b",
+              "label": "9 h 25"
+            },
+            {
+              "id": "c",
+              "label": "9 h 35"
+            },
+            {
+              "id": "d",
+              "label": "10 h 35"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p1",
+          "type": "paper_work",
+          "title": "Ajouter 50 min",
+          "prompt": "Pars de 9 h 35.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "Va jusqu’à 10 h.",
+            "Cela prend 25 min.",
+            "Ajoute les 25 min restantes."
+          ]
+        },
+        {
+          "id": "r1",
+          "type": "single_choice",
+          "title": "Fin",
+          "prompt": "Heure ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "9 h 85"
+            },
+            {
+              "id": "b",
+              "label": "10 h 15"
+            },
+            {
+              "id": "c",
+              "label": "10 h 25"
+            },
+            {
+              "id": "d",
+              "label": "10 h 35"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "r2",
+          "type": "single_choice",
+          "title": "Conversion",
+          "prompt": "1 h 50 =",
+          "options": [
+            {
+              "id": "a",
+              "label": "50 min"
+            },
+            {
+              "id": "b",
+              "label": "110 min"
+            },
+            {
+              "id": "c",
+              "label": "150 min"
+            },
+            {
+              "id": "d",
+              "label": "170 min"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "sol",
+          "type": "guided_solution",
+          "title": "Correction guidée",
+          "prompt": "Compare avec ton travail sur papier.",
+          "solution_blocks": [
+            {
+              "kind": "timeline",
+              "content": [
+                [
+                  "8 h 35",
+                  "9 h 35",
+                  "1 h"
+                ],
+                [
+                  "9 h 35",
+                  "10 h",
+                  "25 min"
+                ],
+                [
+                  "10 h",
+                  "10 h 25",
+                  "25 min"
+                ]
+              ]
+            },
+            {
+              "kind": "conclusion",
+              "content": "Fin à 10 h 25."
+            },
+            {
+              "kind": "conversion",
+              "content": "1 h 50=110 min."
+            }
+          ]
+        },
+        {
+          "id": "self",
+          "type": "self_assessment",
+          "title": "Auto-évaluation",
+          "prompt": "Après comparaison avec la correction, choisis ce qui te correspond.",
+          "options": [
+            {
+              "id": "alone",
+              "label": "J’avais compris et trouvé seul",
+              "mastery_weight": 1.0
+            },
+            {
+              "id": "calc_error",
+              "label": "J’avais compris mais j’ai fait une erreur",
+              "mastery_weight": 0.7
+            },
+            {
+              "id": "with_hints",
+              "label": "J’ai compris grâce aux indices",
+              "mastery_weight": 0.5
+            },
+            {
+              "id": "not_yet",
+              "label": "Je n’ai pas encore compris",
+              "mastery_weight": 0.1
+            }
+          ]
+        }
+      ],
+      "final_transfer_check": {
+        "type": "single_choice",
+        "prompt": "14 h 20 +45 min =",
+        "options": [
+          "14 h 65",
+          "15 h 05",
+          "15 h 15",
+          "14 h 55"
+        ],
+        "correct_index": 1
+      },
+      "remediation": [
+        "Passage à l’heure",
+        "Heures en minutes",
+        "Frise"
+      ],
+      "scoring": {
+        "knowledge": true,
+        "autonomy": true,
+        "self_assessment_is_not_mastery_proof": true
+      },
+      "statement": {
+        "introduction": "Tu vas calculer une heure de fin en franchissant une heure entière.",
+        "context": "Un atelier de mathématiques commence à 8 h 35. Il dure 1 h 50 min.",
+        "main_questions": [
+          "À quelle heure l’atelier se termine-t-il ?",
+          "Combien de minutes représente une durée de 1 h 50 min ?",
+          "Quelle décomposition du temps permet d’éviter une erreur ?"
+        ],
+        "paper_instructions": [
+          "Trace une petite frise du temps.",
+          "Ajoute d’abord une heure, puis les cinquante minutes.",
+          "N’écris jamais une heure avec plus de 59 minutes."
+        ],
+        "display": {
+          "type": "timeline",
+          "start": "8 h 35",
+          "duration": "1 h 50"
+        }
+      },
+      "statement_before_guidance": true
+    },
+    {
+      "id": "CI-6M-V2-08",
+      "title": "Clôturer et carreler une cour",
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "6ème",
+      "subject": "Mathématiques",
+      "chapter": "Périmètre et aire",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 28,
+      "objective": "Distinguer contour et surface.",
+      "situation": "Rectangle de 8 m sur 5 m.",
+      "materials": [
+        "feuille",
+        "crayon"
+      ],
+      "skills": [
+        "périmètre",
+        "aire",
+        "unités"
+      ],
+      "paper_required": true,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Lis l’énoncé",
+          "prompt": "Une cour rectangulaire mesure 8 m de longueur et 5 m de largeur. L’école veut installer une clôture tout autour, puis carreler toute la cour.",
+          "main_questions": [
+            "Quelle longueur de clôture faut-il prévoir ?",
+            "Quelle surface faut-il carreler ?",
+            "Pourquoi les unités des deux résultats sont-elles différentes ?"
+          ],
+          "paper_instructions": [
+            "Dessine un rectangle et indique ses dimensions.",
+            "Écris d’abord la formule du périmètre.",
+            "Écris ensuite la formule de l’aire avec les bonnes unités."
+          ],
+          "display": {
+            "type": "rectangle",
+            "length": "8 m",
+            "width": "5 m",
+            "show_border": true,
+            "show_surface": true
+          },
+          "action_label": "J’ai lu et compris l’énoncé"
+        },
+        {
+          "id": "c1",
+          "type": "single_choice",
+          "title": "Clôture",
+          "prompt": "Quelle grandeur ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Aire"
+            },
+            {
+              "id": "b",
+              "label": "Périmètre"
+            },
+            {
+              "id": "c",
+              "label": "Volume"
+            },
+            {
+              "id": "d",
+              "label": "Durée"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c2",
+          "type": "single_choice",
+          "title": "Formule",
+          "prompt": "Périmètre ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "8×5"
+            },
+            {
+              "id": "b",
+              "label": "8+5"
+            },
+            {
+              "id": "c",
+              "label": "2×(8+5)"
+            },
+            {
+              "id": "d",
+              "label": "8×8"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p1",
+          "type": "paper_work",
+          "title": "Calcul",
+          "prompt": "Calcule le périmètre.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "8+5=13.",
+            "Deux longueurs et deux largeurs.",
+            "Double 13."
+          ]
+        },
+        {
+          "id": "r1",
+          "type": "single_choice",
+          "title": "Périmètre",
+          "prompt": "Résultat ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "13 m"
+            },
+            {
+              "id": "b",
+              "label": "26 m"
+            },
+            {
+              "id": "c",
+              "label": "40 m"
+            },
+            {
+              "id": "d",
+              "label": "80 m"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c3",
+          "type": "single_choice",
+          "title": "Carrelage",
+          "prompt": "Quelle grandeur ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Aire"
+            },
+            {
+              "id": "b",
+              "label": "Périmètre"
+            },
+            {
+              "id": "c",
+              "label": "Longueur"
+            },
+            {
+              "id": "d",
+              "label": "Largeur"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p2",
+          "type": "paper_work",
+          "title": "Aire",
+          "prompt": "Calcule l’aire.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "A=L×l.",
+            "8×5.",
+            "Unité : m²."
+          ]
+        },
+        {
+          "id": "r2",
+          "type": "single_choice",
+          "title": "Aire",
+          "prompt": "Résultat ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "13 m²"
+            },
+            {
+              "id": "b",
+              "label": "26 m²"
+            },
+            {
+              "id": "c",
+              "label": "40 m²"
+            },
+            {
+              "id": "d",
+              "label": "80 m²"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "sol",
+          "type": "guided_solution",
+          "title": "Correction guidée",
+          "prompt": "Compare avec ton travail sur papier.",
+          "solution_blocks": [
+            {
+              "kind": "diagram",
+              "content": {
+                "shape": "rectangle",
+                "length": "8 m",
+                "width": "5 m"
+              }
+            },
+            {
+              "kind": "equation",
+              "content": "P=2×(8+5)=26 m"
+            },
+            {
+              "kind": "equation",
+              "content": "A=8×5=40 m²"
+            },
+            {
+              "kind": "warning",
+              "content": "Contour en m ; surface en m²."
+            }
+          ]
+        },
+        {
+          "id": "self",
+          "type": "self_assessment",
+          "title": "Auto-évaluation",
+          "prompt": "Après comparaison avec la correction, choisis ce qui te correspond.",
+          "options": [
+            {
+              "id": "alone",
+              "label": "J’avais compris et trouvé seul",
+              "mastery_weight": 1.0
+            },
+            {
+              "id": "calc_error",
+              "label": "J’avais compris mais j’ai fait une erreur",
+              "mastery_weight": 0.7
+            },
+            {
+              "id": "with_hints",
+              "label": "J’ai compris grâce aux indices",
+              "mastery_weight": 0.5
+            },
+            {
+              "id": "not_yet",
+              "label": "Je n’ai pas encore compris",
+              "mastery_weight": 0.1
+            }
+          ]
+        }
+      ],
+      "final_transfer_check": {
+        "type": "single_choice",
+        "prompt": "Pour peindre un mur, calculer...",
+        "options": [
+          "le périmètre",
+          "l’aire"
+        ],
+        "correct_index": 1
+      },
+      "remediation": [
+        "Contour/surface",
+        "m et m²",
+        "Formules"
+      ],
+      "scoring": {
+        "knowledge": true,
+        "autonomy": true,
+        "self_assessment_is_not_mastery_proof": true
+      },
+      "statement": {
+        "introduction": "Tu vas distinguer le contour d’une figure de sa surface.",
+        "context": "Une cour rectangulaire mesure 8 m de longueur et 5 m de largeur. L’école veut installer une clôture tout autour, puis carreler toute la cour.",
+        "main_questions": [
+          "Quelle longueur de clôture faut-il prévoir ?",
+          "Quelle surface faut-il carreler ?",
+          "Pourquoi les unités des deux résultats sont-elles différentes ?"
+        ],
+        "paper_instructions": [
+          "Dessine un rectangle et indique ses dimensions.",
+          "Écris d’abord la formule du périmètre.",
+          "Écris ensuite la formule de l’aire avec les bonnes unités."
+        ],
+        "display": {
+          "type": "rectangle",
+          "length": "8 m",
+          "width": "5 m",
+          "show_border": true,
+          "show_surface": true
+        }
+      },
+      "statement_before_guidance": true
+    },
+    {
+      "id": "CI-6M-V2-09",
+      "title": "Tracer une perpendiculaire",
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "6ème",
+      "subject": "Mathématiques",
+      "chapter": "Géométrie sur papier",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 22,
+      "objective": "Construire une perpendiculaire avec une équerre et auto-valider la figure.",
+      "situation": "Tracer par A une droite perpendiculaire à d.",
+      "materials": [
+        "feuille",
+        "crayon",
+        "règle",
+        "équerre"
+      ],
+      "skills": [
+        "équerre",
+        "angle droit",
+        "construction"
+      ],
+      "paper_required": true,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Lis l’énoncé",
+          "prompt": "Sur une feuille, on considère une droite d et un point A qui n’appartient pas à d. On veut construire la droite passant par A et perpendiculaire à d.",
+          "main_questions": [
+            "Quel instrument faut-il utiliser ?",
+            "Dans quel ordre faut-il réaliser la construction ?",
+            "Comment vérifier que la droite obtenue est correcte ?"
+          ],
+          "paper_instructions": [
+            "Trace une droite d assez longue.",
+            "Place le point A à environ 4 cm de la droite.",
+            "Utilise une règle et une équerre.",
+            "Code l’angle droit obtenu."
+          ],
+          "display": {
+            "type": "geometry_start",
+            "objects": [
+              {
+                "type": "line",
+                "label": "d"
+              },
+              {
+                "type": "point",
+                "label": "A",
+                "on_line": false
+              }
+            ]
+          },
+          "action_label": "J’ai lu et compris l’énoncé"
+        },
+        {
+          "id": "p0",
+          "type": "paper_work",
+          "title": "Prépare la figure",
+          "prompt": "Trace d et place A hors de d.",
+          "action_label": "Figure prête",
+          "hints": [
+            "d peut être horizontale.",
+            "Place A au-dessus."
+          ]
+        },
+        {
+          "id": "c1",
+          "type": "single_choice",
+          "title": "Instrument",
+          "prompt": "Lequel ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Compas"
+            },
+            {
+              "id": "b",
+              "label": "Équerre"
+            },
+            {
+              "id": "c",
+              "label": "Gomme"
+            },
+            {
+              "id": "d",
+              "label": "Calculatrice"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "ord",
+          "type": "ordering",
+          "title": "Ordre des étapes",
+          "prompt": "Remets dans l’ordre.",
+          "items": [
+            {
+              "id": "a",
+              "label": "Tracer le long du côté passant par A"
+            },
+            {
+              "id": "b",
+              "label": "Placer un côté sur d"
+            },
+            {
+              "id": "c",
+              "label": "Faire glisser jusqu’à A"
+            }
+          ],
+          "correct_order": [
+            "b",
+            "c",
+            "a"
+          ]
+        },
+        {
+          "id": "p1",
+          "type": "paper_work",
+          "title": "Construction",
+          "prompt": "Réalise la construction.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "Garde l’équerre contre d.",
+            "L’autre côté passe par A.",
+            "Trace et prolonge."
+          ]
+        },
+        {
+          "id": "c2",
+          "type": "single_choice",
+          "title": "Propriété",
+          "prompt": "La nouvelle droite doit...",
+          "options": [
+            {
+              "id": "a",
+              "label": "être parallèle"
+            },
+            {
+              "id": "b",
+              "label": "former un angle droit"
+            },
+            {
+              "id": "c",
+              "label": "ne pas couper d"
+            },
+            {
+              "id": "d",
+              "label": "avoir même longueur"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "sv",
+          "type": "self_validation",
+          "title": "Vérifie ta figure",
+          "prompt": "Coche mentalement les critères.",
+          "checklist": [
+            "Passe par A",
+            "Coupe d",
+            "Forme un angle droit",
+            "Symbole d’angle droit possible"
+          ],
+          "response_options": [
+            {
+              "id": "ok",
+              "label": "Tout est correct"
+            },
+            {
+              "id": "fix",
+              "label": "Un point à corriger"
+            },
+            {
+              "id": "redo",
+              "label": "À refaire"
+            }
+          ]
+        },
+        {
+          "id": "sol",
+          "type": "guided_solution",
+          "title": "Correction guidée",
+          "prompt": "Compare avec ton travail sur papier.",
+          "solution_blocks": [
+            {
+              "kind": "diagram",
+              "content": {
+                "type": "perpendicular",
+                "line": "d",
+                "point": "A",
+                "right_angle": true
+              }
+            },
+            {
+              "kind": "method",
+              "content": "Un côté de l’équerre sur d, l’autre par A."
+            }
+          ]
+        },
+        {
+          "id": "self",
+          "type": "self_assessment",
+          "title": "Auto-évaluation",
+          "prompt": "Après comparaison avec la correction, choisis ce qui te correspond.",
+          "options": [
+            {
+              "id": "alone",
+              "label": "J’avais compris et trouvé seul",
+              "mastery_weight": 1.0
+            },
+            {
+              "id": "calc_error",
+              "label": "J’avais compris mais j’ai fait une erreur",
+              "mastery_weight": 0.7
+            },
+            {
+              "id": "with_hints",
+              "label": "J’ai compris grâce aux indices",
+              "mastery_weight": 0.5
+            },
+            {
+              "id": "not_yet",
+              "label": "Je n’ai pas encore compris",
+              "mastery_weight": 0.1
+            }
+          ]
+        }
+      ],
+      "final_transfer_check": {
+        "type": "single_choice",
+        "prompt": "Angle de deux perpendiculaires ?",
+        "options": [
+          "45°",
+          "60°",
+          "90°",
+          "180°"
+        ],
+        "correct_index": 2
+      },
+      "remediation": [
+        "Usage de l’équerre",
+        "Angle droit",
+        "Nouvelle construction"
+      ],
+      "scoring": {
+        "knowledge": true,
+        "autonomy": true,
+        "self_assessment_is_not_mastery_proof": true
+      },
+      "statement": {
+        "introduction": "Tu vas effectuer une construction géométrique sur papier puis l’auto-évaluer.",
+        "context": "Sur une feuille, on considère une droite d et un point A qui n’appartient pas à d. On veut construire la droite passant par A et perpendiculaire à d.",
+        "main_questions": [
+          "Quel instrument faut-il utiliser ?",
+          "Dans quel ordre faut-il réaliser la construction ?",
+          "Comment vérifier que la droite obtenue est correcte ?"
+        ],
+        "paper_instructions": [
+          "Trace une droite d assez longue.",
+          "Place le point A à environ 4 cm de la droite.",
+          "Utilise une règle et une équerre.",
+          "Code l’angle droit obtenu."
+        ],
+        "display": {
+          "type": "geometry_start",
+          "objects": [
+            {
+              "type": "line",
+              "label": "d"
+            },
+            {
+              "type": "point",
+              "label": "A",
+              "on_line": false
+            }
+          ]
+        }
+      },
+      "statement_before_guidance": true
+    },
+    {
+      "id": "CI-6M-V2-10",
+      "title": "Analyser les lectures de la classe",
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "6ème",
+      "subject": "Mathématiques",
+      "chapter": "Organisation de données",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 26,
+      "objective": "Lire un tableau, calculer un total et tracer un diagramme.",
+      "situation": "Awa 4, Yao 7, Mariam 5, Koffi 7, Aya 2 livres.",
+      "materials": [
+        "feuille",
+        "crayon",
+        "règle"
+      ],
+      "skills": [
+        "tableau",
+        "maximum",
+        "somme",
+        "diagramme"
+      ],
+      "paper_required": true,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Lis l’énoncé",
+          "prompt": "Cinq élèves ont noté le nombre de livres lus pendant le mois : Awa 4, Yao 7, Mariam 5, Koffi 7 et Aya 2.",
+          "main_questions": [
+            "Qui a lu le plus de livres ?",
+            "Combien de livres ont été lus au total ?",
+            "Comment représenter ces données dans un diagramme en bâtons ?"
+          ],
+          "paper_instructions": [
+            "Recopie le tableau sur ta feuille.",
+            "Calcule le total avant de tracer.",
+            "Gradue l’axe vertical de 0 à 7.",
+            "Donne la même largeur à tous les bâtons."
+          ],
+          "display": {
+            "type": "table",
+            "headers": [
+              "Élève",
+              "Livres lus"
+            ],
+            "rows": [
+              [
+                "Awa",
+                4
+              ],
+              [
+                "Yao",
+                7
+              ],
+              [
+                "Mariam",
+                5
+              ],
+              [
+                "Koffi",
+                7
+              ],
+              [
+                "Aya",
+                2
+              ]
+            ]
+          },
+          "action_label": "J’ai lu et compris l’énoncé"
+        },
+        {
+          "id": "c1",
+          "type": "single_choice",
+          "title": "Maximum",
+          "prompt": "Valeur maximale ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "2"
+            },
+            {
+              "id": "b",
+              "label": "4"
+            },
+            {
+              "id": "c",
+              "label": "5"
+            },
+            {
+              "id": "d",
+              "label": "7"
+            }
+          ],
+          "correct_option_ids": [
+            "d"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c2",
+          "type": "multiple_choice",
+          "title": "Élèves concernés",
+          "prompt": "Qui a lu 7 livres ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Awa"
+            },
+            {
+              "id": "b",
+              "label": "Yao"
+            },
+            {
+              "id": "c",
+              "label": "Mariam"
+            },
+            {
+              "id": "d",
+              "label": "Koffi"
+            },
+            {
+              "id": "e",
+              "label": "Aya"
+            }
+          ],
+          "correct_option_ids": [
+            "b",
+            "d"
+          ]
+        },
+        {
+          "id": "p1",
+          "type": "paper_work",
+          "title": "Total",
+          "prompt": "Calcule 4+7+5+7+2.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "Regroupe 7+7.",
+            "4+5+2=11.",
+            "14+11=25."
+          ]
+        },
+        {
+          "id": "r1",
+          "type": "single_choice",
+          "title": "Total",
+          "prompt": "Résultat ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "21"
+            },
+            {
+              "id": "b",
+              "label": "23"
+            },
+            {
+              "id": "c",
+              "label": "25"
+            },
+            {
+              "id": "d",
+              "label": "27"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "c3",
+          "type": "single_choice",
+          "title": "Diagramme",
+          "prompt": "Hauteur du bâton de Mariam ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "2"
+            },
+            {
+              "id": "b",
+              "label": "4"
+            },
+            {
+              "id": "c",
+              "label": "5"
+            },
+            {
+              "id": "d",
+              "label": "7"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "feedback": {}
+        },
+        {
+          "id": "p2",
+          "type": "paper_work",
+          "title": "Tracer",
+          "prompt": "Trace le diagramme en bâtons.",
+          "action_label": "J’ai essayé",
+          "hints": [
+            "Prénoms en bas.",
+            "Axe vertical de 0 à 7.",
+            "Même largeur de bâtons."
+          ]
+        },
+        {
+          "id": "sv",
+          "type": "self_validation",
+          "title": "Vérifie ton diagramme",
+          "prompt": "Compare aux critères.",
+          "checklist": [
+            "5 prénoms",
+            "axe gradué",
+            "hauteurs 4,7,5,7,2",
+            "même largeur"
+          ],
+          "response_options": [
+            {
+              "id": "ok",
+              "label": "Tout est correct"
+            },
+            {
+              "id": "fix",
+              "label": "Un élément à corriger"
+            },
+            {
+              "id": "redo",
+              "label": "À refaire"
+            }
+          ]
+        },
+        {
+          "id": "sol",
+          "type": "guided_solution",
+          "title": "Correction guidée",
+          "prompt": "Compare avec ton travail sur papier.",
+          "solution_blocks": [
+            {
+              "kind": "bar_chart",
+              "content": {
+                "labels": [
+                  "Awa",
+                  "Yao",
+                  "Mariam",
+                  "Koffi",
+                  "Aya"
+                ],
+                "values": [
+                  4,
+                  7,
+                  5,
+                  7,
+                  2
+                ]
+              }
+            },
+            {
+              "kind": "equation",
+              "content": "4+7+5+7+2=25"
+            },
+            {
+              "kind": "conclusion",
+              "content": "Yao et Koffi : 7 livres."
+            }
+          ]
+        },
+        {
+          "id": "self",
+          "type": "self_assessment",
+          "title": "Auto-évaluation",
+          "prompt": "Après comparaison avec la correction, choisis ce qui te correspond.",
+          "options": [
+            {
+              "id": "alone",
+              "label": "J’avais compris et trouvé seul",
+              "mastery_weight": 1.0
+            },
+            {
+              "id": "calc_error",
+              "label": "J’avais compris mais j’ai fait une erreur",
+              "mastery_weight": 0.7
+            },
+            {
+              "id": "with_hints",
+              "label": "J’ai compris grâce aux indices",
+              "mastery_weight": 0.5
+            },
+            {
+              "id": "not_yet",
+              "label": "Je n’ai pas encore compris",
+              "mastery_weight": 0.1
+            }
+          ]
+        }
+      ],
+      "final_transfer_check": {
+        "type": "single_choice",
+        "prompt": "Écart max-min ?",
+        "options": [
+          "2",
+          "3",
+          "5",
+          "7"
+        ],
+        "correct_index": 2
+      },
+      "remediation": [
+        "Lecture du tableau",
+        "Somme",
+        "Diagramme"
+      ],
+      "scoring": {
+        "knowledge": true,
+        "autonomy": true,
+        "self_assessment_is_not_mastery_proof": true
+      },
+      "statement": {
+        "introduction": "Tu vas lire un tableau, calculer un total et construire un diagramme en bâtons.",
+        "context": "Cinq élèves ont noté le nombre de livres lus pendant le mois : Awa 4, Yao 7, Mariam 5, Koffi 7 et Aya 2.",
+        "main_questions": [
+          "Qui a lu le plus de livres ?",
+          "Combien de livres ont été lus au total ?",
+          "Comment représenter ces données dans un diagramme en bâtons ?"
+        ],
+        "paper_instructions": [
+          "Recopie le tableau sur ta feuille.",
+          "Calcule le total avant de tracer.",
+          "Gradue l’axe vertical de 0 à 7.",
+          "Donne la même largeur à tous les bâtons."
+        ],
+        "display": {
+          "type": "table",
+          "headers": [
+            "Élève",
+            "Livres lus"
+          ],
+          "rows": [
+            [
+              "Awa",
+              4
+            ],
+            [
+              "Yao",
+              7
+            ],
+            [
+              "Mariam",
+              5
+            ],
+            [
+              "Koffi",
+              7
+            ],
+            [
+              "Aya",
+              2
+            ]
+          ]
+        }
+      },
+      "statement_before_guidance": true
+    }
+  ]
+}

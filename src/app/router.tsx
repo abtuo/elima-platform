@@ -20,6 +20,8 @@ import { StudentTimetablePage } from "@/features/student/StudentTimetablePage";
 import { RevisionDashboardPage } from "@/features/revision/RevisionDashboardPage";
 import { QuizPage } from "@/features/revision/QuizPage";
 import { CoursesPage, CourseSheetDetailPage } from "@/features/revision/CoursesPage";
+import { LearningSolverPage } from "@/features/revision/LearningSolverPage";
+import { LearningResultsPage } from "@/features/revision/LearningResultsPage";
 import { ScannerPage } from "@/features/scanner/ScannerPage";
 
 import { TeacherTodayPage } from "@/features/teacher/TeacherTodayPage";
@@ -77,6 +79,11 @@ export function AppRouter() {
               <Route path="devoirs" element={<StudentAssignmentsPage />} />
               <Route path="emploi-du-temps" element={<StudentTimetablePage />} />
               <Route path="reviser" element={<RevisionDashboardPage />} />
+              <Route path="reviser/devoirs" element={<Navigate to="/student/reviser?mode=devoirs" replace />} />
+              <Route path="reviser/examen" element={<Navigate to="/student/reviser?mode=devoirs&section=examens" replace />} />
+              <Route path="reviser/devoirs/exercice/:id" element={<LearningSolverPage contentType="guided_exercise" />} />
+              <Route path="reviser/devoirs/examen/:id" element={<LearningSolverPage contentType="exam" />} />
+              <Route path="reviser/devoirs/resultats/:contentType/:id" element={<LearningResultsPage />} />
               <Route path="reviser/quiz" element={<QuizPage />} />
               <Route path="reviser/fiches" element={<CoursesPage />} />
               <Route path="reviser/fiches/:id" element={<CourseSheetDetailPage />} />

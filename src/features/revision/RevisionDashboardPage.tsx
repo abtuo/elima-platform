@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { BookOpen, Brain, CalendarClock, ChevronRight, Clock3, Flame, History, Search, Sparkles, Star } from "lucide-react";
+import { BookOpen, Brain, CalendarClock, ChevronRight, Flame, History, Search, Sparkles, Star } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
 import { EmptyState } from "@/components/common/EmptyState";
 import { GeneratedActionIcon } from "@/components/common/GeneratedActionIcon";
@@ -11,6 +11,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { SubjectIcon } from "@/components/revision/SubjectIcon";
 import { ActionCard, StatCard } from "@/components/revision/RevisionUI";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { LearningAssignmentsPanel } from "@/features/revision/LearningAssignmentsPanel";
 import { REVISION_SUBJECT_OPTIONS } from "@/lib/revisionSubjects";
 import {
   generateRealtimeQuiz,
@@ -25,16 +26,17 @@ import {
 } from "@/services/revisionDataService";
 import type { CourseSheet, QuizAttemptSummary, QuizItem, RevisionProgress } from "@/types/revision";
 
-type RevisionMode = "qcm" | "examens" | "fiches";
+type RevisionMode = "qcm" | "devoirs" | "fiches";
 
 const MODES: Array<{ id: RevisionMode; label: string; icon: typeof Brain }> = [
   { id: "qcm", label: "QCM", icon: Brain },
-  { id: "examens", label: "Examens", icon: CalendarClock },
+  { id: "devoirs", label: "Devoirs", icon: CalendarClock },
   { id: "fiches", label: "Fiches", icon: BookOpen },
 ];
 
-function isRevisionMode(value: string | null): value is RevisionMode {
-  return value === "qcm" || value === "examens" || value === "fiches";
+function revisionMode(value: string | null): RevisionMode {
+  if (value === "examens" || value === "examen") return "devoirs";
+  return value === "devoirs" || value === "fiches" ? value : "qcm";
 }
 
 function formatHistoryDate(value: string) {
@@ -47,7 +49,7 @@ export function RevisionDashboardPage() {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const mode = isRevisionMode(searchParams.get("mode")) ? searchParams.get("mode") as RevisionMode : "qcm";
+  const mode = revisionMode(searchParams.get("mode"));
   const [progress, setProgress] = useState<RevisionProgress | null>(null);
   const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
   const [attempts, setAttempts] = useState<QuizAttemptSummary[]>([]);
@@ -143,7 +145,7 @@ export function RevisionDashboardPage() {
 
   return (
     <PageContainer>
-      <AppHeader title="Réviser" subtitle="QCM, examens et fiches de révision" accent="#7C3AED" />
+      <AppHeader title="Réviser" subtitle="QCM, devoirs et fiches de révision" accent="#7C3AED" />
 
       <div className="mb-5 grid grid-cols-3 rounded-2xl bg-gray-100 p-1" role="tablist" aria-label="Modes de révision">
         {MODES.map((item) => {
@@ -203,14 +205,7 @@ export function RevisionDashboardPage() {
         </div>
       ) : null}
 
-      {mode === "examens" ? (
-        <section className="card overflow-hidden p-7 text-center sm:p-10">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-100 to-orange-100"><Clock3 className="h-9 w-9 text-amber-600" /></div>
-          <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-amber-600">À venir</p>
-          <h2 className="mt-2 font-title text-xl font-semibold text-accent">Mode Examens</h2>
-          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-gray-500">Les entraînements en conditions d’examen seront disponibles prochainement.</p>
-        </section>
-      ) : null}
+      {mode === "devoirs" ? <LearningAssignmentsPanel profile={profile} /> : null}
     </PageContainer>
   );
 }

@@ -50,6 +50,13 @@ try {
     `);
     const existing = await tx`select 1 from public.elima_schema_migrations where checksum = ${checksum}`;
     if (existing.length) return;
+    const previousBundle = await tx`select checksum, applied_at from public.elima_schema_migrations order by applied_at desc limit 1`;
+    if (previousBundle.length) {
+      throw new Error(
+        "Le schéma unifié est déjà initialisé avec une autre version. " +
+        "N’appliquez pas à nouveau le bundle complet : utilisez la commande db:migrate:<fonctionnalité> correspondante."
+      );
+    }
     await tx.unsafe(bundle);
     await tx`insert into public.elima_schema_migrations (checksum) values (${checksum})`;
   });

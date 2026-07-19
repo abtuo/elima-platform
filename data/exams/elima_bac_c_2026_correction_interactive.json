@@ -1,0 +1,882 @@
+{
+  "metadata": {
+    "name": "Elima - Bac C 2026 Côte d'Ivoire - correction interactive",
+    "version": "1.0.0",
+    "generated_on": "2026-07-19",
+    "language": "fr",
+    "source_note": "Transcription et correction produites à partir du PDF fourni. Une validation finale par un enseignant est recommandée.",
+    "counts": {
+      "subjects": 1,
+      "exercises": 6,
+      "questions": 34
+    },
+    "interaction": {
+      "hint_policy": "Deux indices avant affichage de la correction.",
+      "grading_policy": "Barème réparti entre méthode, calcul et conclusion.",
+      "accepted_equivalence": "Les expressions mathématiquement équivalentes doivent être acceptées."
+    }
+  },
+  "subjects": [
+    {
+      "id": "BAC-C-CI-2026-MATHS",
+      "title": "Baccalauréat 2026 - Mathématiques - Série C - Côte d'Ivoire",
+      "country": "Côte d'Ivoire",
+      "level": "Terminale C",
+      "subject": "Mathématiques",
+      "duration_minutes": 240,
+      "coefficient": 5,
+      "total_points": 20,
+      "source_type": "sujet officiel fourni par l'utilisateur",
+      "exercise_ids": [
+        "BAC-C-2026-EX1",
+        "BAC-C-2026-EX2",
+        "BAC-C-2026-EX3",
+        "BAC-C-2026-EX4",
+        "BAC-C-2026-EX5",
+        "BAC-C-2026-EX6"
+      ],
+      "demo_modes": {
+        "exam": "Sujet complet chronométré, sans aide immédiate.",
+        "guided": "Résolution question par question avec indices progressifs.",
+        "correction": "Correction détaillée, méthode et validation de chaque étape."
+      }
+    }
+  ],
+  "exercises": [
+    {
+      "id": "BAC-C-2026-EX1",
+      "number": 1,
+      "title": "Vrai ou faux",
+      "chapter": "Questions transversales",
+      "points": 2,
+      "estimated_minutes": 15,
+      "statement": "Écrire le numéro de chaque proposition suivi de V si elle est vraie ou de F si elle est fausse.",
+      "questions": [
+        {
+          "id": "1.1",
+          "title": "Équation différentielle",
+          "prompt": "Les solutions sur R de y''+4y=0 sont les fonctions x↦ae^{2x}+be^{-2x}.",
+          "expected_answer": "F",
+          "validation": {
+            "type": "boolean",
+            "value": false
+          },
+          "hints": [
+            "Comparer avec l'équation caractéristique r²+4=0.",
+            "Les racines sont imaginaires pures."
+          ],
+          "solution_steps": [
+            "L'équation caractéristique est r²+4=0.",
+            "Ses racines sont ±2i.",
+            "Les solutions sont y=a cos(2x)+b sin(2x). La proposition est fausse."
+          ],
+          "points": 0.3333333333333333
+        },
+        {
+          "id": "1.2",
+          "title": "Primitive",
+          "prompt": "Une primitive de x↦1/(ax+b) sur ]-b/a,+∞[ est x↦ln(ax+b), avec a>0.",
+          "expected_answer": "F",
+          "validation": {
+            "type": "boolean",
+            "value": false
+          },
+          "hints": [
+            "Dériver ln(ax+b).",
+            "Vérifier le facteur multiplicatif."
+          ],
+          "solution_steps": [
+            "(ln(ax+b))'=a/(ax+b).",
+            "Une primitive de 1/(ax+b) est (1/a)ln(ax+b).",
+            "La proposition est fausse en général."
+          ],
+          "points": 0.3333333333333333
+        },
+        {
+          "id": "1.3",
+          "title": "Excentricité",
+          "prompt": "L'excentricité d'une ellipse est toujours inférieure à celle d'une hyperbole.",
+          "expected_answer": "V",
+          "validation": {
+            "type": "boolean",
+            "value": true
+          },
+          "hints": [
+            "Rappeler les intervalles possibles des excentricités.",
+            "Ellipse : e<1 ; hyperbole : e>1."
+          ],
+          "solution_steps": [
+            "Pour une ellipse, 0≤e<1.",
+            "Pour une hyperbole, e>1.",
+            "La proposition est vraie."
+          ],
+          "points": 0.3333333333333333
+        },
+        {
+          "id": "1.4",
+          "title": "Suite géométrique",
+          "prompt": "Toute suite géométrique de raison inférieure ou égale à -1 est divergente.",
+          "expected_answer": "F",
+          "validation": {
+            "type": "boolean",
+            "value": false
+          },
+          "hints": [
+            "Chercher un contre-exemple.",
+            "Que se passe-t-il si le premier terme vaut 0 ?"
+          ],
+          "solution_steps": [
+            "La suite nulle est géométrique, quelle que soit la raison choisie.",
+            "Elle converge vers 0.",
+            "La proposition universelle est donc fausse."
+          ],
+          "points": 0.3333333333333333
+        },
+        {
+          "id": "1.5",
+          "title": "Ligne de niveau",
+          "prompt": "Pour A et B distincts, la ligne de niveau 2 de M↦MA/MB est le cercle de diamètre [IJ], avec I=bar{(A;1),(B;2)} et J=bar{(A;-2),(B;1)}.",
+          "expected_answer": "V",
+          "validation": {
+            "type": "boolean",
+            "value": true
+          },
+          "hints": [
+            "Il s'agit d'un cercle d'Apollonius.",
+            "Écrire MA=2MB puis développer en coordonnées."
+          ],
+          "solution_steps": [
+            "Le lieu MA/MB=2 est un cercle d'Apollonius.",
+            "Ses extrémités sur la droite (AB) sont les points de division interne et externe correspondant au rapport 2.",
+            "Ce sont précisément I et J ; la proposition est vraie."
+          ],
+          "points": 0.3333333333333333
+        },
+        {
+          "id": "1.6",
+          "title": "Isométrie",
+          "prompt": "Toute isométrie du plan qui fixe deux points distincts E et F et qui n'est pas l'identité est la symétrie orthogonale d'axe (EF).",
+          "expected_answer": "V",
+          "validation": {
+            "type": "boolean",
+            "value": true
+          },
+          "hints": [
+            "Une isométrie est déterminée par l'image de trois points non alignés.",
+            "Quel mouvement non trivial fixe tous les points d'une droite ?"
+          ],
+          "solution_steps": [
+            "Une isométrie fixant E et F laisse la droite (EF) globalement invariante.",
+            "Si elle n'est pas l'identité, elle échange les deux demi-plans bordés par (EF).",
+            "C'est la symétrie orthogonale d'axe (EF)."
+          ],
+          "points": 0.3333333333333333
+        }
+      ]
+    },
+    {
+      "id": "BAC-C-2026-EX2",
+      "number": 2,
+      "title": "QCM",
+      "chapter": "Questions transversales",
+      "points": 2,
+      "estimated_minutes": 15,
+      "statement": "Choisir la lettre donnant la proposition vraie.",
+      "questions": [
+        {
+          "id": "2.1",
+          "title": "Limite remarquable",
+          "prompt": "u_n=(1+3/n)^n. Quelle est sa limite ? A:0, B:1, C:e³, D:3.",
+          "expected_answer": "C",
+          "validation": {
+            "type": "choice",
+            "correct": "C"
+          },
+          "hints": [
+            "Utiliser lim(1+a/n)^n=e^a.",
+            "Ici a=3."
+          ],
+          "solution_steps": [
+            "La limite remarquable donne lim u_n=e³.",
+            "La bonne réponse est C."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "2.2",
+          "title": "Variance binomiale",
+          "prompt": "X suit une loi binomiale de paramètres 4 et 1/3. Quelle est sa variance ? A:8/3, B:8/9, C:4/3, D:11/3.",
+          "expected_answer": "B",
+          "validation": {
+            "type": "choice",
+            "correct": "B"
+          },
+          "hints": [
+            "Pour B(n,p), V(X)=np(1-p).",
+            "Remplacer n=4 et p=1/3."
+          ],
+          "solution_steps": [
+            "V(X)=4×(1/3)×(2/3)=8/9.",
+            "La bonne réponse est B."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "2.3",
+          "title": "Axe focal d'une conique",
+          "prompt": "Pour y²+9x²-18x=0, quel est l'axe focal ? A:x=0, B:y=0, C:x=1, D:y=1.",
+          "expected_answer": "B",
+          "validation": {
+            "type": "choice",
+            "correct": "B"
+          },
+          "hints": [
+            "Mettre l'équation sous forme réduite.",
+            "Compléter le carré en x."
+          ],
+          "solution_steps": [
+            "9(x-1)²+y²=9, soit (x-1)²+y²/9=1.",
+            "Le grand axe est horizontal, donc l'axe focal est y=0.",
+            "Réponse B."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "2.4",
+          "title": "Aire sous une parabole",
+          "prompt": "Calculer l'aire délimitée par y=2x-x², x=0, x=2 et y=0. A:2/3, B:1/3, C:2, D:4/3.",
+          "expected_answer": "D",
+          "validation": {
+            "type": "choice",
+            "correct": "D"
+          },
+          "hints": [
+            "La fonction est positive sur [0,2].",
+            "Calculer ∫₀²(2x-x²)dx."
+          ],
+          "solution_steps": [
+            "A=[x²-x³/3]₀²=4-8/3=4/3.",
+            "Réponse D."
+          ],
+          "points": 0.5
+        }
+      ]
+    },
+    {
+      "id": "BAC-C-2026-EX3",
+      "number": 3,
+      "title": "PGCD et équation diophantienne paramétrée",
+      "chapter": "Arithmétique",
+      "points": 3,
+      "estimated_minutes": 35,
+      "statement": "Soit n un entier naturel supérieur ou égal à 2. On pose B_n=PGCD(n²+1,n+1), puis on étudie (E_n):(n²+1)x+(n+1)y=1 dans Z².",
+      "questions": [
+        {
+          "id": "3.1a",
+          "title": "Réduction du PGCD",
+          "prompt": "Justifier que B_n=PGCD(n+1,2).",
+          "expected_answer": "B_n=PGCD(n+1,2)",
+          "validation": {
+            "type": "proof_outline",
+            "keywords": [
+              "division euclidienne",
+              "n²+1-(n-1)(n+1)=2"
+            ]
+          },
+          "hints": [
+            "Effectuer une combinaison linéaire de n²+1 et n+1.",
+            "Calculer n²+1-(n-1)(n+1)."
+          ],
+          "solution_steps": [
+            "n²+1=(n-1)(n+1)+2.",
+            "Le PGCD est invariant lorsqu'on remplace un terme par son reste.",
+            "Donc B_n=PGCD(n+1,2)."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "3.1b",
+          "title": "Valeurs possibles",
+          "prompt": "En déduire les valeurs possibles de B_n.",
+          "expected_answer": "B_n=1 si n est pair ; B_n=2 si n est impair",
+          "validation": {
+            "type": "parity_case",
+            "even": 1,
+            "odd": 2
+          },
+          "hints": [
+            "Étudier la parité de n+1.",
+            "Le PGCD avec 2 vaut 1 ou 2."
+          ],
+          "solution_steps": [
+            "Si n est pair, n+1 est impair : B_n=1.",
+            "Si n est impair, n+1 est pair : B_n=2."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "3.2a",
+          "title": "Existence de solutions",
+          "prompt": "Justifier que (E_n) admet des solutions si et seulement si n est pair.",
+          "expected_answer": "n pair",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "PGCD",
+              "divise 1",
+              "n pair"
+            ]
+          },
+          "hints": [
+            "Utiliser le critère d'existence d'une équation ax+by=c.",
+            "Le PGCD doit diviser le second membre."
+          ],
+          "solution_steps": [
+            "(E_n) est soluble si et seulement si PGCD(n²+1,n+1) divise 1.",
+            "Cela impose B_n=1.",
+            "D'après la question précédente, cela équivaut à n pair."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "3.2b",
+          "title": "Solution particulière",
+          "prompt": "Pour n pair, vérifier que (-n/2 ; 1+n(n-1)/2) est une solution particulière.",
+          "expected_answer": "solution vérifiée",
+          "validation": {
+            "type": "substitution",
+            "x": "-n/2",
+            "y": "1+n*(n-1)/2",
+            "equation": "(n^2+1)*x+(n+1)*y=1"
+          },
+          "hints": [
+            "Substituer directement x et y.",
+            "Mettre sur le même dénominateur."
+          ],
+          "solution_steps": [
+            "S=(n²+1)(-n/2)+(n+1)(1+n(n-1)/2).",
+            "En développant, les termes cubiques et linéaires se compensent.",
+            "On obtient S=1."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "3.2c",
+          "title": "Solution générale",
+          "prompt": "Résoudre (E_n) dans Z² lorsque n est pair.",
+          "expected_answer": "x=-n/2+(n+1)k ; y=1+n(n-1)/2-(n²+1)k, k∈Z",
+          "validation": {
+            "type": "parametric_pair",
+            "x": "-n/2+(n+1)*k",
+            "y": "1+n*(n-1)/2-(n^2+1)*k"
+          },
+          "hints": [
+            "Partir de la solution particulière.",
+            "Pour ax+by=1 avec PGCD(a,b)=1, ajouter (bk,-ak)."
+          ],
+          "solution_steps": [
+            "Une solution particulière est (x₀,y₀)=(-n/2,1+n(n-1)/2).",
+            "Toutes les solutions sont x=x₀+(n+1)k et y=y₀-(n²+1)k.",
+            "Ainsi k∈Z donne exactement toutes les solutions."
+          ],
+          "points": 1.0
+        }
+      ]
+    },
+    {
+      "id": "BAC-C-2026-EX4",
+      "number": 4,
+      "title": "Transformations complexes et lieux géométriques",
+      "chapter": "Nombres complexes et géométrie",
+      "points": 4.5,
+      "estimated_minutes": 55,
+      "statement": "A(-1-i), B(1-i), C(1+i), D(-1+i), E(1-3i).",
+      "questions": [
+        {
+          "id": "4.1",
+          "title": "Placement",
+          "prompt": "Placer A, B, C, D et E dans le repère.",
+          "expected_answer": "A(-1,-1), B(1,-1), C(1,1), D(-1,1), E(1,-3)",
+          "validation": {
+            "type": "points",
+            "coordinates": {
+              "A": [
+                -1,
+                -1
+              ],
+              "B": [
+                1,
+                -1
+              ],
+              "C": [
+                1,
+                1
+              ],
+              "D": [
+                -1,
+                1
+              ],
+              "E": [
+                1,
+                -3
+              ]
+            }
+          },
+          "hints": [
+            "L'affixe x+iy correspond au point (x,y).",
+            "Lire partie réelle et partie imaginaire."
+          ],
+          "solution_steps": [
+            "A(-1,-1), B(1,-1), C(1,1), D(-1,1) forment un carré centré en O.",
+            "E a pour coordonnées (1,-3)."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "4.2a",
+          "title": "Existence et unicité de la rotation",
+          "prompt": "Justifier qu'il existe une rotation unique envoyant A sur B et C sur D.",
+          "expected_answer": "rotation unique",
+          "validation": {
+            "type": "proof_outline",
+            "keywords": [
+              "AB=CD",
+              "médiatrices",
+              "centre unique"
+            ]
+          },
+          "hints": [
+            "Comparer les longueurs AC et BD.",
+            "Une rotation conservant les distances doit envoyer le segment AC sur BD."
+          ],
+          "solution_steps": [
+            "AC=BD=2√2.",
+            "Les médiatrices de [AB] et [CD] se coupent en un point unique O.",
+            "La rotation de centre O qui envoie A sur B envoie aussi C sur D ; elle est unique."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "4.2b",
+          "title": "Éléments de la rotation",
+          "prompt": "Déterminer le centre et l'angle de r.",
+          "expected_answer": "centre O ; angle π/2",
+          "validation": {
+            "type": "rotation",
+            "center": [
+              0,
+              0
+            ],
+            "angle": "pi/2"
+          },
+          "hints": [
+            "Calculer z_B/z_A si le centre est O.",
+            "Vérifier que z_B=i z_A."
+          ],
+          "solution_steps": [
+            "i(-1-i)=1-i=z_B.",
+            "De même i(1+i)=-1+i=z_D.",
+            "Donc r est la rotation de centre O et d'angle π/2."
+          ],
+          "points": 0.75
+        },
+        {
+          "id": "4.3a",
+          "title": "Similitude directe",
+          "prompt": "On pose f=h∘r, où h est l'homothétie de centre C et de rapport 2. Justifier que f est une similitude directe et préciser son angle et son rapport.",
+          "expected_answer": "similitude directe de rapport 2 et d'angle π/2",
+          "validation": {
+            "type": "similarity",
+            "ratio": 2,
+            "angle": "pi/2"
+          },
+          "hints": [
+            "La composée d'une rotation et d'une homothétie positive est une similitude directe.",
+            "Les rapports se multiplient et les angles s'ajoutent."
+          ],
+          "solution_steps": [
+            "r a pour rapport 1 et angle π/2.",
+            "h a pour rapport 2 et angle 0.",
+            "Ainsi f est une similitude directe de rapport 2 et d'angle π/2."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "4.3b",
+          "title": "Image de A",
+          "prompt": "Justifier que E est l'image de A par f.",
+          "expected_answer": "f(A)=E",
+          "validation": {
+            "type": "point_image",
+            "source": "A",
+            "target": "E"
+          },
+          "hints": [
+            "r(A)=B.",
+            "Appliquer ensuite l'homothétie de centre C et de rapport 2 à B."
+          ],
+          "solution_steps": [
+            "r(A)=B.",
+            "Pour h, z_{h(B)}=z_C+2(z_B-z_C).",
+            "On obtient (1+i)+2[(1-i)-(1+i)]=1-3i=z_E."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "4.4a",
+          "title": "Lieu Γ1",
+          "prompt": "Déterminer et construire Γ1={M : Mes(\\overrightarrow{MA},\\overrightarrow{ME})=π/2}.",
+          "expected_answer": "arc du cercle de diamètre [AE] correspondant à l'angle orienté π/2",
+          "validation": {
+            "type": "geometric_locus",
+            "family": "oriented_thales_circle",
+            "diameter": [
+              "A",
+              "E"
+            ],
+            "angle": "pi/2"
+          },
+          "hints": [
+            "Un angle droit inscrit intercepte un diamètre.",
+            "Tenir compte de l'orientation de l'angle."
+          ],
+          "solution_steps": [
+            "Sans orientation, le lieu est le cercle de diamètre [AE], privé de A et E.",
+            "La mesure orientée π/2 sélectionne l'un des deux demi-cercles.",
+            "On construit donc le cercle de diamètre [AE], puis on retient l'arc convenable."
+          ],
+          "points": 0.75
+        },
+        {
+          "id": "4.4b",
+          "title": "Lieu Γ2",
+          "prompt": "Déterminer et construire Γ2={M : ME²-4MA²=0}.",
+          "expected_answer": "cercle de centre (-5/3,-1/3) et de rayon 4√2/3",
+          "validation": {
+            "type": "circle",
+            "center": [
+              "-5/3",
+              "-1/3"
+            ],
+            "radius": "4*sqrt(2)/3"
+          },
+          "hints": [
+            "Écrire ME=2MA.",
+            "Poser M(x,y), puis développer."
+          ],
+          "solution_steps": [
+            "(x-1)²+(y+3)²=4[(x+1)²+(y+1)²].",
+            "Après réduction : 3x²+10x+3y²+2y-2=0.",
+            "Sous forme canonique : (x+5/3)²+(y+1/3)²=32/9."
+          ],
+          "points": 0.75
+        },
+        {
+          "id": "4.4c",
+          "title": "Construction du centre I",
+          "prompt": "Déduire une construction du centre I de f.",
+          "expected_answer": "I est l'intersection de Γ1 et Γ2 compatible avec l'orientation ; z_I=(1-3i)/5",
+          "validation": {
+            "type": "point",
+            "coordinates": [
+              "1/5",
+              "-3/5"
+            ]
+          },
+          "hints": [
+            "Le centre I d'une similitude vérifie angle(IA,IE)=π/2 et IE=2IA.",
+            "Il appartient donc aux deux lieux."
+          ],
+          "solution_steps": [
+            "Comme f(A)=E, le centre I vérifie simultanément Mes(IA,IE)=π/2 et IE=2IA.",
+            "Ainsi I∈Γ1∩Γ2 ; l'orientation permet de choisir la bonne intersection.",
+            "Algébriquement, z-(2i)z=-(1+i), d'où z_I=(1-3i)/5."
+          ],
+          "points": 0.75
+        }
+      ]
+    },
+    {
+      "id": "BAC-C-2026-EX5",
+      "number": 5,
+      "title": "Famille de fonctions exponentielles",
+      "chapter": "Étude de fonctions",
+      "points": 3.5,
+      "estimated_minutes": 45,
+      "statement": "Pour n≥2, f_n(x)=x^{1-n}e^{nx} sur ]0,+∞[.",
+      "questions": [
+        {
+          "id": "5.1a",
+          "title": "Asymptote verticale",
+          "prompt": "Justifier que l'axe (OJ), c'est-à-dire x=0, est une asymptote à (C_n).",
+          "expected_answer": "lim_{x→0+} f_n(x)=+∞",
+          "validation": {
+            "type": "limit",
+            "expression": "x**(1-n)*exp(n*x)",
+            "point": "0+",
+            "value": "+inf"
+          },
+          "hints": [
+            "Quand x→0+, e^{nx}→1.",
+            "Comme n≥2, 1-n≤-1."
+          ],
+          "solution_steps": [
+            "x^{1-n}=1/x^{n-1}→+∞.",
+            "e^{nx}→1.",
+            "Donc f_n(x)→+∞ et x=0 est une asymptote verticale."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "5.1b",
+          "title": "Limite à l'infini",
+          "prompt": "Calculer lim_{x→+∞} f_n(x).",
+          "expected_answer": "+∞",
+          "validation": {
+            "type": "limit",
+            "expression": "x**(1-n)*exp(n*x)",
+            "point": "+inf",
+            "value": "+inf"
+          },
+          "hints": [
+            "L'exponentielle domine toute puissance.",
+            "Écrire f_n=e^{nx}/x^{n-1}."
+          ],
+          "solution_steps": [
+            "Pour n fixé, e^{nx} croît plus vite que x^{n-1}.",
+            "Donc f_n(x)→+∞."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "5.2a",
+          "title": "Dérivée",
+          "prompt": "Montrer que f'_n(x)=[nx-(n-1)]e^{nx}/x^n.",
+          "expected_answer": "f'_n(x)=(nx-(n-1))e^{nx}/x^n",
+          "validation": {
+            "type": "symbolic",
+            "expression": "diff(x**(1-n)*exp(n*x),x)",
+            "equals": "(n*x-(n-1))*exp(n*x)/x**n"
+          },
+          "hints": [
+            "Dériver un produit.",
+            "Factoriser e^{nx}x^{-n}."
+          ],
+          "solution_steps": [
+            "f'_n=(1-n)x^{-n}e^{nx}+nx^{1-n}e^{nx}.",
+            "En factorisant e^{nx}/x^n, on obtient nx-(n-1)."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "5.2b",
+          "title": "Minimum unique",
+          "prompt": "En déduire que f_n admet un minimum unique en a_n=1-1/n.",
+          "expected_answer": "a_n=(n-1)/n",
+          "validation": {
+            "type": "critical_point",
+            "value": "(n-1)/n",
+            "nature": "minimum"
+          },
+          "hints": [
+            "Les facteurs e^{nx} et x^n sont positifs.",
+            "Le signe dépend de nx-(n-1)."
+          ],
+          "solution_steps": [
+            "f'_n<0 pour x<(n-1)/n, nul en a_n, puis >0 après.",
+            "f_n décroît puis croît : le minimum est unique en a_n."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "5.2c",
+          "title": "Tableau de variations",
+          "prompt": "Dresser le tableau de variations de f_n.",
+          "expected_answer": "+∞ ↘ f_n(a_n) ↗ +∞",
+          "validation": {
+            "type": "variation",
+            "intervals": [
+              [
+                "0",
+                "(n-1)/n",
+                "decreasing"
+              ],
+              [
+                "(n-1)/n",
+                "+inf",
+                "increasing"
+              ]
+            ]
+          },
+          "hints": [
+            "Utiliser le signe de f'_n.",
+            "Ajouter les limites aux bornes."
+          ],
+          "solution_steps": [
+            "À 0+, f_n→+∞.",
+            "Elle décroît jusqu'à a_n, puis croît.",
+            "À +∞, f_n→+∞."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "5.3a",
+          "title": "Rapport de deux fonctions",
+          "prompt": "Montrer que f_{n+1}(x)/f_n(x)=e^x/x.",
+          "expected_answer": "e^x/x",
+          "validation": {
+            "type": "symbolic",
+            "expression": "(x**(-n)*exp((n+1)*x))/(x**(1-n)*exp(n*x))",
+            "equals": "exp(x)/x"
+          },
+          "hints": [
+            "Simplifier séparément les puissances de x et les exponentielles.",
+            "x^{-n}/x^{1-n}=1/x."
+          ],
+          "solution_steps": [
+            "Le quotient des exponentielles vaut e^x.",
+            "Le quotient des puissances vaut 1/x.",
+            "Donc le rapport vaut e^x/x."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "5.3b",
+          "title": "Position relative",
+          "prompt": "En déduire la position relative de (C_n) et (C_{n+1}) sur ]0,+∞[.",
+          "expected_answer": "C_{n+1} est strictement au-dessus de C_n",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "C_{n+1}",
+              "au-dessus",
+              "strictement"
+            ]
+          },
+          "hints": [
+            "Pour x>0, utiliser e^x≥1+x.",
+            "Comparer e^x à x."
+          ],
+          "solution_steps": [
+            "e^x≥1+x>x pour x>0.",
+            "Ainsi e^x/x>1.",
+            "Donc f_{n+1}(x)>f_n(x) sur ]0,+∞[."
+          ],
+          "points": 0.5
+        },
+        {
+          "id": "5.3c",
+          "title": "Valeur minimale",
+          "prompt": "Calculer f_n(a_n).",
+          "expected_answer": "(n/(n-1))^{n-1}e^{n-1}",
+          "validation": {
+            "type": "symbolic",
+            "expression": "(n/(n-1))**(n-1)*exp(n-1)",
+            "equals": "((n-1)/n)**(1-n)*exp(n-1)"
+          },
+          "hints": [
+            "Remplacer a_n=(n-1)/n.",
+            "Calculer n a_n=n-1."
+          ],
+          "solution_steps": [
+            "a_n^{1-n}=((n-1)/n)^{1-n}=(n/(n-1))^{n-1}.",
+            "e^{na_n}=e^{n-1}.",
+            "D'où f_n(a_n)=(n/(n-1))^{n-1}e^{n-1}."
+          ],
+          "points": 0.5
+        }
+      ]
+    },
+    {
+      "id": "BAC-C-2026-EX6",
+      "number": 6,
+      "title": "Drone, géométrie dans l'espace et ajustement affine",
+      "chapter": "Problème de synthèse",
+      "points": 5,
+      "estimated_minutes": 55,
+      "statement": "Le mur vertical est contenu dans le plan P: 2x-y-5=0 et limité aux hauteurs 0≤z≤8. Le drone part de A(1,2,0) selon le vecteur u=(2,-1,9). Les collisions observées aux mois 1 à 7 sont 25, 21, 18, 17, 14, 11 et 9.",
+      "questions": [
+        {
+          "id": "6.1",
+          "title": "Trajectoire du drone",
+          "prompt": "Étudier la trajectoire et décider si le vol est réussi.",
+          "expected_answer": "Intersection avec P pour t=1 au point (3,1,9) ; vol réussi car z=9>8",
+          "validation": {
+            "type": "line_plane_intersection",
+            "line": {
+              "point": [
+                1,
+                2,
+                0
+              ],
+              "direction": [
+                2,
+                -1,
+                9
+              ]
+            },
+            "plane": [
+              2,
+              -1,
+              0,
+              -5
+            ],
+            "expected_t": 1
+          },
+          "hints": [
+            "Écrire les équations paramétriques de la trajectoire.",
+            "Substituer x=1+2t et y=2-t dans 2x-y-5=0."
+          ],
+          "solution_steps": [
+            "La trajectoire est x=1+2t, y=2-t, z=9t, avec t≥0.",
+            "Dans P : 2(1+2t)-(2-t)-5=0, soit 5t-5=0, donc t=1.",
+            "Le point d'intersection est (3,1,9). Comme 9>8, le drone passe au-dessus du mur : le vol est réussi."
+          ],
+          "points": 2.5
+        },
+        {
+          "id": "6.2a",
+          "title": "Ajustement affine",
+          "prompt": "Déterminer la droite de régression de y en x pour les données des sept mois.",
+          "expected_answer": "y≈-18x/7+187/7",
+          "validation": {
+            "type": "line",
+            "slope": "-18/7",
+            "intercept": "187/7",
+            "tolerance": 0.02
+          },
+          "hints": [
+            "Calculer x̄=4 et ȳ=115/7.",
+            "Utiliser a=Cov(x,y)/V(x), puis b=ȳ-a x̄."
+          ],
+          "solution_steps": [
+            "x̄=4 et ȳ=115/7.",
+            "Σ(x_i-4)²=28 et Σ(x_i-4)(y_i-ȳ)=-72.",
+            "Ainsi a=-72/28=-18/7 et b=115/7+72/7=187/7."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "6.2b",
+          "title": "Prévision du seuil",
+          "prompt": "À partir de quel rang de mois le modèle prévoit-il moins de 3 collisions par mois ?",
+          "expected_answer": "à partir du 10e mois",
+          "validation": {
+            "type": "integer",
+            "value": 10
+          },
+          "hints": [
+            "Résoudre (-18/7)x+187/7<3.",
+            "Multiplier par 7 puis isoler x."
+          ],
+          "solution_steps": [
+            "-18x+187<21.",
+            "-18x<-166, donc x>83/9≈9,22.",
+            "Le premier rang entier est 10."
+          ],
+          "points": 1.0
+        }
+      ]
+    }
+  ]
+}

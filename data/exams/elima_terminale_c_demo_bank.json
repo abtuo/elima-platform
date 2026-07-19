@@ -1,0 +1,2326 @@
+{
+  "metadata": {
+    "name": "Elima — Banque de démonstration Mathématiques Terminale C",
+    "version": "1.0.0",
+    "generated_on": "2026-07-15",
+    "language": "fr",
+    "license_note": "Contenus originaux créés pour la démonstration Elima ; ne constituent pas des sujets officiels.",
+    "design_note": "Le format officiel du baccalauréat série C est de 4 heures et coefficient 5. Les assemblages présents ici sont volontairement calibrés à 2 heures pour la démonstration.",
+    "counts": {
+      "exercises": 20,
+      "subjects": 10
+    },
+    "interactive_correction": {
+      "levels": [
+        "réponse libre",
+        "indice 1",
+        "indice 2",
+        "correction par étapes"
+      ],
+      "validation_types": [
+        "congruence",
+        "equation_equivalent",
+        "family",
+        "general_trig",
+        "integer",
+        "interval",
+        "interval_sign",
+        "line",
+        "linear_combination",
+        "matrix",
+        "matrix_identity",
+        "multi",
+        "multi_numeric",
+        "numeric",
+        "one_sided_limits",
+        "pair",
+        "pair_any",
+        "parametric_pair",
+        "point",
+        "proof_outline",
+        "rational",
+        "roots",
+        "semantic",
+        "set",
+        "set_angles",
+        "symbolic",
+        "vector"
+      ]
+    }
+  },
+  "subjects": [
+    {
+      "id": "TC-DEMO-01",
+      "title": "Sujet Démo 01",
+      "type": "entraînement modulaire",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "duration_minutes": 120,
+      "total_points": 20,
+      "exercise_ids": [
+        "TC-CPLX-01",
+        "TC-PROB-01",
+        "TC-FUNC-01",
+        "TC-GEO-01"
+      ],
+      "instructions": [
+        "Le sujet comporte quatre exercices indépendants.",
+        "La durée conseillée est de 2 heures.",
+        "Toute réponse doit être justifiée.",
+        "La calculatrice scientifique peut être autorisée selon le paramétrage de la session."
+      ]
+    },
+    {
+      "id": "TC-DEMO-02",
+      "title": "Sujet Démo 02",
+      "type": "entraînement modulaire",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "duration_minutes": 120,
+      "total_points": 20,
+      "exercise_ids": [
+        "TC-CPLX-02",
+        "TC-PROB-02",
+        "TC-SEQ-01",
+        "TC-INT-01"
+      ],
+      "instructions": [
+        "Le sujet comporte quatre exercices indépendants.",
+        "La durée conseillée est de 2 heures.",
+        "Toute réponse doit être justifiée.",
+        "La calculatrice scientifique peut être autorisée selon le paramétrage de la session."
+      ]
+    },
+    {
+      "id": "TC-DEMO-03",
+      "title": "Sujet Démo 03",
+      "type": "entraînement modulaire",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "duration_minutes": 120,
+      "total_points": 20,
+      "exercise_ids": [
+        "TC-ARITH-01",
+        "TC-FUNC-02",
+        "TC-GEO-02",
+        "TC-STAT-01"
+      ],
+      "instructions": [
+        "Le sujet comporte quatre exercices indépendants.",
+        "La durée conseillée est de 2 heures.",
+        "Toute réponse doit être justifiée.",
+        "La calculatrice scientifique peut être autorisée selon le paramétrage de la session."
+      ]
+    },
+    {
+      "id": "TC-DEMO-04",
+      "title": "Sujet Démo 04",
+      "type": "entraînement modulaire",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "duration_minutes": 120,
+      "total_points": 20,
+      "exercise_ids": [
+        "TC-MAT-01",
+        "TC-LIM-01",
+        "TC-PROB-01",
+        "TC-OPT-01"
+      ],
+      "instructions": [
+        "Le sujet comporte quatre exercices indépendants.",
+        "La durée conseillée est de 2 heures.",
+        "Toute réponse doit être justifiée.",
+        "La calculatrice scientifique peut être autorisée selon le paramétrage de la session."
+      ]
+    },
+    {
+      "id": "TC-DEMO-05",
+      "title": "Sujet Démo 05",
+      "type": "entraînement modulaire",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "duration_minutes": 120,
+      "total_points": 20,
+      "exercise_ids": [
+        "TC-TRIG-01",
+        "TC-SEQ-02",
+        "TC-DE-01",
+        "TC-CPLX-01"
+      ],
+      "instructions": [
+        "Le sujet comporte quatre exercices indépendants.",
+        "La durée conseillée est de 2 heures.",
+        "Toute réponse doit être justifiée.",
+        "La calculatrice scientifique peut être autorisée selon le paramétrage de la session."
+      ]
+    },
+    {
+      "id": "TC-DEMO-06",
+      "title": "Sujet Démo 06",
+      "type": "entraînement modulaire",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "duration_minutes": 120,
+      "total_points": 20,
+      "exercise_ids": [
+        "TC-PROB-02",
+        "TC-INT-02",
+        "TC-GEO-01",
+        "TC-ARITH-02"
+      ],
+      "instructions": [
+        "Le sujet comporte quatre exercices indépendants.",
+        "La durée conseillée est de 2 heures.",
+        "Toute réponse doit être justifiée.",
+        "La calculatrice scientifique peut être autorisée selon le paramétrage de la session."
+      ]
+    },
+    {
+      "id": "TC-DEMO-07",
+      "title": "Sujet Démo 07",
+      "type": "entraînement modulaire",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "duration_minutes": 120,
+      "total_points": 20,
+      "exercise_ids": [
+        "TC-FUNC-01",
+        "TC-SEQ-01",
+        "TC-MAT-01",
+        "TC-TRIG-01"
+      ],
+      "instructions": [
+        "Le sujet comporte quatre exercices indépendants.",
+        "La durée conseillée est de 2 heures.",
+        "Toute réponse doit être justifiée.",
+        "La calculatrice scientifique peut être autorisée selon le paramétrage de la session."
+      ]
+    },
+    {
+      "id": "TC-DEMO-08",
+      "title": "Sujet Démo 08",
+      "type": "entraînement modulaire",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "duration_minutes": 120,
+      "total_points": 20,
+      "exercise_ids": [
+        "TC-CPLX-02",
+        "TC-LIM-01",
+        "TC-STAT-01",
+        "TC-DE-01"
+      ],
+      "instructions": [
+        "Le sujet comporte quatre exercices indépendants.",
+        "La durée conseillée est de 2 heures.",
+        "Toute réponse doit être justifiée.",
+        "La calculatrice scientifique peut être autorisée selon le paramétrage de la session."
+      ]
+    },
+    {
+      "id": "TC-DEMO-09",
+      "title": "Sujet Démo 09",
+      "type": "entraînement modulaire",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "duration_minutes": 120,
+      "total_points": 20,
+      "exercise_ids": [
+        "TC-ARITH-01",
+        "TC-INT-01",
+        "TC-OPT-01",
+        "TC-GEO-02"
+      ],
+      "instructions": [
+        "Le sujet comporte quatre exercices indépendants.",
+        "La durée conseillée est de 2 heures.",
+        "Toute réponse doit être justifiée.",
+        "La calculatrice scientifique peut être autorisée selon le paramétrage de la session."
+      ]
+    },
+    {
+      "id": "TC-DEMO-10",
+      "title": "Sujet Démo 10",
+      "type": "entraînement modulaire",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "duration_minutes": 120,
+      "total_points": 20,
+      "exercise_ids": [
+        "TC-FUNC-02",
+        "TC-SEQ-02",
+        "TC-INT-02",
+        "TC-ARITH-02"
+      ],
+      "instructions": [
+        "Le sujet comporte quatre exercices indépendants.",
+        "La durée conseillée est de 2 heures.",
+        "Toute réponse doit être justifiée.",
+        "La calculatrice scientifique peut être autorisée selon le paramétrage de la session."
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "TC-CPLX-01",
+      "title": "Polynôme complexe et triangle",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Nombres complexes",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On considère p(z)=z^3-(6-3i)z^2+(15-18i)z+54i.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Vérification d'une racine",
+          "prompt": "Montrer que p(-3i)=0.",
+          "expected_answer": "0",
+          "validation": {
+            "type": "symbolic",
+            "expression": "p(-3*i)",
+            "equals": "0"
+          },
+          "hints": [
+            "Calculer séparément (-3i)^2 et (-3i)^3.",
+            "Remplacer z par -3i puis regrouper réel et imaginaire."
+          ],
+          "solution": [
+            "(-3i)^2=-9 et (-3i)^3=27i.",
+            "Après substitution, tous les termes se compensent, donc p(-3i)=0."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Factorisation",
+          "prompt": "Déterminer a et b tels que p(z)=(z+3i)(z^2+az+b).",
+          "expected_answer": "a=-6 ; b=18",
+          "validation": {
+            "type": "set",
+            "answers": [
+              "a=-6",
+              "b=18"
+            ]
+          },
+          "hints": [
+            "Développer (z+3i)(z^2+az+b).",
+            "Identifier les coefficients de z² et de z."
+          ],
+          "solution": [
+            "Le développement donne z^3+(a+3i)z²+(b+3ai)z+3bi.",
+            "a+3i=-6+3i, donc a=-6. Puis b+3ai=15-18i, donc b=18."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q3",
+          "title": "Résolution",
+          "prompt": "Résoudre z²-6z+18=0 dans C.",
+          "expected_answer": "{3+3i,3-3i}",
+          "validation": {
+            "type": "roots",
+            "polynomial": "z^2-6*z+18",
+            "variable": "z"
+          },
+          "hints": [
+            "Calculer le discriminant.",
+            "Δ=36-72=-36."
+          ],
+          "solution": [
+            "Δ=-36=(6i)^2.",
+            "Les solutions sont z=(6±6i)/2=3±3i."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Géométrie",
+          "prompt": "A, B et C ont pour affixes -3i, 3+3i et 3-3i. Déterminer la nature de ABC.",
+          "expected_answer": "triangle rectangle en C",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "rectangle",
+              "C"
+            ]
+          },
+          "hints": [
+            "Calculer AB², AC² et BC².",
+            "Comparer aussi AC et BC."
+          ],
+          "solution": [
+            "AB²=45, AC²=9 et BC²=36.",
+            "AC²+BC²=AB², donc ABC est rectangle en C."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "complexes",
+        "polynôme",
+        "géométrie"
+      ]
+    },
+    {
+      "id": "TC-CPLX-02",
+      "title": "Équation et lieu géométrique",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Nombres complexes",
+      "difficulty": "avancé",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "Dans le plan complexe, on considère l'équation z²-(2+2i)z+4i=0.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Résolution",
+          "prompt": "Résoudre l'équation dans C.",
+          "expected_answer": "{2,2i}",
+          "validation": {
+            "type": "roots",
+            "polynomial": "z^2-(2+2*i)*z+4*i",
+            "variable": "z"
+          },
+          "hints": [
+            "Chercher deux nombres dont la somme vaut 2+2i.",
+            "Leur produit doit valoir 4i."
+          ],
+          "solution": [
+            "z²-(2+2i)z+4i=(z-2)(z-2i).",
+            "Les solutions sont 2 et 2i."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q2",
+          "title": "Module",
+          "prompt": "Déterminer l'ensemble des z tels que |z-2|=|z-2i|.",
+          "expected_answer": "droite y=x",
+          "validation": {
+            "type": "equation_equivalent",
+            "expression": "(x-2)^2+y^2=x^2+(y-2)^2",
+            "target": "y=x"
+          },
+          "hints": [
+            "Poser z=x+iy.",
+            "Élever les deux membres au carré."
+          ],
+          "solution": [
+            "(x-2)²+y²=x²+(y-2)².",
+            "Après simplification, y=x : c'est la médiatrice du segment joignant 2 à 2i."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q3",
+          "title": "Argument",
+          "prompt": "Déterminer les z non nuls tels que arg(z)=π/4 [π].",
+          "expected_answer": "droite y=x privée de O",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "y=x",
+              "O"
+            ]
+          },
+          "hints": [
+            "Un argument défini modulo π caractérise une droite.",
+            "Écrire z=r(cos π/4+i sin π/4)."
+          ],
+          "solution": [
+            "Les points sont alignés avec le vecteur d'affixe 1+i.",
+            "Le lieu est la droite y=x privée de l'origine."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Transformation",
+          "prompt": "La transformation T est définie par z'=iz+2. Donner sa nature et ses éléments caractéristiques.",
+          "expected_answer": "rotation de centre 1+i et d'angle π/2",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "rotation",
+              "1+i",
+              "π/2"
+            ]
+          },
+          "hints": [
+            "Mettre z'-ω=i(z-ω).",
+            "Résoudre ω=iω+2."
+          ],
+          "solution": [
+            "ω(1-i)=2, donc ω=1+i.",
+            "T est la rotation de centre d'affixe 1+i et d'angle π/2."
+          ],
+          "points": 1
+        }
+      ],
+      "tags": [
+        "complexes",
+        "lieu",
+        "rotation"
+      ]
+    },
+    {
+      "id": "TC-PROB-01",
+      "title": "Urne et loi hypergéométrique",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Probabilités",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5,
+      "context": "Une urne contient 4 boules roses, 3 vertes et 2 jaunes. On tire simultanément 3 boules.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Trois couleurs",
+          "prompt": "Calculer la probabilité d'obtenir trois boules de couleurs différentes.",
+          "expected_answer": "2/7",
+          "validation": {
+            "type": "rational",
+            "value": "2/7"
+          },
+          "hints": [
+            "Le nombre total de tirages est C(9,3).",
+            "Pour trois couleurs, choisir une boule de chaque couleur."
+          ],
+          "solution": [
+            "Nombre favorable : 4×3×2=24.",
+            "P=24/C(9,3)=24/84=2/7."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Deux jaunes",
+          "prompt": "Calculer la probabilité d'obtenir exactement deux boules jaunes.",
+          "expected_answer": "1/12",
+          "validation": {
+            "type": "rational",
+            "value": "1/12"
+          },
+          "hints": [
+            "Les deux jaunes doivent être tirées.",
+            "Choisir la troisième parmi les 7 non jaunes."
+          ],
+          "solution": [
+            "Nombre favorable : C(2,2)C(7,1)=7.",
+            "P=7/84=1/12."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q3",
+          "title": "Au moins une jaune",
+          "prompt": "Calculer P(X≥1), où X est le nombre de boules jaunes tirées.",
+          "expected_answer": "7/12",
+          "validation": {
+            "type": "rational",
+            "value": "7/12"
+          },
+          "hints": [
+            "Utiliser l'événement contraire X=0.",
+            "Il y a 7 boules non jaunes."
+          ],
+          "solution": [
+            "P(X=0)=C(7,3)/C(9,3)=35/84=5/12.",
+            "Donc P(X≥1)=1-5/12=7/12."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Loi, espérance et écart-type",
+          "prompt": "Déterminer la loi de X, puis E(X) et σ(X).",
+          "expected_answer": "P0=5/12; P1=1/2; P2=1/12; E=2/3; σ=√(7/18)",
+          "validation": {
+            "type": "multi",
+            "fields": {
+              "P0": "5/12",
+              "P1": "1/2",
+              "P2": "1/12",
+              "E": "2/3",
+              "variance": "7/18"
+            }
+          },
+          "hints": [
+            "X prend les valeurs 0, 1 et 2.",
+            "Utiliser P(X=k)=C(2,k)C(7,3-k)/C(9,3)."
+          ],
+          "solution": [
+            "P0=35/84=5/12, P1=42/84=1/2, P2=7/84=1/12.",
+            "E(X)=2/3 et V(X)=7/18, donc σ(X)=√(7/18)."
+          ],
+          "points": 2
+        }
+      ],
+      "tags": [
+        "probabilités",
+        "loi",
+        "espérance"
+      ]
+    },
+    {
+      "id": "TC-PROB-02",
+      "title": "Fiabilité et loi binomiale",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Probabilités",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5,
+      "context": "Une machine produit des pièces dont 4 % sont défectueuses. On prélève 10 pièces, assimilées à des tirages indépendants. X est le nombre de pièces défectueuses.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Modèle",
+          "prompt": "Justifier que X suit une loi binomiale et préciser ses paramètres.",
+          "expected_answer": "B(10,0.04)",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "binomiale",
+              "10",
+              "0,04"
+            ]
+          },
+          "hints": [
+            "Identifier le nombre d'épreuves et la probabilité de succès.",
+            "Les prélèvements sont supposés indépendants."
+          ],
+          "solution": [
+            "Chaque pièce correspond à une épreuve de Bernoulli de probabilité 0,04.",
+            "Ainsi X suit B(10;0,04)."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Aucune pièce",
+          "prompt": "Calculer P(X=0).",
+          "expected_answer": "0.96^10",
+          "validation": {
+            "type": "numeric",
+            "value": 0.66483263599,
+            "tolerance": 0.001
+          },
+          "hints": [
+            "Utiliser la formule binomiale avec k=0.",
+            "P(X=0)=(1-p)^n."
+          ],
+          "solution": [
+            "P(X=0)=0,96^10.",
+            "Numériquement P(X=0)≈0,665."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q3",
+          "title": "Au moins une",
+          "prompt": "Calculer P(X≥1).",
+          "expected_answer": "1-0.96^10",
+          "validation": {
+            "type": "numeric",
+            "value": 0.335167364,
+            "tolerance": 0.001
+          },
+          "hints": [
+            "Passer par l'événement contraire.",
+            "P(X≥1)=1-P(X=0)."
+          ],
+          "solution": [
+            "P(X≥1)=1-0,96^10.",
+            "Donc P(X≥1)≈0,335."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Seuil de contrôle",
+          "prompt": "On contrôle un lot si X≥2. Calculer la probabilité qu'un lot soit contrôlé.",
+          "expected_answer": "1-0.96^10-10*0.04*0.96^9",
+          "validation": {
+            "type": "numeric",
+            "value": 0.058153,
+            "tolerance": 0.002
+          },
+          "hints": [
+            "Calculer 1-P(X=0)-P(X=1).",
+            "P(X=1)=10×0,04×0,96^9."
+          ],
+          "solution": [
+            "P(X≥2)=1-P0-P1.",
+            "On obtient environ 0,058."
+          ],
+          "points": 2
+        }
+      ],
+      "tags": [
+        "probabilités",
+        "binomiale",
+        "industrie"
+      ]
+    },
+    {
+      "id": "TC-FUNC-01",
+      "title": "Logarithme et étude de fonction",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Fonctions numériques",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On définit g(x)=x²-1+ln(x) sur ]0,+∞[ et f(x)=x-1-ln(x)/x.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Variations de g",
+          "prompt": "Étudier le sens de variation de g.",
+          "expected_answer": "strictement croissante",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "croissante"
+            ]
+          },
+          "hints": [
+            "Calculer g'(x).",
+            "Sur ]0,+∞[, 2x et 1/x sont positifs."
+          ],
+          "solution": [
+            "g'(x)=2x+1/x>0.",
+            "Donc g est strictement croissante."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Signe de g",
+          "prompt": "Calculer g(1) et en déduire le signe de g.",
+          "expected_answer": "g<0 sur ]0,1[; g(1)=0; g>0 sur ]1,+∞[",
+          "validation": {
+            "type": "interval_sign",
+            "root": "1",
+            "left": "negative",
+            "right": "positive"
+          },
+          "hints": [
+            "Utiliser la croissance stricte.",
+            "g(1)=0."
+          ],
+          "solution": [
+            "Comme g est strictement croissante et g(1)=0, son signe change en 1.",
+            "g(x)<0 pour 0<x<1 et g(x)>0 pour x>1."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q3",
+          "title": "Dérivée de f",
+          "prompt": "Calculer f'(x) et l'exprimer à l'aide de g.",
+          "expected_answer": "f'(x)=g(x)/x²",
+          "validation": {
+            "type": "symbolic",
+            "expression": "diff(x-1-log(x)/x,x)",
+            "equals": "(x^2-1+log(x))/x^2"
+          },
+          "hints": [
+            "Dériver ln(x)/x comme un quotient.",
+            "Mettre au même dénominateur x²."
+          ],
+          "solution": [
+            "(ln x/x)'=(1-ln x)/x².",
+            "Ainsi f'(x)=1-(1-ln x)/x²=g(x)/x²."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q4",
+          "title": "Variations et minimum",
+          "prompt": "Dresser le tableau de variations de f et donner son minimum.",
+          "expected_answer": "minimum 0 atteint en x=1",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "décroissante",
+              "croissante",
+              "0",
+              "1"
+            ]
+          },
+          "hints": [
+            "x² est toujours positif.",
+            "Le signe de f' est celui de g."
+          ],
+          "solution": [
+            "f décroît sur ]0,1] puis croît sur [1,+∞[.",
+            "f(1)=0 : le minimum est 0, atteint pour x=1."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "logarithme",
+        "dérivée",
+        "variations"
+      ]
+    },
+    {
+      "id": "TC-FUNC-02",
+      "title": "Exponentielle et tangente",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Fonctions numériques",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On considère f(x)=e^x-x-1 sur R.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Variations",
+          "prompt": "Étudier les variations de f.",
+          "expected_answer": "décroît sur ]-∞,0] puis croît sur [0,+∞[",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "décroît",
+              "0",
+              "croît"
+            ]
+          },
+          "hints": [
+            "f'(x)=e^x-1.",
+            "Étudier le signe de e^x-1."
+          ],
+          "solution": [
+            "f'(x)<0 si x<0, f'(0)=0 et f'(x)>0 si x>0.",
+            "D'où les variations annoncées."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q2",
+          "title": "Inégalité",
+          "prompt": "En déduire que e^x≥x+1 pour tout réel x.",
+          "expected_answer": "e^x≥x+1",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "minimum",
+              "0"
+            ]
+          },
+          "hints": [
+            "Calculer f(0).",
+            "Utiliser le minimum de f."
+          ],
+          "solution": [
+            "f admet en 0 un minimum égal à f(0)=0.",
+            "Donc e^x-x-1≥0, soit e^x≥x+1."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q3",
+          "title": "Équation",
+          "prompt": "Résoudre e^x=x+1.",
+          "expected_answer": "x=0",
+          "validation": {
+            "type": "set",
+            "answers": [
+              "0"
+            ]
+          },
+          "hints": [
+            "Il s'agit de f(x)=0.",
+            "Le minimum est atteint uniquement en 0."
+          ],
+          "solution": [
+            "f(x)≥0 et f(x)=0 seulement pour x=0.",
+            "La solution unique est 0."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Aire",
+          "prompt": "Calculer l'aire comprise entre y=e^x et y=x+1 sur [0,1].",
+          "expected_answer": "e-5/2",
+          "validation": {
+            "type": "symbolic",
+            "expression": "integrate(exp(x)-x-1,(x,0,1))",
+            "equals": "E-5/2"
+          },
+          "hints": [
+            "La différence e^x-x-1 est positive.",
+            "Intégrer terme à terme."
+          ],
+          "solution": [
+            "A=∫₀¹(e^x-x-1)dx.",
+            "A=[e^x-x²/2-x]₀¹=e-5/2."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "exponentielle",
+        "inégalité",
+        "intégrale"
+      ]
+    },
+    {
+      "id": "TC-SEQ-01",
+      "title": "Suite homographique",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Suites numériques",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On définit u₀=0 et uₙ₊₁=(2uₙ+3)/(uₙ+4).",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Bornes",
+          "prompt": "Montrer par récurrence que 0≤uₙ<1 pour tout n.",
+          "expected_answer": "0≤u_n<1",
+          "validation": {
+            "type": "proof_outline",
+            "keywords": [
+              "initialisation",
+              "hérédité"
+            ]
+          },
+          "hints": [
+            "Vérifier le rang 0.",
+            "Supposer 0≤u<1 et encadrer (2u+3)/(u+4)."
+          ],
+          "solution": [
+            "Au rang 0, u₀=0.",
+            "Si 0≤uₙ<1, alors uₙ₊₁≥0 et uₙ₊₁<1 car 2uₙ+3<uₙ+4."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q2",
+          "title": "Monotonie",
+          "prompt": "Montrer que la suite est croissante.",
+          "expected_answer": "u_{n+1}-u_n=(1-u_n)(u_n+3)/(u_n+4)>0",
+          "validation": {
+            "type": "symbolic",
+            "expression": "(2*u+3)/(u+4)-u",
+            "equals": "(1-u)*(u+3)/(u+4)"
+          },
+          "hints": [
+            "Calculer uₙ₊₁-uₙ.",
+            "Factoriser le numérateur."
+          ],
+          "solution": [
+            "uₙ₊₁-uₙ=(-uₙ²-2uₙ+3)/(uₙ+4).",
+            "Le numérateur vaut (1-uₙ)(uₙ+3)>0."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q3",
+          "title": "Convergence",
+          "prompt": "Justifier que la suite converge et déterminer sa limite.",
+          "expected_answer": "1",
+          "validation": {
+            "type": "numeric",
+            "value": 1
+          },
+          "hints": [
+            "Une suite croissante et majorée converge.",
+            "Résoudre l=(2l+3)/(l+4)."
+          ],
+          "solution": [
+            "La suite est croissante et majorée par 1.",
+            "La limite vérifie l²+2l-3=0, donc l=1 ou -3. Comme l≥0, l=1."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Transformation",
+          "prompt": "Poser vₙ=(uₙ-1)/(uₙ+3). Montrer que vₙ₊₁=vₙ/5 puis exprimer uₙ.",
+          "expected_answer": "u_n=3(1-5^{-n})/(3+5^{-n})",
+          "validation": {
+            "type": "symbolic",
+            "expression": "3*(1-5**(-n))/(3+5**(-n))",
+            "equals": "3*(5**n-1)/(3*5**n+1)"
+          },
+          "hints": [
+            "Calculer vₙ₊₁ en remplaçant uₙ₊₁.",
+            "v₀=-1/3."
+          ],
+          "solution": [
+            "On obtient vₙ₊₁=vₙ/5, donc vₙ=-1/(3·5ⁿ).",
+            "En isolant uₙ, uₙ=3(5ⁿ-1)/(3·5ⁿ+1)."
+          ],
+          "points": 1
+        }
+      ],
+      "tags": [
+        "suites",
+        "récurrence",
+        "limite"
+      ]
+    },
+    {
+      "id": "TC-SEQ-02",
+      "title": "Suite définie par une somme",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Suites numériques",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "Pour n≥1, on pose uₙ=Σ(k=1 à n) 1/[k(k+1)].",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Décomposition",
+          "prompt": "Montrer que 1/[k(k+1)]=1/k-1/(k+1).",
+          "expected_answer": "1/k-1/(k+1)",
+          "validation": {
+            "type": "symbolic",
+            "expression": "1/k-1/(k+1)",
+            "equals": "1/(k*(k+1))"
+          },
+          "hints": [
+            "Mettre au même dénominateur.",
+            "Le numérateur devient (k+1)-k."
+          ],
+          "solution": [
+            "1/k-1/(k+1)=((k+1)-k)/(k(k+1)).",
+            "On retrouve 1/[k(k+1)]."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Somme télescopique",
+          "prompt": "Calculer uₙ.",
+          "expected_answer": "n/(n+1)",
+          "validation": {
+            "type": "symbolic",
+            "expression": "n/(n+1)",
+            "equals": "1-1/(n+1)"
+          },
+          "hints": [
+            "Écrire les premiers termes.",
+            "Les termes intermédiaires se simplifient."
+          ],
+          "solution": [
+            "uₙ=(1-1/2)+(1/2-1/3)+...+(1/n-1/(n+1)).",
+            "Donc uₙ=1-1/(n+1)=n/(n+1)."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q3",
+          "title": "Limite",
+          "prompt": "Déterminer lim uₙ.",
+          "expected_answer": "1",
+          "validation": {
+            "type": "numeric",
+            "value": 1
+          },
+          "hints": [
+            "Utiliser l'expression explicite.",
+            "n/(n+1)=1/(1+1/n)."
+          ],
+          "solution": [
+            "Comme 1/n→0, uₙ→1."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Seuil",
+          "prompt": "Déterminer le plus petit entier n tel que uₙ≥0,99.",
+          "expected_answer": "99",
+          "validation": {
+            "type": "integer",
+            "value": 99
+          },
+          "hints": [
+            "Résoudre n/(n+1)≥99/100.",
+            "Multiplier par 100(n+1)>0."
+          ],
+          "solution": [
+            "100n≥99n+99.",
+            "Donc n≥99 ; le plus petit est 99."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "suites",
+        "somme",
+        "télescopique"
+      ]
+    },
+    {
+      "id": "TC-INT-01",
+      "title": "Intégration par parties",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Calcul intégral",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On considère I=∫₀¹ x e^x dx et J=∫₀¹ x² e^x dx.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Calcul de I",
+          "prompt": "Calculer I par intégration par parties.",
+          "expected_answer": "1",
+          "validation": {
+            "type": "numeric",
+            "value": 1
+          },
+          "hints": [
+            "Prendre u=x et dv=e^x dx.",
+            "Alors du=dx et v=e^x."
+          ],
+          "solution": [
+            "I=[xe^x]₀¹-∫₀¹e^x dx.",
+            "I=e-(e-1)=1."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q2",
+          "title": "Relation",
+          "prompt": "Établir J=e-2I.",
+          "expected_answer": "J=e-2I",
+          "validation": {
+            "type": "symbolic",
+            "expression": "E-2*I",
+            "equals": "E-2*I"
+          },
+          "hints": [
+            "Prendre u=x².",
+            "du=2x dx."
+          ],
+          "solution": [
+            "J=[x²e^x]₀¹-2∫₀¹xe^x dx.",
+            "Donc J=e-2I."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q3",
+          "title": "Valeur de J",
+          "prompt": "En déduire J.",
+          "expected_answer": "e-2",
+          "validation": {
+            "type": "symbolic",
+            "expression": "E-2",
+            "equals": "E-2"
+          },
+          "hints": [
+            "Utiliser I=1.",
+            "Remplacer dans la relation précédente."
+          ],
+          "solution": [
+            "J=e-2×1=e-2."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Valeur moyenne",
+          "prompt": "Calculer la valeur moyenne de h(x)=x²e^x sur [0,1].",
+          "expected_answer": "e-2",
+          "validation": {
+            "type": "symbolic",
+            "expression": "E-2",
+            "equals": "E-2"
+          },
+          "hints": [
+            "La longueur de l'intervalle vaut 1.",
+            "Valeur moyenne = intégrale / longueur."
+          ],
+          "solution": [
+            "m=J/(1-0).",
+            "Donc m=e-2."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "intégrale",
+        "parties",
+        "valeur moyenne"
+      ]
+    },
+    {
+      "id": "TC-INT-02",
+      "title": "Aire et changement de variable",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Calcul intégral",
+      "difficulty": "avancé",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On considère f(x)=x/(x²+1) sur [0,2].",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Primitive",
+          "prompt": "Déterminer une primitive de f.",
+          "expected_answer": "(1/2)ln(x²+1)",
+          "validation": {
+            "type": "symbolic",
+            "expression": "log(x^2+1)/2",
+            "equals": "integrate(x/(x^2+1),x)"
+          },
+          "hints": [
+            "Poser u=x²+1.",
+            "du=2x dx."
+          ],
+          "solution": [
+            "Une primitive est F(x)=1/2 ln(x²+1)."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q2",
+          "title": "Intégrale",
+          "prompt": "Calculer ∫₀² f(x)dx.",
+          "expected_answer": "(1/2)ln5",
+          "validation": {
+            "type": "symbolic",
+            "expression": "log(5)/2",
+            "equals": "log(5)/2"
+          },
+          "hints": [
+            "Utiliser la primitive.",
+            "F(2)-F(0)."
+          ],
+          "solution": [
+            "I=1/2[ln5-ln1].",
+            "Donc I=1/2 ln5."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q3",
+          "title": "Aire",
+          "prompt": "Calculer l'aire sous la courbe sur [0,2].",
+          "expected_answer": "(1/2)ln5",
+          "validation": {
+            "type": "symbolic",
+            "expression": "log(5)/2",
+            "equals": "log(5)/2"
+          },
+          "hints": [
+            "Vérifier le signe de f.",
+            "Sur [0,2], f≥0."
+          ],
+          "solution": [
+            "L'aire est l'intégrale puisque f est positive.",
+            "A=1/2 ln5 unité d'aire."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Équation d'aire",
+          "prompt": "Déterminer a∈[0,2] tel que ∫₀ᵃ f(x)dx=1/4 ln5.",
+          "expected_answer": "sqrt(sqrt(5)-1)",
+          "validation": {
+            "type": "symbolic",
+            "expression": "sqrt(sqrt(5)-1)",
+            "equals": "sqrt(sqrt(5)-1)"
+          },
+          "hints": [
+            "Écrire 1/2 ln(a²+1)=1/4 ln5.",
+            "Multiplier par 4 puis exponentier."
+          ],
+          "solution": [
+            "2ln(a²+1)=ln5, donc (a²+1)²=5.",
+            "Comme a≥0, a²+1=√5 et a=√(√5-1)."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "intégrale",
+        "logarithme",
+        "aire"
+      ]
+    },
+    {
+      "id": "TC-DE-01",
+      "title": "Équation différentielle et condition initiale",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Équations différentielles",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On étudie l'équation y'+2y=6.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Solution générale",
+          "prompt": "Résoudre l'équation différentielle.",
+          "expected_answer": "y=3+Ce^{-2x}",
+          "validation": {
+            "type": "family",
+            "expression": "3+C*exp(-2*x)"
+          },
+          "hints": [
+            "Résoudre d'abord y'+2y=0.",
+            "Chercher ensuite une solution constante."
+          ],
+          "solution": [
+            "La solution homogène est Ce^{-2x}.",
+            "Une solution particulière est 3 ; donc y=3+Ce^{-2x}."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q2",
+          "title": "Condition initiale",
+          "prompt": "Déterminer la solution vérifiant y(0)=1.",
+          "expected_answer": "y=3-2e^{-2x}",
+          "validation": {
+            "type": "symbolic",
+            "expression": "3-2*exp(-2*x)",
+            "equals": "3-2*exp(-2*x)"
+          },
+          "hints": [
+            "Remplacer x par 0.",
+            "1=3+C."
+          ],
+          "solution": [
+            "C=-2.",
+            "Ainsi y(x)=3-2e^{-2x}."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q3",
+          "title": "Variations",
+          "prompt": "Étudier les variations de cette solution.",
+          "expected_answer": "strictement croissante",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "croissante"
+            ]
+          },
+          "hints": [
+            "Calculer y'(x).",
+            "e^{-2x}>0."
+          ],
+          "solution": [
+            "y'(x)=4e^{-2x}>0.",
+            "La solution est strictement croissante."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Seuil",
+          "prompt": "Résoudre y(x)≥2,9.",
+          "expected_answer": "x≥(1/2)ln20",
+          "validation": {
+            "type": "interval",
+            "lower": "log(20)/2",
+            "closed": true
+          },
+          "hints": [
+            "3-2e^{-2x}≥2,9.",
+            "Isoler l'exponentielle."
+          ],
+          "solution": [
+            "e^{-2x}≤0,05=1/20.",
+            "-2x≤-ln20, donc x≥(ln20)/2."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "équation différentielle",
+        "exponentielle",
+        "modélisation"
+      ]
+    },
+    {
+      "id": "TC-GEO-01",
+      "title": "Droites et plans de l'espace",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Géométrie dans l'espace",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "Dans un repère orthonormé, A(1,0,1), B(2,1,0), C(0,1,2) et D(1,2,1).",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Vecteurs",
+          "prompt": "Calculer AB et AC.",
+          "expected_answer": "AB=(1,1,-1); AC=(-1,1,1)",
+          "validation": {
+            "type": "vector",
+            "answers": {
+              "AB": [
+                1,
+                1,
+                -1
+              ],
+              "AC": [
+                -1,
+                1,
+                1
+              ]
+            }
+          },
+          "hints": [
+            "Soustraire les coordonnées de A.",
+            "AB=B-A et AC=C-A."
+          ],
+          "solution": [
+            "AB=(2-1,1-0,0-1)=(1,1,-1).",
+            "AC=(0-1,1-0,2-1)=(-1,1,1)."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Plan",
+          "prompt": "Déterminer une équation du plan (ABC).",
+          "expected_answer": "x+z=2",
+          "validation": {
+            "type": "equation_equivalent",
+            "target": "x+z-2=0"
+          },
+          "hints": [
+            "Calculer un vecteur normal avec AB×AC.",
+            "Vérifier que A appartient au plan."
+          ],
+          "solution": [
+            "AB×AC=(2,0,2), donc un normal est (1,0,1).",
+            "Le plan a pour équation x+z=2."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q3",
+          "title": "Appartenance",
+          "prompt": "Montrer que D appartient au plan (ABC).",
+          "expected_answer": "1+1=2",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "appartient"
+            ]
+          },
+          "hints": [
+            "Remplacer les coordonnées de D dans l'équation.",
+            "Calculer x_D+z_D."
+          ],
+          "solution": [
+            "Pour D, x+z=1+1=2.",
+            "Donc D∈(ABC)."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Nature du quadrilatère",
+          "prompt": "Déterminer la nature de ABCD.",
+          "expected_answer": "parallélogramme",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "parallélogramme"
+            ]
+          },
+          "hints": [
+            "Comparer AB et DC, puis AD et BC.",
+            "Calculer D-C et D-A."
+          ],
+          "solution": [
+            "DC=(1,1,-1)=AB et AD=(0,2,0)=BC.",
+            "Les côtés opposés sont parallèles et égaux : ABCD est un parallélogramme."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "espace",
+        "plan",
+        "vecteurs"
+      ]
+    },
+    {
+      "id": "TC-GEO-02",
+      "title": "Distance d'un point à un plan",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Géométrie dans l'espace",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On considère le plan P: 2x-y+2z-3=0 et le point A(1,2,2).",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Vecteur normal",
+          "prompt": "Donner un vecteur normal à P.",
+          "expected_answer": "(2,-1,2)",
+          "validation": {
+            "type": "vector",
+            "answers": {
+              "n": [
+                2,
+                -1,
+                2
+              ]
+            }
+          },
+          "hints": [
+            "Lire les coefficients de x, y et z.",
+            "Pour ax+by+cz+d=0, (a,b,c) est normal."
+          ],
+          "solution": [
+            "Un vecteur normal est n=(2,-1,2)."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Projection",
+          "prompt": "Déterminer le projeté orthogonal H de A sur P.",
+          "expected_answer": "H=(7/9,19/9,16/9)",
+          "validation": {
+            "type": "point",
+            "coordinates": [
+              "7/9",
+              "19/9",
+              "16/9"
+            ]
+          },
+          "hints": [
+            "Écrire H=A-λn.",
+            "Imposer que H appartienne au plan."
+          ],
+          "solution": [
+            "Pour A, 2x-y+2z-3=1.",
+            "λ=1/||n||²=1/9, donc H=A-(1/9)(2,-1,2)=(7/9,19/9,16/9)."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q3",
+          "title": "Distance",
+          "prompt": "Calculer d(A,P).",
+          "expected_answer": "1/3",
+          "validation": {
+            "type": "rational",
+            "value": "1/3"
+          },
+          "hints": [
+            "Utiliser |2x_A-y_A+2z_A-3|/√(4+1+4).",
+            "Le numérateur vaut 1."
+          ],
+          "solution": [
+            "d(A,P)=1/3."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Sphère tangente",
+          "prompt": "Donner une équation de la sphère de centre A tangente à P.",
+          "expected_answer": "(x-1)²+(y-2)²+(z-2)²=1/9",
+          "validation": {
+            "type": "equation_equivalent",
+            "target": "(x-1)^2+(y-2)^2+(z-2)^2-1/9=0"
+          },
+          "hints": [
+            "Le rayon est la distance de A à P.",
+            "Utiliser l'équation d'une sphère."
+          ],
+          "solution": [
+            "Le rayon vaut 1/3.",
+            "L'équation est (x-1)²+(y-2)²+(z-2)²=1/9."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "espace",
+        "distance",
+        "sphère"
+      ]
+    },
+    {
+      "id": "TC-ARITH-01",
+      "title": "Congruences et divisibilité",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Arithmétique",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On travaille dans Z.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "PGCD",
+          "prompt": "Calculer pgcd(252,198) par l'algorithme d'Euclide.",
+          "expected_answer": "18",
+          "validation": {
+            "type": "integer",
+            "value": 18
+          },
+          "hints": [
+            "Effectuer les divisions euclidiennes successives.",
+            "252=198+54."
+          ],
+          "solution": [
+            "252=198+54, 198=3×54+36, 54=36+18, 36=2×18.",
+            "Donc pgcd(252,198)=18."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Bézout",
+          "prompt": "Déterminer une relation de Bézout.",
+          "expected_answer": "18=4×252-5×198",
+          "validation": {
+            "type": "linear_combination",
+            "a": 252,
+            "b": 198,
+            "target": 18
+          },
+          "hints": [
+            "Remonter l'algorithme d'Euclide.",
+            "18=54-36."
+          ],
+          "solution": [
+            "18=54-(198-3×54)=4×54-198.",
+            "Or 54=252-198, donc 18=4×252-5×198."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q3",
+          "title": "Congruence",
+          "prompt": "Résoudre 14x≡8 [30].",
+          "expected_answer": "x≡7 [15]",
+          "validation": {
+            "type": "congruence",
+            "modulus": 15,
+            "residue": 7
+          },
+          "hints": [
+            "Diviser d'abord par pgcd(14,30)=2.",
+            "Résoudre 7x≡4 [15]."
+          ],
+          "solution": [
+            "On obtient 7x≡4 [15]. L'inverse de 7 modulo 15 est 13.",
+            "x≡52≡7 [15]."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q4",
+          "title": "Divisibilité",
+          "prompt": "Montrer que n^3-n est divisible par 6 pour tout entier n.",
+          "expected_answer": "n(n-1)(n+1) divisible par 2 et 3",
+          "validation": {
+            "type": "proof_outline",
+            "keywords": [
+              "trois entiers consécutifs",
+              "2",
+              "3"
+            ]
+          },
+          "hints": [
+            "Factoriser n³-n.",
+            "Parmi trois entiers consécutifs, l'un est multiple de 3 et au moins l'un est pair."
+          ],
+          "solution": [
+            "n³-n=n(n-1)(n+1).",
+            "Ce produit est divisible par 2 et par 3, donc par 6."
+          ],
+          "points": 1
+        }
+      ],
+      "tags": [
+        "arithmétique",
+        "congruences",
+        "Bézout"
+      ]
+    },
+    {
+      "id": "TC-ARITH-02",
+      "title": "Nombres premiers et équation diophantienne",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Arithmétique",
+      "difficulty": "avancé",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On considère l'équation 21x+15y=3.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Condition d'existence",
+          "prompt": "Justifier que l'équation admet des solutions entières.",
+          "expected_answer": "pgcd(21,15)=3 divise 3",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "pgcd",
+              "3",
+              "divise"
+            ]
+          },
+          "hints": [
+            "Calculer le PGCD.",
+            "Utiliser le théorème de Bézout."
+          ],
+          "solution": [
+            "pgcd(21,15)=3.",
+            "Comme 3 divise le second membre, des solutions existent."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Solution particulière",
+          "prompt": "Trouver une solution particulière.",
+          "expected_answer": "(x,y)=(-2,3)",
+          "validation": {
+            "type": "pair_any",
+            "equation": "21*x+15*y=3"
+          },
+          "hints": [
+            "Chercher une relation de Bézout pour 7 et 5.",
+            "7(-2)+5(3)=1."
+          ],
+          "solution": [
+            "En multipliant par 3 : 21(-2)+15(3)=3.",
+            "Une solution est (-2,3)."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q3",
+          "title": "Solutions générales",
+          "prompt": "Déterminer toutes les solutions entières.",
+          "expected_answer": "x=-2+5k; y=3-7k",
+          "validation": {
+            "type": "parametric_pair",
+            "x": "-2+5*k",
+            "y": "3-7*k"
+          },
+          "hints": [
+            "Diviser l'équation par 3.",
+            "Ajouter les solutions de 7x+5y=0."
+          ],
+          "solution": [
+            "Les solutions sont x=-2+5k et y=3-7k, k∈Z."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q4",
+          "title": "Contraintes positives",
+          "prompt": "Déterminer les solutions vérifiant x≥0 et y≥0.",
+          "expected_answer": "aucune",
+          "validation": {
+            "type": "set",
+            "answers": []
+          },
+          "hints": [
+            "Résoudre -2+5k≥0 puis 3-7k≥0.",
+            "Comparer les contraintes sur k."
+          ],
+          "solution": [
+            "La première impose k≥1, la seconde k≤0.",
+            "Il n'existe donc aucune solution avec x,y≥0."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "arithmétique",
+        "diophantienne"
+      ]
+    },
+    {
+      "id": "TC-MAT-01",
+      "title": "Matrices et système linéaire",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Algèbre linéaire",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On considère A=[[2,1],[1,1]] et B=(5,3)^T.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Déterminant",
+          "prompt": "Calculer det(A).",
+          "expected_answer": "1",
+          "validation": {
+            "type": "numeric",
+            "value": 1
+          },
+          "hints": [
+            "Pour une matrice 2×2, det=ad-bc.",
+            "Ici 2×1-1×1."
+          ],
+          "solution": [
+            "det(A)=1."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Inverse",
+          "prompt": "Déterminer A^{-1}.",
+          "expected_answer": "[[1,-1],[-1,2]]",
+          "validation": {
+            "type": "matrix",
+            "value": [
+              [
+                1,
+                -1
+              ],
+              [
+                -1,
+                2
+              ]
+            ]
+          },
+          "hints": [
+            "Utiliser la formule de l'inverse d'une matrice 2×2.",
+            "Le déterminant vaut 1."
+          ],
+          "solution": [
+            "A^{-1}=[[1,-1],[-1,2]]."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q3",
+          "title": "Système",
+          "prompt": "Résoudre AX=B.",
+          "expected_answer": "x=2; y=1",
+          "validation": {
+            "type": "pair",
+            "x": 2,
+            "y": 1
+          },
+          "hints": [
+            "Calculer X=A^{-1}B.",
+            "Effectuer le produit matriciel."
+          ],
+          "solution": [
+            "X=[[1,-1],[-1,2]](5,3)^T.",
+            "X=(2,1)^T."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q4",
+          "title": "Puissance",
+          "prompt": "Vérifier que A²=3A-I₂.",
+          "expected_answer": "A²=[[5,3],[3,2]]",
+          "validation": {
+            "type": "matrix_identity",
+            "left": "A^2",
+            "right": "3*A-I"
+          },
+          "hints": [
+            "Calculer A².",
+            "Comparer avec 3A-I₂."
+          ],
+          "solution": [
+            "A²=[[5,3],[3,2]].",
+            "3A-I₂=[[5,3],[3,2]], donc l'identité est vérifiée."
+          ],
+          "points": 1
+        }
+      ],
+      "tags": [
+        "matrices",
+        "système"
+      ]
+    },
+    {
+      "id": "TC-STAT-01",
+      "title": "Ajustement affine",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Statistiques",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On observe les couples (x,y): (1,2), (2,3), (3,5), (4,6), (5,9).",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Moyennes",
+          "prompt": "Calculer x̄ et ȳ.",
+          "expected_answer": "x̄=3; ȳ=5",
+          "validation": {
+            "type": "multi",
+            "fields": {
+              "xbar": 3,
+              "ybar": 5
+            }
+          },
+          "hints": [
+            "Additionner les valeurs puis diviser par 5.",
+            "Σx=15 et Σy=25."
+          ],
+          "solution": [
+            "x̄=15/5=3 et ȳ=25/5=5."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Covariance et variance",
+          "prompt": "Calculer V(x) et Cov(x,y) avec le facteur 1/n.",
+          "expected_answer": "Vx=2; Cov=3.4",
+          "validation": {
+            "type": "multi_numeric",
+            "fields": {
+              "Vx": 2,
+              "Cov": 3.4
+            },
+            "tolerance": 0.001
+          },
+          "hints": [
+            "Utiliser les écarts à la moyenne.",
+            "Calculer Σ(x-x̄)²/5 et Σ(x-x̄)(y-ȳ)/5."
+          ],
+          "solution": [
+            "V(x)=10/5=2.",
+            "Cov(x,y)=17/5=3,4."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q3",
+          "title": "Droite de régression",
+          "prompt": "Déterminer la droite de régression de y en x.",
+          "expected_answer": "y=1.7x-0.1",
+          "validation": {
+            "type": "line",
+            "slope": 1.7,
+            "intercept": -0.1
+          },
+          "hints": [
+            "a=Cov/Vx.",
+            "b=ȳ-a x̄."
+          ],
+          "solution": [
+            "a=3,4/2=1,7.",
+            "b=5-1,7×3=-0,1, donc y=1,7x-0,1."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q4",
+          "title": "Prévision",
+          "prompt": "Estimer y pour x=6.",
+          "expected_answer": "10.1",
+          "validation": {
+            "type": "numeric",
+            "value": 10.1,
+            "tolerance": 0.01
+          },
+          "hints": [
+            "Remplacer x par 6 dans la droite.",
+            "1,7×6-0,1."
+          ],
+          "solution": [
+            "ŷ=10,2-0,1=10,1."
+          ],
+          "points": 1
+        }
+      ],
+      "tags": [
+        "statistiques",
+        "régression"
+      ]
+    },
+    {
+      "id": "TC-TRIG-01",
+      "title": "Trigonométrie et équation",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Trigonométrie",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On travaille dans R.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Identité",
+          "prompt": "Montrer que cos(2x)=1-2sin²x.",
+          "expected_answer": "identité vérifiée",
+          "validation": {
+            "type": "proof_outline",
+            "keywords": [
+              "cos²x-sin²x",
+              "1-sin²x"
+            ]
+          },
+          "hints": [
+            "Partir de cos2x=cos²x-sin²x.",
+            "Remplacer cos²x par 1-sin²x."
+          ],
+          "solution": [
+            "cos2x=(1-sin²x)-sin²x.",
+            "Donc cos2x=1-2sin²x."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Équation",
+          "prompt": "Résoudre cos(2x)=1/2.",
+          "expected_answer": "x=kπ±π/6",
+          "validation": {
+            "type": "general_trig",
+            "expression": "k*pi±pi/6"
+          },
+          "hints": [
+            "Résoudre 2x=2kπ±π/3.",
+            "Diviser par 2."
+          ],
+          "solution": [
+            "2x=2kπ±π/3.",
+            "Ainsi x=kπ±π/6, k∈Z."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q3",
+          "title": "Intervalle",
+          "prompt": "Donner les solutions dans [0,2π].",
+          "expected_answer": "{π/6,5π/6,7π/6,11π/6}",
+          "validation": {
+            "type": "set_angles",
+            "answers": [
+              "pi/6",
+              "5*pi/6",
+              "7*pi/6",
+              "11*pi/6"
+            ]
+          },
+          "hints": [
+            "Tester les valeurs de k qui placent x dans l'intervalle.",
+            "Utiliser les deux familles."
+          ],
+          "solution": [
+            "On obtient π/6, 5π/6, 7π/6 et 11π/6."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q4",
+          "title": "Somme",
+          "prompt": "Calculer la somme des solutions de [0,2π].",
+          "expected_answer": "4π",
+          "validation": {
+            "type": "symbolic",
+            "expression": "4*pi",
+            "equals": "4*pi"
+          },
+          "hints": [
+            "Additionner les quatre angles.",
+            "Regrouper les numérateurs sur 6."
+          ],
+          "solution": [
+            "(1+5+7+11)π/6=24π/6=4π."
+          ],
+          "points": 1
+        }
+      ],
+      "tags": [
+        "trigonométrie",
+        "équation"
+      ]
+    },
+    {
+      "id": "TC-LIM-01",
+      "title": "Limites et asymptote",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Fonctions numériques",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On considère f(x)=(2x²+3x-1)/(x-1), définie sur R\\{1}.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Division",
+          "prompt": "Écrire f sous la forme ax+b+c/(x-1).",
+          "expected_answer": "f(x)=2x+5+4/(x-1)",
+          "validation": {
+            "type": "symbolic",
+            "expression": "2*x+5+4/(x-1)",
+            "equals": "(2*x^2+3*x-1)/(x-1)"
+          },
+          "hints": [
+            "Effectuer la division euclidienne.",
+            "(x-1)(2x+5)=2x²+3x-5."
+          ],
+          "solution": [
+            "Le reste vaut 4.",
+            "Donc f(x)=2x+5+4/(x-1)."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q2",
+          "title": "Limites en 1",
+          "prompt": "Calculer les limites à gauche et à droite de 1.",
+          "expected_answer": "-∞ à gauche; +∞ à droite",
+          "validation": {
+            "type": "one_sided_limits",
+            "point": 1,
+            "left": "-inf",
+            "right": "+inf"
+          },
+          "hints": [
+            "Le terme dominant près de 1 est 4/(x-1).",
+            "Observer le signe de x-1."
+          ],
+          "solution": [
+            "Quand x→1-, 4/(x-1)→-∞.",
+            "Quand x→1+, il tend vers +∞."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q3",
+          "title": "Asymptote oblique",
+          "prompt": "Déterminer une asymptote oblique en ±∞.",
+          "expected_answer": "y=2x+5",
+          "validation": {
+            "type": "line",
+            "slope": 2,
+            "intercept": 5
+          },
+          "hints": [
+            "Étudier f(x)-(2x+5).",
+            "Le reste tend vers 0."
+          ],
+          "solution": [
+            "f(x)-(2x+5)=4/(x-1)→0.",
+            "L'asymptote est y=2x+5."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q4",
+          "title": "Position relative",
+          "prompt": "Étudier la position de la courbe par rapport à l'asymptote.",
+          "expected_answer": "en dessous si x<1; au-dessus si x>1",
+          "validation": {
+            "type": "interval_sign",
+            "root": "1",
+            "left": "negative",
+            "right": "positive"
+          },
+          "hints": [
+            "Le signe est celui de 4/(x-1).",
+            "Étudier x-1."
+          ],
+          "solution": [
+            "f-(2x+5)<0 pour x<1 et >0 pour x>1.",
+            "La courbe est respectivement en dessous puis au-dessus."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "limites",
+        "asymptote",
+        "fonction rationnelle"
+      ]
+    },
+    {
+      "id": "TC-OPT-01",
+      "title": "Optimisation géométrique",
+      "level": "Terminale C",
+      "country": "Côte d'Ivoire",
+      "subject": "Mathématiques",
+      "chapter": "Dérivation et optimisation",
+      "difficulty": "intermédiaire",
+      "estimated_minutes": 30,
+      "points": 5.0,
+      "context": "On fabrique une boîte sans couvercle à partir d'un carré de carton de 20 cm de côté en découpant aux quatre coins des carrés de côté x, puis en relevant les bords.",
+      "instructions": "Toute réponse doit être justifiée. Les formes algébriquement équivalentes sont acceptées.",
+      "questions": [
+        {
+          "id": "q1",
+          "title": "Domaine",
+          "prompt": "Préciser l'intervalle des valeurs possibles de x.",
+          "expected_answer": "0<x<10",
+          "validation": {
+            "type": "interval",
+            "lower": 0,
+            "upper": 10,
+            "open": true
+          },
+          "hints": [
+            "Les dimensions de la base sont 20-2x.",
+            "Elles doivent être strictement positives."
+          ],
+          "solution": [
+            "x>0 et 20-2x>0.",
+            "Donc 0<x<10."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q2",
+          "title": "Volume",
+          "prompt": "Exprimer le volume V(x).",
+          "expected_answer": "V=x(20-2x)²",
+          "validation": {
+            "type": "symbolic",
+            "expression": "x*(20-2*x)^2",
+            "equals": "x*(20-2*x)^2"
+          },
+          "hints": [
+            "Volume = longueur × largeur × hauteur.",
+            "La hauteur vaut x."
+          ],
+          "solution": [
+            "La base est un carré de côté 20-2x.",
+            "V(x)=x(20-2x)²."
+          ],
+          "points": 1
+        },
+        {
+          "id": "q3",
+          "title": "Dérivée",
+          "prompt": "Calculer V'(x) et factoriser.",
+          "expected_answer": "V'=12(x-10)(x-10/3)",
+          "validation": {
+            "type": "symbolic",
+            "expression": "12*(x-10)*(x-10/3)",
+            "equals": "diff(x*(20-2*x)^2,x)"
+          },
+          "hints": [
+            "Développer ou dériver un produit.",
+            "Factoriser le trinôme obtenu."
+          ],
+          "solution": [
+            "V'=400-160x+12x².",
+            "V'=12(x-10)(x-10/3)."
+          ],
+          "points": 1.5
+        },
+        {
+          "id": "q4",
+          "title": "Maximum",
+          "prompt": "Déterminer x donnant le volume maximal et ce volume.",
+          "expected_answer": "x=10/3; Vmax=16000/27 cm³",
+          "validation": {
+            "type": "multi",
+            "fields": {
+              "x": "10/3",
+              "V": "16000/27"
+            }
+          },
+          "hints": [
+            "Étudier le signe de V' sur ]0,10[.",
+            "Le seul point critique intérieur est 10/3."
+          ],
+          "solution": [
+            "V croît puis décroît.",
+            "Le maximum est atteint pour x=10/3 et vaut (10/3)(40/3)²=16000/27 cm³."
+          ],
+          "points": 1.5
+        }
+      ],
+      "tags": [
+        "optimisation",
+        "dérivée",
+        "géométrie"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1098 @@
+{
+  "metadata": {
+    "name": "Elima — Bac français 2026 Mathématiques Jour 1",
+    "version": "1.0.0",
+    "generated_on": "2026-07-19",
+    "language": "fr",
+    "source_note": "Transcription et correction pédagogique à partir du sujet PDF fourni par l'utilisateur.",
+    "counts": {
+      "subjects": 1,
+      "exercises": 4,
+      "questions": 38
+    },
+    "interactive_correction": {
+      "hint_levels": 2,
+      "step_validation": true,
+      "save_hint_usage": true,
+      "accept_equivalent_answers": true
+    }
+  },
+  "subjects": [
+    {
+      "id": "BAC-FR-2026-MATHS-J1",
+      "title": "Baccalauréat général 2026 — Mathématiques — Jour 1",
+      "country": "France",
+      "level": "Terminale générale — spécialité mathématiques",
+      "duration_minutes": 240,
+      "total_points": 20,
+      "calculator": "Mode examen actif ou calculatrice sans mémoire autorisés",
+      "exercise_ids": [
+        "BAC-FR-2026-J1-EX1",
+        "BAC-FR-2026-J1-EX2",
+        "BAC-FR-2026-J1-EX3",
+        "BAC-FR-2026-J1-EX4"
+      ],
+      "demo_modes": {
+        "exam": "Sujet complet, chronomètre de 4 heures et aides désactivées.",
+        "guided": "Une question à la fois avec validation des étapes et deux indices.",
+        "correction": "Résolution complète avec méthode, calculs et conclusion.",
+        "revision": "Questions extraites automatiquement par notion."
+      }
+    }
+  ],
+  "exercises": [
+    {
+      "id": "BAC-FR-2026-J1-EX1",
+      "number": 1,
+      "title": "Contrôle qualité de lames d'escrime",
+      "chapter": "Probabilités, loi binomiale et inégalité de Bienaymé-Tchebychev",
+      "points": 5,
+      "estimated_minutes": 55,
+      "statement": "Le stock est composé de 60 % de lames A, 12 % de lames B et 28 % de lames C. Les probabilités de conformité sont respectivement 0,90, 0,95 et 0,85.",
+      "parts": [
+        {
+          "id": "A",
+          "title": "Probabilités conditionnelles",
+          "questions": [
+            {
+              "id": "1.A.1",
+              "title": "Arbre pondéré",
+              "prompt": "Compléter l'arbre de probabilités.",
+              "expected_answer": {
+                "P(A)": 0.6,
+                "P(B)": 0.12,
+                "P(C)": 0.28,
+                "P(T|A)": 0.9,
+                "P(nonT|A)": 0.1,
+                "P(T|B)": 0.95,
+                "P(nonT|B)": 0.05,
+                "P(T|C)": 0.85,
+                "P(nonT|C)": 0.15
+              },
+              "validation": {
+                "type": "probability_tree"
+              },
+              "hints": [
+                "La proportion du fournisseur C est le complément de celles de A et B.",
+                "Sur chaque branche fournisseur, les probabilités T et non-T ont une somme égale à 1."
+              ],
+              "solution_steps": [
+                "P(C)=1-0,60-0,12=0,28.",
+                "Pour A : 0,90 et 0,10 ; pour B : 0,95 et 0,05 ; pour C : 0,85 et 0,15."
+              ],
+              "points": 0.5,
+              "skills": [
+                "arbre pondéré",
+                "événement contraire"
+              ]
+            },
+            {
+              "id": "1.A.2",
+              "title": "Intersection",
+              "prompt": "Déterminer P(A∩T) et interpréter le résultat.",
+              "expected_answer": "0,54",
+              "validation": {
+                "type": "numeric",
+                "value": 0.54,
+                "tolerance": 1e-09
+              },
+              "hints": [
+                "Sur un chemin d'un arbre, multiplier les probabilités.",
+                "Utiliser P(A∩T)=P(A)×P(T|A)."
+              ],
+              "solution_steps": [
+                "P(A∩T)=0,60×0,90=0,54.",
+                "Cela signifie que 54 % des lames du stock proviennent de A et sont conformes."
+              ],
+              "points": 0.5,
+              "skills": [
+                "intersection",
+                "interprétation"
+              ]
+            },
+            {
+              "id": "1.A.3",
+              "title": "Probabilités totales",
+              "prompt": "Démontrer que P(T)=0,892.",
+              "expected_answer": "0,892",
+              "validation": {
+                "type": "numeric",
+                "value": 0.892,
+                "tolerance": 1e-09
+              },
+              "hints": [
+                "Les événements A, B et C forment une partition.",
+                "Additionner les trois chemins conduisant à T."
+              ],
+              "solution_steps": [
+                "P(T)=P(A)P(T|A)+P(B)P(T|B)+P(C)P(T|C).",
+                "P(T)=0,60×0,90+0,12×0,95+0,28×0,85.",
+                "P(T)=0,54+0,114+0,238=0,892."
+              ],
+              "points": 0.75,
+              "skills": [
+                "probabilités totales"
+              ]
+            },
+            {
+              "id": "1.A.4",
+              "title": "Probabilité conditionnelle inverse",
+              "prompt": "Sachant que la lame n'est pas conforme, calculer la probabilité qu'elle provienne de B, arrondie au millième.",
+              "expected_answer": "0,056",
+              "validation": {
+                "type": "numeric",
+                "value": 0.056,
+                "tolerance": 0.0005
+              },
+              "hints": [
+                "Calculer d'abord P(B∩nonT).",
+                "Utiliser P(B|nonT)=P(B∩nonT)/P(nonT)."
+              ],
+              "solution_steps": [
+                "P(nonT)=1-0,892=0,108.",
+                "P(B∩nonT)=0,12×0,05=0,006.",
+                "P(B|nonT)=0,006/0,108=1/18≈0,056."
+              ],
+              "points": 0.75,
+              "skills": [
+                "probabilité conditionnelle",
+                "Bayes"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B",
+          "title": "Loi binomiale",
+          "questions": [
+            {
+              "id": "1.B.1",
+              "title": "Paramètres de la loi",
+              "prompt": "Préciser les paramètres de la loi binomiale suivie par X.",
+              "expected_answer": "X suit B(75 ; 0,108)",
+              "validation": {
+                "type": "binomial_parameters",
+                "n": 75,
+                "p": 0.108
+              },
+              "hints": [
+                "X compte les lames non conformes parmi 75 essais indépendants.",
+                "La probabilité de non-conformité est 0,108."
+              ],
+              "solution_steps": [
+                "Chaque lame correspond à une épreuve de Bernoulli de paramètre 0,108.",
+                "Les 75 choix sont assimilés à des tirages indépendants avec remise.",
+                "Donc X suit la loi binomiale B(75;0,108)."
+              ],
+              "points": 0.5,
+              "skills": [
+                "loi binomiale"
+              ]
+            },
+            {
+              "id": "1.B.2",
+              "title": "Probabilité ponctuelle",
+              "prompt": "Calculer P(X=6), arrondie au millième.",
+              "expected_answer": "0,120",
+              "validation": {
+                "type": "numeric",
+                "value": 0.12014057795303844,
+                "tolerance": 0.0005
+              },
+              "hints": [
+                "Utiliser la formule P(X=k)=C(n,k)p^k(1-p)^(n-k).",
+                "Ici n=75, k=6 et p=0,108."
+              ],
+              "solution_steps": [
+                "P(X=6)=C(75,6)×0,108^6×0,892^69.",
+                "À la calculatrice, P(X=6)≈0,120."
+              ],
+              "points": 0.75,
+              "skills": [
+                "coefficient binomial",
+                "calculatrice"
+              ]
+            },
+            {
+              "id": "1.B.3",
+              "title": "Probabilité cumulée",
+              "prompt": "L'affirmation P(X>8)<0,5 est-elle correcte ?",
+              "expected_answer": "Oui, car P(X>8)≈0,422",
+              "validation": {
+                "type": "numeric_and_boolean",
+                "value": 0.4220787816242785,
+                "boolean": true,
+                "tolerance": 0.001
+              },
+              "hints": [
+                "Calculer 1-P(X≤8).",
+                "Utiliser la fonction de répartition de la loi binomiale."
+              ],
+              "solution_steps": [
+                "P(X>8)=1-P(X≤8).",
+                "La calculatrice donne P(X>8)≈0,422.",
+                "Comme 0,422<0,5, l'équipementier a raison."
+              ],
+              "points": 0.75,
+              "skills": [
+                "probabilité cumulée"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "C",
+          "title": "Moyenne de variables indépendantes",
+          "questions": [
+            {
+              "id": "1.C.1",
+              "title": "Espérance et variance",
+              "prompt": "Déterminer E(M_n) et V(M_n).",
+              "expected_answer": "E(M_n)=8,1 et V(M_n)=7,2252/n",
+              "validation": {
+                "type": "multi",
+                "fields": {
+                  "expectation": "8.1",
+                  "variance": "7.2252/n"
+                }
+              },
+              "hints": [
+                "Pour X_i~B(75;0,108), calculer E(X_i) et V(X_i).",
+                "Utiliser l'indépendance pour la variance de la somme."
+              ],
+              "solution_steps": [
+                "E(X_i)=75×0,108=8,1.",
+                "V(X_i)=75×0,108×0,892=7,2252.",
+                "E(M_n)=1/n×n×8,1=8,1.",
+                "V(M_n)=1/n²×n×7,2252=7,2252/n."
+              ],
+              "points": 0.5,
+              "skills": [
+                "espérance",
+                "variance",
+                "indépendance"
+              ]
+            },
+            {
+              "id": "1.C.2",
+              "title": "Inégalité de Bienaymé-Tchebychev",
+              "prompt": "Justifier P(|M_n-8,1|≥2)≤1,8063/n.",
+              "expected_answer": "P(|M_n-8,1|≥2)≤V(M_n)/4=1,8063/n",
+              "validation": {
+                "type": "proof_outline",
+                "keywords": [
+                  "Bienaymé",
+                  "Tchebychev",
+                  "variance",
+                  "4"
+                ]
+              },
+              "hints": [
+                "Appliquer P(|Y-E(Y)|≥a)≤V(Y)/a².",
+                "Prendre Y=M_n et a=2."
+              ],
+              "solution_steps": [
+                "Par Bienaymé-Tchebychev, P(|M_n-E(M_n)|≥2)≤V(M_n)/2².",
+                "Donc P(|M_n-8,1|≥2)≤(7,2252/n)/4.",
+                "Or 7,2252/4=1,8063."
+              ],
+              "points": 0.5,
+              "skills": [
+                "Bienaymé-Tchebychev"
+              ]
+            },
+            {
+              "id": "1.C.3",
+              "title": "Seuil de confiance",
+              "prompt": "Déterminer une valeur de n à partir de laquelle P(|M_n-8,1|<2)≥0,95 et interpréter.",
+              "expected_answer": "n≥37",
+              "validation": {
+                "type": "integer_threshold",
+                "value": 37
+              },
+              "hints": [
+                "Passer à l'événement contraire.",
+                "Imposer 1-1,8063/n≥0,95."
+              ],
+              "solution_steps": [
+                "P(|M_n-8,1|<2)≥1-1,8063/n.",
+                "On veut 1-1,8063/n≥0,95, soit n≥1,8063/0,05=36,126.",
+                "Le plus petit entier convenable est 37.",
+                "À partir de 37 compétitions, la moyenne du nombre de lames non conformes est, avec une probabilité au moins égale à 95 %, comprise entre 6,1 et 10,1."
+              ],
+              "points": 0.5,
+              "skills": [
+                "seuil",
+                "interprétation probabiliste"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "BAC-FR-2026-J1-EX2",
+      "number": 2,
+      "title": "Affirmations indépendantes",
+      "chapter": "Analyse, suites et équations différentielles",
+      "points": 5,
+      "estimated_minutes": 45,
+      "statement": "Pour chaque affirmation, indiquer si elle est vraie ou fausse et justifier.",
+      "questions": [
+        {
+          "id": "2.1",
+          "title": "Équation différentielle",
+          "prompt": "f(x)=4e^{-x}+cos(x)+sin(x) est-elle solution de y'+y=2cos(x) ?",
+          "expected_answer": "Vraie",
+          "validation": {
+            "type": "boolean",
+            "value": true
+          },
+          "hints": [
+            "Calculer f'.",
+            "Additionner f' et f."
+          ],
+          "solution_steps": [
+            "f'(x)=-4e^{-x}-sin(x)+cos(x).",
+            "f'(x)+f(x)=2cos(x).",
+            "L'affirmation est vraie."
+          ],
+          "points": 1,
+          "skills": [
+            "justification",
+            "équation différentielle"
+          ]
+        },
+        {
+          "id": "2.2",
+          "title": "Intersection de courbes",
+          "prompt": "Les courbes y=2x et y=sin(x) ont-elles un seul point d'intersection ?",
+          "expected_answer": "Vraie",
+          "validation": {
+            "type": "boolean",
+            "value": true
+          },
+          "hints": [
+            "Résoudre sin(x)=2x.",
+            "Comparer |sin(x)| à |x|."
+          ],
+          "solution_steps": [
+            "Pour x>0, sin(x)≤x<2x, donc aucune solution positive.",
+            "Pour x<0, sin(x)≥x>2x, donc aucune solution négative.",
+            "x=0 est solution. Il s'agit de l'unique intersection."
+          ],
+          "points": 1,
+          "skills": [
+            "justification",
+            "intersection de courbes"
+          ]
+        },
+        {
+          "id": "2.3",
+          "title": "Limite d'une suite",
+          "prompt": "La suite v_n=(2n+sin(n))/(n+1) diverge-t-elle ?",
+          "expected_answer": "Fausse",
+          "validation": {
+            "type": "boolean",
+            "value": false
+          },
+          "hints": [
+            "Diviser numérateur et dénominateur par n.",
+            "sin(n)/n tend vers 0."
+          ],
+          "solution_steps": [
+            "v_n=(2+sin(n)/n)/(1+1/n).",
+            "Le numérateur tend vers 2 et le dénominateur vers 1.",
+            "Ainsi v_n tend vers 2 ; l'affirmation est fausse."
+          ],
+          "points": 1,
+          "skills": [
+            "justification",
+            "limite d'une suite"
+          ]
+        },
+        {
+          "id": "2.4",
+          "title": "Récurrence",
+          "prompt": "Pour u_1=1 et u_{n+1}=u_n+2n+1, a-t-on u_n=n² pour tout n≥1 ?",
+          "expected_answer": "Vraie",
+          "validation": {
+            "type": "boolean",
+            "value": true
+          },
+          "hints": [
+            "Vérifier le rang 1.",
+            "Supposer u_n=n² puis calculer u_{n+1}."
+          ],
+          "solution_steps": [
+            "Au rang 1, u_1=1=1².",
+            "Si u_n=n², alors u_{n+1}=n²+2n+1=(n+1)².",
+            "La propriété est vraie par récurrence."
+          ],
+          "points": 1,
+          "skills": [
+            "justification",
+            "récurrence"
+          ]
+        },
+        {
+          "id": "2.5",
+          "title": "Somme géométrique",
+          "prompt": "Pour u_n=e^{-n} et S_n=u_0+...+u_n, a-t-on lim S_n=e/(e-1) ?",
+          "expected_answer": "Vraie",
+          "validation": {
+            "type": "boolean",
+            "value": true
+          },
+          "hints": [
+            "Reconnaître une somme géométrique.",
+            "La raison est e^{-1}, de valeur absolue inférieure à 1."
+          ],
+          "solution_steps": [
+            "S_n=(1-e^{-(n+1)})/(1-e^{-1}).",
+            "Lorsque n tend vers +∞, e^{-(n+1)} tend vers 0.",
+            "La limite vaut 1/(1-e^{-1})=e/(e-1)."
+          ],
+          "points": 1,
+          "skills": [
+            "justification",
+            "somme géométrique"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "BAC-FR-2026-J1-EX3",
+      "number": 3,
+      "title": "Géométrie dans un cube",
+      "chapter": "Géométrie dans l'espace",
+      "points": 4,
+      "estimated_minutes": 50,
+      "statement": "Dans le repère orthonormal (A; AB, AD, AE) d'un cube, I est le milieu de [EF], J celui de [EH] et K celui de [AE].",
+      "questions": [
+        {
+          "id": "3.1",
+          "title": "Coordonnées",
+          "prompt": "Donner les coordonnées de I, J et K.",
+          "expected_answer": "I(1/2,0,1), J(0,1/2,1), K(0,0,1/2)",
+          "validation": {
+            "type": "points",
+            "coordinates": {
+              "I": [
+                "1/2",
+                0,
+                1
+              ],
+              "J": [
+                0,
+                "1/2",
+                1
+              ],
+              "K": [
+                0,
+                0,
+                "1/2"
+              ]
+            }
+          },
+          "hints": [
+            "Dans ce repère : E(0,0,1), F(1,0,1), H(0,1,1).",
+            "Les coordonnées d'un milieu sont les moyennes des coordonnées."
+          ],
+          "solution_steps": [
+            "I=(E+F)/2=(1/2,0,1).",
+            "J=(E+H)/2=(0,1/2,1).",
+            "K=(A+E)/2=(0,0,1/2)."
+          ],
+          "points": 0.5,
+          "skills": [
+            "coordonnées",
+            "milieu"
+          ]
+        },
+        {
+          "id": "3.2a",
+          "title": "Produit scalaire",
+          "prompt": "Calculer AI·AJ.",
+          "expected_answer": "1",
+          "validation": {
+            "type": "numeric",
+            "value": 1
+          },
+          "hints": [
+            "AI=(1/2,0,1) et AJ=(0,1/2,1).",
+            "Utiliser xx'+yy'+zz'."
+          ],
+          "solution_steps": [
+            "AI·AJ=(1/2)×0+0×(1/2)+1×1.",
+            "Donc AI·AJ=1."
+          ],
+          "points": 0.5,
+          "skills": [
+            "produit scalaire"
+          ]
+        },
+        {
+          "id": "3.2b",
+          "title": "Angle",
+          "prompt": "En déduire la mesure de l'angle IAJ, arrondie au dixième de degré.",
+          "expected_answer": "36,9°",
+          "validation": {
+            "type": "numeric",
+            "value": 36.8698976458,
+            "tolerance": 0.05,
+            "unit": "degree"
+          },
+          "hints": [
+            "Calculer les normes de AI et AJ.",
+            "cos(angle)=AI·AJ/(||AI|| ||AJ||)."
+          ],
+          "solution_steps": [
+            "||AI||=||AJ||=√(1/4+1)=√5/2.",
+            "cos(IAJ)=1/(5/4)=4/5.",
+            "IAJ=arccos(4/5)≈36,9°."
+          ],
+          "points": 0.5,
+          "skills": [
+            "angle",
+            "produit scalaire"
+          ]
+        },
+        {
+          "id": "3.3a",
+          "title": "Vecteur normal",
+          "prompt": "Démontrer que KC est un vecteur normal au plan (AIJ).",
+          "expected_answer": "KC=(1,1,-1/2), orthogonal à AI et AJ",
+          "validation": {
+            "type": "proof_outline",
+            "keywords": [
+              "KC",
+              "AI",
+              "AJ",
+              "orthogonal"
+            ]
+          },
+          "hints": [
+            "C(1,1,0), donc calculer KC.",
+            "Calculer KC·AI et KC·AJ."
+          ],
+          "solution_steps": [
+            "KC=C-K=(1,1,-1/2).",
+            "KC·AI=1/2-1/2=0.",
+            "KC·AJ=1/2-1/2=0.",
+            "AI et AJ ne sont pas colinéaires ; KC est donc normal au plan (AIJ)."
+          ],
+          "points": 0.5,
+          "skills": [
+            "vecteur normal"
+          ]
+        },
+        {
+          "id": "3.3b",
+          "title": "Équation de plan",
+          "prompt": "En déduire une équation cartésienne du plan (AIJ).",
+          "expected_answer": "x+y-z/2=0",
+          "validation": {
+            "type": "plane_equation",
+            "coefficients": [
+              1,
+              1,
+              "-1/2",
+              0
+            ]
+          },
+          "hints": [
+            "Utiliser le vecteur normal (1,1,-1/2).",
+            "Le plan passe par A(0,0,0)."
+          ],
+          "solution_steps": [
+            "Une équation est x+y-z/2+d=0.",
+            "Comme A appartient au plan, d=0.",
+            "Ainsi (AIJ) : x+y-z/2=0."
+          ],
+          "points": 0.5,
+          "skills": [
+            "plan"
+          ]
+        },
+        {
+          "id": "3.4a",
+          "title": "Projection orthogonale",
+          "prompt": "Déterminer les coordonnées du projeté orthogonal L de C sur (AIJ).",
+          "expected_answer": "L(1/9,1/9,4/9)",
+          "validation": {
+            "type": "point",
+            "coordinates": [
+              "1/9",
+              "1/9",
+              "4/9"
+            ]
+          },
+          "hints": [
+            "La droite (CL) est dirigée par le vecteur normal n=(1,1,-1/2).",
+            "Écrire L=C-t n puis imposer L dans le plan."
+          ],
+          "solution_steps": [
+            "L=(1-t,1-t,t/2).",
+            "Dans le plan : (1-t)+(1-t)-(t/2)/2=0.",
+            "2-(9/4)t=0, donc t=8/9.",
+            "L=(1/9,1/9,4/9)."
+          ],
+          "points": 0.5,
+          "skills": [
+            "projection orthogonale"
+          ]
+        },
+        {
+          "id": "3.4b",
+          "title": "Distance point-plan",
+          "prompt": "En déduire la distance de C au plan (AIJ).",
+          "expected_answer": "4/3",
+          "validation": {
+            "type": "rational",
+            "value": "4/3"
+          },
+          "hints": [
+            "La distance cherchée est CL.",
+            "Calculer la norme du vecteur CL."
+          ],
+          "solution_steps": [
+            "CL=L-C=(-8/9,-8/9,4/9).",
+            "CL²=64/81+64/81+16/81=144/81.",
+            "Donc CL=12/9=4/3."
+          ],
+          "points": 0.5,
+          "skills": [
+            "distance"
+          ]
+        },
+        {
+          "id": "3.5a",
+          "title": "Droite paramétrique",
+          "prompt": "Démontrer qu'une représentation paramétrique de (IM) est x=s/2+1/2, y=ms, z=1.",
+          "expected_answer": "x=s/2+1/2 ; y=ms ; z=1",
+          "validation": {
+            "type": "parametric_line"
+          },
+          "hints": [
+            "I=(1/2,0,1) et M=(1,m,1).",
+            "Un vecteur directeur est IM=(1/2,m,0)."
+          ],
+          "solution_steps": [
+            "Tout point de (IM) s'écrit I+s IM.",
+            "On obtient x=1/2+s/2, y=ms et z=1."
+          ],
+          "points": 0.5,
+          "skills": [
+            "droite paramétrique"
+          ]
+        },
+        {
+          "id": "3.5b",
+          "title": "Coplanarité",
+          "prompt": "Les droites (IM) et (KC) sont-elles coplanaires quelle que soit la valeur de m ?",
+          "expected_answer": "Non. Elles sont coplanaires seulement pour m=1/3.",
+          "validation": {
+            "type": "semantic",
+            "keywords": [
+              "non",
+              "m=1/3"
+            ]
+          },
+          "hints": [
+            "Deux droites sont coplanaires si le produit mixte de leurs directions et d'un vecteur joignant les deux droites est nul.",
+            "Utiliser IM=(1/2,m,0), KC=(1,1,-1/2) et IK=(-1/2,0,-1/2)."
+          ],
+          "solution_steps": [
+            "Le déterminant det(IM,KC,IK) vaut (3m-1)/4.",
+            "Il est nul uniquement lorsque m=1/3.",
+            "On ne peut donc pas affirmer la coplanarité pour toute valeur de m."
+          ],
+          "points": 0.5,
+          "skills": [
+            "coplanarité",
+            "produit mixte"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "BAC-FR-2026-J1-EX4",
+      "number": 4,
+      "title": "Fonction logarithmique et suite d'intégrales",
+      "chapter": "Analyse, convexité et intégration",
+      "points": 6,
+      "estimated_minutes": 90,
+      "statement": "On considère f(x)=ln(x)/x² sur ]0,+∞[.",
+      "parts": [
+        {
+          "id": "A",
+          "title": "Étude de la fonction",
+          "questions": [
+            {
+              "id": "4.A.1a",
+              "title": "Limites",
+              "prompt": "Déterminer les limites de f aux bornes de ]0,+∞[.",
+              "expected_answer": "lim_{0+}f=-∞ et lim_{+∞}f=0",
+              "validation": {
+                "type": "two_limits",
+                "left": "-inf",
+                "right": 0
+              },
+              "hints": [
+                "À 0+, poser x=1/t ou comparer ln(x) et x².",
+                "À +∞, utiliser que ln(x)/x² tend vers 0."
+              ],
+              "solution_steps": [
+                "Quand x→0+, ln(x)→-∞ et 1/x²→+∞ ; plus précisément ln(x)/x²→-∞.",
+                "Quand x→+∞, l'exponentielle/polynôme domine le logarithme, donc ln(x)/x²→0."
+              ],
+              "points": 0.5,
+              "skills": [
+                "limites"
+              ]
+            },
+            {
+              "id": "4.A.1b",
+              "title": "Interprétation graphique",
+              "prompt": "Interpréter graphiquement les limites.",
+              "expected_answer": "x=0 est asymptote verticale ; y=0 est asymptote horizontale en +∞",
+              "validation": {
+                "type": "semantic",
+                "keywords": [
+                  "asymptote verticale",
+                  "x=0",
+                  "asymptote horizontale",
+                  "y=0"
+                ]
+              },
+              "hints": [
+                "Une limite infinie en une borne finie donne une asymptote verticale.",
+                "Une limite finie à l'infini donne une asymptote horizontale."
+              ],
+              "solution_steps": [
+                "La droite x=0 est une asymptote verticale à la courbe.",
+                "La droite y=0 est une asymptote horizontale lorsque x tend vers +∞."
+              ],
+              "points": 0.5,
+              "skills": [
+                "asymptotes"
+              ]
+            },
+            {
+              "id": "4.A.2",
+              "title": "Dérivée",
+              "prompt": "Démontrer que f'(x)=(1-2ln(x))/x³.",
+              "expected_answer": "(1-2ln(x))/x³",
+              "validation": {
+                "type": "symbolic",
+                "expression": "diff(log(x)/x**2,x)",
+                "equals": "(1-2*log(x))/x**3"
+              },
+              "hints": [
+                "Écrire f(x)=ln(x)x^{-2}.",
+                "Utiliser la dérivée d'un produit."
+              ],
+              "solution_steps": [
+                "f'(x)=x^{-1}x^{-2}+ln(x)(-2x^{-3}).",
+                "Donc f'(x)=x^{-3}(1-2ln(x))."
+              ],
+              "points": 0.5,
+              "skills": [
+                "dérivation"
+              ]
+            },
+            {
+              "id": "4.A.3",
+              "title": "Variations",
+              "prompt": "Dresser le tableau de variation de f et donner l'extremum exact.",
+              "expected_answer": "Croissante sur ]0,√e], décroissante sur [√e,+∞[ ; maximum 1/(2e)",
+              "validation": {
+                "type": "variation",
+                "critical": "sqrt(e)",
+                "max": "1/(2*e)"
+              },
+              "hints": [
+                "Le dénominateur x³ est positif.",
+                "Résoudre 1-2ln(x)=0."
+              ],
+              "solution_steps": [
+                "f'(x)=0 équivaut à ln(x)=1/2, donc x=√e.",
+                "f'>0 avant √e et f'<0 après.",
+                "Le maximum est f(√e)=(1/2)/e=1/(2e)."
+              ],
+              "points": 0.75,
+              "skills": [
+                "variations",
+                "extremum"
+              ]
+            },
+            {
+              "id": "4.A.4",
+              "title": "Tangente",
+              "prompt": "Déterminer l'équation de la tangente Δ au point d'abscisse 1.",
+              "expected_answer": "y=x-1",
+              "validation": {
+                "type": "line",
+                "slope": 1,
+                "intercept": -1
+              },
+              "hints": [
+                "Calculer f(1) et f'(1).",
+                "Utiliser y=f'(1)(x-1)+f(1)."
+              ],
+              "solution_steps": [
+                "f(1)=0 et f'(1)=1.",
+                "La tangente a pour équation y=x-1."
+              ],
+              "points": 0.5,
+              "skills": [
+                "tangente"
+              ]
+            },
+            {
+              "id": "4.A.5",
+              "title": "Dérivée seconde",
+              "prompt": "Vérifier que f''(x)=(-5+6ln(x))/x⁴.",
+              "expected_answer": "(-5+6ln(x))/x⁴",
+              "validation": {
+                "type": "symbolic",
+                "expression": "diff(log(x)/x**2,x,2)",
+                "equals": "(-5+6*log(x))/x**4"
+              },
+              "hints": [
+                "Dériver (1-2ln(x))x^{-3}.",
+                "Factoriser x^{-4}."
+              ],
+              "solution_steps": [
+                "f''=(-2/x)x^{-3}-3(1-2ln(x))x^{-4}.",
+                "Après factorisation : f''=x^{-4}[-2-3+6ln(x)].",
+                "Donc f''=(-5+6ln(x))/x⁴."
+              ],
+              "points": 0.5,
+              "skills": [
+                "dérivée seconde"
+              ]
+            },
+            {
+              "id": "4.A.6a",
+              "title": "Convexité",
+              "prompt": "Étudier la convexité de f et préciser le point d'inflexion.",
+              "expected_answer": "Concave sur ]0,e^(5/6)[, convexe sur ]e^(5/6),+∞[ ; Ω(e^(5/6),5/(6e^(5/3)))",
+              "validation": {
+                "type": "convexity",
+                "inflection_x": "exp(5/6)",
+                "inflection_y": "5/(6*exp(5/3))"
+              },
+              "hints": [
+                "Le dénominateur x⁴ est positif.",
+                "Résoudre -5+6ln(x)=0."
+              ],
+              "solution_steps": [
+                "f''(x)=0 équivaut à ln(x)=5/6, soit x=e^(5/6).",
+                "f''<0 avant ce point et f''>0 après.",
+                "Le point d'inflexion est Ω(e^(5/6), (5/6)/e^(5/3))."
+              ],
+              "points": 0.75,
+              "skills": [
+                "convexité",
+                "inflexion"
+              ]
+            },
+            {
+              "id": "4.A.6b",
+              "title": "Inégalité par concavité",
+              "prompt": "En déduire que x-1≥ln(x)/x² pour x∈]0,e^(5/6)].",
+              "expected_answer": "La courbe concave est sous sa tangente en x=1",
+              "validation": {
+                "type": "proof_outline",
+                "keywords": [
+                  "concave",
+                  "tangente",
+                  "x-1"
+                ]
+              },
+              "hints": [
+                "Sur cet intervalle, f est concave.",
+                "Une fonction concave est située sous chacune de ses tangentes."
+              ],
+              "solution_steps": [
+                "L'intervalle ]0,e^(5/6)] contient 1 et f y est concave.",
+                "La tangente en 1 a pour équation y=x-1.",
+                "Donc f(x)≤x-1 sur cet intervalle."
+              ],
+              "points": 0.5,
+              "skills": [
+                "concavité",
+                "inégalité"
+              ]
+            },
+            {
+              "id": "4.A.7",
+              "title": "Extension de l'inégalité",
+              "prompt": "Justifier que x-1≥ln(x)/x² pour x∈[e^(5/6),+∞[.",
+              "expected_answer": "x-1≥e^(5/6)-1>1/(2e)≥f(x)",
+              "validation": {
+                "type": "proof_outline",
+                "keywords": [
+                  "maximum",
+                  "1/(2e)",
+                  "e^(5/6)-1"
+                ]
+              },
+              "hints": [
+                "Utiliser le maximum global de f.",
+                "Minorer x-1 sur l'intervalle considéré."
+              ],
+              "solution_steps": [
+                "Pour tout x>0, f(x)≤1/(2e).",
+                "Pour x≥e^(5/6), x-1≥e^(5/6)-1.",
+                "Or e^(5/6)-1>1/(2e).",
+                "Ainsi x-1≥f(x)."
+              ],
+              "points": 0.5,
+              "skills": [
+                "encadrement"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B",
+          "title": "Suite d'intégrales",
+          "questions": [
+            {
+              "id": "4.B.1",
+              "title": "Interprétation graphique",
+              "prompt": "Interpréter graphiquement I_n=∫_1^n ln(x)/x² dx.",
+              "expected_answer": "Aire algébrique sous C_f entre x=1 et x=n ; aire géométrique pour n≥1 car f≥0",
+              "validation": {
+                "type": "semantic",
+                "keywords": [
+                  "aire",
+                  "courbe",
+                  "1",
+                  "n"
+                ]
+              },
+              "hints": [
+                "Sur [1,n], ln(x)≥0.",
+                "Une intégrale d'une fonction positive représente une aire."
+              ],
+              "solution_steps": [
+                "I_n est l'aire comprise entre la courbe C_f, l'axe des abscisses et les droites x=1 et x=n.",
+                "Pour n=1, cette aire est nulle."
+              ],
+              "points": 0.5,
+              "skills": [
+                "interprétation intégrale"
+              ]
+            },
+            {
+              "id": "4.B.2",
+              "title": "Monotonie de la suite",
+              "prompt": "Démontrer que la suite (I_n) est croissante.",
+              "expected_answer": "I_{n+1}-I_n=∫_n^{n+1}f(x)dx≥0",
+              "validation": {
+                "type": "proof_outline",
+                "keywords": [
+                  "I_{n+1}-I_n",
+                  "intégrale",
+                  "positive"
+                ]
+              },
+              "hints": [
+                "Calculer I_{n+1}-I_n.",
+                "Sur [n,n+1], n≥1 et f est positive."
+              ],
+              "solution_steps": [
+                "I_{n+1}-I_n=∫_n^{n+1}f(x)dx.",
+                "Pour x≥1, ln(x)≥0 et x²>0, donc f(x)≥0.",
+                "Ainsi I_{n+1}≥I_n."
+              ],
+              "points": 0.5,
+              "skills": [
+                "suite croissante",
+                "intégrale"
+              ]
+            },
+            {
+              "id": "4.B.3",
+              "title": "Algorithme Python",
+              "prompt": "Compléter le script calculant la somme des aires des rectangles du graphique sur [1,10].",
+              "expected_answer": "S = S + log(i)/(i**2)",
+              "validation": {
+                "type": "code_line",
+                "language": "python",
+                "accepted": [
+                  "S = S + log(i)/(i**2)",
+                  "S += log(i)/(i**2)"
+                ]
+              },
+              "hints": [
+                "Le premier rectangle, sur [1,2], a pour hauteur le maximum f(√e)=1/(2e), déjà stocké dans S.",
+                "Pour i de 2 à 9, le rectangle sur [i,i+1] a pour hauteur f(i)."
+              ],
+              "solution_steps": [
+                "Sur la partie décroissante, la hauteur du rectangle d'indice i est f(i)=ln(i)/i².",
+                "La ligne manquante est : S = S + log(i)/(i**2)."
+              ],
+              "points": 0.5,
+              "skills": [
+                "Python",
+                "somme de rectangles"
+              ]
+            },
+            {
+              "id": "4.B.4",
+              "title": "Intégration par parties",
+              "prompt": "Démontrer I_n=(n-1-ln(n))/n.",
+              "expected_answer": "(n-1-ln(n))/n",
+              "validation": {
+                "type": "symbolic",
+                "expression": "integrate(log(x)/x**2,(x,1,n))",
+                "equals": "(n-1-log(n))/n"
+              },
+              "hints": [
+                "Prendre u=ln(x) et dv=dx/x².",
+                "Alors du=dx/x et v=-1/x."
+              ],
+              "solution_steps": [
+                "I_n=[-ln(x)/x]_1^n+∫_1^n 1/x² dx.",
+                "I_n=-ln(n)/n+[-1/x]_1^n.",
+                "I_n=-ln(n)/n+1-1/n=(n-1-ln(n))/n."
+              ],
+              "points": 0.75,
+              "skills": [
+                "intégration par parties"
+              ]
+            },
+            {
+              "id": "4.B.5",
+              "title": "Limite de la suite",
+              "prompt": "Calculer lim I_n.",
+              "expected_answer": "1",
+              "validation": {
+                "type": "numeric",
+                "value": 1
+              },
+              "hints": [
+                "Écrire I_n=1-1/n-ln(n)/n.",
+                "Utiliser ln(n)/n→0."
+              ],
+              "solution_steps": [
+                "I_n=1-1/n-ln(n)/n.",
+                "Les deux derniers termes tendent vers 0.",
+                "Donc I_n tend vers 1."
+              ],
+              "points": 0.5,
+              "skills": [
+                "limite"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
