@@ -12,7 +12,6 @@ export default async function handler(request, response) {
   const userInfoResponse = await fetch(`${identityUrl}/auth/v1/oauth/userinfo`, { headers: { Authorization: `Bearer ${accessToken}` } });
   if (!userInfoResponse.ok) return response.status(401).json({ error: "Identité Elima invalide ou expirée." });
   const identity = await userInfoResponse.json();
-  if (!identity.sub || !identity.email) return response.status(403).json({ error: "L’identité Elima ne contient pas d’adresse email exploitable." });
 
   let profile = null;
   try {
@@ -20,24 +19,30 @@ export default async function handler(request, response) {
     if (profileResponse.ok) profile = await profileResponse.json();
   } catch { /* le profil minimal OIDC reste utilisable */ }
 
+  const externalSubject = String(identity.sub ?? "").trim();
+  const identityEmail = String(identity.email ?? profile?.email ?? "").trim().toLowerCase();
+  if (!externalSubject) return response.status(403).json({ error: "L’identité Elima ne contient pas d’identifiant utilisateur." });
+  if (profile?.id && String(profile.id) !== externalSubject) return response.status(403).json({ error: "Le profil Elima ne correspond pas à l’identité connectée." });
+  if (!identityEmail) return response.status(403).json({ error: "Le profil Elima ne contient pas d’identifiant de connexion exploitable." });
+
   const issuer = `${identityUrl}/auth/v1`;
   const admin = createClient(localUrl, localSecret, { auth: { persistSession: false, autoRefreshToken: false } });
-  let { data: link } = await admin.from("identity_links").select("local_user_id").eq("issuer", issuer).eq("external_subject", identity.sub).maybeSingle();
+  let { data: link } = await admin.from("identity_links").select("local_user_id").eq("issuer", issuer).eq("external_subject", externalSubject).maybeSingle();
   let localUserId = link?.local_user_id ?? null;
   if (!localUserId) {
-    const { data: existingProfile } = await admin.from("users").select("id").ilike("email", identity.email).maybeSingle();
+    const { data: existingProfile } = await admin.from("users").select("id").ilike("email", identityEmail).maybeSingle();
     localUserId = existingProfile?.id ?? null;
     if (!localUserId) {
-      const created = await admin.auth.admin.createUser({ email: identity.email, password: randomBytes(32).toString("base64url"), email_confirm: true, user_metadata: { role: profile?.role ?? "STUDENT", full_name: profile?.fullName ?? identity.name ?? identity.email } });
+      const created = await admin.auth.admin.createUser({ email: identityEmail, password: randomBytes(32).toString("base64url"), email_confirm: true, user_metadata: { role: profile?.role ?? "STUDENT", full_name: profile?.fullName ?? identity.name ?? identityEmail } });
       if (created.error || !created.data.user) return response.status(400).json({ error: created.error?.message ?? "Création du profil Révision impossible." });
       localUserId = created.data.user.id;
     }
-    const inserted = await admin.from("identity_links").insert({ local_user_id: localUserId, issuer, external_subject: identity.sub, external_school_id: profile?.schoolId ?? null, external_student_id: profile?.student?.id ?? null });
+    const inserted = await admin.from("identity_links").insert({ local_user_id: localUserId, issuer, external_subject: externalSubject, external_school_id: profile?.schoolId ?? null, external_student_id: profile?.student?.id ?? null });
     if (inserted.error) return response.status(400).json({ error: inserted.error.message });
   } else {
     await admin.from("identity_links").update({ external_school_id: profile?.schoolId ?? null, external_student_id: profile?.student?.id ?? null, updated_at: new Date().toISOString() }).eq("local_user_id", localUserId);
   }
-  const generated = await admin.auth.admin.generateLink({ type: "magiclink", email: identity.email, options: { data: { identity_provider: "elima.ci" } } });
+  const generated = await admin.auth.admin.generateLink({ type: "magiclink", email: identityEmail, options: { data: { identity_provider: "elima.ci" } } });
   const tokenHash = generated.data?.properties?.hashed_token;
   if (generated.error || !tokenHash) return response.status(400).json({ error: generated.error?.message ?? "Session Révision impossible." });
   return response.status(200).json({ tokenHash, type: "magiclink", profile });
