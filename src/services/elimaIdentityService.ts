@@ -103,11 +103,11 @@ async function bridgeElimaIdentitySession(tokens: ElimaIdentityTokens) {
   };
 }
 
-export async function signInWithElimaPassword(identifier: string, password: string) {
+export async function signInWithElimaPassword(identifier: string, password: string, options?: { recentSignup?: boolean }) {
   const response = await fetch("/api/elima-password-login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ identifier: identifier.trim(), password }),
+    body: JSON.stringify({ identifier: identifier.trim(), password, recentSignup: options?.recentSignup === true }),
   });
   const tokens = await response.json().catch(() => null) as (ElimaIdentityTokens & { message?: string }) | null;
   if (!response.ok || !tokens?.access_token) throw new Error(tokens?.message ?? "Email, téléphone ou mot de passe incorrect.");

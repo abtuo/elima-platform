@@ -49,8 +49,8 @@ export function RegistrationPage() {
     if (requiresSchoolCode && form.schoolCode.replace(/[^A-Za-z0-9]/g, "").length < 6) return setError("Saisissez le code remis par votre établissement.");
     setLoading(true);
     try {
-      await registerElimaAccount({ role, firstName: form.firstName, lastName: form.lastName, identifier: form.identifier, password: form.password, schoolCode: requiresSchoolCode ? form.schoolCode : undefined, schoolLevel: role === "student" ? form.schoolLevel : undefined, declaredSchoolName: role === "student" ? form.declaredSchoolName : undefined, declaredSchoolCity: role === "student" ? form.declaredSchoolCity : undefined });
-      await signInWithElimaPassword(form.identifier, form.password);
+      const registration = await registerElimaAccount({ role, firstName: form.firstName, lastName: form.lastName, identifier: form.identifier, password: form.password, schoolCode: requiresSchoolCode ? form.schoolCode : undefined, schoolLevel: role === "student" ? form.schoolLevel : undefined, declaredSchoolName: role === "student" ? form.declaredSchoolName : undefined, declaredSchoolCity: role === "student" ? form.declaredSchoolCity : undefined });
+      await signInWithElimaPassword(registration.loginIdentifier ?? form.identifier, form.password, { recentSignup: true });
       navigate(role === "student" ? "/student/reviser" : "/", { replace: true });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Inscription impossible.");

@@ -13,7 +13,7 @@ export type AccountRegistrationInput = {
 };
 
 async function readResponse(response: Response) {
-  return await response.json().catch(() => null) as { message?: string; ok?: boolean } | null;
+  return await response.json().catch(() => null) as { message?: string; ok?: boolean; loginIdentifier?: string } | null;
 }
 
 export async function registerElimaAccount(input: AccountRegistrationInput) {
@@ -24,7 +24,7 @@ export async function registerElimaAccount(input: AccountRegistrationInput) {
   });
   const body = await readResponse(response);
   if (!response.ok) throw new Error(body?.message ?? "Inscription impossible.");
-  return body;
+  return body ?? { ok: true };
 }
 
 export type SchoolRegistrationRequest = {

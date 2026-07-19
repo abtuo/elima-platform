@@ -38,5 +38,11 @@ export default async function handler(request, response) {
     }),
   });
   const body = await upstream.json().catch(() => null);
-  return response.status(upstream.status).json(body ?? { message: upstream.ok ? "Compte créé." : "Inscription Elima impossible." });
+  if (!upstream.ok) {
+    return response.status(upstream.status).json(body ?? { message: "Inscription Elima impossible." });
+  }
+  return response.status(upstream.status).json({
+    ...(body && typeof body === "object" ? body : { message: "Compte créé." }),
+    loginIdentifier: email,
+  });
 }
