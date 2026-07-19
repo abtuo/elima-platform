@@ -38,6 +38,7 @@ export const DEMO_ACCOUNTS = [
   { email: "eleve.yao@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Yao Kouamé" },
   { email: "eleve.lina@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Lina Traoré" },
   { email: "eleve.eli@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Eli Tuo" },
+  { email: "eleve.kader@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Kader Koné" },
   { email: "admin.yamoussoukro@seed-elima.invalid", role: "SCHOOL_ADMIN", schoolId: DEMO_SCHOOLS[1].id, fullName: "Admin Institut Excellence Yamoussoukro" },
   { email: "teacher.yamoussoukro@seed-elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[1].id, fullName: "Enseignant Institut Excellence Yamoussoukro", subject: "Mathématiques" },
   { email: "enseignant.iey.francais@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[1].id, fullName: "Mme Aïcha Bakayoko", subject: "Français" },

@@ -332,6 +332,7 @@ async function seedStudents(admin: SupabaseClient, school: (typeof DEMO_SCHOOLS)
         { fullName: "Yao Kouamé", className: "6ème B", email: "eleve.yao@elima.school", parentEmail: "parent.jean@elima.school", parentName: "Jean Kouamé" },
         { fullName: "Lina Traoré", className: "3ème A", email: "eleve.lina@elima.school", parentEmail: "parent.aminata@elima.school", parentName: "Aminata Traoré" },
         { fullName: "Eli Tuo", className: "6ème B", email: "eleve.eli@elima.school", parentEmail: "parent.aboubacar@elima.school", parentName: "Aboubacar Tuo" },
+        { fullName: "Kader Koné", className: "Terminale C", email: "eleve.kader@elima.school", parentName: "M. Moussa Koné" },
       ]
     : [];
   const named = [
