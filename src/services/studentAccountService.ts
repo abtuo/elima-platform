@@ -9,6 +9,8 @@ export async function updateStandaloneStudentProfile(input: {
   if (!mainDbClient) throw new Error("Service indisponible.");
   const { data: auth } = await mainDbClient.auth.getUser();
   if (!auth.user) throw new Error("Session expirée.");
+  const { data: studentProfile } = await mainDbClient.from("student_profiles").select("school_membership_status").eq("id", auth.user.id).maybeSingle();
+  if (studentProfile?.school_membership_status === "linked") throw new Error("La classe d’un élève rattaché est gérée par son établissement.");
   const { error } = await mainDbClient.from("student_profiles").upsert({
     id: auth.user.id,
     school_level_id: input.schoolLevelId.trim(),

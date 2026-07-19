@@ -14,6 +14,7 @@ export type ElimaCentralProfile = {
   avatarUrl?: string | null;
   studentId?: string | null;
   schoolLevel?: string | null;
+  schoolClassName?: string | null;
 };
 
 function absoluteWebAsset(value: unknown) {
@@ -41,6 +42,7 @@ function normalizeCentralProfile(raw: unknown): ElimaCentralProfile | null {
     avatarUrl: absoluteWebAsset(student?.photo_url),
     studentId: student?.id ? String(student.id) : null,
     schoolLevel: schoolClass?.level ? String(schoolClass.level) : null,
+    schoolClassName: schoolClass?.name ? String(schoolClass.name) : null,
   };
 }
 

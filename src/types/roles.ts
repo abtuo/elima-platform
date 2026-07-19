@@ -25,6 +25,7 @@ export type UserProfile = {
   declaredSchoolName: string | null;
   declaredSchoolCity: string | null;
   schoolLevelId: string | null;
+  className: string | null;
 };
 
 export function isStandaloneStudent(profile: UserProfile) {

@@ -17,10 +17,11 @@ export const demoAccounts = [
   { label: "Parent Mariam", email: "parent.mariam@elima.school", password: "ElimaSeed!2026", fullName: "Mme Mariam Koné", role: "PARENT" as UserRole },
   { label: "Parent Aboubacar", email: "parent.aboubacar@elima.school", password: "ElimaSeed!2026", fullName: "M. Aboubacar Tuo", role: "PARENT" as UserRole },
   { label: "Enseignant Serge", email: "enseignant.serge@elima.school", password: "ElimaSeed!2026", fullName: "M. Serge N'Guessan", role: "TEACHER" as UserRole },
-  { label: "Élève Awa", email: "eleve.awa@elima.school", password: "ElimaSeed!2026", fullName: "Awa Koné", role: "STUDENT" as UserRole },
-  { label: "Élève Yao", email: "eleve.yao@elima.school", password: "ElimaSeed!2026", fullName: "Yao Kouamé", role: "STUDENT" as UserRole },
-  { label: "Élève Lina", email: "eleve.lina@elima.school", password: "ElimaSeed!2026", fullName: "Lina Traoré", role: "STUDENT" as UserRole },
-  { label: "Élève Eli", email: "eleve.eli@elima.school", password: "ElimaSeed!2026", fullName: "Eli Tuo", role: "STUDENT" as UserRole },
+  { label: "Élève Awa", email: "eleve.awa@elima.school", password: "ElimaSeed!2026", fullName: "Awa Koné", role: "STUDENT" as UserRole, className: "6ème B" },
+  { label: "Élève Yao", email: "eleve.yao@elima.school", password: "ElimaSeed!2026", fullName: "Yao Kouamé", role: "STUDENT" as UserRole, className: "6ème B" },
+  { label: "Élève Lina", email: "eleve.lina@elima.school", password: "ElimaSeed!2026", fullName: "Lina Traoré", role: "STUDENT" as UserRole, className: "3ème A" },
+  { label: "Élève Eli", email: "eleve.eli@elima.school", password: "ElimaSeed!2026", fullName: "Eli Tuo", role: "STUDENT" as UserRole, className: "6ème B" },
+  { label: "Élève Kader · Tle C", email: "eleve.kader@elima.school", password: "ElimaSeed!2026", fullName: "Kader Koné", role: "STUDENT" as UserRole, className: "Terminale C" },
 ] as const;
 
 export const demoProfile = {
@@ -38,6 +39,7 @@ export const demoProfile = {
   declaredSchoolName: null,
   declaredSchoolCity: null,
   schoolLevelId: null,
+  className: null,
 };
 
 export const demoChildren: ChildSummary[] = [

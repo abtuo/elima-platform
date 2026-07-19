@@ -416,7 +416,7 @@ export async function getTimetable(days = 2): Promise<TimetableEvent[]> {
     }
     let events = [...demoTimetableEvents, ...savedEvaluations].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
     if (account?.role === "TEACHER") events = events.filter((event) => event.subject === "Mathématiques");
-    if (account?.role === "STUDENT") events = events.filter((event) => event.className === (account.email.includes("lina") ? "3ème A" : "6ème B"));
+    if (account?.role === "STUDENT") events = events.filter((event) => event.className === ("className" in account ? account.className : "6ème B"));
     if (account?.role === "PARENT" || !account) events = events.filter((event) => event.className === "6ème B");
     const startKey = days > 2 ? "2026-06-22" : DEMO_REFERENCE_DATE;
     const start = new Date(`${startKey}T00:00:00.000Z`);

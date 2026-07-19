@@ -4,8 +4,9 @@ import { ArrowLeft, ArrowRight, CheckCircle2, GraduationCap } from "lucide-react
 import { ElimaLogo } from "@/components/common/ElimaLogo";
 import { signUpStandaloneStudent } from "@/services/authService";
 import { openElimaStudentSignup } from "@/services/elimaIdentityService";
+import { STUDENT_CLASS_OPTIONS } from "@/constants/studentClasses";
 
-const levels = ["6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale", "Autre"];
+const levels = STUDENT_CLASS_OPTIONS;
 
 export function StudentRegisterPage() {
   useEffect(() => { openElimaStudentSignup(); }, []);
@@ -63,7 +64,7 @@ function LegacyStudentRegisterPage() {
           <div className="grid gap-4 sm:grid-cols-2"><Field label="Prénom" value={form.firstName} onChange={(value) => field("firstName", value)} required /><Field label="Nom" value={form.lastName} onChange={(value) => field("lastName", value)} required /></div>
           <Field label="Adresse email" type="email" value={form.email} onChange={(value) => field("email", value)} required />
           <Field label="Mot de passe" type="password" value={form.password} onChange={(value) => field("password", value)} required hint="8 caractères minimum" />
-          <label className="block"><span className="mb-2 block text-sm font-semibold text-gray-700">Niveau scolaire</span><select value={form.level} onChange={(event) => field("level", event.target.value)} required className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none focus:border-primary"><option value="">Choisir mon niveau</option>{levels.map((level) => <option key={level}>{level}</option>)}</select></label>
+          <label className="block"><span className="mb-2 block text-sm font-semibold text-gray-700">Classe / niveau</span><select value={form.level} onChange={(event) => field("level", event.target.value)} required className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none focus:border-primary"><option value="">Choisir ma classe</option>{levels.map((level) => <option key={level}>{level}</option>)}</select></label>
           <div className="rounded-2xl bg-gray-50 p-4"><p className="text-sm font-semibold text-accent">Mon école <span className="font-normal text-gray-400">(facultatif)</span></p><div className="mt-3 grid gap-3 sm:grid-cols-2"><Field label="Nom de l’école" value={form.schoolName} onChange={(value) => field("schoolName", value)} /><Field label="Ville" value={form.schoolCity} onChange={(value) => field("schoolCity", value)} /></div></div>
           <label className="flex items-start gap-3 text-xs leading-5 text-gray-500"><input type="checkbox" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-primary" /><span>J’accepte les conditions d’utilisation et la politique de confidentialité d’Elima.</span></label>
           {error ? <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-danger">{error}</p> : null}

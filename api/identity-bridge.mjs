@@ -42,6 +42,15 @@ export default async function handler(request, response) {
   } else {
     await admin.from("identity_links").update({ external_school_id: profile?.schoolId ?? null, external_student_id: profile?.student?.id ?? null, updated_at: new Date().toISOString() }).eq("local_user_id", localUserId);
   }
+  if ((profile?.role ?? "STUDENT") === "STUDENT") {
+    const linked = Boolean(profile?.schoolId && profile?.student?.id);
+    const membership = await admin.from("student_profiles").upsert({
+      id: localUserId,
+      school_membership_status: linked ? "linked" : "standalone",
+      linked_at: linked ? new Date().toISOString() : null,
+    }, { onConflict: "id" });
+    if (membership.error) return response.status(400).json({ error: membership.error.message });
+  }
   const generated = await admin.auth.admin.generateLink({ type: "magiclink", email: identityEmail, options: { data: { identity_provider: "elima.ci" } } });
   const tokenHash = generated.data?.properties?.hashed_token;
   if (generated.error || !tokenHash) return response.status(400).json({ error: generated.error?.message ?? "Session Révision impossible." });

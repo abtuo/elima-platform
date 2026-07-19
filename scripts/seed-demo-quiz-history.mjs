@@ -7,6 +7,7 @@ const demoStudents = [
   { email: "eleve.yao@elima.school", scores: [58, 64, 70, 76, 74, 82] },
   { email: "eleve.lina@elima.school", scores: [84, 90, 88, 94, 92, 96] },
   { email: "eleve.eli@elima.school", scores: [66, 72, 78, 80, 86, 90] },
+  { email: "eleve.kader@elima.school", scores: [74, 82, 78, 88, 84, 92] },
 ];
 const subjects = ["Mathématiques", "Français", "Anglais", "SVT", "Physique-Chimie", "Histoire-Géographie"];
 
