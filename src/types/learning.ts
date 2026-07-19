@@ -10,6 +10,27 @@ export type LearningQuestion = {
   publicMetadata: Record<string, unknown>;
 };
 
+export type GuidedOption = { id: string; label: string };
+
+export type GuidedSessionMetadata = {
+  engine?: "guided_session_v3";
+  version?: string;
+  objective?: string;
+  situation?: string;
+  materials?: string[];
+  skills?: string[];
+  paperRequired?: boolean;
+  statement?: {
+    introduction?: string;
+    context?: string;
+    main_questions?: string[];
+    paper_instructions?: string[];
+    display?: Record<string, unknown>;
+  };
+  statementBeforeGuidance?: boolean;
+  remediation?: string[];
+};
+
 export type LearningExercise = {
   id: string;
   title: string;
@@ -23,6 +44,7 @@ export type LearningExercise = {
   estimatedMinutes: number;
   totalPoints: number;
   sourceType: string;
+  metadata: GuidedSessionMetadata & Record<string, unknown>;
   recommended?: boolean;
   questions: LearningQuestion[];
 };

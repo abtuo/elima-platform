@@ -54,7 +54,7 @@ function publicDbExercise(item, includeQuestions = false) {
     id: String(item.id), title: item.title, description: item.description || "", country: item.country_code || "",
     educationSystem: item.education_system || "", level: level?.label || "", subject: subject?.label || "",
     chapter: chapter?.label || "", difficulty: item.difficulty, estimatedMinutes: Number(item.estimated_minutes),
-    totalPoints: Number(item.total_points), sourceType: item.source_type, questionCount: Number(item.question_count ?? questions[0]?.count ?? questions.length),
+    totalPoints: Number(item.total_points), sourceType: item.source_type, metadata: item.metadata || {}, questionCount: Number(item.question_count ?? questions[0]?.count ?? questions.length),
     ...(includeQuestions ? { questions: questions.sort((a, b) => Number(a.position) - Number(b.position)).map((q) => ({ id: String(q.id), externalId: q.external_id, title: q.title || "Question", prompt: q.prompt, questionType: q.question_type, points: Number(q.points), skills: q.skills || [], partTitle: relation(q.part)?.title, publicMetadata: q.public_metadata || {} })) } : {}),
   };
 }
@@ -103,6 +103,17 @@ function validateAnswer(answer, secret, points) {
     correct = bool === Boolean(config.value);
   } else if (type === "choice") {
     correct = normalize(answer) === normalize(config.correct ?? expected);
+  } else if (type === "multiple_choice" || type === "ordering") {
+    let received = [];
+    try { received = JSON.parse(String(answer || "[]")); } catch { received = String(answer || "").split(",").filter(Boolean); }
+    const target = Array.isArray(config.correct ?? expected) ? (config.correct ?? expected).map(String) : [];
+    invalid = !Array.isArray(received);
+    const values = Array.isArray(received) ? received.map(String) : [];
+    correct = type === "ordering"
+      ? values.length === target.length && values.every((value, index) => value === target[index])
+      : values.length === target.length && [...values].sort().every((value, index) => value === [...target].sort()[index]);
+  } else if (type === "acknowledgement") {
+    correct = Boolean(String(answer || "").trim());
   } else {
     const received = normalize(answer).replace(/[(){}]/g, "");
     const target = normalize(typeof expected === "string" ? expected : JSON.stringify(expected)).replace(/[(){}]/g, "");
@@ -115,11 +126,11 @@ function validateAnswer(answer, secret, points) {
     score: correct ? Number(points || 0) * (needsJustification ? .5 : 1) : 0,
     reachedStep: correct ? 99 : 0,
     errorType: invalid ? "format_invalide" : correct ? null : type === "numeric" ? "erreur_de_calcul" : "réponse_à_revoir",
-    message: invalid ? "Je n’arrive pas encore à lire cette réponse. Vérifie son format." : needsJustification ? "Ton choix est juste, mais la justification demandée manque encore." : correct ? "Bonne démarche : ta réponse est correcte." : "Ta réponse n’est pas encore validée. Reprends les données utiles et vérifie la première étape.",
+    message: invalid ? "Je n’arrive pas encore à lire cette réponse. Vérifie son format." : needsJustification ? "Ton choix est juste, mais la justification demandée manque encore." : correct ? "Bonne démarche : ta réponse est correcte." : config.feedback?.wrong?.[String(answer)] || "Ta réponse n’est pas encore validée. Reprends les données utiles et vérifie la première étape.",
     nextAction: correct ? "next_question" : "retry_or_hint",
     hintAvailable: !correct,
     correctionAllowed: correct && !needsJustification,
-    validator: ["numeric", "integer", "rational", "boolean", "choice"].includes(type) ? "deterministic" : "normalized_approximation",
+    validator: ["numeric", "integer", "rational", "boolean", "choice", "multiple_choice", "ordering", "acknowledgement"].includes(type) ? "deterministic" : "normalized_approximation",
   };
 }
 
@@ -213,7 +224,7 @@ async function resolveLearningProfile(admin, user) {
 function shouldUseGpt(config, deterministic) {
   const type = String(config?.type || "semantic");
   if (["semantic", "proof_outline", "symbolic", "equation_equivalent", "line", "plane_equation", "parametric_line", "code_line", "variation", "multi", "probability_tree"].includes(type)) return true;
-  return deterministic.status !== "correct" && !["numeric", "integer", "rational", "boolean", "choice"].includes(type);
+  return deterministic.status !== "correct" && !["numeric", "integer", "rational", "boolean", "choice", "multiple_choice", "ordering", "acknowledgement"].includes(type);
 }
 
 async function assessWithGpt({ question, exercise, answer, steps, secret, solutionSteps, points, deterministic }) {
@@ -348,7 +359,7 @@ async function handleLearningBrowse({ body, demo, admin, user, response }) {
       const exam = catalog.exams.find((item) => item.id === id); if (!exam) return response.status(404).json({ message: "Sujet introuvable." });
       return response.status(200).json({ kind, exam, exercises: exam.exerciseIds.map((exerciseId) => catalog.exercises.find((item) => item.id === exerciseId)).filter(Boolean) });
     }
-    const exerciseSelect = "id,title,description,country_code,education_system,difficulty,estimated_minutes,total_points,source_type,level:learning_levels(label),subject:learning_subjects(label),chapter:learning_chapters(label),questions:learning_questions(id,external_id,title,prompt,question_type,position,points,skills,public_metadata,part:learning_exercise_parts(title))";
+    const exerciseSelect = "id,title,description,country_code,education_system,difficulty,estimated_minutes,total_points,source_type,metadata,level:learning_levels(label),subject:learning_subjects(label),chapter:learning_chapters(label),questions:learning_questions(id,external_id,title,prompt,question_type,position,points,skills,public_metadata,part:learning_exercise_parts(title))";
     if (kind === "guided_exercise") {
       const { data, error } = await admin.from("learning_exercises").select(exerciseSelect).eq("id", id).eq("status", "published").single(); if (error) throw error;
       const exercise = publicDbExercise(data, true); return response.status(200).json({ kind, exercise, exercises: [exercise] });
@@ -438,8 +449,11 @@ export default async function handler(request, response) {
         const { data } = await admin.from("learning_question_hints").select("level,content,score_penalty").eq("question_id", body.questionId).eq("level", Number(body.level || 1)).single();
         return response.status(200).json(data);
       }
-      const { data: savedAnswer } = await admin.from("learning_answers").select("status,attempts_count").eq("attempt_id", attempt.id).eq("question_id", body.questionId).maybeSingle();
-      if (attempt.status === "in_progress" && savedAnswer?.status !== "correct" && Number(savedAnswer?.attempts_count || 0) < 3) return response.status(403).json({ message: "La correction sera disponible après une réussite, trois tentatives ou la remise." });
+      const [{ data: savedAnswer }, { data: solutionQuestion }] = await Promise.all([
+        admin.from("learning_answers").select("status,attempts_count").eq("attempt_id", attempt.id).eq("question_id", body.questionId).maybeSingle(),
+        admin.from("learning_questions").select("question_type").eq("id", body.questionId).single(),
+      ]);
+      if (solutionQuestion?.question_type !== "guided_solution" && attempt.status === "in_progress" && savedAnswer?.status !== "correct" && Number(savedAnswer?.attempts_count || 0) < 3) return response.status(403).json({ message: "La correction sera disponible après une réussite, trois tentatives ou la remise." });
       const { data } = await admin.from("learning_solution_steps").select("position,title,content").eq("question_id", body.questionId).order("position");
       return response.status(200).json({ steps: data || [] });
     }

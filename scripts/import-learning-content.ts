@@ -3,13 +3,15 @@ import path from "node:path";
 import postgres from "postgres";
 
 type JsonRecord = Record<string, unknown>;
-type SourceFile = { file: string; aliases: string[]; importSubjects: boolean };
+type SourceFile = { file: string; aliases: string[]; importSubjects: boolean; format?: "guided_sessions_v3" };
 
 const sources: SourceFile[] = [
   { file: "bac-france-2026-maths-j1.json", aliases: ["elima_bac_francais_2026_jour1_correction_interactive.json"], importSubjects: true },
   { file: "bac-ci-2026-maths-serie-c.json", aliases: ["elima_bac_c_2026_correction_interactive.json"], importSubjects: true },
   { file: "terminale-c-demo-bank.json", aliases: ["elima_terminale_c_demo_bank.json"], importSubjects: false },
+  { file: "6eme-maths-guided-sessions-v3.json", aliases: [], importSubjects: false, format: "guided_sessions_v3" },
 ];
+const selectedSources = process.argv.includes("--guided-only") ? sources.filter((source) => source.format === "guided_sessions_v3") : sources;
 
 function records(value: unknown, label: string): JsonRecord[] {
   if (!Array.isArray(value)) throw new Error(`${label} doit être un tableau.`);
@@ -48,6 +50,33 @@ function questionType(validation: JsonRecord) {
   return "math_expression";
 }
 
+function strings(value: unknown) {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function guidedOptions(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.map((item, index) => typeof item === "string"
+    ? { id: String(index), label: item }
+    : { id: String((item as JsonRecord).id ?? index), label: String((item as JsonRecord).label ?? "") });
+}
+
+function guidedValidation(step: JsonRecord) {
+  const type = String(step.type ?? "acknowledgement");
+  if (type === "single_choice") return { type: "choice", correct: strings(step.correct_option_ids)[0] ?? null, feedback: step.feedback ?? null };
+  if (type === "multiple_choice") return { type: "multiple_choice", correct: strings(step.correct_option_ids) };
+  if (type === "ordering") return { type: "ordering", correct: strings(step.correct_order) };
+  if (type === "self_assessment") return { type: "acknowledgement", masteryWeights: Object.fromEntries((Array.isArray(step.options) ? step.options : []).map((item) => {
+    const option = item as JsonRecord;
+    return [String(option.id ?? ""), Number(option.mastery_weight ?? 0)];
+  })) };
+  return { type: "acknowledgement" };
+}
+
+function guidedQuestionType(step: JsonRecord) {
+  return String(step.type ?? "acknowledgement");
+}
+
 async function loadSource(source: SourceFile) {
   const candidates = [source.file, ...source.aliases];
   for (const candidate of candidates) {
@@ -68,10 +97,129 @@ const sql = postgres(databaseUrl, { ssl: "require", max: 1, prepare: false });
 const counts = { exams: 0, exercises: 0, parts: 0, questions: 0, hints: 0, corrections: 0 };
 
 try {
-  const loaded = await Promise.all(sources.map(async (source) => ({ source, ...(await loadSource(source)) })));
+  const loaded = await Promise.all(selectedSources.map(async (source) => ({ source, ...(await loadSource(source)) })));
   await sql.begin(async (tx) => {
     await tx`select pg_advisory_xact_lock(hashtext('elima-learning-content-import'))`;
     for (const { source, parsed, candidate } of loaded) {
+      if (source.format === "guided_sessions_v3") {
+        const sessions = records(parsed.sessions, `${candidate}.sessions`);
+
+        // Les anciens parcours 6e ne doivent plus apparaître. Leurs réponses sont
+        // supprimées par cascade avec les tentatives, puis le contenu est archivé.
+        await tx`
+          delete from public.learning_attempts
+          where exercise_id in (
+            select id from public.learning_exercises
+            where external_id like 'CI-6M-%' and external_id not like 'CI-6M-V2-%'
+          )`;
+        await tx`
+          update public.learning_exercises
+          set status='archived', updated_at=now()
+          where external_id like 'CI-6M-%' and external_id not like 'CI-6M-V2-%'`;
+
+        for (const session of sessions) {
+          const externalId = required(session.id, `${candidate}.session.id`);
+          const levelLabel = required(session.level, `${externalId}.level`);
+          const subjectLabel = required(session.subject, `${externalId}.subject`);
+          const country = countryCode(session.country);
+          const levelExternal = `${country ?? "INT"}:${slug(levelLabel)}`;
+          const [level] = await tx`
+            insert into public.learning_levels(external_id,label,country_code,education_system,is_exam_level)
+            values(${levelExternal},${levelLabel},${country},${educationSystem(country)},false)
+            on conflict(external_id) do update set label=excluded.label,country_code=excluded.country_code,
+              education_system=excluded.education_system,updated_at=now()
+            returning id`;
+          const subjectExternal = slug(subjectLabel);
+          const [subjectRow] = await tx`
+            insert into public.learning_subjects(external_id,label) values(${subjectExternal},${subjectLabel})
+            on conflict(external_id) do update set label=excluded.label returning id`;
+          const chapterLabel = required(session.chapter, `${externalId}.chapter`);
+          const chapterExternal = `${subjectExternal}:${slug(chapterLabel)}`;
+          const [chapter] = await tx`
+            insert into public.learning_chapters(external_id,subject_id,label) values(${chapterExternal},${subjectRow.id},${chapterLabel})
+            on conflict(external_id) do update set label=excluded.label,subject_id=excluded.subject_id returning id`;
+
+          const flow = records(session.session_flow, `${externalId}.session_flow`);
+          const transfer = session.final_transfer_check && typeof session.final_transfer_check === "object"
+            ? { ...(session.final_transfer_check as JsonRecord), id: "transfer", title: "Question de transfert", type: "single_choice", is_transfer: true,
+                options: guidedOptions((session.final_transfer_check as JsonRecord).options),
+                correct_option_ids: [String((session.final_transfer_check as JsonRecord).correct_index ?? 0)] }
+            : null;
+          const steps = transfer ? [...flow, transfer] : flow;
+          const assessedSteps = steps.filter((step) => ["single_choice", "multiple_choice", "ordering"].includes(String(step.type))).length;
+          const statement = session.statement && typeof session.statement === "object" ? session.statement as JsonRecord : {};
+          const metadata = {
+            engine: "guided_session_v3",
+            version: String((parsed.metadata as JsonRecord)?.version ?? "3.0.0"),
+            objective: session.objective ?? null,
+            situation: session.situation ?? null,
+            materials: strings(session.materials),
+            skills: strings(session.skills),
+            paperRequired: Boolean(session.paper_required),
+            statement,
+            statementBeforeGuidance: session.statement_before_guidance !== false,
+            remediation: strings(session.remediation),
+            scoring: session.scoring ?? {},
+          };
+          const description = String(statement.context ?? session.situation ?? session.objective ?? "");
+          const [exerciseRow] = await tx`
+            insert into public.learning_exercises(external_id,title,description,country_code,education_system,level_id,subject_id,chapter_id,difficulty,estimated_minutes,total_points,status,source_type,metadata)
+            values(${externalId},${required(session.title, `${externalId}.title`)},${description},${country},${educationSystem(country)},${level.id},${subjectRow.id},${chapter.id},${String(session.difficulty ?? "intermediaire")},${Number(session.estimated_minutes ?? 25)},${assessedSteps},'published','guided_session_v3',${tx.json(metadata)})
+            on conflict(external_id) do update set title=excluded.title,description=excluded.description,country_code=excluded.country_code,education_system=excluded.education_system,level_id=excluded.level_id,subject_id=excluded.subject_id,chapter_id=excluded.chapter_id,difficulty=excluded.difficulty,estimated_minutes=excluded.estimated_minutes,total_points=excluded.total_points,status='published',source_type=excluded.source_type,metadata=excluded.metadata,updated_at=now()
+            returning id`;
+          const [partRow] = await tx`
+            insert into public.learning_exercise_parts(exercise_id,external_id,title,position,metadata)
+            values(${exerciseRow.id},'session','Parcours guidé',0,${tx.json({ paperRequired: Boolean(session.paper_required) })})
+            on conflict(exercise_id,external_id) do update set title=excluded.title,position=excluded.position,metadata=excluded.metadata returning id`;
+          counts.exercises++;
+          counts.parts++;
+
+          for (const [position, step] of steps.entries()) {
+            const questionExternal = required(step.id, `${externalId}.step.id`);
+            const validation = guidedValidation(step);
+            const rawOptions = guidedOptions(step.options);
+            const publicMetadata = {
+              stepType: String(step.type),
+              options: rawOptions,
+              items: guidedOptions(step.items),
+              checklist: strings(step.checklist),
+              responseOptions: guidedOptions(step.response_options),
+              mainQuestions: strings(step.main_questions),
+              paperInstructions: strings(step.paper_instructions),
+              display: step.display ?? null,
+              actionLabel: step.action_label ?? null,
+              hintCount: strings(step.hints).length,
+              isTransfer: Boolean(step.is_transfer),
+            };
+            const expected = validation.type === "choice" ? validation.correct
+              : validation.type === "multiple_choice" || validation.type === "ordering" ? validation.correct
+              : "acknowledged";
+            const [questionRow] = await tx`
+              insert into public.learning_questions(exercise_id,part_id,external_id,title,prompt,question_type,position,points,skills,public_metadata)
+              values(${exerciseRow.id},${partRow.id},${questionExternal},${String(step.title ?? "Étape")},${required(step.prompt, `${externalId}.${questionExternal}.prompt`)},${guidedQuestionType(step)},${position},${["single_choice", "multiple_choice", "ordering"].includes(String(step.type)) ? 1 : 0},${tx.json(strings(session.skills))},${tx.json(publicMetadata)})
+              on conflict(exercise_id,external_id) do update set part_id=excluded.part_id,title=excluded.title,prompt=excluded.prompt,question_type=excluded.question_type,position=excluded.position,points=excluded.points,skills=excluded.skills,public_metadata=excluded.public_metadata returning id`;
+            await tx`
+              insert into public.learning_question_secrets(question_id,expected_answer,validation_config,correction_metadata)
+              values(${questionRow.id},${tx.json(expected)},${tx.json(validation)},${tx.json({ source: candidate, feedback: step.feedback ?? null })})
+              on conflict(question_id) do update set expected_answer=excluded.expected_answer,validation_config=excluded.validation_config,correction_metadata=excluded.correction_metadata,updated_at=now()`;
+            await tx`delete from public.learning_question_hints where question_id=${questionRow.id}`;
+            for (const [index, hint] of strings(step.hints).slice(0, 3).entries()) {
+              await tx`insert into public.learning_question_hints(question_id,level,content,position,score_penalty) values(${questionRow.id},${index + 1},${hint},${index},${index + 1})`;
+              counts.hints++;
+            }
+            await tx`delete from public.learning_solution_steps where question_id=${questionRow.id}`;
+            const solutionBlocks = Array.isArray(step.solution_blocks) ? step.solution_blocks : [];
+            for (const [index, rawBlock] of solutionBlocks.entries()) {
+              const block = rawBlock as JsonRecord;
+              const content = typeof block.content === "string" ? block.content : JSON.stringify(block.content ?? "");
+              await tx`insert into public.learning_solution_steps(question_id,position,title,content,validation_config) values(${questionRow.id},${index},${String(block.kind ?? "Étape")},${content},${tx.json({ kind: block.kind ?? "step" })})`;
+              counts.corrections++;
+            }
+            counts.questions++;
+          }
+        }
+        continue;
+      }
       const exercises = records(parsed.exercises, `${candidate}.exercises`);
       const subjects = records(parsed.subjects, `${candidate}.subjects`);
       const subjectByExercise = new Map<string, JsonRecord>();

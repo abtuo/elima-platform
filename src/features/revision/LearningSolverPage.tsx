@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { MarkdownContent } from "@/components/revision/MarkdownContent";
 import { ProgressBar } from "@/components/revision/RevisionUI";
+import { GuidedSessionExperience } from "@/features/revision/GuidedSessionExperience";
 import { autosaveLearningAnswer, createLearningSession, getLearningContent, getLearningHint, getLearningSolution, getSignedExamPdf, saveLearningSession, submitLearningSession, validateLearningAnswer } from "@/services/learningService";
 import type { ExamSubject, LearningExercise, LearningQuestion, LearningSession, ValidationResult } from "@/types/learning";
 
@@ -73,7 +74,8 @@ export function LearningSolverPage({ contentType }: { contentType: "guided_exerc
   }
 
   async function requestHint() {
-    if (!session || !active || answer.hints.length >= 2) return;
+    const maxHints = Number(active?.publicMetadata.hintCount ?? 2);
+    if (!session || !active || answer.hints.length >= maxHints) return;
     setBusy(true);
     try { const hint = await getLearningHint(session, active.id, answer.hints.length + 1); patchAnswer({ hints: [...answer.hints, hint.content] }); } catch (reason) { setError(reason instanceof Error ? reason.message : "Indice indisponible."); } finally { setBusy(false); }
   }
@@ -84,6 +86,18 @@ export function LearningSolverPage({ contentType }: { contentType: "guided_exerc
   }
 
   function goTo(index: number) { if (!session) return; setSession({ ...session, currentQuestion: Math.max(0, Math.min(questions.length - 1, index)) }); setSolution([]); setNavOpen(false); }
+
+  function completeGuidedStep(value: string) {
+    if (!session || !active) return;
+    const next = {
+      ...session,
+      currentQuestion: Math.min(questions.length - 1, activeIndex + 1),
+      answers: { ...session.answers, [active.id]: { ...answer, value } },
+    };
+    setSession(next);
+    setSolution([]);
+    void autosaveLearningAnswer(next, active.id);
+  }
 
   async function submit() {
     if (!session || !window.confirm("Remettre définitivement ce devoir ? Tu pourras ensuite consulter le bilan et les corrections.")) return;
@@ -107,6 +121,23 @@ export function LearningSolverPage({ contentType }: { contentType: "guided_exerc
 
   if (error && !session) return <PageContainer><AppHeader title="Devoir" backTo="/student/reviser?mode=devoirs" /><EmptyState title="Impossible d’ouvrir le devoir" description={error} /></PageContainer>;
   if (!session || !active) return <PageContainer><div className="card animate-pulse p-8 text-sm text-gray-500">Chargement du moteur pédagogique…</div></PageContainer>;
+  if (contentType === "guided_exercise" && exercises[0]?.sourceType === "guided_session_v3") return <GuidedSessionExperience
+    exercise={exercises[0]}
+    session={session}
+    active={active}
+    activeIndex={activeIndex}
+    answer={answer}
+    busy={busy}
+    error={error}
+    solution={solution}
+    onPatchAnswer={patchAnswer}
+    onValidate={validate}
+    onHint={requestHint}
+    onRevealSolution={() => void revealSolution(true)}
+    onGo={goTo}
+    onCompleteStep={completeGuidedStep}
+    onSubmit={submit}
+  />;
   const answered = questions.filter((question) => session.answers[question.id]?.value).length;
   const remaining = exam && mode === "exam" ? exam.durationMinutes * 60 - session.elapsedSeconds : session.elapsedSeconds;
 

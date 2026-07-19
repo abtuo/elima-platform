@@ -22,6 +22,7 @@
     "db:migrate:student-class-profile": "node --env-file=.env scripts/apply-migration-file.mjs --file=supabase/migrations/20260719120000_student_class_profile_access.sql",
     "db:migrate:learning": "node --env-file=.env scripts/apply-migration-file.mjs --file=supabase/migrations/20260719150000_learning_assignments.sql",
     "db:migrate:learning-ai": "node --env-file=.env scripts/apply-migration-file.mjs --file=supabase/migrations/20260719160000_learning_discovery_and_ai.sql",
+    "db:migrate:guided-sessions": "node --env-file=.env scripts/apply-migration-file.mjs --file=supabase/migrations/20260719170000_guided_sessions_v3.sql",
     "db:reload:schema": "node --env-file=.env scripts/apply-migration-file.mjs --file=supabase/migrations/20260715151000_reload_attendance_sync_schema.sql",
     "db:seed:quizzes:dry": "node scripts/seed-unified-quizzes.mjs --dry-run",
     "db:seed:quizzes:strict": "node scripts/seed-unified-quizzes.mjs --dry-run --strict",
@@ -32,8 +33,10 @@
     "db:seed:demo-timetable": "node --env-file=.env scripts/seed-demo-timetable.mjs",
     "db:verify": "node --env-file=.env scripts/verify-unified-db.mjs",
     "import:learning-content": "node --env-file=.env --experimental-strip-types scripts/import-learning-content.ts",
+    "import:guided-content": "node --env-file=.env --experimental-strip-types scripts/import-learning-content.ts --guided-only",
     "test:learning": "node --experimental-strip-types --test tests/learning/*.test.ts",
     "verify:learning-content": "node --env-file=.env --experimental-strip-types scripts/verify-learning-content.ts",
+    "audit:guided-content": "node --env-file=.env --experimental-strip-types scripts/audit-guided-content.ts",
     "storage:fix-learning-paths": "node --env-file=.env scripts/fix-learning-storage-paths.mjs"
   },
   "dependencies": {

@@ -23,7 +23,7 @@ function normalizeCatalog(raw: Record<string, unknown>): LearningCatalog {
   const exercises = ((raw.exercises ?? []) as Array<Record<string, unknown>>).map((item) => ({
     id: String(item.id), title: String(item.title), description: String(item.description ?? ""), country: String(item.country_code ?? ""), educationSystem: String(item.education_system ?? ""),
     level: String((item.level as { label?: string })?.label ?? ""), subject: String((item.subject as { label?: string })?.label ?? ""), chapter: String((item.chapter as { label?: string })?.label ?? ""),
-    difficulty: String(item.difficulty), estimatedMinutes: Number(item.estimated_minutes), totalPoints: Number(item.total_points), sourceType: String(item.source_type),
+    difficulty: String(item.difficulty), estimatedMinutes: Number(item.estimated_minutes), totalPoints: Number(item.total_points), sourceType: String(item.source_type), metadata: (item.metadata ?? {}) as LearningCatalog["exercises"][number]["metadata"],
     questions: ((item.questions ?? []) as Array<Record<string, unknown>>).sort((a, b) => Number(a.position) - Number(b.position)).map((q) => ({ id: String(q.id), externalId: String(q.external_id), title: String(q.title ?? "Question"), prompt: String(q.prompt), questionType: String(q.question_type), points: Number(q.points), skills: (q.skills ?? []) as string[], publicMetadata: (q.public_metadata ?? {}) as Record<string, unknown> })),
   }));
   const exams = ((raw.exams ?? []) as Array<Record<string, unknown>>).map((item) => ({

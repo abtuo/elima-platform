@@ -27,6 +27,22 @@ test("vrai/faux peut exiger une justification", () => {
   assert.equal(validateAnswer("Vrai car les probabilités se complètent", secret, 1).status, "correct");
 });
 
+test("les choix multiples et l’ordre sont validés sans IA", () => {
+  const multiple = { expected_answer: ["a", "c"], validation_config: { type: "multiple_choice", correct: ["a", "c"] } };
+  const ordering = { expected_answer: ["b", "c", "a"], validation_config: { type: "ordering", correct: ["b", "c", "a"] } };
+  assert.equal(validateAnswer(JSON.stringify(["c", "a"]), multiple, 1).status, "correct");
+  assert.equal(validateAnswer(JSON.stringify(["a", "c", "b"]), ordering, 1).status, "incorrect");
+  assert.equal(validateAnswer(JSON.stringify(["b", "c", "a"]), ordering, 1).validator, "deterministic");
+});
+
+test("la banque guidée v3 contient les dix sessions et 96 étapes", async () => {
+  const bank = JSON.parse(await readFile(new URL("../../data/exams/6eme-maths-guided-sessions-v3.json", import.meta.url), "utf8"));
+  assert.equal(bank.metadata.version, "3.0.0");
+  assert.equal(bank.sessions.length, 10);
+  assert.equal(bank.sessions.reduce((sum: number, session: { session_flow: unknown[] }) => sum + session.session_flow.length, 0), 96);
+  assert.ok(bank.sessions.every((session: { id: string; statement_before_guidance: boolean }) => session.id.startsWith("CI-6M-V2-") && session.statement_before_guidance));
+});
+
 test("le catalogue public ne contient ni réponse, ni validation, ni correction", async () => {
   const catalog = await demoCatalog();
   const serialized = JSON.stringify(catalog);
