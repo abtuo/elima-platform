@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BarChart3, BookOpenCheck, Building2, CheckCircle2, GraduationCap, KeyRound, Lock, LogOut, Save, Trophy } from "lucide-react";
+import { BadgeCheck, BarChart3, BookOpenCheck, Building2, GraduationCap, KeyRound, LogOut, Save, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/common/AppHeader";
 import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
@@ -90,7 +90,7 @@ export function StudentProfilePage() {
       <ElimaCard>
         <div className="flex items-center gap-4">
           {profile.avatarUrl ? <img src={profile.avatarUrl} alt={`Photo de ${profile.fullName}`} className="h-14 w-14 rounded-2xl bg-gray-100 object-cover" /> : <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-revision/10 text-xl font-bold text-revision">{profile.fullName.charAt(0)}</span>}
-          <div className="min-w-0"><p className="truncate font-title text-lg font-semibold text-accent">{profile.fullName}</p><p className="truncate text-sm text-gray-500">{profile.schoolName || "Compte Révision indépendant"}</p><p className="mt-1 flex items-center gap-1 text-xs font-semibold text-revision"><GraduationCap className="h-3.5 w-3.5" />{displayedClass}</p></div>
+          <div className="min-w-0"><p className="truncate font-title text-lg font-semibold text-accent">{profile.fullName}</p><p className={`mt-0.5 flex items-center gap-1.5 truncate text-sm ${standalone ? "text-gray-500" : "font-medium text-primary"}`}>{standalone ? null : <BadgeCheck className="h-4 w-4 shrink-0 fill-primary text-white" />}<span className="truncate">{standalone ? "Rattaché à aucune école" : profile.schoolName}</span></p><p className="mt-1 flex items-center gap-1 text-xs font-semibold text-revision"><GraduationCap className="h-3.5 w-3.5" />{displayedClass}</p></div>
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2">
           <ProfileMetric value={progress?.completedQuizCount ?? 0} label="Quiz" />
@@ -99,18 +99,18 @@ export function StudentProfilePage() {
         </div>
       </ElimaCard>
 
-      <ElimaCard className="mt-5">
+      {standalone ? <ElimaCard className="mt-5">
         <div className="flex items-start gap-3">
-          <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${standalone ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"}`}>{standalone ? <Building2 className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}</span>
-          <div><h2 className="font-title text-lg font-semibold text-accent">{standalone ? "Compte Révision" : "Compte rattaché"}</h2><p className="mt-1 text-xs leading-5 text-gray-500">{standalone ? "Tu utilises Elima indépendamment. Le nom renseigné ci-dessous ne donne aucun accès aux données d’une école." : `Ton compte est associé à ${profile.schoolName}.`}</p></div>
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600"><Building2 className="h-5 w-5" /></span>
+          <div><h2 className="font-title text-lg font-semibold text-accent">Compte Révision</h2><p className="mt-1 text-xs leading-5 text-gray-500">Tu peux renseigner ta classe ou rattacher ton compte à un établissement Elima.</p></div>
         </div>
-        {standalone ? <div className="mt-5 space-y-4">
+        <div className="mt-5 space-y-4">
           <div className="grid gap-3 sm:grid-cols-2"><ProfileInput label="Nom de mon école (facultatif)" value={schoolName} onChange={setSchoolName} /><ProfileInput label="Ville" value={schoolCity} onChange={setSchoolCity} /><ProfileClassSelect value={level} onChange={setLevel} /></div>
           <button type="button" disabled={accountLoading} onClick={saveDeclaredSchool} className="flex items-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-accent disabled:opacity-50"><Save className="h-4 w-4" /> Enregistrer mon profil</button>
           <div className="border-t border-gray-100 pt-4"><div className="flex items-center gap-2"><KeyRound className="h-4 w-4 text-primary" /><h3 className="text-sm font-semibold text-accent">Mon école utilise Elima</h3></div><p className="mt-1 text-xs leading-5 text-gray-500">Saisis le code individuel remis par ton établissement pour obtenir ton planning, tes notes, tes devoirs et tes messages.</p><div className="mt-3 flex flex-col gap-2 sm:flex-row"><input value={activationCode} onChange={(event) => setActivationCode(event.target.value.toUpperCase())} placeholder="EX. A1B2-C3D4" className="min-w-0 flex-1 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold uppercase tracking-wider outline-none focus:border-primary" /><button type="button" disabled={accountLoading || activationCode.replace(/[^A-Z0-9]/g, "").length < 6} onClick={activateSchool} className="rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">Activer</button></div></div>
           {accountMessage ? <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{accountMessage}</p> : null}{accountError ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">{accountError}</p> : null}
-        </div> : <div className="mt-5 rounded-2xl border border-gray-100 bg-gray-50 p-4"><div className="flex items-center justify-between gap-3"><div><p className="text-xs font-semibold text-gray-500">Classe</p><p className="mt-1 font-title text-base font-semibold text-accent">{displayedClass}</p></div><span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-gray-400 shadow-sm"><Lock className="h-4 w-4" /></span></div><p className="mt-2 text-xs leading-5 text-gray-400">Cette classe est renseignée et gérée par ton établissement.</p></div>}
-      </ElimaCard>
+        </div>
+      </ElimaCard> : null}
 
       <div className={`my-5 grid ${standalone ? "grid-cols-1" : "grid-cols-3"} rounded-2xl bg-gray-100 p-1`}>
         {([{ id: "grades", label: "Notes" }, { id: "quiz", label: "Quiz" }, { id: "averages", label: "Moyennes" }] as const).filter((item) => !standalone || item.id === "quiz").map((item) => (
