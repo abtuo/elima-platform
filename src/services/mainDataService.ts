@@ -1,6 +1,7 @@
 import type { AdminTrendPoint, Assignment, ChildSummary, ClassInfo, GradeSummary, MessagePreview, PaymentSummary, ResourceItem, StudentAdminProfile, StudentDirectoryItem, SubjectOption, TeacherDirectoryItem, TimetableEvent } from "../types/school";
 import { demoAccounts, demoAssignments, demoChildren, demoClasses, demoClassStudents, demoGrades, demoMessages, demoPayments, demoResources, demoTimetableEvents } from "../constants/demoData";
 import { isDemoModeActive } from "./env";
+import { formatEvaluationTitle } from "../lib/evaluationLabels";
 import { mainDbClient } from "./mainDbClient";
 import { communicationKind, type CommunicationKind } from "@/lib/communications";
 import { DEMO_REFERENCE_DATE, schoolDateKey } from "@/lib/schoolDateTime";
@@ -83,7 +84,7 @@ export async function getAssignments(classId?: string): Promise<Assignment[]> {
 }
 
 export async function getRecentGrades(studentId?: string): Promise<GradeSummary[]> {
-  if (useDemo()) return demoGrades;
+  if (useDemo()) return demoGrades.map((grade) => ({ ...grade, title: formatEvaluationTitle(grade.title, grade.subject) }));
   let resolvedStudentId: string | undefined;
   if (studentId) {
     const { data: student } = await mainDbClient!.from("students").select("id").or(`id.eq.${studentId},user_id.eq.${studentId}`).limit(1).maybeSingle();
@@ -94,7 +95,7 @@ export async function getRecentGrades(studentId?: string): Promise<GradeSummary[
   if (!resolvedStudentId) return [];
   const { data, error } = await mainDbClient!.from("grades").select("id, score, evaluation:evaluations(title, max_score, evaluation_date, subject:subjects(name))").eq("student_id", resolvedStudentId).order("created_at", { ascending: false }).limit(12);
   if (error) { queryFailed("notes", error); return []; }
-  return (data ?? []).map((row: Record<string, unknown>) => { const evaluation = row.evaluation as { title?: string; max_score?: number; evaluation_date?: string; subject?: { name?: string } | null } | null; return { id: String(row.id), subject: evaluation?.subject?.name ?? "Matière", title: evaluation?.title ?? "Évaluation", score: Number(row.score), maxScore: Number(evaluation?.max_score ?? 20), date: evaluation?.evaluation_date ?? "" }; });
+  return (data ?? []).map((row: Record<string, unknown>) => { const evaluation = row.evaluation as { title?: string; max_score?: number; evaluation_date?: string; subject?: { name?: string } | null } | null; const subject = evaluation?.subject?.name ?? "Matière"; return { id: String(row.id), subject, title: formatEvaluationTitle(evaluation?.title ?? "Évaluation", subject), score: Number(row.score), maxScore: Number(evaluation?.max_score ?? 20), date: evaluation?.evaluation_date ?? "" }; });
 }
 
 export type MessageScope = "mine" | "school";
@@ -311,7 +312,7 @@ export async function getStudentAdminProfile(studentId: string): Promise<Student
   if (useDemo()) {
     const student = demoChildren.find((item) => item.id === studentId);
     if (!student) return null;
-    const normalizedGrades = demoGrades.map((grade) => ({ ...grade, normalizedScore: rounded((grade.score / grade.maxScore) * 20) }));
+    const normalizedGrades = demoGrades.map((grade) => ({ ...grade, title: formatEvaluationTitle(grade.title, grade.subject), normalizedScore: rounded((grade.score / grade.maxScore) * 20) }));
     const subjectAverages = [...new Set(normalizedGrades.map((grade) => grade.subject))].map((subject) => {
       const grades = normalizedGrades.filter((grade) => grade.subject === subject);
       return { subject, average: rounded(grades.reduce((sum, grade) => sum + grade.normalizedScore, 0) / grades.length), gradeCount: grades.length };
@@ -350,8 +351,9 @@ export async function getStudentAdminProfile(studentId: string): Promise<Student
     const evaluation = row.evaluation as { title?: string; max_score?: number; coefficient?: number; evaluation_date?: string; subject?: { name?: string } | null } | null;
     const score = Number(row.score);
     const maxScore = Math.max(1, Number(evaluation?.max_score ?? 20));
+    const subject = evaluation?.subject?.name ?? "Matière";
     return {
-      id: String(row.id), subject: evaluation?.subject?.name ?? "Matière", title: evaluation?.title ?? "Évaluation",
+      id: String(row.id), subject, title: formatEvaluationTitle(evaluation?.title ?? "Évaluation", subject),
       score, maxScore, normalizedScore: rounded((score / maxScore) * 20),
       coefficient: Math.max(0.1, Number(evaluation?.coefficient ?? 1)),
       date: evaluation?.evaluation_date ?? String(row.created_at).slice(0, 10),

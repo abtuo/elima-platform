@@ -9,6 +9,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { SubjectIcon } from "@/components/revision/SubjectIcon";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getRevisionSubject } from "@/lib/revisionSubjects";
+import { formatEvaluationTitle } from "@/lib/evaluationLabels";
 import { getRecentGrades } from "@/services/mainDataService";
 import { getQuizAttempts, getRevisionProgress } from "@/services/revisionDataService";
 import type { QuizAttemptSummary, RevisionProgress } from "@/types/revision";
@@ -122,7 +123,7 @@ export function StudentProfilePage() {
           {grades.length ? grades.map((grade) => (
             <PerformanceCard
               key={grade.id}
-              title={formatEvaluationType(grade.title, grade.subject)}
+              title={formatEvaluationTitle(grade.title, grade.subject)}
               subject={grade.subject}
               meta={formatDate(grade.date)}
               value={`${grade.score}/${grade.maxScore}`}
@@ -215,33 +216,4 @@ function ProfileClassSelect({ value, onChange }: { value: string; onChange: (val
 function formatDate(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
-}
-
-function formatEvaluationType(title: string, subject: string) {
-  let result = title
-    .replace(/[\s·—–,:;()\-]*r[ée]f[ée]rence\s*N\s*[-–—]?\s*1[\s·—–,:;()\-]*/gi, " ")
-    .replace(/["“”]/g, " ");
-
-  const subjectId = getRevisionSubject(subject).id;
-  const subjectPatterns: Record<string, RegExp> = {
-    maths: /math[ée]matique?s?/gi,
-    francais: /fran[çc]ais/gi,
-    anglais: /anglais/gi,
-    espagnol: /espagnol/gi,
-    svt: /\bSVT\b/gi,
-    "physique-chimie": /physique(?:\s*[-–—]\s*chimie)?|chimie/gi,
-    "histoire-geographie": /histoire(?:\s*[-–—]\s*g[ée]ographie)?|g[ée]ographie/gi,
-    philosophie: /philosophie/gi,
-    ses: /\bSES\b|sciences?\s+[ée]conomiques?(?:\s+et\s+sociales?)?/gi,
-    informatique: /informatique|\bNSI\b/gi,
-    eps: /\bEPS\b/gi,
-    arts: /arts?\s*(?:plastiques?)?/gi,
-  };
-  result = result.replace(subjectPatterns[subjectId] ?? new RegExp(escapeRegExp(subject), "gi"), " ");
-  result = result.replace(/^[\s·—–,:;()\-]+|[\s·—–,:;()\-]+$/g, "").replace(/\s{2,}/g, " ").trim();
-  return result || "Évaluation";
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
