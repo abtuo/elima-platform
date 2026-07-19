@@ -185,7 +185,7 @@ function PerformanceCard({ title, subject, meta, value, percent, gradient }: {
       <div className="flex items-center gap-3">
         <SubjectIcon subject={subject} />
         <div className="min-w-0 flex-1">
-          <h3 className="truncate font-title text-sm font-semibold text-accent sm:text-base">{title}</h3>
+          {title ? <h3 className="truncate font-title text-sm font-semibold text-accent sm:text-base">{title}</h3> : null}
           <p className={`truncate text-xs font-medium ${subjectConfig.color}`}>{subject}</p>
           <p className="mt-0.5 truncate text-[11px] text-gray-400">{meta}</p>
         </div>

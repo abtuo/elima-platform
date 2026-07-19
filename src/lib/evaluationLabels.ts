@@ -23,7 +23,7 @@ export function formatEvaluationTitle(title: string, subject: string) {
 
   result = result.replace(subjectPatterns[subjectId] ?? new RegExp(escapeRegExp(subject), "gi"), " ");
   result = result.replace(/^[\s·—–,:;()\-]+|[\s·—–,:;()\-]+$/g, "").replace(/\s{2,}/g, " ").trim();
-  return result || "Évaluation";
+  return result;
 }
 
 function escapeRegExp(value: string) {

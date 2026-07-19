@@ -95,7 +95,7 @@ export async function getRecentGrades(studentId?: string): Promise<GradeSummary[
   if (!resolvedStudentId) return [];
   const { data, error } = await mainDbClient!.from("grades").select("id, score, evaluation:evaluations(title, max_score, evaluation_date, subject:subjects(name))").eq("student_id", resolvedStudentId).order("created_at", { ascending: false }).limit(12);
   if (error) { queryFailed("notes", error); return []; }
-  return (data ?? []).map((row: Record<string, unknown>) => { const evaluation = row.evaluation as { title?: string; max_score?: number; evaluation_date?: string; subject?: { name?: string } | null } | null; const subject = evaluation?.subject?.name ?? "Matière"; return { id: String(row.id), subject, title: formatEvaluationTitle(evaluation?.title ?? "Évaluation", subject), score: Number(row.score), maxScore: Number(evaluation?.max_score ?? 20), date: evaluation?.evaluation_date ?? "" }; });
+  return (data ?? []).map((row: Record<string, unknown>) => { const evaluation = row.evaluation as { title?: string; max_score?: number; evaluation_date?: string; subject?: { name?: string } | null } | null; const subject = evaluation?.subject?.name ?? "Matière"; return { id: String(row.id), subject, title: formatEvaluationTitle(evaluation?.title ?? "", subject), score: Number(row.score), maxScore: Number(evaluation?.max_score ?? 20), date: evaluation?.evaluation_date ?? "" }; });
 }
 
 export type MessageScope = "mine" | "school";
@@ -353,7 +353,7 @@ export async function getStudentAdminProfile(studentId: string): Promise<Student
     const maxScore = Math.max(1, Number(evaluation?.max_score ?? 20));
     const subject = evaluation?.subject?.name ?? "Matière";
     return {
-      id: String(row.id), subject, title: formatEvaluationTitle(evaluation?.title ?? "Évaluation", subject),
+      id: String(row.id), subject, title: formatEvaluationTitle(evaluation?.title ?? "", subject),
       score, maxScore, normalizedScore: rounded((score / maxScore) * 20),
       coefficient: Math.max(0.1, Number(evaluation?.coefficient ?? 1)),
       date: evaluation?.evaluation_date ?? String(row.created_at).slice(0, 10),

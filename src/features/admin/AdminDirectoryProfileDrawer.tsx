@@ -165,7 +165,7 @@ function StudentProfile({ profile }: { profile: StudentAdminProfile }) {
               <div key={grade.id} className="flex items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-accent">{grade.subject}</p>
-                  <p className="truncate text-xs text-gray-400">{formatEvaluationTitle(grade.title, grade.subject)} · {grade.date}</p>
+                  <p className="truncate text-xs text-gray-400">{[formatEvaluationTitle(grade.title, grade.subject), grade.date].filter(Boolean).join(" · ")}</p>
                 </div>
                 <div className="shrink-0 text-right">
                   <p className="font-title font-bold text-primary">{grade.score}/{grade.maxScore}</p>
