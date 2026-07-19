@@ -109,7 +109,15 @@ function stableNoise(...values: Array<string | number>) {
 
 async function createAuthUser(admin: SupabaseClient, account: Account) {
   const existing = await admin.from("users").select("id").eq("email", account.email).maybeSingle();
-  if (existing.data?.id) return String(existing.data.id);
+  if (existing.data?.id) {
+    const userId = String(existing.data.id);
+    const metadata = { role: account.role, school_id: account.schoolId, full_name: account.fullName };
+    const { error: authUpdateError } = await admin.auth.admin.updateUserById(userId, { user_metadata: metadata });
+    if (authUpdateError) throw authUpdateError;
+    const { error: profileUpdateError } = await admin.from("users").update({ school_id: account.schoolId, role: account.role, full_name: account.fullName } as never).eq("id", userId);
+    if (profileUpdateError) throw profileUpdateError;
+    return userId;
+  }
 
   const { data, error } = await admin.auth.admin.createUser({
     email: account.email,

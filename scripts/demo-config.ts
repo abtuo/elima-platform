@@ -21,7 +21,7 @@ export const DEMO_SCHOOLS = [
 export const DEMO_SCHOOL_IDS = DEMO_SCHOOLS.map((school) => school.id);
 
 export const DEMO_ACCOUNTS = [
-  { email: "admin.abidjan@seed-elima.invalid", role: "SCHOOL_ADMIN", schoolId: DEMO_SCHOOLS[0].id, fullName: "Admin Collège Moderne d'Abidjan" },
+  { email: "admin.abidjan@seed-elima.invalid", role: "SCHOOL_ADMIN", schoolId: DEMO_SCHOOLS[0].id, fullName: "Kouakou Léon Kobenan" },
   { email: "teacher.abidjan@seed-elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Fatou Diabaté", subject: "Français" },
   { email: "enseignant.serge@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Serge N'Guessan", subject: "Mathématiques" },
   { email: "enseignant.nadia@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Nadia Bamba", subject: "Français" },
@@ -30,10 +30,10 @@ export const DEMO_ACCOUNTS = [
   { email: "enseignant.ange@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Ange Koffi", subject: "Histoire-Géographie" },
   { email: "enseignant.claire@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Claire Kouadio", subject: "Anglais" },
   { email: "enseignant.jules@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Jules Amani", subject: "Philosophie" },
-  { email: "parent.mariam@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mariam Koné" },
-  { email: "parent.jean@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Jean Kouamé" },
-  { email: "parent.aminata@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Aminata Traoré" },
-  { email: "parent.aboubacar@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Aboubacar Tuo" },
+  { email: "parent.mariam@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Mariam Koné" },
+  { email: "parent.jean@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Jean Kouamé" },
+  { email: "parent.aminata@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Aminata Traoré" },
+  { email: "parent.aboubacar@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Aboubacar Tuo" },
   { email: "eleve.awa@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Awa Koné" },
   { email: "eleve.yao@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Yao Kouamé" },
   { email: "eleve.lina@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Lina Traoré" },
