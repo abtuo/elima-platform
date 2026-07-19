@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   const userId = authData.user.id;
   const [{ data: user }, { data: student }, { data: prospect }] = await Promise.all([
     admin.from("users").select("id, email, full_name, role, school_id, school:schools(name, logo_url)").eq("id", userId).maybeSingle(),
-    admin.from("students").select("id, class_id, class:classes(name, level)").eq("user_id", userId).maybeSingle(),
+    admin.from("students").select("id, class_id, photo_url, class:classes(name, level)").eq("user_id", userId).maybeSingle(),
     admin.from("student_prospects").select("declared_school_name, declared_school_city, school_level").eq("user_id", userId).maybeSingle(),
   ]);
   if (!user) return NextResponse.json({ message: "Profil Elima introuvable." }, { status: 404 });

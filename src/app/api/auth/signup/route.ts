@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { createSupabaseAdminServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { sendNotificationEmail } from "@/lib/email";
 import { checkSchoolFeature } from "@/lib/plans-server";
+import { createHash } from "node:crypto";
 
 const DEFAULT_COUNTRY = "Côte d'Ivoire";
 
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
     lastName?: string;
     email?: string;
     password?: string;
-    role?: "SCHOOL_ADMIN" | "TEACHER" | "PARENT" | "STUDENT";
+    role?: "SCHOOL_ADMIN" | "SCHOOL_STAFF" | "TEACHER" | "PARENT" | "STUDENT";
     schoolName?: string;
     phone?: string;
     city?: string;
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
     declaredSchoolName?: string;
     declaredSchoolCity?: string;
     returnTo?: string;
+    schoolCode?: string;
   };
 
   const firstName = String(body?.firstName ?? "").trim();
@@ -55,11 +57,14 @@ export async function POST(request: Request) {
   const schoolName = String(body?.schoolName ?? "").trim();
   const phone = String(body?.phone ?? "").trim();
   const city = String(body?.city ?? "").trim();
+  const schoolCode = String(body?.schoolCode ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 
   const isStandaloneStudent = role === "STUDENT";
-  if (!firstName || !lastName || !email || !password || !role || (!isStandaloneStudent && !schoolName)) {
+  const isSchoolHead = role === "SCHOOL_ADMIN";
+  const isSchoolMember = role === "SCHOOL_STAFF" || role === "TEACHER" || role === "PARENT";
+  if (!firstName || !lastName || !email || !password || !role || (isSchoolHead && !schoolName) || (isSchoolMember && schoolCode.length < 6)) {
     return NextResponse.json(
-      { message: "Nom, prénom, email, mot de passe, rôle et établissement requis." },
+      { message: "Nom, prénom, email, mot de passe et informations d’établissement requis." },
       { status: 400 },
     );
   }
@@ -86,7 +91,7 @@ export async function POST(request: Request) {
   let schoolId: string | null = null;
   if (role === "STUDENT") {
     schoolId = null;
-  } else if (role === "SCHOOL_ADMIN") {
+  } else if (isSchoolHead) {
     const { data: school, error: schoolError } = await admin
       .from("schools")
       .insert({
@@ -103,46 +108,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: schoolError?.message ?? "Création école impossible" }, { status: 400 });
     }
     schoolId = school.id;
-  } else {
-    const { data: existingSchool } = await admin
-      .from("schools")
-      .select("id")
-      .ilike("name", schoolName)
+  } else if (isSchoolMember) {
+    const codeHash = createHash("sha256").update(schoolCode).digest("hex");
+    const authRole = role === "SCHOOL_STAFF" ? "ADMIN" : role;
+    const { data: joinCode, error: codeError } = await admin
+      .from("school_join_codes")
+      .select("id, school_id, allowed_roles, expires_at, max_uses, use_count, active")
+      .eq("code_hash", codeHash)
       .maybeSingle();
-
-    if (existingSchool?.id) {
-      schoolId = existingSchool.id;
-      const planErr = await checkSchoolFeature(String(schoolId), "online_enrollment");
-      if (planErr) return planErr;
-    } else {
-      const { data: newSchool, error: newSchoolError } = await admin
-        .from("schools")
-        .insert({
-          name: schoolName,
-          country: DEFAULT_COUNTRY,
-          city: city || null,
-          phone: phone || null,
-          plan: "basic",
-        })
-        .select("id")
-        .single();
-
-      if (newSchoolError || !newSchool) {
-        return NextResponse.json(
-          { message: newSchoolError?.message ?? "Création école impossible" },
-          { status: 400 },
-        );
-      }
-      schoolId = newSchool.id;
+    const allowedRoles = Array.isArray(joinCode?.allowed_roles) ? joinCode.allowed_roles.map(String) : [];
+    const expired = joinCode?.expires_at && new Date(String(joinCode.expires_at)).getTime() <= Date.now();
+    const exhausted = joinCode?.max_uses != null && Number(joinCode.use_count ?? 0) >= Number(joinCode.max_uses);
+    if (codeError || !joinCode || !joinCode.active || expired || exhausted || !allowedRoles.includes(String(authRole))) {
+      return NextResponse.json({ message: "Code école invalide, expiré ou non autorisé pour ce rôle." }, { status: 400 });
     }
+    schoolId = String(joinCode.school_id);
+    const planErr = await checkSchoolFeature(schoolId, "online_enrollment");
+    if (planErr) return planErr;
+    await admin.from("school_join_codes").update({ use_count: Number(joinCode.use_count ?? 0) + 1, updated_at: new Date().toISOString() }).eq("id", joinCode.id);
   }
+
+  const authRole = role === "SCHOOL_STAFF" ? "ADMIN" : role;
 
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
     user_metadata: {
-      role,
+      role: authRole,
       school_id: schoolId,
       full_name: fullName,
       phone,
@@ -172,12 +165,12 @@ export async function POST(request: Request) {
         <h2>Nouvelle inscription</h2>
         <p><strong>Nom:</strong> ${fullName}</p>
         <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Rôle:</strong> ${role}</p>
+        <p><strong>Rôle:</strong> ${authRole}</p>
         <p><strong>Établissement:</strong> ${schoolName}</p>
         ${phone ? `<p><strong>Téléphone:</strong> ${phone}</p>` : ""}
         ${city ? `<p><strong>Ville:</strong> ${city}</p>` : ""}
       `,
-      text: `Nouvelle inscription: ${fullName} (${email}) - rôle ${role} - école ${schoolName}`,
+      text: `Nouvelle inscription: ${fullName} (${email}) - rôle ${authRole} - école ${schoolName || schoolId || "indépendant"}`,
     });
   } catch (mailError) {
     console.error("Signup email error", mailError);
@@ -185,7 +178,21 @@ export async function POST(request: Request) {
 
   const requestedReturn = safeStudentReturn(String(body?.returnTo ?? ""));
   const loginUrl = requestedReturn ? `/login/email?redirect=${encodeURIComponent(requestedReturn)}` : "/login/email";
-  return NextResponse.json({ ok: true, userId: data.user?.id ?? null, loginUrl });
+  let session: { access_token: string; refresh_token: string; expires_in: number } | null = null;
+  if (request.headers.get("x-elima-client") === "mobile-app") {
+    const authClient = await createSupabaseServerClient();
+    const signedIn = await authClient.auth.signInWithPassword({ email, password });
+    if (signedIn.data.session) {
+      session = {
+        access_token: signedIn.data.session.access_token,
+        refresh_token: signedIn.data.session.refresh_token,
+        expires_in: signedIn.data.session.expires_in,
+      };
+    } else if (signedIn.error) {
+      console.error("[signup] automatic mobile login failed", signedIn.error.message);
+    }
+  }
+  return NextResponse.json({ ok: true, userId: data.user?.id ?? null, loginUrl, session });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur serveur";
     console.error("[signup]", err);
