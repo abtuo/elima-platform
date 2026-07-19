@@ -5,7 +5,8 @@ import { AppHeader } from "@/components/common/AppHeader";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ProgressBar, StatCard } from "@/components/revision/RevisionUI";
-import { getLearningContent, readLearningSession } from "@/services/learningService";
+import { GuidedCorrection } from "@/features/revision/GuidedSessionExperience";
+import { getLearningContent, getLearningSolution, readLearningSession } from "@/services/learningService";
 import type { LearningContent } from "@/types/learning";
 
 function duration(seconds: number) { const minutes = Math.round(seconds / 60); return minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`; }
@@ -52,23 +53,37 @@ export function LearningResultsPage() {
 }
 
 function GuidedSessionResults({ exercise, session, score, max, correct, onRestart, onBack }: { exercise: LearningContent["exercises"][number]; session: NonNullable<ReturnType<typeof readLearningSession>>; score: number; max: number; correct: number; onRestart: () => void; onBack: () => void }) {
+  const [correction, setCorrection] = useState<string[]>([]);
   const selfQuestion = exercise.questions.find((question) => question.questionType === "self_assessment");
+  const solutionQuestion = exercise.questions.find((question) => question.questionType === "guided_solution");
   const transfer = exercise.questions.find((question) => Boolean(question.publicMetadata.isTransfer));
+  const checks = exercise.questions.filter((question) => ["single_choice", "multiple_choice", "ordering"].includes(question.questionType));
   const selfValue = selfQuestion ? session.answers[selfQuestion.id]?.value : "";
   const selfLabel = ((selfQuestion?.publicMetadata.options ?? []) as Array<{ id: string; label: string }>).find((option) => option.id === selfValue)?.label || "Non renseignée";
   const transferCorrect = transfer ? session.answers[transfer.id]?.result?.status === "correct" : false;
   const hints = Object.values(session.answers).reduce((sum, answer) => sum + answer.hints.length, 0);
   const percentage = max ? Math.round(score / max * 100) : 0;
-  const remediations = exercise.metadata.remediation || [];
+  useEffect(() => {
+    if (!solutionQuestion) return;
+    getLearningSolution(session, solutionQuestion.id, true).then((result) => setCorrection(result.steps.map((step) => typeof step === "string" ? step : step.content))).catch(() => setCorrection([]));
+  }, [session.id, solutionQuestion?.id]);
 
   return <PageContainer>
-    <AppHeader title="Ton bilan" subtitle="Session guidée · travail sur papier" backTo="/student/reviser?mode=devoirs" />
-    <section className="overflow-hidden rounded-[24px] bg-gradient-to-br from-[#3c226b] to-revision p-6 text-white shadow-soft sm:p-8"><div className="grid items-center gap-6 sm:grid-cols-[1fr_auto]"><div><p className="text-sm font-semibold text-white/70">Vérifications réussies</p><p className="mt-2 font-title text-5xl font-bold">{score.toFixed(0)}<span className="text-2xl text-white/60">/{max}</span></p><p className="mt-3 max-w-xl text-sm leading-6 text-white/75">Le score porte uniquement sur les questions fermées. Ton travail mathématique principal reste celui réalisé dans ton cahier.</p><div className="mt-5 max-w-lg"><ProgressBar value={percentage} /></div></div><div className="flex h-24 w-24 items-center justify-center rounded-full border-8 border-white/15 bg-white/10 font-title text-2xl font-bold">{percentage}%</div></div></section>
+    <AppHeader title="Ton bilan" subtitle="Session guidée" backTo="/student/reviser?mode=devoirs" />
+    <section className="overflow-hidden rounded-[24px] bg-gradient-to-br from-[#3c226b] to-revision p-6 text-white shadow-soft sm:p-8"><div className="grid items-center gap-6 sm:grid-cols-[1fr_auto]"><div><p className="text-sm font-semibold text-white/70">Vérifications réussies</p><p className="mt-2 font-title text-5xl font-bold">{score.toFixed(0)}<span className="text-2xl text-white/60">/{max}</span></p><div className="mt-5 max-w-lg"><ProgressBar value={percentage} /></div></div><div className="flex h-24 w-24 items-center justify-center rounded-full border-8 border-white/15 bg-white/10 font-title text-2xl font-bold">{percentage}%</div></div></section>
     <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4"><StatCard icon={CheckCircle2} label="Validées" value={correct} /><StatCard icon={Lightbulb} label="Indices vus" value={hints} /><StatCard icon={Target} label="Transfert" value={transferCorrect ? "Réussi" : "À revoir"} /><StatCard icon={Clock3} label="Temps" value={duration(session.elapsedSeconds)} /></div>
-    <div className="mt-5 grid gap-5 lg:grid-cols-2"><section className="card p-5 sm:p-6"><h2 className="font-title text-lg font-semibold text-accent">Ton auto-évaluation</h2><p className="mt-3 rounded-2xl bg-revision/[.06] p-4 text-sm font-semibold leading-6 text-revision">{selfLabel}</p><p className="mt-3 text-xs leading-5 text-gray-500">Cette réponse décrit ton ressenti ; elle ne remplace pas la preuve de maîtrise donnée par les vérifications.</p></section><section className="card p-5 sm:p-6"><h2 className="flex items-center gap-2 font-title text-lg font-semibold text-accent"><Sparkles className="h-5 w-5 text-secondary" />Pour consolider</h2>{remediations.length ? <ul className="mt-4 space-y-2">{remediations.map((item) => <li key={item} className="flex gap-2 rounded-xl bg-gray-50 p-3 text-sm leading-6 text-accent"><Lightbulb className="mt-1 h-4 w-4 shrink-0 text-secondary" />{item}</li>)}</ul> : <p className="mt-3 text-sm leading-6 text-gray-500">Reprends dans ton cahier la méthode de la correction, puis explique-la à voix haute.</p>}</section></div>
+    <section className="mt-5 card p-5 sm:p-6"><h2 className="font-title text-lg font-semibold text-accent">Auto-évaluation</h2><p className="mt-3 rounded-2xl bg-revision/[.06] p-4 text-sm font-semibold leading-6 text-revision">{selfLabel}</p></section>
+    <section className="mt-5 card p-5 sm:p-6"><h2 className="font-title text-lg font-semibold text-accent">Vérifications</h2><div className="mt-4 space-y-3">{checks.map((question, index) => { const saved = session.answers[question.id]; const publicOptions = question.publicMetadata.options as Array<{ id: string; label: string }> | undefined; const publicItems = question.publicMetadata.items as Array<{ id: string; label: string }> | undefined; const options = publicOptions?.length ? publicOptions : publicItems || []; return <div key={question.id} className="rounded-2xl border border-gray-100 p-4"><div className="flex items-start justify-between gap-3"><p className="text-sm font-semibold text-accent">{index + 1}. {question.prompt}</p><span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${saved?.result?.status === "correct" ? "bg-primary/10 text-primary" : "bg-amber-100 text-amber-800"}`}>{saved?.result?.status === "correct" ? "Correct" : "À revoir"}</span></div><p className="mt-2 text-sm text-gray-500">Ta réponse : <span className="font-medium text-accent">{answerLabel(saved?.value, options)}</span></p></div>; })}</div></section>
+    {correction.length ? <section className="mt-5 card p-5 sm:p-6"><h2 className="font-title text-lg font-semibold text-accent">Correction</h2><GuidedCorrection blocks={correction} /></section> : null}
     <section className="mt-5 card p-5 sm:p-6"><h2 className="font-title text-lg font-semibold text-accent">Question de transfert</h2><div className={`mt-3 rounded-2xl border p-4 ${transferCorrect ? "border-primary/20 bg-primary/5" : "border-amber-200 bg-amber-50"}`}><p className={`font-semibold ${transferCorrect ? "text-primary" : "text-amber-900"}`}>{transferCorrect ? "Tu as réutilisé la méthode dans une situation proche." : "Cette notion mérite encore un court entraînement."}</p>{transfer ? <p className="mt-2 text-sm leading-6 text-gray-700">{transfer.prompt}</p> : null}</div></section>
     <div className="mt-6 grid gap-3 sm:grid-cols-2"><button type="button" onClick={onRestart} className="rounded-2xl bg-revision px-4 py-3 text-sm font-semibold text-white">Reprendre la session</button><button type="button" onClick={onBack} className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-accent">Retour aux devoirs</button></div>
   </PageContainer>;
+}
+
+function answerLabel(value: string | undefined, options: Array<{ id: string; label: string }>) {
+  if (!value) return "—";
+  try { const ids = JSON.parse(value); if (Array.isArray(ids)) return ids.map((id) => options.find((option) => option.id === String(id))?.label || id).join(" · "); } catch { /* réponse simple */ }
+  return options.find((option) => option.id === value)?.label || value;
 }
 
 function SkillGroup({ title, items, positive = false }: { title: string; items: string[]; positive?: boolean }) { return <div><p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{title}</p><div className="mt-2 flex flex-wrap gap-2">{items.length ? items.slice(0, 8).map((item) => <span key={item} className={`rounded-full px-2.5 py-1 text-xs font-semibold ${positive ? "bg-primary/10 text-primary" : "bg-amber-100 text-amber-800"}`}>{item}</span>) : <span className="text-sm text-gray-400">Pas encore assez de réponses</span>}</div></div>; }

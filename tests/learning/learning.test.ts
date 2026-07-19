@@ -75,6 +75,16 @@ test("l’interface charge les devoirs progressivement", async () => {
   assert.doesNotMatch(solver, /getLearningCatalog/);
 });
 
+test("les sessions v3 avancent librement et vérifient les réponses à la fin", async () => {
+  const solver = await readFile(new URL("../../src/features/revision/LearningSolverPage.tsx", import.meta.url), "utf8");
+  const experience = await readFile(new URL("../../src/features/revision/GuidedSessionExperience.tsx", import.meta.url), "utf8");
+  assert.match(solver, /mode === "exam" \|\| guidedV3/);
+  assert.match(solver, /\["guided_solution", "orientation"\]/);
+  assert.match(experience, /onCompleteStep\(answer\.value\)/);
+  assert.doesNotMatch(experience, /onValidate/);
+  assert.match(experience, /GeneratedActionIcon name="hint"/);
+});
+
 test("la validation ouverte passe par GPT côté serveur", async () => {
   const api = await readFile(new URL("../../api/learning.mjs", import.meta.url), "utf8");
   assert.match(api, /assessWithGpt/);

@@ -1,26 +1,23 @@
 import { useEffect } from "react";
-import { ArrowDown, ArrowUp, Check, ChevronLeft, ChevronRight, Clock3, Lightbulb, NotebookPen, Send } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronLeft, ChevronRight, Clock3, Send } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { GeneratedActionIcon } from "@/components/common/GeneratedActionIcon";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { MarkdownContent } from "@/components/revision/MarkdownContent";
 import { ProgressBar } from "@/components/revision/RevisionUI";
-import type { GuidedOption, LearningExercise, LearningQuestion, LearningSession, ValidationResult } from "@/types/learning";
+import type { GuidedOption, LearningExercise, LearningQuestion, LearningSession } from "@/types/learning";
 
 type Answer = LearningSession["answers"][string];
 
 type Props = {
   exercise: LearningExercise;
-  session: LearningSession;
   active: LearningQuestion;
   activeIndex: number;
   answer: Answer;
   busy: boolean;
   error: string;
-  solution: string[];
   onPatchAnswer: (patch: Partial<Answer>) => void;
-  onValidate: () => void;
   onHint: () => void;
-  onRevealSolution: () => void;
   onGo: (index: number) => void;
   onCompleteStep: (value: string) => void;
   onSubmit: () => void;
@@ -29,24 +26,19 @@ type Props = {
 const CLOSED_TYPES = new Set(["single_choice", "multiple_choice", "ordering"]);
 
 export function GuidedSessionExperience(props: Props) {
-  const { exercise, session, active, activeIndex, answer, busy, error, solution } = props;
-  const metadata = exercise.metadata;
+  const { exercise, active, activeIndex, answer, busy, error } = props;
   const step = active.publicMetadata;
   const options = asOptions(step.options);
   const stepType = String(step.stepType || active.questionType);
-  const isLast = activeIndex === exercise.questions.length - 1;
-  const answered = exercise.questions.filter((question) => session.answers[question.id]?.value).length;
-
-  useEffect(() => {
-    if (stepType === "guided_solution" && solution.length === 0) props.onRevealSolution();
-  }, [active.id, stepType]); // eslint-disable-line react-hooks/exhaustive-deps
+  const totalSteps = exercise.questions.filter((question) => !["guided_solution", "orientation"].includes(question.questionType)).length;
+  const isLast = activeIndex === totalSteps - 1;
 
   return <PageContainer className="max-w-6xl">
-    <AppHeader title={exercise.title} subtitle={`${exercise.subject} · ${exercise.level} · travail sur papier`} backTo="/student/reviser?mode=devoirs" />
+    <AppHeader title={exercise.title} subtitle={`${exercise.subject} · ${exercise.level}`} backTo="/student/reviser?mode=devoirs" />
     {error ? <div className="mb-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900">{error}</div> : null}
     <div className="mb-4 rounded-2xl bg-accent px-4 py-3 text-white sm:px-5">
-      <div className="mb-2 flex items-center justify-between gap-3 text-xs"><span>Étape {activeIndex + 1} sur {exercise.questions.length}</span><span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />{exercise.estimatedMinutes} min environ</span></div>
-      <ProgressBar value={activeIndex + 1} max={exercise.questions.length} />
+      <div className="mb-2 flex items-center justify-between gap-3 text-xs"><span>Étape {activeIndex + 1} sur {totalSteps}</span><span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />{exercise.estimatedMinutes} min</span></div>
+      <ProgressBar value={activeIndex + 1} max={totalSteps} />
     </div>
 
     {stepType !== "statement" ? <details className="card mb-4 overflow-hidden">
@@ -54,61 +46,49 @@ export function GuidedSessionExperience(props: Props) {
       <div className="border-t border-gray-100 p-4 sm:p-5"><Statement exercise={exercise} compact /></div>
     </details> : null}
 
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-      <main className="card min-w-0 p-5 sm:p-7">
+    <main className="card mx-auto min-w-0 max-w-3xl p-5 sm:p-7">
         {stepType === "statement" ? <Statement exercise={exercise} /> : <>
-          <p className="text-xs font-bold uppercase tracking-wide text-revision">{stageLabel(stepType, Boolean(step.isTransfer))}</p>
-          <h1 className="mt-2 font-title text-xl font-semibold text-accent sm:text-2xl">{active.title}</h1>
-          <div className="mt-4 text-sm leading-7 text-accent"><MarkdownContent content={active.prompt} /></div>
+          <h1 className="font-title text-xl font-semibold text-accent sm:text-2xl">{cleanTitle(active.title)}</h1>
+          <div className="mt-4 text-sm leading-7 text-accent"><MarkdownContent content={cleanPrompt(active.prompt, stepType)} /></div>
           <StepBody {...props} stepType={stepType} options={options} />
+          {Number(step.hintCount || 0) > 0 ? <QuizStyleHints answer={answer} max={Number(step.hintCount)} busy={busy} onHint={props.onHint} /> : null}
         </>}
 
         <div className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-5">
           <button type="button" disabled={activeIndex === 0} onClick={() => props.onGo(activeIndex - 1)} className="inline-flex items-center gap-1 rounded-xl px-3 py-2 text-sm font-semibold text-gray-500 disabled:opacity-30"><ChevronLeft className="h-4 w-4" />Précédente</button>
           <StepActions {...props} stepType={stepType} isLast={isLast} />
         </div>
-      </main>
-
-      <aside className="space-y-4">
-        <section className="card p-5"><h2 className="font-title font-semibold text-accent">Ta session</h2><dl className="mt-3 space-y-2 text-sm"><div className="flex justify-between"><dt className="text-gray-500">Étapes faites</dt><dd className="font-semibold">{answered}/{exercise.questions.length}</dd></div><div className="flex justify-between"><dt className="text-gray-500">Support</dt><dd className="font-semibold">Papier</dd></div></dl></section>
-        {stepType === "paper_work" ? <HintPanel answer={answer} max={Number(step.hintCount || 0)} busy={busy} onHint={props.onHint} /> : null}
-        {metadata.objective ? <section className="card p-5"><h2 className="font-title font-semibold text-accent">Objectif</h2><p className="mt-2 text-sm leading-6 text-gray-600">{metadata.objective}</p></section> : null}
-      </aside>
-    </div>
+    </main>
   </PageContainer>;
 }
 
-function StepBody({ active, answer, busy, solution, onPatchAnswer, stepType, options }: Props & { stepType: string; options: GuidedOption[] }) {
+function StepBody({ active, answer, onPatchAnswer, stepType, options }: Props & { stepType: string; options: GuidedOption[] }) {
   const step = active.publicMetadata;
-  if (stepType === "orientation") return <PaperCallout text="Repère les données utiles avant de commencer tes calculs." />;
-  if (stepType === "paper_work") return <PaperCallout text="Effectue le travail dans ton cahier. Elima ne te demande pas de recopier tous tes calculs." />;
-  if (stepType === "guided_solution") return <Solution blocks={solution} loading={busy && solution.length === 0} />;
+  if (stepType === "orientation" || stepType === "paper_work") return null;
   if (stepType === "self_validation") return <SelfValidation checklist={asStrings(step.checklist)} options={asOptions(step.responseOptions)} value={answer.value} onChange={(value) => onPatchAnswer({ value })} />;
   if (stepType === "self_assessment") return <OptionButtons options={options} value={answer.value} onChange={(value) => onPatchAnswer({ value })} />;
-  if (stepType === "ordering") return <><Ordering items={asOptions(step.items)} value={answer.value} onChange={(value) => onPatchAnswer({ value, result: undefined })} />{answer.result ? <DeterministicFeedback result={answer.result} /> : null}</>;
-  if (stepType === "multiple_choice") return <><MultipleChoice options={options} value={answer.value} onChange={(value) => onPatchAnswer({ value, result: undefined })} />{answer.result ? <DeterministicFeedback result={answer.result} /> : null}</>;
-  if (stepType === "single_choice") return <><OptionButtons options={options} value={answer.value} onChange={(value) => onPatchAnswer({ value, result: undefined })} />{answer.result ? <DeterministicFeedback result={answer.result} /> : null}</>;
+  if (stepType === "ordering") return <Ordering items={asOptions(step.items)} value={answer.value} onChange={(value) => onPatchAnswer({ value, result: undefined })} />;
+  if (stepType === "multiple_choice") return <MultipleChoice options={options} value={answer.value} onChange={(value) => onPatchAnswer({ value, result: undefined })} />;
+  if (stepType === "single_choice") return <OptionButtons options={options} value={answer.value} onChange={(value) => onPatchAnswer({ value, result: undefined })} />;
   return null;
 }
 
 function StepActions(props: Props & { stepType: string; isLast: boolean }) {
-  const { stepType, answer, activeIndex, active, busy } = props;
-  if (stepType === "statement" || stepType === "orientation" || stepType === "paper_work") return <button type="button" onClick={() => props.onCompleteStep("completed")} className="inline-flex items-center gap-1.5 rounded-xl bg-revision px-4 py-2.5 text-sm font-semibold text-white">{String(active.publicMetadata.actionLabel || (stepType === "paper_work" ? "J’ai terminé sur papier" : "Continuer"))}<ChevronRight className="h-4 w-4" /></button>;
-  if (stepType === "guided_solution") return <button type="button" disabled={!props.solution.length} onClick={() => props.onCompleteStep("reviewed")} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">J’ai compris la correction<ChevronRight className="h-4 w-4" /></button>;
+  const { stepType, answer, busy } = props;
+  if (stepType === "statement" || stepType === "orientation" || stepType === "paper_work") return <button type="button" onClick={() => props.onCompleteStep("completed")} className="inline-flex items-center gap-1.5 rounded-xl bg-revision px-4 py-2.5 text-sm font-semibold text-white">{stepType === "statement" ? "Commencer" : "Valider"}<ChevronRight className="h-4 w-4" /></button>;
   if (stepType === "self_validation" || stepType === "self_assessment") return <button type="button" disabled={!answer.value} onClick={() => props.onCompleteStep(answer.value)} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">Continuer<ChevronRight className="h-4 w-4" /></button>;
-  if (CLOSED_TYPES.has(stepType)) return <div className="flex gap-2">{!answer.result || answer.result.status !== "correct" ? <button type="button" disabled={busy || !answer.value} onClick={props.onValidate} className="rounded-xl bg-revision px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">{busy ? "Vérification…" : "Vérifier"}</button> : props.isLast ? <button type="button" disabled={busy} onClick={props.onSubmit} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white"><Send className="h-4 w-4" />Terminer</button> : <button type="button" onClick={() => props.onGo(activeIndex + 1)} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white">Étape suivante<ChevronRight className="h-4 w-4" /></button>}</div>;
+  if (CLOSED_TYPES.has(stepType)) return props.isLast ? <button type="button" disabled={busy || !answer.value} onClick={props.onSubmit} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40"><Send className="h-4 w-4" />Terminer</button> : <button type="button" disabled={!answer.value} onClick={() => props.onCompleteStep(answer.value)} className="inline-flex items-center gap-1.5 rounded-xl bg-revision px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">Valider<ChevronRight className="h-4 w-4" /></button>;
   return null;
 }
 
 function Statement({ exercise, compact = false }: { exercise: LearningExercise; compact?: boolean }) {
   const statement = exercise.metadata.statement || {};
   return <div>
-    {!compact ? <><p className="text-xs font-bold uppercase tracking-wide text-revision">Énoncé complet · à lire avant le guidage</p><h1 className="mt-2 font-title text-2xl font-semibold text-accent">{exercise.title}</h1>{exercise.metadata.materials?.length ? <div className="mt-3 flex flex-wrap gap-2">{exercise.metadata.materials.map((item) => <span key={item} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">{item}</span>)}</div> : null}</> : null}
+    {!compact ? <><p className="text-xs font-bold uppercase tracking-wide text-revision">Énoncé</p><h1 className="mt-2 font-title text-2xl font-semibold text-accent">{exercise.title}</h1></> : null}
     {statement.introduction ? <p className="mt-4 text-sm font-semibold leading-7 text-accent">{statement.introduction}</p> : null}
     <div className="mt-3 text-sm leading-7 text-gray-700"><MarkdownContent content={statement.context || exercise.description} /></div>
     <StatementDisplay display={statement.display} />
-    {statement.main_questions?.length ? <section className="mt-5 rounded-2xl bg-revision/[.06] p-4 sm:p-5"><h2 className="font-semibold text-accent">Questions à résoudre sur papier</h2><ol className="mt-3 space-y-2 text-sm leading-6 text-accent">{statement.main_questions.map((question, index) => <li key={question} className="flex gap-2"><span className="font-bold text-revision">{index + 1}.</span><span>{question}</span></li>)}</ol></section> : null}
-    {statement.paper_instructions?.length ? <div className="mt-4 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4"><NotebookPen className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" /><div><p className="font-semibold text-amber-900">Prépare ton cahier</p><ul className="mt-1 list-inside list-disc text-sm leading-6 text-amber-900">{statement.paper_instructions.map((item) => <li key={item}>{item}</li>)}</ul></div></div> : null}
+    {statement.main_questions?.length ? <section className="mt-5 rounded-2xl bg-revision/[.06] p-4 sm:p-5"><h2 className="font-semibold text-accent">Questions</h2><ol className="mt-3 space-y-2 text-sm leading-6 text-accent">{statement.main_questions.map((question, index) => <li key={question} className="flex gap-2"><span className="font-bold text-revision">{index + 1}.</span><span>{question}</span></li>)}</ol></section> : null}
   </div>;
 }
 
@@ -143,11 +123,12 @@ function SelfValidation({ checklist, options, value, onChange }: { checklist: st
   return <><ul className="mt-5 space-y-2">{checklist.map((item) => <li key={item} className="flex items-start gap-2 rounded-xl bg-gray-50 p-3 text-sm text-accent"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}</ul><p className="mt-5 text-sm font-semibold text-accent">Compare avec ta production :</p><OptionButtons options={options} value={value} onChange={onChange} /></>;
 }
 
-function HintPanel({ answer, max, busy, onHint }: { answer: Answer; max: number; busy: boolean; onHint: () => void }) {
-  return <section className="card p-5"><h2 className="flex items-center gap-2 font-title font-semibold text-accent"><Lightbulb className="h-5 w-5 text-secondary" />Indices progressifs</h2><div className="mt-3 space-y-2">{answer.hints.map((hint, index) => <div key={`${index}-${hint}`} className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900"><strong>Indice {index + 1}.</strong> {hint}</div>)}</div>{answer.hints.length < max ? <button type="button" disabled={busy} onClick={onHint} className="mt-3 w-full rounded-xl border border-secondary/30 bg-secondary/10 px-3 py-2.5 text-sm font-semibold text-amber-800">Afficher l’indice {answer.hints.length + 1}</button> : null}</section>;
+function QuizStyleHints({ answer, max, busy, onHint }: { answer: Answer; max: number; busy: boolean; onHint: () => void }) {
+  const remaining = Math.max(0, max - answer.hints.length);
+  return <div className="mt-4"><div className="flex justify-end"><button type="button" disabled={busy || remaining === 0} onClick={onHint} className="relative flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 py-2 pl-3 pr-10 text-xs font-semibold text-amber-900 disabled:cursor-not-allowed disabled:opacity-45"><GeneratedActionIcon name="hint" className="h-7 w-7" />{busy ? "Ouverture…" : "Indice"}<span className="absolute right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-700 px-1 text-[10px] font-bold text-white">{remaining}</span></button></div>{answer.hints.map((hint, index) => <div key={`${index}-${hint}`} className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><p className="mb-1 text-xs font-bold uppercase tracking-wide text-amber-800">Indice {index + 1}</p><MarkdownContent content={hint} /></div>)}</div>;
 }
 
-function Solution({ blocks, loading }: { blocks: string[]; loading: boolean }) {
+export function GuidedCorrection({ blocks, loading = false }: { blocks: string[]; loading?: boolean }) {
   if (loading) return <div className="mt-5 animate-pulse rounded-2xl bg-gray-50 p-5 text-sm text-gray-500">Préparation de la correction…</div>;
   return <div className="mt-5 space-y-3">{blocks.map((block, index) => <div key={`${index}-${block}`} className="rounded-2xl border border-primary/15 bg-primary/5 p-4"><div className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">{index + 1}</span><SolutionValue value={block} /></div></div>)}</div>;
 }
@@ -168,16 +149,11 @@ function StructuredSolution({ value }: { value: unknown }) {
   return <dl className="min-w-0 space-y-1 text-sm text-accent">{Object.entries(data).map(([key, item]) => <div key={key} className="flex flex-wrap gap-2"><dt className="font-semibold">{humanize(key)} :</dt><dd>{typeof item === "object" ? JSON.stringify(item) : String(item)}</dd></div>)}</dl>;
 }
 
-function DeterministicFeedback({ result }: { result: ValidationResult }) {
-  const correct = result.status === "correct";
-  return <div className={`mt-4 rounded-2xl border p-4 ${correct ? "border-primary/20 bg-primary/5" : "border-amber-200 bg-amber-50"}`}><p className={`font-semibold ${correct ? "text-primary" : "text-amber-900"}`}>{correct ? "Réponse validée" : "Essaie encore"}</p><p className="mt-1 text-sm leading-6 text-gray-700">{result.message}</p></div>;
-}
-
-function PaperCallout({ text }: { text: string }) { return <div className="mt-5 flex items-start gap-3 rounded-2xl border border-revision/15 bg-revision/[.04] p-4"><NotebookPen className="mt-0.5 h-5 w-5 shrink-0 text-revision" /><p className="text-sm leading-6 text-accent">{text}</p></div>; }
 function asOptions(value: unknown) { return Array.isArray(value) ? value.filter((item): item is GuidedOption => Boolean(item && typeof item === "object" && "id" in item && "label" in item)) : []; }
 function asStrings(value: unknown) { return Array.isArray(value) ? value.map(String) : []; }
 function parseArray(value: string) { try { const parsed = JSON.parse(value || "[]"); return Array.isArray(parsed) ? parsed.map(String) : []; } catch { return []; } }
 function humanize(value: string) { return value.replace(/_/g, " ").replace(/^./, (letter) => letter.toUpperCase()); }
-function stageLabel(type: string, transfer: boolean) { if (transfer) return "Transfert · une dernière question"; if (type === "paper_work") return "À toi · sur papier"; if (type === "guided_solution") return "Correction guidée"; if (type === "self_assessment") return "Auto-évaluation"; if (type === "self_validation") return "Auto-validation"; return "Comprendre la méthode"; }
+function cleanTitle(value: string) { return value.replace(/\s+sur papier/gi, "").replace(/^Prépare (?:ta feuille|la figure)$/i, "Étape"); }
+function cleanPrompt(value: string, type: string) { return type === "self_assessment" ? "Comment s’est passé l’exercice ?" : value; }
 function visualTitle(type: string) { return ({ fraction_bar: "Bande de fractions", route: "Parcours", timeline: "Frise horaire", rectangle: "Cour rectangulaire", geometry_start: "Figure de départ" } as Record<string, string>)[type] || "Données de l’exercice"; }
 function visualDescription(display: Record<string, unknown>) { if (display.type === "fraction_bar") return `${display.selected_parts} parts sur ${display.total_parts}`; if (display.type === "route") return ((display.segments as Array<Record<string, unknown>> | undefined) || []).map((item) => `${item.label} : ${item.length}`).join(" · "); if (display.type === "timeline") return `Départ ${display.start} · durée ${display.duration}`; if (display.type === "rectangle") return `Longueur ${display.length} · largeur ${display.width}`; if (display.type === "geometry_start") return "Une droite d et un point A situé hors de la droite."; return "Observe les informations avant de répondre."; }
