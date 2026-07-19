@@ -89,6 +89,10 @@ export async function completeElimaSignIn(code: string, state: string) {
 
 type ElimaIdentityTokens = { access_token: string; refresh_token?: string; expires_in?: number };
 
+export async function completeElimaIdentitySession(tokens: ElimaIdentityTokens) {
+  return bridgeElimaIdentitySession(tokens);
+}
+
 async function bridgeElimaIdentitySession(tokens: ElimaIdentityTokens) {
   if (!mainDbClient) throw new Error("La base Révision n’est pas configurée.");
   const bridgeResponse = await fetch("/api/identity-bridge", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accessToken: tokens.access_token }) });

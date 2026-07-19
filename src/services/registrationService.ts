@@ -13,7 +13,12 @@ export type AccountRegistrationInput = {
 };
 
 async function readResponse(response: Response) {
-  return await response.json().catch(() => null) as { message?: string; ok?: boolean; loginIdentifier?: string } | null;
+  return await response.json().catch(() => null) as {
+    message?: string;
+    ok?: boolean;
+    loginIdentifier?: string;
+    session?: { access_token: string; refresh_token?: string; expires_in?: number } | null;
+  } | null;
 }
 
 export async function registerElimaAccount(input: AccountRegistrationInput) {

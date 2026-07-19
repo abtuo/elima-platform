@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight, BriefcaseBusiness, CheckCircle2, GraduationCap, School, UsersRound } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ElimaLogo } from "@/components/common/ElimaLogo";
-import { signInWithElimaPassword } from "@/services/elimaIdentityService";
+import { completeElimaIdentitySession, signInWithElimaPassword } from "@/services/elimaIdentityService";
 import { registerElimaAccount, submitSchoolRegistrationRequest, type RegistrationRole } from "@/services/registrationService";
 
 const roles: Array<{ id: RegistrationRole; title: string; description: string; icon: typeof School }> = [
@@ -50,7 +50,8 @@ export function RegistrationPage() {
     setLoading(true);
     try {
       const registration = await registerElimaAccount({ role, firstName: form.firstName, lastName: form.lastName, identifier: form.identifier, password: form.password, schoolCode: requiresSchoolCode ? form.schoolCode : undefined, schoolLevel: role === "student" ? form.schoolLevel : undefined, declaredSchoolName: role === "student" ? form.declaredSchoolName : undefined, declaredSchoolCity: role === "student" ? form.declaredSchoolCity : undefined });
-      await signInWithElimaPassword(registration.loginIdentifier ?? form.identifier, form.password, { recentSignup: true });
+      if (registration.session?.access_token) await completeElimaIdentitySession(registration.session);
+      else await signInWithElimaPassword(registration.loginIdentifier ?? form.identifier, form.password, { recentSignup: true });
       navigate(role === "student" ? "/student/reviser" : "/", { replace: true });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Inscription impossible.");
