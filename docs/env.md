@@ -10,7 +10,7 @@
 | `VITE_MAIN_SUPABASE_ANON_KEY` | Anon key de la base commune | |
 | `VITE_MAIN_API_BASE_URL` | Backend HTTPS principal : uploads et opérations sécurisées | À renseigner |
 | `VITE_REVISION_API_BASE_URL` | Backend HTTPS Révision : IA et OCR | À renseigner |
-| `VITE_ENABLE_DEMO_MODE` | Affiche les comptes seed ; sans base principale, active aussi les données locales de secours | `true` |
+| `VITE_ENABLE_DEMO_MODE` | En développement sans base principale, autorise les données locales de secours ; les comptes seed en ligne sont affichés selon le domaine | `true` |
 | `VITE_ENABLE_REVISION` | Module révision | `true` |
 | `VITE_ENABLE_STUDENT_SCANNER` | Scanner élève | `true` |
 | `VITE_ENABLE_TEACHER_OFFLINE` | Offline prof | `true` |

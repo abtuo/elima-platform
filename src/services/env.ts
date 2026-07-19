@@ -28,12 +28,7 @@ export function isDemoHost() {
 }
 
 export function isPublicLandingEnabled() {
-  return !isDemoHost();
-}
-
-function isDeployedElimaHost() {
-  const hostname = getRuntimeHostname();
-  return hostname === "app.elima.ci" || hostname === "demo.app.elima.ci";
+  return true;
 }
 
 export function isMainDbConfigured() {
@@ -43,11 +38,9 @@ export function isMainDbConfigured() {
 export const isRevisionDbConfigured = isMainDbConfigured;
 
 export function isDemoModeActive() {
-  if (isDeployedElimaHost()) return isDemoHost();
-  return isDemoHost() || (env.enableDemoMode && env.appEnv !== "production" && !isMainDbConfigured());
+  return env.enableDemoMode && env.appEnv !== "production" && !isMainDbConfigured();
 }
 
-export function isDemoModeEnabled() {
-  if (isDeployedElimaHost()) return isDemoHost();
-  return isDemoHost() || (env.enableDemoMode && env.appEnv !== "production");
+export function shouldShowSeedAccounts() {
+  return isDemoHost();
 }

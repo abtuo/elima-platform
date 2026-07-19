@@ -15,7 +15,7 @@
 - [ ] **Rotation des secrets** — Renouveler les clés Supabase secrètes, le mot de passe PostgreSQL et les clés Azure déjà utilisées pendant le développement ; vérifier qu’aucun secret n’est préfixé par `VITE_`.
 - [ ] **Variables Vercel** — Vérifier séparément Preview et Production pour `elima.ci` et `elima.mobile`, puis documenter le propriétaire et le projet associés à chaque clé.
 - [ ] **Migrations reproductibles** — Appliquer et vérifier toutes les migrations sur une base de préproduction propre, sauvegarder la production et préparer une procédure de retour arrière.
-- [ ] **Séparation démo/production** — Confirmer que `demo.app.elima.ci` ne peut jamais écrire dans les données de production et que `app.elima.ci` n’active jamais les comptes ou fixtures de démonstration.
+- [ ] **Isolation des comptes seed** — Confirmer que les raccourcis de connexion restent visibles uniquement sur `demo.app.elima.ci` et que les comptes seed ne peuvent accéder qu’aux établissements et données prévus pour la démonstration.
 - [ ] **Domaines et OAuth** — Valider DNS, HTTPS, URLs de redirection OAuth et liste blanche des retours pour `app.elima.ci`, `demo.app.elima.ci` et les URLs locales autorisées.
 - [ ] **Observabilité** — Ajouter le suivi des erreurs des fonctions Vercel, des échecs d’inscription/SSO, de la génération IA et des synchronisations, sans journaliser mots de passe, jetons ou données sensibles.
 - [ ] **Tests de non-régression** — Automatiser les parcours critiques et effectuer une recette mobile/desktop sur Chrome, Safari et navigateurs Android, avec réseau lent et mode hors ligne.

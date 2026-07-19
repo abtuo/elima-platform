@@ -5,8 +5,8 @@
 - `elima.ci` reste l’autorité d’identité et crée les comptes.
 - `app.elima.ci` affiche l’accueil public, la connexion et l’inscription.
 - la base mobile conserve le profil lié nécessaire aux fonctions de l’application ; le bridge existant crée cette liaison après authentification centrale ;
-- `demo.app.elima.ci` utilise les comptes et données de démonstration, même si les variables Supabase de production sont présentes ;
-- les deux sous-domaines peuvent pointer vers le même projet Vercel : le comportement est choisi au runtime selon le nom d’hôte.
+- `demo.app.elima.ci` utilise les mêmes services et les mêmes données Supabase que `app.elima.ci`, mais affiche sur la page de connexion les raccourcis vers les comptes seed ;
+- les deux sous-domaines peuvent pointer vers le même projet Vercel : seul l’affichage des comptes seed est choisi au runtime selon le nom d’hôte.
 
 ## Ordre recommandé
 
@@ -77,7 +77,7 @@ Dans le même projet Vercel, ajouter :
 Avec `VITE_APP_MODE=auto` :
 
 - `app.elima.ci` ouvre le nouvel accueil public ;
-- `demo.app.elima.ci` ouvre le parcours démo actuel et affiche les comptes de démonstration.
+- `demo.app.elima.ci` ouvre le même accueil et le même parcours, puis affiche les comptes seed sur la page de connexion.
 
 Pour un projet Vercel séparé réservé à la démo, utiliser plutôt `VITE_APP_MODE=demo`.
 
@@ -114,7 +114,7 @@ Le code à communiquer est `ECOLE-A1B2C3`. La base ne conserve que son hash.
 4. Un élève peut créer un compte, sans confirmation email, puis accéder à Révision.
 5. Un enseignant, parent ou personnel administratif ne peut pas s’inscrire sans code école valide.
 6. Un chef d’établissement crée seulement une demande ; aucune école n’est ouverte automatiquement.
-7. `demo.app.elima.ci` affiche les comptes démo et conserve les données fictives.
+7. `demo.app.elima.ci` affiche les comptes seed, qui se connectent réellement aux mêmes services que sur `app.elima.ci`.
 8. Les retours OAuth autorisés contiennent toujours `https://app.elima.ci/auth/elima/callback`.
 
 ## Réglage Supabase important

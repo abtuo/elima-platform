@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import type { Session } from "@supabase/supabase-js";
 import type { MobileSpace, UserProfile } from "@/types/roles";
 import { mainDbClient } from "@/services/mainDbClient";
-import { isMainDbConfigured, isDemoModeActive, isDemoModeEnabled } from "@/services/env";
+import { isMainDbConfigured, isDemoModeActive, shouldShowSeedAccounts } from "@/services/env";
 import { fetchUserProfile, getDemoProfile, getHomeSpace, shouldUseDemoProfile } from "@/services/roleService";
 import { signInWithIdentifier, signOut as authSignOut } from "@/services/authService";
 import { demoAccounts } from "@/constants/demoData";
@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>(getDemoProfile());
   const [loading, setLoading] = useState(true);
   const [demoAuthenticated, setDemoAuthenticated] = useState(false);
-  const isDemo = isDemoModeEnabled();
+  const isDemo = shouldShowSeedAccounts();
   const usesLocalDemo = shouldUseDemoProfile();
 
   const loadProfile = useCallback(async (userId: string) => {
