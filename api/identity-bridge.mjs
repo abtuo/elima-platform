@@ -12,7 +12,7 @@ export default async function handler(request, response) {
   const userInfoResponse = await fetch(`${identityUrl}/auth/v1/oauth/userinfo`, { headers: { Authorization: `Bearer ${accessToken}` } });
   if (!userInfoResponse.ok) return response.status(401).json({ error: "Identité Elima invalide ou expirée." });
   const identity = await userInfoResponse.json();
-  if (!identity.sub || !identity.email || identity.email_verified === false) return response.status(403).json({ error: "Une adresse email Elima vérifiée est requise." });
+  if (!identity.sub || !identity.email) return response.status(403).json({ error: "L’identité Elima ne contient pas d’adresse email exploitable." });
 
   let profile = null;
   try {
