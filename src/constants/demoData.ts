@@ -10,7 +10,7 @@ import type {
   StudentDirectoryItem,
   TimetableEvent,
 } from "../types/school";
-import type { RevisionProgress, CourseSheet, QuizItem } from "../types/revision";
+import type { RevisionProgress, CourseSheet, QuizAttemptSummary, QuizItem } from "../types/revision";
 
 export const demoAccounts = [
   { label: "Admin Abidjan", email: "admin.abidjan@seed-elima.invalid", password: "ElimaSeed!2026", fullName: "Kouakou Léon Kobenan", role: "SCHOOL_ADMIN" as UserRole },
@@ -138,6 +138,12 @@ export const demoQuizzes: QuizItem[] = [
   { id: "q1", subject: "Mathématiques", topic: "Équations du 1er degré", questionCount: 10, difficulty: "Moyen" },
   { id: "q2", subject: "Français", topic: "Les figures de style", questionCount: 10, difficulty: "Facile" },
   { id: "q3", subject: "SVT", topic: "La digestion", questionCount: 10, difficulty: "Moyen" },
+];
+
+export const demoQuizAttempts: QuizAttemptSummary[] = [
+  { id: "qa-demo-1", quizRef: "q1", subject: "Mathématiques", topic: "Équations du 1er degré", score: 80, totalQuestions: 10, correctAnswers: 8, completedAt: "2026-07-14T17:20:00.000Z" },
+  { id: "qa-demo-2", quizRef: "q2", subject: "Français", topic: "Les figures de style", score: 70, totalQuestions: 10, correctAnswers: 7, completedAt: "2026-07-12T18:05:00.000Z" },
+  { id: "qa-demo-3", quizRef: "q3", subject: "SVT", topic: "La digestion", score: 90, totalQuestions: 10, correctAnswers: 9, completedAt: "2026-07-10T16:40:00.000Z" },
 ];
 
 export const demoCourseSheets: CourseSheet[] = [

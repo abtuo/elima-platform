@@ -44,7 +44,11 @@ export type QuizQuestion = {
 
 export type QuizAttemptSummary = {
   id: string;
+  quizRef?: string;
   subject: string;
+  topic?: string;
   score: number;
+  totalQuestions?: number;
+  correctAnswers?: number;
   completedAt: string;
 };

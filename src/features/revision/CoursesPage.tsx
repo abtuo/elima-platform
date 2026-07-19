@@ -43,11 +43,11 @@ export function CourseSheetDetailPage() {
   }, [profile.id, id]);
 
   if (sheet === undefined) return null;
-  if (!sheet) return <PageContainer><AppHeader title="Fiche" backTo="/student/reviser/fiches" accent="#7C3AED" /><EmptyState title="Fiche introuvable" /></PageContainer>;
+  if (!sheet) return <PageContainer><AppHeader title="Fiche" backTo="/student/reviser?mode=fiches" accent="#7C3AED" /><EmptyState title="Fiche introuvable" /></PageContainer>;
 
   return (
     <PageContainer>
-      <AppHeader title={sheet.title} subtitle={`${sheet.subject} · ${sheet.topic}`} backTo="/student/reviser/fiches" accent="#7C3AED" />
+      <AppHeader title={sheet.title} subtitle={`${sheet.subject} · ${sheet.topic}`} backTo="/student/reviser?mode=fiches" accent="#7C3AED" />
       <div className="card overflow-hidden p-5 sm:p-6"><MarkdownContent content={sheet.content} variant="sheet" /></div>
     </PageContainer>
   );

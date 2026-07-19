@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, FileText, School } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { BookOpen, ChevronRight, FileText, School } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
 import { GeneratedActionIcon } from "@/components/common/GeneratedActionIcon";
 import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
@@ -8,15 +9,18 @@ import { ResourceCard } from "@/components/cards/ResourceCard";
 import { AssignmentCard } from "@/components/cards/AssignmentCard";
 import { ScanCard } from "@/components/cards/ScanCard";
 import { PageContainer } from "@/components/layout/PageContainer";
+import { SubjectIcon } from "@/components/revision/SubjectIcon";
 import { DOCUMENT_TYPES, REVISION_SUBJECTS } from "@/constants/demoData";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getAssignments, getResources } from "@/services/mainDataService";
+import { getCourseSheets } from "@/services/revisionDataService";
 import { getScanHistory, registerScannedDocument, requestQuizFromScan, requestSheetFromScan } from "@/services/scannerService";
-import type { ScanRecord } from "@/types/revision";
+import type { CourseSheet, ScanRecord } from "@/types/revision";
 import type { Assignment, ResourceItem } from "@/types/school";
 
 export function ScannerPage() {
   const { profile } = useAuth();
+  const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [subject, setSubject] = useState(REVISION_SUBJECTS[0]);
   const [topic, setTopic] = useState("");
@@ -24,6 +28,7 @@ export function ScannerPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [history, setHistory] = useState<ScanRecord[]>([]);
+  const [sheets, setSheets] = useState<CourseSheet[]>([]);
   const [schoolDocuments, setSchoolDocuments] = useState<ResourceItem[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [tab, setTab] = useState<"school" | "assignments" | "mine" | "add">("school");
@@ -33,9 +38,10 @@ export function ScannerPage() {
 
   useEffect(() => {
     getScanHistory().then(setHistory);
+    getCourseSheets(profile.id).then(setSheets);
     getResources().then(setSchoolDocuments);
     getAssignments().then(setAssignments);
-  }, []);
+  }, [profile.id]);
 
   useEffect(() => () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -114,7 +120,9 @@ export function ScannerPage() {
         {tab === "mine" ? (
           <section className="space-y-3">
             {message ? <p className="rounded-2xl bg-primary/5 p-3 text-center text-sm text-primary">{message}</p> : null}
-            {history.length ? history.map((scan) => <div key={scan.id} className="space-y-2"><ScanCard scan={scan} /><div className="flex gap-2"><button type="button" onClick={() => handleAction("sheet", scan.id)} className="tap flex flex-1 items-center justify-center gap-1 rounded-2xl border border-primary/20 py-2 text-xs font-semibold text-primary"><GeneratedActionIcon name="generateSheet" className="h-7 w-7" /> Créer une fiche</button><button type="button" onClick={() => handleAction("quiz", scan.id)} className="tap flex flex-1 items-center justify-center gap-1 rounded-2xl border border-revision/20 py-2 text-xs font-semibold text-revision"><GeneratedActionIcon name="generateQuiz" className="h-7 w-7" /> Créer un quiz</button></div></div>) : <EmptyState title="Aucun document" description="Vos documents personnels apparaîtront ici." icon={FileText} />}
+            {sheets.length ? <div className="space-y-3"><div className="flex items-center justify-between"><div><h2 className="font-title text-base font-semibold text-accent">Fiches de révision</h2><p className="text-xs text-gray-500">Fiches générées depuis Réviser</p></div><span className="rounded-full bg-revision/10 px-2.5 py-1 text-xs font-bold text-revision">{sheets.length}</span></div>{sheets.map((sheet) => <button key={sheet.id} type="button" onClick={() => navigate(`/student/reviser/fiches/${encodeURIComponent(sheet.id)}`)} className="card tap flex w-full items-center gap-3 p-4 text-left"><SubjectIcon subject={sheet.subject} /><span className="min-w-0 flex-1"><span className="block truncate text-xs text-gray-500">{sheet.subject}</span><span className="block truncate font-title text-sm font-semibold text-accent">{sheet.title}</span><span className="mt-1 block text-[11px] text-gray-400">{new Date(sheet.createdAt).toLocaleDateString("fr-FR")}</span></span><ChevronRight className="h-5 w-5 shrink-0 text-gray-300" /></button>)}</div> : null}
+            {history.length ? <div className="space-y-3"><div className="pt-2"><h2 className="font-title text-base font-semibold text-accent">Documents importés</h2><p className="text-xs text-gray-500">Photos et PDF personnels</p></div>{history.map((scan) => <div key={scan.id} className="space-y-2"><ScanCard scan={scan} /><div className="flex gap-2"><button type="button" onClick={() => handleAction("sheet", scan.id)} className="tap flex flex-1 items-center justify-center gap-1 rounded-2xl border border-primary/20 py-2 text-xs font-semibold text-primary"><GeneratedActionIcon name="generateSheet" className="h-7 w-7" /> Créer une fiche</button><button type="button" onClick={() => handleAction("quiz", scan.id)} className="tap flex flex-1 items-center justify-center gap-1 rounded-2xl border border-revision/20 py-2 text-xs font-semibold text-revision"><GeneratedActionIcon name="generateQuiz" className="h-7 w-7" /> Créer un quiz</button></div></div>)}</div> : null}
+            {!sheets.length && !history.length ? <EmptyState title="Aucun document" description="Tes fiches générées et tes documents personnels apparaîtront ici." icon={FileText} /> : null}
           </section>
         ) : null}
       </div>

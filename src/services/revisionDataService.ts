@@ -1,7 +1,7 @@
 import type { RevisionProgress, QuizAttemptSummary, QuizItem, CourseSheet, QuizQuestion } from "../types/revision";
 import { isDemoModeActive } from "./env";
 import { revisionDbClient } from "./revisionDbClient";
-import { demoRevisionProgress, demoQuizzes, demoCourseSheets, demoQuizQuestions } from "../constants/demoData";
+import { demoRevisionProgress, demoQuizzes, demoCourseSheets, demoQuizAttempts, demoQuizQuestions } from "../constants/demoData";
 import { seededShuffle } from "../lib/seededShuffle";
 import { subjectIdFromLabel } from "../lib/revisionSubjects";
 
@@ -17,6 +17,7 @@ type GenerationInput = { subject: string; topic: string; level: string };
 type HintUsage = { used: number; limit: number; remaining: number };
 
 function generatedSheetsKey(userId?: string) { return `${GENERATED_SHEETS_KEY}${userId ?? "guest"}`; }
+function attemptsKey(userId?: string) { return `${ATTEMPTS_KEY}:${userId ?? "guest"}`; }
 
 function readGeneratedSheets(userId?: string): CourseSheet[] {
   try { return JSON.parse(localStorage.getItem(generatedSheetsKey(userId)) ?? "[]") as CourseSheet[]; } catch { return []; }
@@ -139,8 +140,10 @@ export async function getRevisionProgress(userId?: string): Promise<RevisionProg
 }
 
 export async function recordQuizCompletion(input: {
+  userId?: string;
   quizRef: string;
   subject: string;
+  topic?: string;
   score: number;
   totalQuestions: number;
   correctAnswers: number;
@@ -166,9 +169,9 @@ export async function recordQuizCompletion(input: {
   progress.completedQuizCount += 1;
   progress.averageScore = Math.round((progress.averageScore + input.score) / 2);
   writeLocalProgress(progress);
-  const attempts = readLocalAttempts();
-  attempts.unshift({ id: crypto.randomUUID(), subject: input.subject, score: input.score, completedAt: new Date().toISOString() });
-  localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(attempts.slice(0, 50)));
+  const attempts = readLocalAttempts(input.userId);
+  attempts.unshift({ id: crypto.randomUUID(), quizRef: input.quizRef, subject: input.subject, topic: input.topic, score: input.score, totalQuestions: input.totalQuestions, correctAnswers: input.correctAnswers, completedAt: new Date().toISOString() });
+  localStorage.setItem(attemptsKey(input.userId), JSON.stringify(attempts.slice(0, 50)));
   return progress;
 }
 
@@ -201,16 +204,29 @@ export async function submitQuizFeedback(input: {
   } catch { /* stockage local indisponible */ }
 }
 
-function readLocalAttempts(): QuizAttemptSummary[] {
-  try { return JSON.parse(localStorage.getItem(ATTEMPTS_KEY) ?? "[]") as QuizAttemptSummary[]; } catch { return []; }
+function readLocalAttempts(userId?: string): QuizAttemptSummary[] {
+  try {
+    const scoped = localStorage.getItem(attemptsKey(userId));
+    if (scoped) return JSON.parse(scoped) as QuizAttemptSummary[];
+    return JSON.parse(localStorage.getItem(ATTEMPTS_KEY) ?? "[]") as QuizAttemptSummary[];
+  } catch { return []; }
 }
 
 export async function getQuizAttempts(userId?: string): Promise<QuizAttemptSummary[]> {
+  const local = readLocalAttempts(userId);
+  if (isDemoModeActive()) return [...local, ...demoQuizAttempts.filter((demo) => !local.some((attempt) => attempt.id === demo.id))].slice(0, 50);
   if (revisionDbClient && userId) {
-    const { data } = await revisionDbClient.from("quiz_attempts").select("id, subject_label, score, completed_at").eq("user_id", userId).order("completed_at", { ascending: false }).limit(50);
-    if (data?.length) return data.map((row) => ({ id: String(row.id), subject: String(row.subject_label ?? "Quiz"), score: Number(row.score ?? 0), completedAt: String(row.completed_at) }));
+    const { data } = await revisionDbClient.from("quiz_attempts").select("id, quiz_ref, subject_label, score, total_questions, correct_answers, completed_at").eq("user_id", userId).order("completed_at", { ascending: false }).limit(50);
+    if (data?.length) {
+      const quizzes = await getAvailableQuizzes();
+      return data.map((row) => {
+        const quizRef = String(row.quiz_ref ?? "");
+        const quiz = quizzes.find((item) => item.id === quizRef);
+        return { id: String(row.id), quizRef: quizRef || undefined, subject: String(row.subject_label ?? "Quiz"), topic: quiz?.topic, score: Number(row.score ?? 0), totalQuestions: Number(row.total_questions ?? 0) || undefined, correctAnswers: Number(row.correct_answers ?? 0), completedAt: String(row.completed_at) };
+      });
+    }
   }
-  return readLocalAttempts();
+  return local;
 }
 
 export async function getAvailableQuizzes(): Promise<QuizItem[]> {

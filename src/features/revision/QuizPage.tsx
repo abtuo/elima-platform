@@ -83,8 +83,10 @@ export function QuizPage() {
     }
     try {
       await recordQuizCompletion({
+        userId: profile.id,
         quizRef: params.get("id") ?? "daily",
         subject,
+        topic: topic ?? undefined,
         score: Math.round((score / questions.length) * 100),
         totalQuestions: questions.length,
         correctAnswers: score,
