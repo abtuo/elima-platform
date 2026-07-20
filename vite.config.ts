@@ -22,7 +22,7 @@ const SERVER_ENV_KEYS = [
   "AZURE_OPENAI_API_KEY",
 ] as const;
 
-const LOCAL_API_HANDLERS = ["identity-bridge", "elima-profile", "activate-school", "elima-password-login", "elima-signup", "registration-request", "learning"] as const;
+const LOCAL_API_HANDLERS = ["identity-bridge", "elima-profile", "activate-school", "elima-password-login", "elima-signup", "auth-verification-request", "auth-password-reset", "registration-request", "learning"] as const;
 
 function localServerlessApis(enabled: boolean): Plugin {
   return {

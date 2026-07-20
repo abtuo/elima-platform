@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RegistrationPage } from "@/features/auth/RegistrationPage";
+import { ForgotPasswordPage } from "@/features/auth/ForgotPasswordPage";
 import { PublicWelcomePage } from "@/features/auth/PublicWelcomePage";
 import { ElimaOAuthCallbackPage, ElimaOAuthStartPage } from "@/features/auth/ElimaOAuthPages";
 import { ProtectedLayout, SpaceRedirect } from "@/app/layouts";
@@ -59,6 +60,7 @@ export function AppRouter() {
           <Route path="/" element={<EntryPage />} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/auth/inscription" element={<RegistrationPage />} />
+          <Route path="/auth/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
           <Route path="/auth/inscription-eleve" element={<Navigate to="/auth/inscription" replace />} />
           <Route path="/auth/elima/start" element={<ElimaOAuthStartPage />} />
           <Route path="/auth/elima/callback" element={<ElimaOAuthCallbackPage />} />

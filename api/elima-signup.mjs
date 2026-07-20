@@ -27,7 +27,7 @@ export default async function handler(request, response) {
       firstName: String(input.firstName ?? "").trim(),
       lastName: String(input.lastName ?? "").trim(),
       email,
-      phone,
+      phone: phone || String(input.verificationPhone ?? "").trim(),
       password: String(input.password ?? ""),
       role,
       schoolCode: String(input.schoolCode ?? "").trim(),
@@ -35,6 +35,10 @@ export default async function handler(request, response) {
       declaredSchoolName: String(input.declaredSchoolName ?? "").trim(),
       declaredSchoolCity: String(input.declaredSchoolCity ?? "").trim(),
       returnTo: "https://app.elima.ci/auth/elima/start",
+      verificationId: String(input.verificationId ?? ""),
+      verificationCode: String(input.verificationCode ?? ""),
+      verificationIdentifier: String(input.identifier ?? "").trim(),
+      verificationPhone: String(input.verificationPhone ?? phone).trim(),
     }),
   });
   const body = await upstream.json().catch(() => null);

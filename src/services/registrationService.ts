@@ -10,6 +10,9 @@ export type AccountRegistrationInput = {
   schoolLevel?: string;
   declaredSchoolName?: string;
   declaredSchoolCity?: string;
+  verificationPhone: string;
+  verificationId: string;
+  verificationCode: string;
 };
 
 async function readResponse(response: Response) {
@@ -18,7 +21,42 @@ async function readResponse(response: Response) {
     ok?: boolean;
     loginIdentifier?: string;
     session?: { access_token: string; refresh_token?: string; expires_in?: number } | null;
+    challengeId?: string | null;
+    expiresIn?: number;
   } | null;
+}
+
+export async function requestRegistrationCode(input: { identifier: string; phone: string }) {
+  const response = await fetch("/api/auth-verification-request", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const body = await readResponse(response);
+  if (!response.ok || !body?.challengeId) throw new Error(body?.message ?? "Envoi du code impossible.");
+  return { challengeId: body.challengeId, expiresIn: body.expiresIn ?? 600 };
+}
+
+export async function requestPasswordResetCode(input: { identifier: string; phone: string }) {
+  const response = await fetch("/api/auth-password-reset", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "request", ...input }),
+  });
+  const body = await readResponse(response);
+  if (!response.ok) throw new Error(body?.message ?? "Demande impossible.");
+  return { challengeId: body?.challengeId ?? null, expiresIn: body?.expiresIn ?? 600 };
+}
+
+export async function confirmPasswordReset(input: { identifier: string; phone: string; challengeId: string; code: string; password: string }) {
+  const response = await fetch("/api/auth-password-reset", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "confirm", ...input }),
+  });
+  const body = await readResponse(response);
+  if (!response.ok) throw new Error(body?.message ?? "Réinitialisation impossible.");
+  return body;
 }
 
 export async function registerElimaAccount(input: AccountRegistrationInput) {

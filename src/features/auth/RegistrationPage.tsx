@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, BriefcaseBusiness, CheckCircle2, GraduationCap, School, UsersRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, BriefcaseBusiness, CheckCircle2, GraduationCap, KeyRound, School, UsersRound } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ElimaLogo } from "@/components/common/ElimaLogo";
 import { completeElimaIdentitySession, signInWithElimaPassword } from "@/services/elimaIdentityService";
-import { registerElimaAccount, submitSchoolRegistrationRequest, type RegistrationRole } from "@/services/registrationService";
+import { registerElimaAccount, requestRegistrationCode, submitSchoolRegistrationRequest, type RegistrationRole } from "@/services/registrationService";
 import { STUDENT_CLASS_OPTIONS } from "@/constants/studentClasses";
 
 const roles: Array<{ id: RegistrationRole; title: string; description: string; icon: typeof School }> = [
@@ -19,14 +19,32 @@ const levels = STUDENT_CLASS_OPTIONS;
 export function RegistrationPage() {
   const navigate = useNavigate();
   const [role, setRole] = useState<RegistrationRole | null>(null);
-  const [form, setForm] = useState({ firstName: "", lastName: "", identifier: "", password: "", confirmPassword: "", schoolCode: "", schoolLevel: "", declaredSchoolName: "", declaredSchoolCity: "", schoolName: "", schoolCity: "", jobTitle: "", studentCount: "" });
+  const [form, setForm] = useState({ firstName: "", lastName: "", identifier: "", verificationPhone: "", password: "", confirmPassword: "", schoolCode: "", schoolLevel: "", declaredSchoolName: "", declaredSchoolCity: "", schoolName: "", schoolCity: "", jobTitle: "", studentCount: "" });
+  const [verification, setVerification] = useState({ challengeId: "", code: "" });
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [requestSent, setRequestSent] = useState(false);
 
-  const update = (name: keyof typeof form, value: string) => setForm((current) => ({ ...current, [name]: value }));
+  const update = (name: keyof typeof form, value: string) => {
+    setForm((current) => ({ ...current, [name]: value }));
+    if (name === "identifier" || name === "verificationPhone") setVerification({ challengeId: "", code: "" });
+  };
   const requiresSchoolCode = role === "school_staff" || role === "teacher" || role === "parent";
+  const verificationPhone = form.identifier.includes("@") ? form.verificationPhone : form.identifier;
+
+  async function sendVerificationCode() {
+    setError("");
+    setLoading(true);
+    try {
+      const result = await requestRegistrationCode({ identifier: form.identifier, phone: verificationPhone });
+      setVerification({ challengeId: result.challengeId, code: "" });
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Envoi du code impossible.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -48,9 +66,11 @@ export function RegistrationPage() {
     if (form.password.length < 8) return setError("Le mot de passe doit contenir au moins 8 caractères.");
     if (form.password !== form.confirmPassword) return setError("Les deux mots de passe ne correspondent pas.");
     if (requiresSchoolCode && form.schoolCode.replace(/[^A-Za-z0-9]/g, "").length < 6) return setError("Saisissez le code remis par votre établissement.");
+    if (!verification.challengeId) return sendVerificationCode();
+    if (!/^\d{6}$/.test(verification.code)) return setError("Saisissez le code à 6 chiffres reçu sur WhatsApp.");
     setLoading(true);
     try {
-      const registration = await registerElimaAccount({ role, firstName: form.firstName, lastName: form.lastName, identifier: form.identifier, password: form.password, schoolCode: requiresSchoolCode ? form.schoolCode : undefined, schoolLevel: role === "student" ? form.schoolLevel : undefined, declaredSchoolName: role === "student" ? form.declaredSchoolName : undefined, declaredSchoolCity: role === "student" ? form.declaredSchoolCity : undefined });
+      const registration = await registerElimaAccount({ role, firstName: form.firstName, lastName: form.lastName, identifier: form.identifier, password: form.password, schoolCode: requiresSchoolCode ? form.schoolCode : undefined, schoolLevel: role === "student" ? form.schoolLevel : undefined, declaredSchoolName: role === "student" ? form.declaredSchoolName : undefined, declaredSchoolCity: role === "student" ? form.declaredSchoolCity : undefined, verificationPhone, verificationId: verification.challengeId, verificationCode: verification.code });
       if (registration.session?.access_token) await completeElimaIdentitySession(registration.session);
       else await signInWithElimaPassword(registration.loginIdentifier ?? form.identifier, form.password, { recentSignup: true });
       navigate(role === "student" ? "/student/reviser" : "/", { replace: true });
@@ -82,12 +102,14 @@ export function RegistrationPage() {
 
             <div className="mt-7 grid gap-4 sm:grid-cols-2"><Field label="Prénom" value={form.firstName} onChange={(value) => update("firstName", value)} required /><Field label="Nom" value={form.lastName} onChange={(value) => update("lastName", value)} required /></div>
             <div className="mt-4"><Field label="Email ou téléphone" value={form.identifier} onChange={(value) => update("identifier", value)} placeholder="nom@exemple.ci ou +225..." required /></div>
+            {role !== "school_head" && form.identifier.includes("@") ? <div className="mt-4"><Field label="Numéro WhatsApp de vérification" value={form.verificationPhone} onChange={(value) => update("verificationPhone", value)} placeholder="+225..." required hint="Format international" /></div> : null}
 
             {role === "school_head" ? <div className="mt-4 grid gap-4 sm:grid-cols-2"><Field label="Nom de l’établissement" value={form.schoolName} onChange={(value) => update("schoolName", value)} required /><Field label="Ville" value={form.schoolCity} onChange={(value) => update("schoolCity", value)} required /><Field label="Fonction" value={form.jobTitle} onChange={(value) => update("jobTitle", value)} placeholder="Directeur, proviseur…" /><Field label="Nombre approximatif d’élèves" type="number" value={form.studentCount} onChange={(value) => update("studentCount", value)} /></div> : <><div className="mt-4 grid gap-4 sm:grid-cols-2"><Field label="Mot de passe" type="password" value={form.password} onChange={(value) => update("password", value)} required hint="8 caractères minimum" /><Field label="Confirmer le mot de passe" type="password" value={form.confirmPassword} onChange={(value) => update("confirmPassword", value)} required /></div>{requiresSchoolCode ? <div className="mt-4 rounded-2xl bg-primary/[.05] p-4"><Field label="Code école" value={form.schoolCode} onChange={(value) => update("schoolCode", value.toUpperCase())} placeholder="EX. ECOLE-A1B2" required /><p className="mt-2 text-xs leading-5 text-gray-500">Ce code est fourni par le chef d’établissement ou l’administration de l’école.</p></div> : null}{role === "student" ? <div className="mt-4 space-y-4 rounded-2xl bg-revision/[.04] p-4"><label className="block"><span className="mb-2 block text-sm font-semibold text-gray-700">Classe / niveau</span><select value={form.schoolLevel} onChange={(event) => update("schoolLevel", event.target.value)} required className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none focus:border-revision"><option value="">Choisir</option>{levels.map((level) => <option key={level}>{level}</option>)}</select></label><div className="grid gap-3 sm:grid-cols-2"><Field label="Nom de mon école (facultatif)" value={form.declaredSchoolName} onChange={(value) => update("declaredSchoolName", value)} /><Field label="Ville (facultatif)" value={form.declaredSchoolCity} onChange={(value) => update("declaredSchoolCity", value)} /></div></div> : null}</>}
 
             <label className="mt-5 flex items-start gap-3 text-xs leading-5 text-gray-500"><input type="checkbox" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-primary" /><span>J’accepte les conditions d’utilisation et la politique de confidentialité d’Elima.</span></label>
+            {verification.challengeId ? <div className="mt-5 rounded-2xl border border-primary/15 bg-primary/[.04] p-4"><div className="flex items-center gap-2 text-sm font-semibold text-primary"><KeyRound className="h-4 w-4" />Vérification WhatsApp</div><p className="mt-2 text-xs leading-5 text-gray-500">Un code à 6 chiffres a été envoyé au {verificationPhone}. Il expire dans 10 minutes.</p><input value={verification.code} onChange={(event) => setVerification((current) => ({ ...current, code: event.target.value.replace(/\D/g, "").slice(0, 6) }))} inputMode="numeric" autoComplete="one-time-code" placeholder="000000" className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-center text-xl font-bold tracking-[.35em] outline-none focus:border-primary" /><button type="button" disabled={loading} onClick={sendVerificationCode} className="mt-3 text-xs font-semibold text-primary disabled:opacity-50">Renvoyer un code</button></div> : null}
             {error ? <p role="alert" className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-danger">{error}</p> : null}
-            <button disabled={loading} className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary/20 disabled:opacity-60">{loading ? "Envoi…" : role === "school_head" ? "Envoyer ma demande" : <>Créer mon compte <ArrowRight className="h-4 w-4" /></>}</button>
+            <button disabled={loading} className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary/20 disabled:opacity-60">{loading ? "Envoi…" : role === "school_head" ? "Envoyer ma demande" : verification.challengeId ? <>Vérifier et créer mon compte <ArrowRight className="h-4 w-4" /></> : <>Recevoir mon code <ArrowRight className="h-4 w-4" /></>}</button>
           </form>
         )}
       </section>
