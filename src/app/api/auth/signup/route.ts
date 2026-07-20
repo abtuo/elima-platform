@@ -4,6 +4,7 @@ import { env } from "@/lib/env";
 import { sendNotificationEmail } from "@/lib/email";
 import { checkSchoolFeature } from "@/lib/plans-server";
 import { createHash } from "node:crypto";
+import { AuthVerificationError, consumeAuthChallenge, normalizeVerificationPhone, verifyAuthCode } from "@/lib/auth-verification";
 
 const DEFAULT_COUNTRY = "Côte d'Ivoire";
 
@@ -47,6 +48,10 @@ export async function POST(request: Request) {
     declaredSchoolCity?: string;
     returnTo?: string;
     schoolCode?: string;
+    verificationId?: string;
+    verificationCode?: string;
+    verificationIdentifier?: string;
+    verificationPhone?: string;
   };
 
   const firstName = String(body?.firstName ?? "").trim();
@@ -55,11 +60,16 @@ export async function POST(request: Request) {
   const password = String(body?.password ?? "");
   const role = body?.role ?? null;
   const schoolName = String(body?.schoolName ?? "").trim();
-  const phone = String(body?.phone ?? "").trim();
+  const rawPhone = String(body?.verificationPhone ?? body?.phone ?? "").trim();
+  let phone: string;
+  try {
+    phone = normalizeVerificationPhone(rawPhone);
+  } catch (phoneError) {
+    return NextResponse.json({ message: phoneError instanceof Error ? phoneError.message : "Numéro WhatsApp invalide." }, { status: 400 });
+  }
   const city = String(body?.city ?? "").trim();
   const schoolCode = String(body?.schoolCode ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 
-  const isStandaloneStudent = role === "STUDENT";
   const isSchoolHead = role === "SCHOOL_ADMIN";
   const isSchoolMember = role === "SCHOOL_STAFF" || role === "TEACHER" || role === "PARENT";
   if (!firstName || !lastName || !email || !password || !role || (isSchoolHead && !schoolName) || (isSchoolMember && schoolCode.length < 6)) {
@@ -85,6 +95,19 @@ export async function POST(request: Request) {
       },
       { status: 401 },
     );
+  }
+  try {
+    const challengeId = await verifyAuthCode({
+      challengeId: String(body?.verificationId ?? ""),
+      identifier: String(body?.verificationIdentifier ?? email),
+      phone,
+      code: String(body?.verificationCode ?? ""),
+      purpose: "signup",
+    });
+    await consumeAuthChallenge(challengeId);
+  } catch (verificationError) {
+    const status = verificationError instanceof AuthVerificationError ? verificationError.status : 400;
+    return NextResponse.json({ message: verificationError instanceof Error ? verificationError.message : "Vérification requise." }, { status });
   }
   const fullName = `${firstName} ${lastName}`.trim();
 

@@ -17,6 +17,8 @@ const envSchema = z.object({
   TWILIO_ACCOUNT_SID: optionalNonEmptyString(),
   TWILIO_AUTH_TOKEN: optionalNonEmptyString(),
   TWILIO_WHATSAPP_FROM: optionalNonEmptyString(),
+  TWILIO_WHATSAPP_AUTH_CONTENT_SID: optionalNonEmptyString(),
+  AUTH_OTP_SECRET: optionalNonEmptyString(),
   WHATSAPP_PROVIDER: z.enum(["azure", "twilio"]).optional(),
   ACS_ENDPOINT: optionalNonEmptyString().pipe(z.string().url().optional()),
   ACS_ACCESS_KEY: optionalNonEmptyString(),

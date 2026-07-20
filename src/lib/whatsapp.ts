@@ -97,6 +97,43 @@ export async function sendWhatsAppWelcome(params: { to: string }): Promise<Whats
   return sendWhatsAppTemplate({ to: params.to, templateName, language });
 }
 
+/** En production, Twilio exige un template Authentication approuve hors de la fenetre de 24 h. */
+export async function sendWhatsAppAuthenticationCode(params: { to: string; code: string }): Promise<WhatsAppSendResult> {
+  const provider = activeProvider();
+  if (provider === "twilio" && env.TWILIO_WHATSAPP_AUTH_CONTENT_SID) {
+    try {
+      const client = twilio(requireServerEnv("TWILIO_ACCOUNT_SID"), requireServerEnv("TWILIO_AUTH_TOKEN"));
+      const from = requireServerEnv("TWILIO_WHATSAPP_FROM");
+      const to = normalizeWhatsAppPhone(params.to);
+      const result = await client.messages.create({
+        from: from.startsWith("whatsapp:") ? from : `whatsapp:${from}`,
+        to: `whatsapp:${to}`,
+        contentSid: env.TWILIO_WHATSAPP_AUTH_CONTENT_SID,
+        contentVariables: JSON.stringify({ "1": params.code }),
+      });
+      return { ok: true, status: "SENT", provider: "twilio", sid: result.sid };
+    } catch (error) {
+      return { ok: false, status: "FAILED", provider: "twilio", reason: twilioErrorMessage(error) };
+    }
+  }
+
+  if (env.APP_ENV === "production") {
+    return {
+      ok: false,
+      status: "FAILED",
+      provider: provider ?? undefined,
+      reason: provider === "twilio"
+        ? "Template OTP WhatsApp Twilio non configure (TWILIO_WHATSAPP_AUTH_CONTENT_SID)."
+        : "Template OTP WhatsApp de production non configure.",
+    };
+  }
+
+  return sendWhatsAppMessage({
+    to: params.to,
+    body: `Elima : votre code de verification est ${params.code}. Il expire dans 10 minutes. Ne le partagez jamais.`,
+  });
+}
+
 export async function sendWhatsAppMessage(params: { to: string; body: string }): Promise<WhatsAppSendResult> {
   const provider = activeProvider();
   if (!provider) {
