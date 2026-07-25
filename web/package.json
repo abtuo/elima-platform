@@ -1,0 +1,55 @@
+{
+  "name": "elima.tech",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "node --import tsx --test src/lib/__tests__",
+    "test:whatsapp": "tsx scripts/test-whatsapp.ts",
+    "seed": "tsx scripts/seed.ts",
+    "seed:reset": "tsx scripts/seed.ts --reset",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "reset:demo": "tsx scripts/reset-demo.ts",
+    "demo:refresh": "npm run reset:demo && npm run seed:demo",
+    "seed:store": "tsx scripts/seed-store-demo.ts",
+    "seed:demo-attendance": "tsx scripts/seed-demo-attendance.ts"
+  },
+  "dependencies": {
+    "@azure-rest/communication-messages": "^2.0.0",
+    "@azure/core-auth": "^1.10.1",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.98.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.575.0",
+    "next": "^16.2.0",
+    "pdf-lib": "^1.17.1",
+    "pdf2json": "^4.0.2",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "resend": "^6.10.0",
+    "twilio": "^5.12.2",
+    "xlsx": "^0.18.5",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^10.4.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
+    "dotenv": "^17.4.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  }
+}
