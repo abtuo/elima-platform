@@ -23,6 +23,7 @@ const SUBJECTS = [
   "EPS",
 ];
 const FIRST_NAMES = ["Koffi", "Aminata", "Yao", "Fatou", "Mamadou", "Adjoua", "Kouassi", "Binta", "Ibrahim", "Akissi", "Sékou", "Mariam"];
+const MIDDLE_NAMES = ["Armel", "Grâce", "Jean", "Aïcha", "Marc", "Estelle", "Ismaël", "Diane", "Paul", "Olga", "Alain", "Rosine"];
 const LAST_NAMES = ["Koné", "Traoré", "Yao", "Diallo", "Ouattara", "Kouamé", "Touré", "Camara", "Sangaré", "Bamba", "N'Guessan", "Tuo"];
 const CURRENT_EVALUATION_DATES = ["2025-09-18", "2025-10-16", "2025-11-20", "2025-12-11", "2026-01-22", "2026-02-19", "2026-03-19", "2026-04-23", "2026-05-21", "2026-06-20"];
 const PREVIOUS_EVALUATION_DATES = ["2024-09-19", "2024-10-17", "2024-11-21", "2024-12-12", "2025-01-23", "2025-02-20", "2025-03-20", "2025-04-24", "2025-05-22", "2025-06-19"];
@@ -94,7 +95,7 @@ function isMissingRelationError(error: { code?: string; message?: string } | nul
 }
 
 function targetCount(level: string, index: number, principal: boolean) {
-  const base = level.includes("Terminale") ? 14 : level.includes("1ère") ? 16 : level.includes("2nde") ? 18 : level.includes("3ème") ? 20 : 22;
+  const base = level.includes("Terminale") ? 10 : level.includes("1ère") ? 11 : level.includes("2nde") ? 12 : level.includes("3ème") ? 12 : 13;
   return base + ((index + (principal ? 2 : 0)) % 4);
 }
 
@@ -108,38 +109,75 @@ function stableNoise(...values: Array<string | number>) {
 }
 
 async function createAuthUser(admin: SupabaseClient, account: Account) {
+  const authUrl = requireEnv("SUPABASE_URL").replace(/\/+$/, "");
+  const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+  const usesModernSecret = serviceKey.startsWith("sb_secret_");
+  const modernAuthRequest = async (path: string, method: string, body: Record<string, unknown>) => {
+    const response = await fetch(`${authUrl}/auth/v1/admin${path}`, {
+      method,
+      headers: {
+        apikey: serviceKey,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    const payload = (await response.json().catch(() => ({}))) as { id?: string; message?: string; msg?: string };
+    if (!response.ok) {
+      throw new Error(payload.message ?? payload.msg ?? `Auth Admin HTTP ${response.status}`);
+    }
+    return payload;
+  };
+
   const existing = await admin.from("users").select("id").eq("email", account.email).maybeSingle();
   if (existing.data?.id) {
     const userId = String(existing.data.id);
     const metadata = { role: account.role, school_id: account.schoolId, full_name: account.fullName };
-    const { error: authUpdateError } = await admin.auth.admin.updateUserById(userId, { user_metadata: metadata });
-    if (authUpdateError) throw authUpdateError;
+    if (usesModernSecret) {
+      await modernAuthRequest(`/users/${userId}`, "PUT", { user_metadata: metadata });
+    } else {
+      const { error: authUpdateError } = await admin.auth.admin.updateUserById(userId, { user_metadata: metadata });
+      if (authUpdateError) throw authUpdateError;
+    }
     const { error: profileUpdateError } = await admin.from("users").update({ school_id: account.schoolId, role: account.role, full_name: account.fullName } as never).eq("id", userId);
     if (profileUpdateError) throw profileUpdateError;
     return userId;
   }
 
-  const { data, error } = await admin.auth.admin.createUser({
-    email: account.email,
-    password: DEMO_PASSWORD,
-    email_confirm: true,
-    user_metadata: {
-      role: account.role,
-      school_id: account.schoolId,
-      full_name: account.fullName,
-    },
-  });
-  if (error || !data.user?.id) throw new Error(`auth ${account.email}: ${error?.message ?? "missing user"}`);
+  const metadata = {
+    role: account.role,
+    school_id: account.schoolId,
+    full_name: account.fullName,
+  };
+  let userId: string | undefined;
+  if (usesModernSecret) {
+    const created = await modernAuthRequest("/users", "POST", {
+      email: account.email,
+      password: DEMO_PASSWORD,
+      email_confirm: true,
+      user_metadata: metadata,
+    });
+    userId = created.id;
+  } else {
+    const { data, error } = await admin.auth.admin.createUser({
+      email: account.email,
+      password: DEMO_PASSWORD,
+      email_confirm: true,
+      user_metadata: metadata,
+    });
+    if (error) throw error;
+    userId = data.user?.id;
+  }
+  if (!userId) throw new Error(`auth ${account.email}: missing user`);
 
   const { error: upsertErr } = await admin.from("users").upsert({
-    id: data.user.id,
+    id: userId,
     email: account.email,
     school_id: account.schoolId,
     role: account.role,
     full_name: account.fullName,
   } as never);
   if (upsertErr) throw upsertErr;
-  return data.user.id;
+  return userId;
 }
 
 async function ensureTeacher(admin: SupabaseClient, schoolId: string, userId: string, subject: string) {
@@ -168,6 +206,13 @@ async function seedSchoolStructure(admin: SupabaseClient, school: (typeof DEMO_S
     is_demo: true,
     demo_slug: school.slug,
   } as never);
+  await insertOptional(admin, "academic_years", [{
+    school_id: school.id,
+    label: DEMO_ACADEMIC_YEAR,
+    start_date: "2025-09-01",
+    end_date: "2026-06-30",
+    is_current: true,
+  }]);
 
   const termRows = [
     ["Trimestre 1", "2025-09-01", "2025-12-19"],
@@ -283,41 +328,43 @@ async function seedTimetableEvents(
     });
   }
 
-  if (school.principal) {
-    await add({ teacherEmail: "enseignant.serge@elima.school", className: "6ème B", subjectName: "Mathématiques", date: "2026-06-22", start: "08:00", end: "09:30", room: "Salle A12" });
-    await add({ teacherEmail: "enseignant.serge@elima.school", className: "5ème A", subjectName: "Mathématiques", date: "2026-06-22", start: "14:00", end: "15:30", room: "Salle A12" });
-    await add({ teacherEmail: "enseignant.serge@elima.school", className: "6ème B", subjectName: "Mathématiques", date: "2026-06-23", start: "10:00", end: "11:30", room: "Salle A12" });
-    await add({ teacherEmail: "enseignant.serge@elima.school", className: "6ème B", subjectName: "Mathématiques", date: "2026-06-25", start: "08:00", end: "09:30", room: "Salle A12" });
-    await add({ teacherEmail: "enseignant.serge@elima.school", className: "3ème A", subjectName: "Mathématiques", date: "2026-06-25", start: "11:00", end: "12:30", room: "Salle C01" });
-    await add({ teacherEmail: "enseignant.serge@elima.school", className: "6ème A", subjectName: "Mathématiques", date: "2026-06-26", start: "08:00", end: "09:30", room: "Salle A12" });
+  await add({ teacherEmail: "enseignant.maths.01@demo.elima.invalid", className: "6ème B", subjectName: "Mathématiques", date: "2026-09-14", start: "08:00", end: "09:30", room: "Salle A12" });
+  await add({ teacherEmail: "enseignant.maths.01@demo.elima.invalid", className: "5ème A", subjectName: "Mathématiques", date: "2026-09-14", start: "14:00", end: "15:30", room: "Salle A12" });
+  await add({ teacherEmail: "enseignant.maths.02@demo.elima.invalid", className: "3ème A", subjectName: "Mathématiques", date: "2026-09-15", start: "10:00", end: "11:30", room: "Salle C01" });
+  await add({ teacherEmail: "enseignant.francais.01@demo.elima.invalid", className: "6ème A", subjectName: "Français", date: "2026-09-15", start: "08:00", end: "09:30", room: "Salle B06" });
+  await add({ teacherEmail: "enseignant.francais.02@demo.elima.invalid", className: "5ème B", subjectName: "Français", date: "2026-09-16", start: "10:00", end: "11:30", room: "Salle B06" });
+  await add({ teacherEmail: "enseignant.svt.01@demo.elima.invalid", className: "4ème A", subjectName: "SVT", date: "2026-09-16", start: "14:00", end: "15:30", room: "Laboratoire 2" });
+  await add({ teacherEmail: "enseignant.physique.01@demo.elima.invalid", className: "2nde C1", subjectName: "Physique-Chimie", date: "2026-09-17", start: "09:45", end: "11:15", room: "Laboratoire 1" });
+  await add({ teacherEmail: "enseignant.anglais.01@demo.elima.invalid", className: "1ère D", subjectName: "Anglais", date: "2026-09-17", start: "15:45", end: "17:00", room: "Salle B04" });
+  await add({ teacherEmail: "enseignant.philo.01@demo.elima.invalid", className: "Terminale D", subjectName: "Philosophie", date: "2026-09-18", start: "08:00", end: "09:30", room: "Salle D02" });
 
-    await add({ teacherEmail: "teacher.abidjan@seed-elima.invalid", className: "6ème A", subjectName: "Français", date: "2026-06-22", start: "10:00", end: "11:30", room: "Salle B06" });
-    await add({ teacherEmail: "teacher.abidjan@seed-elima.invalid", className: "5ème B", subjectName: "Français", date: "2026-06-24", start: "08:00", end: "09:30", room: "Salle B06" });
-    await add({ teacherEmail: "teacher.abidjan@seed-elima.invalid", className: "6ème B", subjectName: "Français", date: "2026-06-25", start: "10:00", end: "11:30", room: "Salle B06" });
-
-    await add({ teacherEmail: "enseignant.nadia@elima.school", className: "3ème A", subjectName: "Français", date: "2026-06-23", start: "14:00", end: "15:30", room: "Salle C01" });
-    await add({ teacherEmail: "enseignant.nadia@elima.school", className: "3ème A", subjectName: "SVT", date: "2026-06-25", start: "14:00", end: "15:30", room: "Salle D04" });
-    await add({ teacherEmail: "enseignant.nadia@elima.school", className: "4ème A", subjectName: "Français", date: "2026-06-26", start: "10:00", end: "11:30", room: "Salle C01" });
-
-    await add({ teacherEmail: "enseignant.karim@elima.school", className: "2nde C1", subjectName: "Physique-Chimie", date: "2026-06-25", start: "09:45", end: "11:15", room: "Laboratoire 1" });
-    await add({ teacherEmail: "enseignant.claire@elima.school", className: "1ère A", subjectName: "Anglais", date: "2026-06-25", start: "15:45", end: "17:00", room: "Salle B04" });
-  } else {
-    const teacher = Array.from(teacherIds.entries()).find(([email]) => email.includes("yamoussoukro"))?.[1];
-    const classId = classes[0]?.id;
-    const subjectId = subjects.get("Mathématiques");
-    if (teacher && classId && subjectId) {
-      await ensureTeachingAssignment(admin, classId, teacher, subjectId);
-      rows.push({
-        school_id: school.id,
-        class_id: classId,
-        teacher_id: teacher,
-        subject_id: subjectId,
-        starts_at: at("2026-06-25", "08:00"),
-        ends_at: at("2026-06-25", "09:30"),
-        room: "Salle A12",
+  const weekDates = ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18"];
+  const slots = [
+    ["08:00", "09:30"],
+    ["09:45", "11:15"],
+    ["13:30", "15:00"],
+    ["15:15", "16:45"],
+  ] as const;
+  const teacherPool = Array.from(teacherIds.values());
+  const subjectPool = Array.from(subjects.values());
+  classes.forEach((cls, classIndex) => {
+    weekDates.forEach((date, dayIndex) => {
+      slots.forEach(([start, end], slotIndex) => {
+        const teacherId = teacherPool[(classIndex + dayIndex + slotIndex) % teacherPool.length];
+        const subjectId = subjectPool[(classIndex * 2 + dayIndex + slotIndex) % subjectPool.length];
+        if (!teacherId || !subjectId) return;
+        rows.push({
+          school_id: school.id,
+          class_id: cls.id,
+          teacher_id: teacherId,
+          subject_id: subjectId,
+          starts_at: at(date, start),
+          ends_at: at(date, end),
+          room: cls.name.replace(/\s+/g, "-"),
+        });
       });
-    }
-  }
+    });
+  });
 
   if (rows.length > 0) {
     await admin.from("timetable_events").insert(rows as never);
@@ -326,13 +373,14 @@ async function seedTimetableEvents(
 
 async function seedStudents(admin: SupabaseClient, school: (typeof DEMO_SCHOOLS)[number], classes: ClassRow[], userIds: Map<string, string>) {
   const students = new Map<string, StudentRow>();
+  const linkedStudentIds = new Set<string>();
   const portalStudents = school.principal
     ? [
-        { fullName: "Awa Koné", className: "6ème B", email: "eleve.awa@elima.school", parentEmail: "parent.mariam@elima.school", parentName: "Mariam Koné" },
-        { fullName: "Yao Kouamé", className: "6ème B", email: "eleve.yao@elima.school", parentEmail: "parent.jean@elima.school", parentName: "Jean Kouamé" },
-        { fullName: "Lina Traoré", className: "3ème A", email: "eleve.lina@elima.school", parentEmail: "parent.aminata@elima.school", parentName: "Aminata Traoré" },
-        { fullName: "Eli Tuo", className: "6ème B", email: "eleve.eli@elima.school", parentEmail: "parent.aboubacar@elima.school", parentName: "Aboubacar Tuo" },
-        { fullName: "Kader Koné", className: "Terminale C", email: "eleve.kader@elima.school", parentName: "M. Moussa Koné" },
+        { fullName: "Awa Koné", className: "6ème B", email: "eleve.awa@demo.elima.invalid", parentEmail: "parent.multi@demo.elima.invalid", parentName: "Parent Démo Multi-enfant" },
+        { fullName: "Yao Kouamé", className: "6ème B", email: "eleve.yao@demo.elima.invalid", parentEmail: "parent.simple.03@demo.elima.invalid", parentName: "Parent Démo Yao" },
+        { fullName: "Lina Traoré", className: "3ème A", email: "eleve.lina@demo.elima.invalid", parentEmail: "parent.multi@demo.elima.invalid", parentName: "Parent Démo Multi-enfant" },
+        { fullName: "Eli Tuo", className: "6ème B", email: "eleve.eli@demo.elima.invalid", parentEmail: "parent.simple.02@demo.elima.invalid", parentName: "Parent Démo Eli" },
+        { fullName: "Kader Koné", className: "Terminale C", email: "eleve.kader@demo.elima.invalid", parentEmail: "parent.simple.01@demo.elima.invalid", parentName: "Parent Démo Kader" },
       ]
     : [];
   const named = [
@@ -367,20 +415,35 @@ async function seedStudents(admin: SupabaseClient, school: (typeof DEMO_SCHOOLS)
 
     if (parentEmail) {
       const parentUserId = userIds.get(parentEmail) ?? null;
-      const { data: parent, error: parentErr } = await admin
+      const { data: existingParent, error: lookupError } = await admin
         .from("parents")
-        .insert({ school_id: school.id, user_id: parentUserId, email: parentEmail, full_name: item.parentName, phone: "+2250700000000" } as never)
         .select("id")
-        .single();
-      if (parentErr || !parent) throw parentErr;
-      await admin.from("student_parents").insert({ student_id: (data as StudentRow).id, parent_id: (parent as { id: string }).id, relationship: "parent" } as never);
+        .eq("school_id", school.id)
+        .eq("email", parentEmail)
+        .maybeSingle();
+      if (lookupError) throw lookupError;
+      let parentId = (existingParent as { id?: string } | null)?.id;
+      if (!parentId) {
+        const { data: parent, error: parentErr } = await admin
+          .from("parents")
+          .insert({ school_id: school.id, user_id: parentUserId, email: parentEmail, full_name: item.parentName, phone: "+2250700000000" } as never)
+          .select("id")
+          .single();
+        if (parentErr || !parent) throw parentErr;
+        parentId = (parent as { id: string }).id;
+      }
+      await admin.from("student_parents").upsert(
+        { student_id: (data as StudentRow).id, parent_id: parentId, relationship: "parent" } as never,
+        { onConflict: "student_id,parent_id" },
+      );
+      linkedStudentIds.add((data as StudentRow).id);
     }
   }
 
   for (const [index, cls] of classes.entries()) {
     const already = Array.from(students.values()).filter((s) => s.class_id === cls.id).length;
     for (let i = already; i < targetCount(cls.level, index, school.principal); i += 1) {
-      const fullName = `${FIRST_NAMES[(i + index) % FIRST_NAMES.length]} ${LAST_NAMES[(i * 2 + index) % LAST_NAMES.length]}`;
+      const fullName = `${FIRST_NAMES[(i + index) % FIRST_NAMES.length]} ${MIDDLE_NAMES[(i * 3 + index) % MIDDLE_NAMES.length]} ${LAST_NAMES[(i * 2 + index) % LAST_NAMES.length]}`;
       const { data, error } = await admin
         .from("students")
         .insert({
@@ -396,6 +459,34 @@ async function seedStudents(admin: SupabaseClient, school: (typeof DEMO_SCHOOLS)
       students.set(fullName, data as StudentRow);
     }
   }
+
+  const unlinkedStudents = Array.from(students.values()).filter((student) => !linkedStudentIds.has(student.id));
+  const parentCount = Math.min(50, Math.ceil(unlinkedStudents.length / 2));
+  const parentRows = Array.from({ length: parentCount }, (_, index) => ({
+    school_id: school.id,
+    user_id: null,
+    email: `parent.fictif.${String(index + 1).padStart(2, "0")}@demo.elima.invalid`,
+    full_name: `Parent fictif ${String(index + 1).padStart(2, "0")}`,
+    phone: `+2250700${String(index + 1).padStart(6, "0")}`,
+  }));
+  const { data: generatedParents, error: generatedParentError } = await admin
+    .from("parents")
+    .insert(parentRows as never)
+    .select("id");
+  if (generatedParentError) throw generatedParentError;
+
+  const familyLinks: Array<{ student_id: string; parent_id: string; relationship: string }> = [];
+  (generatedParents as Array<{ id: string }> | null)?.forEach((parent, index) => {
+    const first = unlinkedStudents[index];
+    const second = unlinkedStudents[index + parentCount];
+    if (first) familyLinks.push({ student_id: first.id, parent_id: parent.id, relationship: "parent" });
+    if (second) familyLinks.push({ student_id: second.id, parent_id: parent.id, relationship: "parent" });
+  });
+  if (familyLinks.length) {
+    const { error: linkError } = await admin.from("student_parents").insert(familyLinks as never);
+    if (linkError) throw linkError;
+  }
+
   return students;
 }
 
@@ -782,6 +873,39 @@ async function seedAcademicSignals(admin: SupabaseClient, schoolId: string, clas
   await insertOptional(admin, "ai_insights", insightRows);
 }
 
+async function seedOperationalContent(
+  admin: SupabaseClient,
+  schoolId: string,
+  classes: ClassRow[],
+  subjects: Map<string, string>,
+  teacherIds: string[],
+) {
+  const subjectRows = Array.from(subjects.entries());
+  const homeworkRows = classes.flatMap((cls, classIndex) =>
+    [0, 1, 2].map((offset) => {
+      const [subjectName, subjectId] = subjectRows[(classIndex + offset) % subjectRows.length];
+      return {
+        school_id: schoolId,
+        class_id: cls.id,
+        subject_id: subjectId,
+        teacher_id: teacherIds[(classIndex + offset) % teacherIds.length] ?? null,
+        title: `${subjectName} — ${offset === 0 ? "devoir terminé" : offset === 1 ? "exercices à rendre" : "préparation du prochain cours"}`,
+        description: offset === 0 ? "Corrigé disponible en classe." : "Consignes fictives réservées à la démonstration.",
+        due_date: offset === 0 ? "2026-06-20" : offset === 1 ? "2026-09-21" : "2026-10-05",
+      };
+    }),
+  );
+  const { error: homeworkError } = await admin.from("homeworks").insert(homeworkRows as never);
+  if (homeworkError) throw homeworkError;
+
+  await insertOptional(admin, "documents", [
+    { school_id: schoolId, title: "Règlement intérieur", document_type: "administrative", storage_path: "demo/reglement-interieur.pdf", audience: "all" },
+    { school_id: schoolId, title: "Calendrier scolaire", document_type: "calendar", storage_path: "demo/calendrier-scolaire.pdf", audience: "all" },
+    { school_id: schoolId, title: "Guide des parents", document_type: "family", storage_path: "demo/guide-parents.pdf", audience: "parents" },
+    { school_id: schoolId, title: "Procédure de justification d'absence", document_type: "attendance", storage_path: "demo/justification-absence.pdf", audience: "all" },
+  ]);
+}
+
 async function seedDemoSupplyList(admin: SupabaseClient, schoolId: string, classes: ClassRow[]) {
   const cls = classes.find((c) => c.name === "6ème B");
   if (!cls) return;
@@ -876,11 +1000,12 @@ async function seedDemoSupplyList(admin: SupabaseClient, schoolId: string, class
 
 async function seedFinanceAndStore(admin: SupabaseClient, schoolId: string, students: Map<string, StudentRow>) {
   const feeRows = [
-    ["Awa Koné", 45000, "Frais de scolarité juin", false],
-    ["Yao Kouamé", 25000, "Cantine juin", false],
-    ["Lina Traoré", 30000, "Frais d'examen", true],
+    ["Awa Koné", 45000, "pending", 0],
+    ["Yao Kouamé", 25000, "partial", 10000],
+    ["Lina Traoré", 30000, "paid", 30000],
+    ["Eli Tuo", 35000, "late", 0],
   ] as const;
-  for (const [studentName, amount, , paid] of feeRows) {
+  for (const [studentName, amount, status, paidAmount] of feeRows) {
     const student = students.get(studentName);
     if (!student) continue;
     const { data: fee, error } = await admin
@@ -889,18 +1014,16 @@ async function seedFinanceAndStore(admin: SupabaseClient, schoolId: string, stud
       .select("id")
       .single();
     if (error || !fee) throw error;
-    if (paid) {
-      await admin.from("payments").insert({
-        school_id: schoolId,
-        student_id: student.id,
-        student_fee_id: (fee as { id: string }).id,
-        amount,
-        method: "cash",
-        status: "paid",
-        receipt_no: `DEMO-${student.id.slice(0, 8)}`,
-        paid_at: at("2026-06-18", "10:00"),
-      } as never);
-    }
+    await admin.from("payments").insert({
+      school_id: schoolId,
+      student_id: student.id,
+      student_fee_id: (fee as { id: string }).id,
+      amount: paidAmount,
+      method: status === "paid" ? "cash" : "mobile_money",
+      status,
+      receipt_no: status === "paid" ? `DEMO-${student.id.slice(0, 8)}` : null,
+      paid_at: status === "paid" || status === "partial" ? at("2026-09-18", "10:00") : null,
+    } as never);
   }
 
   const eli = students.get("Eli Tuo");
@@ -929,15 +1052,15 @@ async function createConversation(admin: SupabaseClient, params: { schoolId: str
 }
 
 async function seedMessages(admin: SupabaseClient, schoolId: string, students: Map<string, StudentRow>, userIds: Map<string, string>) {
-  const adminId = userIds.get("admin.abidjan@seed-elima.invalid")!;
-  const serge = userIds.get("enseignant.serge@elima.school")!;
-  const nadia = userIds.get("enseignant.nadia@elima.school")!;
-  const mariam = userIds.get("parent.mariam@elima.school")!;
-  const jean = userIds.get("parent.jean@elima.school")!;
-  const aminata = userIds.get("parent.aminata@elima.school")!;
-  const aboubacar = userIds.get("parent.aboubacar@elima.school")!;
-  const eliUser = userIds.get("eleve.eli@elima.school")!;
-  const linaUser = userIds.get("eleve.lina@elima.school")!;
+  const adminId = userIds.get("admin@demo.elima.invalid")!;
+  const serge = userIds.get("enseignant.maths.01@demo.elima.invalid")!;
+  const nadia = userIds.get("enseignant.francais.01@demo.elima.invalid")!;
+  const mariam = userIds.get("parent.multi@demo.elima.invalid")!;
+  const jean = userIds.get("parent.simple.03@demo.elima.invalid")!;
+  const aminata = userIds.get("parent.multi@demo.elima.invalid")!;
+  const aboubacar = userIds.get("parent.simple.02@demo.elima.invalid")!;
+  const eliUser = userIds.get("eleve.eli@demo.elima.invalid")!;
+  const linaUser = userIds.get("eleve.lina@demo.elima.invalid")!;
 
   await createConversation(admin, {
     schoolId,
@@ -1047,6 +1170,7 @@ async function main() {
     const students = await seedStudents(admin, school, classes, userIds);
     await seedAcademics(admin, school.id, classes, subjects, students, schoolTeacherIds.length ? schoolTeacherIds : Array.from(teacherIds.values()), currentTermId, { gradesHasTermId, termIds });
     await seedAcademicSignals(admin, school.id, classes, students);
+    await seedOperationalContent(admin, school.id, classes, subjects, schoolTeacherIds);
     if (school.principal) {
       await seedFinanceAndStore(admin, school.id, students);
       await seedDemoSupplyList(admin, school.id, classes);
@@ -1054,7 +1178,7 @@ async function main() {
     }
   }
 
-  console.log(`[seed:demo] Demo seeded for ${DEMO_SCHOOLS.length} school(s). Password: ${DEMO_PASSWORD}`);
+  console.log(`[seed:demo] Demo seeded for ${DEMO_SCHOOLS.length} school(s).`);
 }
 
 main().catch((error) => {

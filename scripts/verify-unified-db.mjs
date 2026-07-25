@@ -3,6 +3,7 @@ import { hasAnswerLetterAnchor } from "./lib/quiz-normalization.mjs";
 import { getTargetConfig, verifyServerKey } from "./lib/supabase-target.mjs";
 
 const expected = { quiz_sets: 4407, quiz_questions: 44070, quiz_answers: 176280 };
+const schemaOnly = process.argv.includes("--schema-only");
 const config = getTargetConfig();
 await verifyServerKey(config);
 const databaseUrl = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
@@ -36,10 +37,10 @@ try {
   const histories = await sql`
     select lower(u.email) as email, count(a.id)::int as attempts
     from auth.users u left join public.quiz_attempts a on a.user_id = u.id
-    where lower(u.email) in ('eleve.awa@elima.school','eleve.yao@elima.school','eleve.lina@elima.school','eleve.eli@elima.school')
+    where lower(u.email) in ('eleve.awa@demo.elima.invalid','eleve.yao@demo.elima.invalid','eleve.lina@demo.elima.invalid','eleve.eli@demo.elima.invalid')
     group by u.email order by u.email
   `;
-  if (histories.length !== 4 || histories.some((row) => row.attempts !== 6)) {
+  if (!schemaOnly && (histories.length !== 4 || histories.some((row) => row.attempts !== 6))) {
     throw new Error("L’historique de démonstration n’est pas complet.");
   }
 
@@ -49,6 +50,23 @@ try {
     group by tablename order by tablename
   `;
   if (policies.length !== 3 || policies.some((row) => row.count < 1)) throw new Error("Politiques RLS de messagerie incomplètes.");
+
+  const tenantFoundation = await sql`
+    select table_name
+    from information_schema.tables
+    where table_schema = 'public'
+      and table_name in ('school_memberships', 'enrollments', 'school_features', 'documents', 'student_prospects', 'school_join_codes', 'auth_verification_challenges')
+    order by table_name
+  `;
+  if (tenantFoundation.length !== 7) throw new Error("Le socle tenant unifié est incomplet.");
+  const buckets = await sql`
+    select id, public from storage.buckets
+    where id in ('documents', 'elima-files', 'exam-sources')
+    order by id
+  `;
+  if (buckets.length !== 3 || buckets.some((bucket) => bucket.public)) {
+    throw new Error("Les buckets unifiés doivent exister et rester privés.");
+  }
 
   async function visibleConversations(email) {
     const [actor] = await sql`select id, school_id, role from public.users where lower(email) = ${email}`;
@@ -61,24 +79,33 @@ try {
     });
   }
 
-  const teacherVisible = await visibleConversations("enseignant.serge@elima.school");
-  const forbiddenTeacherTypes = new Set(["payment_reminder", "store_order"]);
-  if (teacherVisible.some((conversation) => forbiddenTeacherTypes.has(conversation.type))) {
-    throw new Error("Un professeur peut voir une conversation financière ou boutique qui ne le concerne pas.");
-  }
-  const adminVisible = await visibleConversations("admin.abidjan@seed-elima.invalid");
-  const [schoolConversationCount] = await sql`
-    select count(*)::int as count from public.conversations
-    where school_id = 'a1111111-1111-4111-8111-111111110001'
-  `;
-  if (adminVisible.length !== schoolConversationCount.count) {
-    throw new Error("L’administrateur ne peut pas consulter toutes les conversations de son école.");
+  let messagingRls = null;
+  if (!schemaOnly) {
+    const teacherVisible = await visibleConversations("enseignant.maths.01@demo.elima.invalid");
+    const forbiddenTeacherTypes = new Set(["payment_reminder", "store_order"]);
+    if (teacherVisible.some((conversation) => forbiddenTeacherTypes.has(conversation.type))) {
+      throw new Error("Un professeur peut voir une conversation financière ou boutique qui ne le concerne pas.");
+    }
+    const adminVisible = await visibleConversations("admin@demo.elima.invalid");
+    const [schoolConversationCount] = await sql`
+      select count(*)::int as count from public.conversations
+      where school_id = 'a1111111-1111-4111-8111-111111110001'
+    `;
+    if (adminVisible.length !== schoolConversationCount.count) {
+      throw new Error("L’administrateur ne peut pas consulter toutes les conversations de son école.");
+    }
+    messagingRls = {
+      teacherVisible: teacherVisible.length,
+      teacherForbiddenTypes: 0,
+      adminVisible: adminVisible.length,
+      schoolConversations: schoolConversationCount.count,
+    };
   }
 
   console.log(JSON.stringify({ project: config.targetRef, counts, invalidAnswerStructures: 0,
     answerLetterAnchors: 0, demoHistories: histories, messagingPolicies: policies,
-    messagingRls: { teacherVisible: teacherVisible.length, teacherForbiddenTypes: 0,
-      adminVisible: adminVisible.length, schoolConversations: schoolConversationCount.count } }, null, 2));
+    tenantFoundation: tenantFoundation.map((row) => row.table_name),
+    privateBuckets: buckets.map((bucket) => bucket.id), messagingRls }, null, 2));
 } finally {
   await sql.end({ timeout: 5 });
 }

@@ -1,13 +1,13 @@
 import { createHash } from "node:crypto";
 import postgres from "postgres";
-import { getTargetConfig, verifyServerKey } from "./lib/supabase-target.mjs";
+import { assertDemoTarget, getTargetConfig, verifyServerKey } from "./lib/supabase-target.mjs";
 
 const demoStudents = [
-  { email: "eleve.awa@elima.school", scores: [72, 80, 86, 78, 92, 88] },
-  { email: "eleve.yao@elima.school", scores: [58, 64, 70, 76, 74, 82] },
-  { email: "eleve.lina@elima.school", scores: [84, 90, 88, 94, 92, 96] },
-  { email: "eleve.eli@elima.school", scores: [66, 72, 78, 80, 86, 90] },
-  { email: "eleve.kader@elima.school", scores: [74, 82, 78, 88, 84, 92] },
+  { email: "eleve.awa@demo.elima.invalid", scores: [72, 80, 86, 78, 92, 88] },
+  { email: "eleve.yao@demo.elima.invalid", scores: [58, 64, 70, 76, 74, 82] },
+  { email: "eleve.lina@demo.elima.invalid", scores: [84, 90, 88, 94, 92, 96] },
+  { email: "eleve.eli@demo.elima.invalid", scores: [66, 72, 78, 80, 86, 90] },
+  { email: "eleve.kader@demo.elima.invalid", scores: [74, 82, 78, 88, 84, 92] },
 ];
 const subjects = ["Mathématiques", "Français", "Anglais", "SVT", "Physique-Chimie", "Histoire-Géographie"];
 
@@ -19,6 +19,7 @@ function stableUuid(input) {
 }
 
 const config = getTargetConfig();
+assertDemoTarget(config);
 await verifyServerKey(config);
 const databaseUrl = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("SUPABASE_DB_URL est manquante.");

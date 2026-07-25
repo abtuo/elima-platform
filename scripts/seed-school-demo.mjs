@@ -1,10 +1,11 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getTargetConfig, verifyServerKey } from "./lib/supabase-target.mjs";
+import { assertDemoTarget, getTargetConfig, verifyServerKey } from "./lib/supabase-target.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const config = getTargetConfig();
+assertDemoTarget(config);
 await verifyServerKey(config);
 
 const tsxCli = path.join(root, "web", "node_modules", "tsx", "dist", "cli.mjs");

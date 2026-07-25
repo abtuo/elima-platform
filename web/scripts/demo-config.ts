@@ -1,65 +1,69 @@
-export const DEMO_PASSWORD = process.env.SEED_AUTH_PASSWORD || "ElimaSeed!2026";
+function requireDemoPassword() {
+  const password = process.env.SEED_AUTH_PASSWORD?.trim();
+  if (!password || password.length < 12) {
+    throw new Error(
+      "SEED_AUTH_PASSWORD doit contenir au moins 12 caractères et rester hors de Git.",
+    );
+  }
+  return password;
+}
+
+export const DEMO_PASSWORD = requireDemoPassword();
 export const DEMO_ACADEMIC_YEAR = "2025-2026";
 
 export const DEMO_SCHOOLS = [
   {
     id: "a1111111-1111-4111-8111-111111110001",
     slug: "college-moderne-abidjan-demo",
-    name: "Collège Moderne d'Abidjan",
+    name: "Collège Moderne Abidjan",
     city: "Abidjan",
     principal: true,
-  },
-  {
-    id: "a1111111-1111-4111-8111-111111110002",
-    slug: "institut-excellence-yamoussoukro-demo",
-    name: "Institut Excellence Yamoussoukro",
-    city: "Yamoussoukro",
-    principal: false,
   },
 ] as const;
 
 export const DEMO_SCHOOL_IDS = DEMO_SCHOOLS.map((school) => school.id);
 
 export const DEMO_ACCOUNTS = [
-  { email: "admin.abidjan@seed-elima.invalid", role: "SCHOOL_ADMIN", schoolId: DEMO_SCHOOLS[0].id, fullName: "Kouakou Léon Kobenan" },
-  { email: "teacher.abidjan@seed-elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Fatou Diabaté", subject: "Français" },
-  { email: "enseignant.serge@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Serge N'Guessan", subject: "Mathématiques" },
-  { email: "enseignant.nadia@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Nadia Bamba", subject: "Français" },
-  { email: "enseignant.karim@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Karim Coulibaly", subject: "Physique-Chimie" },
-  { email: "enseignant.mireille@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Mireille Assi", subject: "SVT" },
-  { email: "enseignant.ange@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Ange Koffi", subject: "Histoire-Géographie" },
-  { email: "enseignant.claire@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Claire Kouadio", subject: "Anglais" },
-  { email: "enseignant.jules@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Jules Amani", subject: "Philosophie" },
-  { email: "parent.mariam@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Mariam Koné" },
-  { email: "parent.jean@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Jean Kouamé" },
-  { email: "parent.aminata@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Aminata Traoré" },
-  { email: "parent.aboubacar@elima.school", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Aboubacar Tuo" },
-  { email: "eleve.awa@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Awa Koné" },
-  { email: "eleve.yao@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Yao Kouamé" },
-  { email: "eleve.lina@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Lina Traoré" },
-  { email: "eleve.eli@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Eli Tuo" },
-  { email: "eleve.kader@elima.school", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Kader Koné" },
-  { email: "admin.yamoussoukro@seed-elima.invalid", role: "SCHOOL_ADMIN", schoolId: DEMO_SCHOOLS[1].id, fullName: "Admin Institut Excellence Yamoussoukro" },
-  { email: "teacher.yamoussoukro@seed-elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[1].id, fullName: "Enseignant Institut Excellence Yamoussoukro", subject: "Mathématiques" },
-  { email: "enseignant.iey.francais@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[1].id, fullName: "Mme Aïcha Bakayoko", subject: "Français" },
-  { email: "enseignant.iey.svt@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[1].id, fullName: "M. Paul Kouassi", subject: "SVT" },
-  { email: "enseignant.iey.physique@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[1].id, fullName: "Mme Rosine Brou", subject: "Physique-Chimie" },
-  { email: "enseignant.iey.histoire@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[1].id, fullName: "M. Étienne Koffi", subject: "Histoire-Géographie" },
-  { email: "enseignant.iey.anglais@elima.school", role: "TEACHER", schoolId: DEMO_SCHOOLS[1].id, fullName: "Mme Grâce N'Dri", subject: "Anglais" },
+  { email: "direction@demo.elima.invalid", role: "SUPER_ADMIN", schoolId: DEMO_SCHOOLS[0].id, fullName: "Direction Démo" },
+  { email: "admin@demo.elima.invalid", role: "SCHOOL_ADMIN", schoolId: DEMO_SCHOOLS[0].id, fullName: "Administration Démo" },
+  { email: "comptable@demo.elima.invalid", role: "COMPTABLE", schoolId: DEMO_SCHOOLS[0].id, fullName: "Comptabilité Démo" },
+  { email: "enseignant.maths.01@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Serge N'Guessan", subject: "Mathématiques" },
+  { email: "enseignant.maths.02@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Estelle Yao", subject: "Mathématiques" },
+  { email: "enseignant.francais.01@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Nadia Bamba", subject: "Français" },
+  { email: "enseignant.francais.02@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Alain Kouassi", subject: "Français" },
+  { email: "enseignant.physique.01@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Karim Coulibaly", subject: "Physique-Chimie" },
+  { email: "enseignant.physique.02@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Rosine Brou", subject: "Physique-Chimie" },
+  { email: "enseignant.svt.01@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Mireille Assi", subject: "SVT" },
+  { email: "enseignant.svt.02@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Paul Kouamé", subject: "SVT" },
+  { email: "enseignant.histoire.01@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Ange Koffi", subject: "Histoire-Géographie" },
+  { email: "enseignant.histoire.02@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Aïcha Bakayoko", subject: "Histoire-Géographie" },
+  { email: "enseignant.anglais.01@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Claire Kouadio", subject: "Anglais" },
+  { email: "enseignant.anglais.02@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Étienne N'Dri", subject: "Anglais" },
+  { email: "enseignant.philo.01@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Jules Amani", subject: "Philosophie" },
+  { email: "enseignant.philo.02@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Grâce Touré", subject: "Philosophie" },
+  { email: "enseignant.eps.01@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Marc Tano", subject: "EPS" },
+  { email: "enseignant.eps.02@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Olga Konan", subject: "EPS" },
+  { email: "enseignant.info.01@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "M. Ismaël Diomandé", subject: "Informatique" },
+  { email: "enseignant.arts.01@demo.elima.invalid", role: "TEACHER", schoolId: DEMO_SCHOOLS[0].id, fullName: "Mme Diane Kanga", subject: "Arts" },
+  { email: "parent.multi@demo.elima.invalid", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Parent Démo Multi-enfant" },
+  { email: "parent.simple.01@demo.elima.invalid", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Parent Démo Awa" },
+  { email: "parent.simple.02@demo.elima.invalid", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Parent Démo Eli" },
+  { email: "parent.simple.03@demo.elima.invalid", role: "PARENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Parent Démo Yao" },
+  { email: "eleve.awa@demo.elima.invalid", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Awa Koné" },
+  { email: "eleve.yao@demo.elima.invalid", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Yao Kouamé" },
+  { email: "eleve.lina@demo.elima.invalid", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Lina Traoré" },
+  { email: "eleve.eli@demo.elima.invalid", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Eli Tuo" },
+  { email: "eleve.kader@demo.elima.invalid", role: "STUDENT", schoolId: DEMO_SCHOOLS[0].id, fullName: "Kader Koné" },
 ] as const;
 
 export const SECONDARY_CLASSES = [
   { name: "6ème A", level: "6ème" },
   { name: "6ème B", level: "6ème" },
-  { name: "6ème C", level: "6ème" },
   { name: "5ème A", level: "5ème" },
   { name: "5ème B", level: "5ème" },
   { name: "4ème A", level: "4ème" },
-  { name: "4ème B", level: "4ème" },
   { name: "3ème A", level: "3ème" },
-  { name: "2nde A", level: "2nde A" },
   { name: "2nde C1", level: "2nde C" },
-  { name: "1ère A", level: "1ère A" },
   { name: "1ère D", level: "1ère D" },
   { name: "Terminale C", level: "Terminale C" },
   { name: "Terminale D", level: "Terminale D" },
