@@ -1,12 +1,16 @@
 # Base de données Elima commune
 
+> Document historique. La décision canonique actuelle est décrite dans
+> `docs/architecture/unified-database.md`, avec migrations dans
+> `supabase/migrations/` et déploiement dans `docs/deployment/`.
+
 ## Architecture retenue
 
 Un seul projet Supabase contient :
 
 - `auth.users` : identité unique ;
 - le scolaire issu de `elima.tech` ;
-- la révision issue de `elima.app` ;
+- les modules de révision déjà présents dans l'application mobile active ;
 - la messagerie et ses règles RLS ;
 - un seul Storage, avec des buckets séparés par usage.
 
