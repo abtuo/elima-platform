@@ -24,10 +24,10 @@ export function firstRelation<T>(value: T | T[] | null | undefined) {
 export function schoolIdentityFromRow(row?: SchoolRelation): SchoolIdentity {
   return {
     name: String(row?.name ?? "\u00c9tablissement"),
-    address: row?.address ? String(row.address) : undefined,
-    city: row?.city ? String(row.city) : undefined,
-    country: row?.country ? String(row.country) : undefined,
-    phone: row?.phone ? String(row.phone) : undefined,
+    ...(row?.address ? { address: String(row.address) } : {}),
+    ...(row?.city ? { city: String(row.city) } : {}),
+    ...(row?.country ? { country: String(row.country) } : {}),
+    ...(row?.phone ? { phone: String(row.phone) } : {}),
   };
 }
 

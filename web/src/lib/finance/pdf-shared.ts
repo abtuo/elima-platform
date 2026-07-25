@@ -22,6 +22,8 @@ export function toPdfText(value: string) {
     .replace(/[\u2013\u2014]/g, "-")
     .replace(/[\u2019]/g, "'")
     .replace(/[\u201c\u201d]/g, '"')
+    .replace(/\u00ab\s*/g, '" ')
+    .replace(/\s*\u00bb/g, ' "')
     .replace(/[\u2022\u00b7]/g, "-");
 }
 

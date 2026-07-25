@@ -12,6 +12,7 @@ export default defineConfig([
     "coverage/**",
     "tmp/**",
     "_references/**",
+    "web/**",
     "mobile/**",
     "assets/**",
     "public/**",
@@ -62,7 +63,7 @@ export default defineConfig([
     },
   },
   {
-    files: ["scripts/**/*.ts", "tests/**/*.ts", "vite.config.ts"],
+    files: ["scripts/**/*.ts", "tests/**/*.ts", "packages/**/*.ts", "vite.config.ts"],
     extends: [js.configs.recommended, tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: "latest",
