@@ -1,3 +1,6 @@
+import { parseAppEnvironment } from "@elima/shared-domain/environment";
+import type { AppEnvironment } from "@elima/shared-domain/environment";
+
 export type AppMode = "demo" | "saas";
 
 type EnvLike = Record<string, string | undefined>;
@@ -8,7 +11,14 @@ function normalizeMode(value: string | undefined): AppMode | null {
 }
 
 function isProductionEnv(env: EnvLike) {
-  return env.NODE_ENV === "production" || env.APP_ENV === "production" || env.VERCEL_ENV === "production";
+  return resolveAppEnvironment(env) === "production";
+}
+
+export function resolveAppEnvironment(env: EnvLike = process.env): AppEnvironment {
+  if (env.APP_ENV) return parseAppEnvironment(env.APP_ENV);
+  if (env.VERCEL_ENV === "production") return "production";
+  if (normalizeMode(env.ELIMA_APP_MODE) === "demo") return "demo";
+  return parseAppEnvironment(env.NODE_ENV);
 }
 
 export function resolveAppMode(env: EnvLike = process.env): AppMode {

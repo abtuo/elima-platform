@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  assertEnvironmentPair,
+  parseAppEnvironment,
+} from "@elima/shared-domain/environment";
 
 function optionalNonEmptyString() {
   return z.preprocess(
@@ -11,6 +15,8 @@ const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: optionalNonEmptyString().pipe(z.string().url().optional()),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: optionalNonEmptyString(),
   SUPABASE_SERVICE_ROLE_KEY: optionalNonEmptyString(),
+  SUPABASE_DEMO_PROJECT_ID: optionalNonEmptyString(),
+  SUPABASE_PRODUCTION_PROJECT_ID: optionalNonEmptyString(),
   ELIMA_APP_MODE: z.enum(["demo", "saas"]).optional(),
   NEXT_PUBLIC_ELIMA_APP_MODE: z.enum(["demo", "saas"]).optional(),
   APP_ENV: z.enum(["production", "staging", "demo", "local"]).optional(),
@@ -33,6 +39,13 @@ const envSchema = z.object({
 });
 
 export const env = envSchema.parse(process.env);
+
+assertEnvironmentPair(
+  parseAppEnvironment(env.APP_ENV),
+  env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+  env.SUPABASE_DEMO_PROJECT_ID,
+  env.SUPABASE_PRODUCTION_PROJECT_ID,
+);
 
 export function requireServerEnv<K extends keyof typeof env>(
   key: K,

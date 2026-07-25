@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import tsx --test src/lib/__tests__",
+    "test": "node --import tsx --test src/lib/__tests__/*.test.ts",
     "test:whatsapp": "tsx scripts/test-whatsapp.ts",
     "seed": "tsx scripts/seed.ts",
     "seed:reset": "tsx scripts/seed.ts --reset",
@@ -21,6 +21,7 @@
     "seed:demo-attendance": "tsx scripts/seed-demo-attendance.ts"
   },
   "dependencies": {
+    "@elima/shared-domain": "file:../packages/shared-domain",
     "@azure-rest/communication-messages": "^2.0.0",
     "@azure/core-auth": "^1.10.1",
     "@supabase/ssr": "^0.8.0",

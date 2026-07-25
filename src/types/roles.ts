@@ -1,10 +1,6 @@
-export type UserRole =
-  | "SUPER_ADMIN"
-  | "SCHOOL_ADMIN"
-  | "COMPTABLE"
-  | "TEACHER"
-  | "PARENT"
-  | "STUDENT";
+import type { AppRole } from "../../packages/shared-domain/src/roles";
+
+export type UserRole = AppRole;
 
 export type SchoolPlan = "basic" | "premium" | "custom";
 

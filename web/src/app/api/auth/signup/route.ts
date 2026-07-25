@@ -133,7 +133,7 @@ export async function POST(request: Request) {
     schoolId = school.id;
   } else if (isSchoolMember) {
     const codeHash = createHash("sha256").update(schoolCode).digest("hex");
-    const authRole = role === "SCHOOL_STAFF" ? "ADMIN" : role;
+    const authRole = role === "SCHOOL_STAFF" ? "SCHOOL_ADMIN" : role;
     const { data: joinCode, error: codeError } = await admin
       .from("school_join_codes")
       .select("id, school_id, allowed_roles, expires_at, max_uses, use_count, active")
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
     await admin.from("school_join_codes").update({ use_count: Number(joinCode.use_count ?? 0) + 1, updated_at: new Date().toISOString() }).eq("id", joinCode.id);
   }
 
-  const authRole = role === "SCHOOL_STAFF" ? "ADMIN" : role;
+  const authRole = role === "SCHOOL_STAFF" ? "SCHOOL_ADMIN" : role;
 
   const { data, error } = await admin.auth.admin.createUser({
     email,

@@ -33,3 +33,21 @@ export async function verifyServerKey(config) {
     throw new Error(`La clé serveur n'est pas acceptée par le nouveau projet (HTTP ${response.status}).`);
   }
 }
+
+export function assertDemoTarget(config) {
+  const appEnv = process.env.APP_ENV || process.env.VITE_APP_ENV;
+  const demoRef = process.env.SUPABASE_DEMO_PROJECT_ID;
+  const productionRef = process.env.SUPABASE_PRODUCTION_PROJECT_ID;
+  if (appEnv !== "demo") {
+    throw new Error("Refus de sécurité : APP_ENV (ou VITE_APP_ENV) doit valoir demo.");
+  }
+  if (!demoRef) {
+    throw new Error("Refus de sécurité : SUPABASE_DEMO_PROJECT_ID est obligatoire.");
+  }
+  if (config.targetRef !== demoRef) {
+    throw new Error("Refus de sécurité : la cible ne correspond pas à SUPABASE_DEMO_PROJECT_ID.");
+  }
+  if (productionRef && config.targetRef === productionRef) {
+    throw new Error("Refus absolu : le Project ID correspond à la Production.");
+  }
+}

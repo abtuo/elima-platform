@@ -1,0 +1,10 @@
+{
+  "name": "@elima/shared-domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./environment": "./src/environment.ts",
+    "./roles": "./src/roles.ts"
+  }
+}

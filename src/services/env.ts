@@ -1,9 +1,16 @@
+import {
+  assertEnvironmentPair,
+  parseAppEnvironment,
+} from "../../packages/shared-domain/src/environment";
+
 export const env = {
-  appEnv: import.meta.env.VITE_APP_ENV ?? "development",
+  appEnv: parseAppEnvironment(import.meta.env.VITE_APP_ENV),
   appMode: import.meta.env.VITE_APP_MODE ?? "auto",
   webBaseUrl: import.meta.env.VITE_WEB_BASE_URL ?? "https://www.elima.ci",
   mainSupabaseUrl: import.meta.env.VITE_SUPABASE_URL ?? import.meta.env.VITE_MAIN_SUPABASE_URL ?? "",
   mainSupabaseAnonKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_MAIN_SUPABASE_ANON_KEY ?? "",
+  demoProjectId: import.meta.env.VITE_SUPABASE_DEMO_PROJECT_ID ?? "",
+  productionProjectId: import.meta.env.VITE_SUPABASE_PRODUCTION_PROJECT_ID ?? "",
   mainApiBaseUrl: import.meta.env.VITE_MAIN_API_BASE_URL ?? "",
   revisionApiBaseUrl: import.meta.env.VITE_REVISION_API_BASE_URL ?? "",
   enableDemoMode: import.meta.env.VITE_ENABLE_DEMO_MODE !== "false",
@@ -15,6 +22,13 @@ export const env = {
   elimaOAuthClientId: import.meta.env.VITE_ELIMA_OAUTH_CLIENT_ID ?? "",
   elimaOAuthRedirectUri: import.meta.env.VITE_ELIMA_OAUTH_REDIRECT_URI ?? "",
 } as const;
+
+assertEnvironmentPair(
+  env.appEnv,
+  env.mainSupabaseUrl,
+  env.demoProjectId || undefined,
+  env.productionProjectId || undefined,
+);
 
 export function getRuntimeHostname() {
   return typeof window === "undefined" ? "" : window.location.hostname.toLowerCase();
