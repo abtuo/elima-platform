@@ -7,8 +7,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const config = getTargetConfig();
 await verifyServerKey(config);
 
-const tsxCli = path.join(root, "_references", "elima.tech", "node_modules", "tsx", "dist", "cli.mjs");
-const seedFile = path.join(root, "_references", "elima.tech", "scripts", "seed-demo.ts");
+const tsxCli = path.join(root, "web", "node_modules", "tsx", "dist", "cli.mjs");
+const seedFile = path.join(root, "web", "scripts", "seed-demo.ts");
 const child = spawn(process.execPath, [tsxCli, seedFile], {
   cwd: root,
   stdio: "inherit",

@@ -76,7 +76,9 @@ Cette PWA pourra être packagée avec Capacitor pour Android/iOS sans refonte ma
 - **elima.tech** — auth, rôles, données scolaires, plans, messagerie, paiements
 - **elima.app** — design révision gamifié, quiz, fiches, Markdown/KaTeX
 
-Les deux applications historiques sont conservées sans modification dans `_references/`. Elles servent de référence pour les contrats de données, l'authentification et l'expérience de révision ; la nouvelle application ne les importe pas à l'exécution.
+La version web complète est active dans `web/`. Seule l'ancienne application
+`_references/elima.app` reste une référence historique isolée ; aucun build actif
+ne dépend de ce dossier.
 
 ## Documentation
 

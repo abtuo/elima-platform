@@ -23,13 +23,13 @@ Le code de référence `elima.tech` contient les changements nécessaires pour a
 Appliquer sur la base centrale elima.ci :
 
 ```text
-_references/elima.tech/supabase/migrations/20260716090000_school_join_codes.sql
+web/supabase/migrations/20260716090000_school_join_codes.sql
 ```
 
 Puis déployer la nouvelle version d’elima.ci contenant :
 
 ```text
-_references/elima.tech/src/app/api/auth/signup/route.ts
+web/src/app/api/auth/signup/route.ts
 ```
 
 Cette étape doit précéder le déploiement public de l’app, sinon les inscriptions avec code école seront refusées.
