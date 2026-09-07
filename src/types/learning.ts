@@ -29,6 +29,12 @@ export type GuidedSessionMetadata = {
   };
   statementBeforeGuidance?: boolean;
   remediation?: string[];
+  pathKind?: "diagnostic" | "session" | "evaluation";
+  pathOrder?: number;
+  chapterPromise?: string;
+  chapterDurationMinutes?: number;
+  unlockScore?: number;
+  sessionObjectives?: string[];
 };
 
 export type LearningExercise = {
@@ -94,6 +100,18 @@ export type LearningSuggestion = {
   kind: "guided_exercise" | "exam";
   exercise?: LearningExerciseCard;
   exam?: ExamSubject;
+};
+
+export type LearningPath = {
+  profile: LearningDiscovery["profile"];
+  subject: string;
+  chapter: string;
+  promise: string;
+  durationMinutes: number;
+  unlockScore: number;
+  diagnostic?: LearningExerciseCard;
+  sessions: LearningExerciseCard[];
+  evaluation?: LearningExerciseCard;
 };
 
 export type LearningContent = {

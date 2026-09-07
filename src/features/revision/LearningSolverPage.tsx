@@ -28,7 +28,7 @@ export function LearningSolverPage({ contentType }: { contentType: "guided_exerc
   const questions = useMemo(() => exercises.flatMap((exercise) => {
     if (exercise.sourceType !== "guided_session_v3") return exercise.questions.map((question) => ({ ...question, exercise }));
     const correction = exercise.questions.find((question) => question.questionType === "guided_solution");
-    const flow = exercise.questions.filter((question) => !["guided_solution", "orientation"].includes(question.questionType));
+    const flow = exercise.questions.filter((question) => question.questionType !== "guided_solution");
     return [...flow, ...(correction ? [correction] : [])].map((question) => ({ ...question, exercise }));
   }), [exercises]);
   const activeIndex = Math.min(session?.currentQuestion ?? 0, Math.max(0, questions.length - 1));
@@ -49,7 +49,7 @@ export function LearningSolverPage({ contentType }: { contentType: "guided_exerc
         setExercises(content.exercises);
       }
       setSession(await createLearningSession(contentType, decoded, mode));
-    }).catch((reason) => setError(reason instanceof Error ? reason.message : "Impossible d’ouvrir ce devoir."));
+    }).catch((reason) => setError(reason instanceof Error ? reason.message : "Impossible d’ouvrir cette session."));
   }, [contentType, id, mode]);
 
   useEffect(() => {
@@ -121,13 +121,15 @@ export function LearningSolverPage({ contentType }: { contentType: "guided_exerc
         }
         saveLearningSession(next);
       }
-      navigate(`/student/reviser/devoirs/resultats/${contentType}/${encodeURIComponent(next.contentId)}`);
+      navigate(contentType === "guided_exercise"
+        ? `/student/reviser/parcours/resultats/${contentType}/${encodeURIComponent(next.contentId)}`
+        : `/student/reviser/devoirs/resultats/${contentType}/${encodeURIComponent(next.contentId)}`);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "La remise a échoué."); } finally { setBusy(false); }
   }
 
   async function openPdf() { if (!exam?.sourcePdfPath) return; try { const result = await getSignedExamPdf(exam.sourcePdfPath); setPdfUrl(result.url); } catch (reason) { setError(reason instanceof Error ? reason.message : "Sujet original indisponible."); } }
 
-  if (error && !session) return <PageContainer><AppHeader title="Devoir" backTo="/student/reviser?mode=devoirs" /><EmptyState title="Impossible d’ouvrir le devoir" description={error} /></PageContainer>;
+  if (error && !session) return <PageContainer><AppHeader title="Parcours" backTo="/student/reviser?mode=parcours" /><EmptyState title="Impossible d’ouvrir la session" description={error} /></PageContainer>;
   if (!session || !active) return <PageContainer><div className="card animate-pulse p-8 text-sm text-gray-500">Chargement du moteur pédagogique…</div></PageContainer>;
   if (contentType === "guided_exercise" && exercises[0]?.sourceType === "guided_session_v3") return <GuidedSessionExperience
     exercise={exercises[0]}
@@ -148,7 +150,7 @@ export function LearningSolverPage({ contentType }: { contentType: "guided_exerc
   const remaining = exam && mode === "exam" ? exam.durationMinutes * 60 - session.elapsedSeconds : session.elapsedSeconds;
 
   return <PageContainer className="max-w-[1440px]">
-    <AppHeader title={exam?.title || exercises[0]?.title || "Exercice guidé"} subtitle={`${active.exercise.subject} · ${active.exercise.level} · ${mode === "exam" ? "Conditions d’examen" : "Entraînement accompagné"}`} backTo="/student/reviser?mode=devoirs" action={exam?.sourcePdfPath ? <button type="button" onClick={openPdf} className="hidden rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-accent sm:inline-flex"><FileText className="mr-1.5 h-4 w-4" />Voir le sujet original</button> : null} />
+    <AppHeader title={exam?.title || exercises[0]?.title || "Exercice guidé"} subtitle={`${active.exercise.subject} · ${active.exercise.level} · ${mode === "exam" ? "Conditions d’examen" : "Entraînement accompagné"}`} backTo="/student/reviser?mode=parcours" action={exam?.sourcePdfPath ? <button type="button" onClick={openPdf} className="hidden rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-accent sm:inline-flex"><FileText className="mr-1.5 h-4 w-4" />Voir le sujet original</button> : null} />
     {error ? <div className="mb-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">{error}</div> : null}
     <div className="mb-4 flex items-center gap-3 rounded-2xl bg-accent px-4 py-3 text-white"><button type="button" onClick={() => setNavOpen(true)} className="lg:hidden"><Menu className="h-5 w-5" /></button><div className="min-w-0 flex-1"><div className="mb-1 flex justify-between text-xs"><span>Question {activeIndex + 1} sur {questions.length}</span><span>{answered} réponse{answered > 1 ? "s" : ""}</span></div><ProgressBar value={activeIndex + 1} max={questions.length} /></div><span className="inline-flex items-center gap-1 font-mono text-sm font-semibold"><Clock3 className="h-4 w-4" />{formatTime(remaining)}</span></div>
     <div className="grid gap-4 lg:grid-cols-[250px_minmax(0,1fr)_300px]">
@@ -176,7 +178,7 @@ function StepEditor({ steps, disabled, onChange }: { steps: string[]; disabled: 
 }
 
 function QuestionNavigation({ questions, session, activeIndex, onGo, className = "" }: { questions: Array<LearningQuestion & { exercise: LearningExercise }>; session: LearningSession; activeIndex: number; onGo: (index: number) => void; className?: string }) {
-  return <nav className={`card h-fit p-4 ${className}`} aria-label="Navigation des questions"><h2 className="flex items-center gap-2 font-title font-semibold text-accent"><List className="h-4 w-4" />Plan du devoir</h2><div className="mt-3 space-y-1">{questions.map((question, index) => { const saved = session.answers[question.id]; return <button key={question.id} type="button" onClick={() => onGo(index)} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs ${activeIndex === index ? "bg-revision text-white" : "hover:bg-gray-50"}`}><span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${saved?.result?.status === "correct" ? "bg-primary text-white" : saved?.value ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"}`}>{saved?.result?.status === "correct" ? <Check className="h-3.5 w-3.5" /> : index + 1}</span><span className="min-w-0 flex-1 truncate">{question.title}</span>{session.marked.includes(question.id) ? <Bookmark className="h-3.5 w-3.5" /> : null}</button>; })}</div></nav>;
+  return <nav className={`card h-fit p-4 ${className}`} aria-label="Navigation des questions"><h2 className="flex items-center gap-2 font-title font-semibold text-accent"><List className="h-4 w-4" />Plan de la session</h2><div className="mt-3 space-y-1">{questions.map((question, index) => { const saved = session.answers[question.id]; return <button key={question.id} type="button" onClick={() => onGo(index)} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs ${activeIndex === index ? "bg-revision text-white" : "hover:bg-gray-50"}`}><span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${saved?.result?.status === "correct" ? "bg-primary text-white" : saved?.value ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"}`}>{saved?.result?.status === "correct" ? <Check className="h-3.5 w-3.5" /> : index + 1}</span><span className="min-w-0 flex-1 truncate">{question.title}</span>{session.marked.includes(question.id) ? <Bookmark className="h-3.5 w-3.5" /> : null}</button>; })}</div></nav>;
 }
 
 function Feedback({ result, confidence }: { result: ValidationResult; confidence: string }) {

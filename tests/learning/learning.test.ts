@@ -63,28 +63,45 @@ test("l’import protège l’idempotence et la transaction", async () => {
   assert.match(source, /pg_advisory_xact_lock/);
   assert.match(source, /on conflict\(external_id\) do update/g);
   assert.match(source, /sql\.begin/);
+  assert.match(source, /position = position \+ \$\{positionOffset\}/);
+  assert.match(source, /position >= \$\{positionOffset\}/);
 });
 
-test("l’interface charge les devoirs progressivement", async () => {
+test("l’interface charge les parcours progressivement", async () => {
   const panel = await readFile(new URL("../../src/features/revision/LearningAssignmentsPanel.tsx", import.meta.url), "utf8");
   const solver = await readFile(new URL("../../src/features/revision/LearningSolverPage.tsx", import.meta.url), "utf8");
   assert.match(panel, /getLearningDiscovery/);
-  assert.match(panel, /suggestLearningContent/);
+  assert.match(panel, /getLearningPath/);
+  assert.match(panel, /learningSessionScore/);
   assert.doesNotMatch(panel, /getLearningCatalog/);
   assert.match(solver, /getLearningContent/);
   assert.doesNotMatch(solver, /getLearningCatalog/);
 });
 
-test("les sessions v3 avancent librement et vérifient les réponses à la fin", async () => {
+test("le parcours de calcul littéral contient le diagnostic, huit sessions et l’évaluation", async () => {
+  const bank = JSON.parse(await readFile(new URL("../../data/exams/3eme-maths-calcul-litteral-path-v1.json", import.meta.url), "utf8"));
+  assert.equal(bank.metadata.level, "3ème");
+  assert.equal(bank.metadata.unlock_score, 60);
+  assert.equal(bank.sessions.filter((item: { path_kind: string }) => item.path_kind === "session").length, 8);
+  assert.equal(bank.sessions.filter((item: { path_kind: string }) => item.path_kind === "diagnostic").length, 1);
+  assert.equal(bank.sessions.filter((item: { path_kind: string }) => item.path_kind === "evaluation").length, 1);
+  assert.ok(bank.sessions.every((item: { session_flow: unknown[] }) => item.session_flow.length >= 7));
+  const courseSessions = bank.sessions.filter((item: { path_kind: string }) => item.path_kind === "session");
+  assert.ok(courseSessions.every((item: { session_flow: Array<{ type: string }> }) => item.session_flow.filter((step) => step.type === "lesson").length >= 3));
+  assert.ok(courseSessions.every((item: { session_flow: Array<{ type: string }> }) => item.session_flow.filter((step) => ["single_choice", "multiple_choice"].includes(step.type)).length >= 5));
+});
+
+test("les sessions v3 affichent les cours et vérifient les réponses à la fin", async () => {
   const solver = await readFile(new URL("../../src/features/revision/LearningSolverPage.tsx", import.meta.url), "utf8");
   const experience = await readFile(new URL("../../src/features/revision/GuidedSessionExperience.tsx", import.meta.url), "utf8");
   assert.match(solver, /mode === "exam" \|\| guidedV3/);
+  assert.match(solver, /question\.questionType !== "guided_solution"/);
   assert.match(solver, /\.\.\.flow, \.\.\.\(correction \? \[correction\] : \[\]\)/);
   assert.match(experience, /onCompleteStep\(answer\.value\)/);
   assert.doesNotMatch(experience, /onValidate/);
   assert.match(experience, /GeneratedActionIcon name="hint"/);
-  assert.match(experience, /Oui, j’avais trouvé/);
-  assert.match(experience, /Voir la synthèse/);
+  assert.doesNotMatch(experience, /Avais-tu trouvé|Oui, j’avais trouvé/);
+  assert.match(experience, /Terminer la session/);
 });
 
 test("la validation ouverte passe par GPT côté serveur", async () => {

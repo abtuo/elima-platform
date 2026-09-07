@@ -26,17 +26,17 @@ import {
 } from "@/services/revisionDataService";
 import type { CourseSheet, QuizAttemptSummary, QuizItem, RevisionProgress } from "@/types/revision";
 
-type RevisionMode = "qcm" | "devoirs" | "fiches";
+type RevisionMode = "qcm" | "parcours" | "fiches";
 
 const MODES: Array<{ id: RevisionMode; label: string; icon: typeof Brain }> = [
   { id: "qcm", label: "QCM", icon: Brain },
-  { id: "devoirs", label: "Devoirs", icon: CalendarClock },
+  { id: "parcours", label: "Parcours", icon: CalendarClock },
   { id: "fiches", label: "Fiches", icon: BookOpen },
 ];
 
 function revisionMode(value: string | null): RevisionMode {
-  if (value === "examens" || value === "examen") return "devoirs";
-  return value === "devoirs" || value === "fiches" ? value : "qcm";
+  if (value === "devoirs" || value === "examens" || value === "examen") return "parcours";
+  return value === "parcours" || value === "fiches" ? value : "qcm";
 }
 
 function formatHistoryDate(value: string) {
@@ -145,7 +145,7 @@ export function RevisionDashboardPage() {
 
   return (
     <PageContainer>
-      <AppHeader title="Réviser" subtitle="QCM, devoirs et fiches de révision" accent="#7C3AED" />
+      <AppHeader title="Réviser" subtitle="QCM, parcours et fiches de révision" accent="#7C3AED" />
 
       <div className="mb-5 grid grid-cols-3 rounded-2xl bg-gray-100 p-1" role="tablist" aria-label="Modes de révision">
         {MODES.map((item) => {
@@ -205,7 +205,7 @@ export function RevisionDashboardPage() {
         </div>
       ) : null}
 
-      {mode === "devoirs" ? <LearningAssignmentsPanel profile={profile} /> : null}
+      {mode === "parcours" ? <LearningAssignmentsPanel profile={profile} /> : null}
     </PageContainer>
   );
 }

@@ -1,0 +1,3453 @@
+{
+  "metadata": {
+    "name": "ELIMA — Mathématiques 3e — Chapitre 1 — Calcul littéral",
+    "version": "1.0.0",
+    "generated_on": "2026-07-27",
+    "language": "fr",
+    "level": "3ème",
+    "subject": "Mathématiques",
+    "chapter": "Calcul littéral",
+    "counts": {
+      "sessions": 8,
+      "diagnostic": 1,
+      "evaluation": 1,
+      "units": 10,
+      "steps": 142
+    },
+    "unlock_score": 60
+  },
+  "sessions": [
+    {
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "3ème",
+      "subject": "Mathématiques",
+      "chapter": "Calcul littéral",
+      "difficulty": "progressif",
+      "paper_required": true,
+      "statement_before_guidance": true,
+      "chapter_promise": "Apprends à calculer avec des nombres et des lettres, à transformer des expressions et à résoudre des problèmes plus rapidement.",
+      "chapter_duration_minutes": 180,
+      "unlock_score": 60,
+      "id": "FR-3M-CL-DIAG",
+      "title": "Test de départ",
+      "estimated_minutes": 7,
+      "objective": "Identifier rapidement les acquis déjà solides.",
+      "situation": "Ce test ne compte pas dans ta note. Il aide Elima à adapter les explications.",
+      "materials": [
+        "cahier de brouillon",
+        "stylo"
+      ],
+      "skills": [
+        "diagnostic_calcul_litteral"
+      ],
+      "session_objectives": [
+        "Identifier rapidement les acquis déjà solides."
+      ],
+      "path_kind": "diagnostic",
+      "path_order": -1,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Découvre la session",
+          "prompt": "Ce test ne compte pas dans ta note. Il aide Elima à adapter les explications.",
+          "main_questions": [
+            "Réponds sans aide aux dix questions."
+          ],
+          "paper_instructions": [
+            "Prends ton cahier.",
+            "Essaie d’abord sur papier, puis choisis ta réponse."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "Commencer"
+        },
+        {
+          "id": "d1",
+          "type": "single_choice",
+          "title": "Termes semblables",
+          "prompt": "Quel est le résultat de 3x+2x ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "5"
+            },
+            {
+              "id": "b",
+              "label": "5x"
+            },
+            {
+              "id": "c",
+              "label": "6x"
+            },
+            {
+              "id": "d",
+              "label": "5x²"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "reduire_expression"
+          ]
+        },
+        {
+          "id": "d2",
+          "type": "single_choice",
+          "title": "Développer",
+          "prompt": "Développe 2(x+3).",
+          "options": [
+            {
+              "id": "a",
+              "label": "2x+3"
+            },
+            {
+              "id": "b",
+              "label": "2x+5"
+            },
+            {
+              "id": "c",
+              "label": "2x+6"
+            },
+            {
+              "id": "d",
+              "label": "x+6"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "developper_expression"
+          ]
+        },
+        {
+          "id": "d3",
+          "type": "single_choice",
+          "title": "Valeur numérique",
+          "prompt": "Pour x=4, combien vaut 2x−3 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "3"
+            },
+            {
+              "id": "b",
+              "label": "5"
+            },
+            {
+              "id": "c",
+              "label": "8"
+            },
+            {
+              "id": "d",
+              "label": "11"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_valeur_numerique"
+          ]
+        },
+        {
+          "id": "d4",
+          "type": "single_choice",
+          "title": "Puissance négative",
+          "prompt": "Quel nombre est égal à 2⁻³ ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "−8"
+            },
+            {
+              "id": "b",
+              "label": "−6"
+            },
+            {
+              "id": "c",
+              "label": "1/8"
+            },
+            {
+              "id": "d",
+              "label": "8"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_puissances"
+          ]
+        },
+        {
+          "id": "d5",
+          "type": "single_choice",
+          "title": "Réduire",
+          "prompt": "Réduis 4x+3−2x+5.",
+          "options": [
+            {
+              "id": "a",
+              "label": "2x+8"
+            },
+            {
+              "id": "b",
+              "label": "6x+8"
+            },
+            {
+              "id": "c",
+              "label": "2x+2"
+            },
+            {
+              "id": "d",
+              "label": "6x+2"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "reduire_expression"
+          ]
+        },
+        {
+          "id": "d6",
+          "type": "single_choice",
+          "title": "Factoriser",
+          "prompt": "Factorise 6x+12.",
+          "options": [
+            {
+              "id": "a",
+              "label": "6(x+2)"
+            },
+            {
+              "id": "b",
+              "label": "6(x+12)"
+            },
+            {
+              "id": "c",
+              "label": "3(x+4)"
+            },
+            {
+              "id": "d",
+              "label": "2(3x+12)"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "factoriser_facteur_commun"
+          ]
+        },
+        {
+          "id": "d7",
+          "type": "single_choice",
+          "title": "Valeur interdite",
+          "prompt": "Pour quelle valeur 3/(x−2) n’existe-t-elle pas ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "−2"
+            },
+            {
+              "id": "b",
+              "label": "0"
+            },
+            {
+              "id": "c",
+              "label": "2"
+            },
+            {
+              "id": "d",
+              "label": "3"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "determiner_valeur_interdite"
+          ]
+        },
+        {
+          "id": "d8",
+          "type": "single_choice",
+          "title": "Double distributivité",
+          "prompt": "Développe (x+2)(x+3).",
+          "options": [
+            {
+              "id": "a",
+              "label": "x²+5x+6"
+            },
+            {
+              "id": "b",
+              "label": "x²+6"
+            },
+            {
+              "id": "c",
+              "label": "x²+5"
+            },
+            {
+              "id": "d",
+              "label": "2x+6"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "multiplier_polynomes"
+          ]
+        },
+        {
+          "id": "d9",
+          "type": "multiple_choice",
+          "title": "Produit nul",
+          "prompt": "Si (x−4)(x+1)=0, quelles sont les solutions ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "x=4"
+            },
+            {
+              "id": "b",
+              "label": "x=−1"
+            },
+            {
+              "id": "c",
+              "label": "x=−4"
+            },
+            {
+              "id": "d",
+              "label": "x=1"
+            }
+          ],
+          "correct_option_ids": [
+            "a",
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "utiliser_produit_nul"
+          ]
+        },
+        {
+          "id": "d10",
+          "type": "single_choice",
+          "title": "Simplification",
+          "prompt": "Peut-on simplifier (x+2)/x en supprimant les x ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Oui"
+            },
+            {
+              "id": "b",
+              "label": "Non"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "simplifier_fraction_rationnelle"
+          ]
+        },
+        {
+          "id": "solution",
+          "type": "guided_solution",
+          "title": "Correction et bilan",
+          "prompt": "Compare ton raisonnement avec la correction.",
+          "solution_blocks": [
+            {
+              "kind": "step",
+              "content": "Additionne seulement les coefficients des termes semblables."
+            },
+            {
+              "kind": "step",
+              "content": "Un exposant négatif donne un inverse."
+            },
+            {
+              "kind": "step",
+              "content": "On simplifie des facteurs, jamais les termes séparés par une addition."
+            }
+          ]
+        }
+      ],
+      "remediation": []
+    },
+    {
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "3ème",
+      "subject": "Mathématiques",
+      "chapter": "Calcul littéral",
+      "difficulty": "progressif",
+      "paper_required": true,
+      "statement_before_guidance": true,
+      "chapter_promise": "Apprends à calculer avec des nombres et des lettres, à transformer des expressions et à résoudre des problèmes plus rapidement.",
+      "chapter_duration_minutes": 180,
+      "unlock_score": 60,
+      "id": "FR-3M-CL-S01",
+      "title": "Comprendre les expressions littérales",
+      "estimated_minutes": 20,
+      "objective": "Reconnaître une expression littérale. Identifier termes, coefficients et degré. Reconnaître un polynôme.",
+      "situation": "Une lettre peut représenter un nombre inconnu ou une valeur qui change. Par exemple, 3x+5 signifie multiplier x par 3, puis ajouter 5.",
+      "materials": [
+        "cahier de brouillon",
+        "stylo"
+      ],
+      "skills": [
+        "identifier_polynome",
+        "identifier_coefficient",
+        "determiner_degre"
+      ],
+      "session_objectives": [
+        "Reconnaître une expression littérale.",
+        "Identifier termes, coefficients et degré.",
+        "Reconnaître un polynôme."
+      ],
+      "path_kind": "session",
+      "path_order": 1,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Découvre la session",
+          "prompt": "Une lettre peut représenter un nombre inconnu ou une valeur qui change. Par exemple, 3x+5 signifie multiplier x par 3, puis ajouter 5.",
+          "main_questions": [
+            "Que représentent la lettre, le coefficient et le degré ?"
+          ],
+          "paper_instructions": [
+            "Prends ton cahier.",
+            "Essaie d’abord sur papier, puis choisis ta réponse."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "Commencer"
+        },
+        {
+          "id": "lesson1",
+          "type": "lesson",
+          "title": "Une situation avec une lettre",
+          "prompt": "Un cahier coûte x francs. Trois cahiers coûtent 3x. Avec un stylo à 200 francs, le total vaut 3x+200.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s1q1",
+          "type": "single_choice",
+          "title": "Traduire",
+          "prompt": "Un ticket coûte t. Quelle expression représente le prix de 5 tickets ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "t+5"
+            },
+            {
+              "id": "b",
+              "label": "5t"
+            },
+            {
+              "id": "c",
+              "label": "t⁵"
+            },
+            {
+              "id": "d",
+              "label": "t/5"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [
+            "Pense à t+t+t+t+t."
+          ],
+          "feedback": {},
+          "skills": [
+            "modeliser_situation"
+          ]
+        },
+        {
+          "id": "lesson2",
+          "type": "lesson",
+          "title": "Les éléments",
+          "prompt": "Dans 4x²−3x+7, les trois termes sont 4x², −3x et 7. Dans 4x², 4 est le coefficient et 2 l’exposant.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s1q2",
+          "type": "single_choice",
+          "title": "Coefficient",
+          "prompt": "Quel est le coefficient de x dans 5x²−3x+8 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "5"
+            },
+            {
+              "id": "b",
+              "label": "2"
+            },
+            {
+              "id": "c",
+              "label": "−3"
+            },
+            {
+              "id": "d",
+              "label": "8"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [
+            "Repère le terme qui contient x, mais pas x²."
+          ],
+          "feedback": {},
+          "skills": [
+            "identifier_coefficient"
+          ]
+        },
+        {
+          "id": "lesson3",
+          "type": "lesson",
+          "title": "Qu’est-ce qu’un polynôme ?",
+          "prompt": "Un polynôme est formé de nombres et de puissances entières positives ou nulles d’une variable. 3x²−2x+1, 7x−4 et 5 sont des polynômes. 3/x et √x+2 n’en sont pas.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s1q3",
+          "type": "multiple_choice",
+          "title": "Reconnaître",
+          "prompt": "Sélectionne tous les polynômes.",
+          "options": [
+            {
+              "id": "a",
+              "label": "2x³−5x+1"
+            },
+            {
+              "id": "b",
+              "label": "4/x+2"
+            },
+            {
+              "id": "c",
+              "label": "8"
+            },
+            {
+              "id": "d",
+              "label": "3√x−1"
+            }
+          ],
+          "correct_option_ids": [
+            "a",
+            "c"
+          ],
+          "hints": [
+            "Cherche une variable au dénominateur ou sous une racine."
+          ],
+          "feedback": {},
+          "skills": [
+            "identifier_polynome"
+          ]
+        },
+        {
+          "id": "lesson4",
+          "type": "lesson",
+          "title": "Le degré",
+          "prompt": "Le degré d’un polynôme est le plus grand exposant de la variable. 4x³−2x+5 est de degré 3, 7x−1 de degré 1 et un nombre non nul de degré 0.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s1q4",
+          "type": "single_choice",
+          "title": "Degré",
+          "prompt": "Quel est le degré de 5x²−4x+9 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "0"
+            },
+            {
+              "id": "b",
+              "label": "1"
+            },
+            {
+              "id": "c",
+              "label": "2"
+            },
+            {
+              "id": "d",
+              "label": "9"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "determiner_degre"
+          ]
+        },
+        {
+          "id": "s1q5",
+          "type": "single_choice",
+          "title": "Compter les termes",
+          "prompt": "Combien de termes contient 3x³−2x²+x−7 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "2"
+            },
+            {
+              "id": "b",
+              "label": "3"
+            },
+            {
+              "id": "c",
+              "label": "4"
+            },
+            {
+              "id": "d",
+              "label": "7"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "identifier_polynome"
+          ]
+        },
+        {
+          "id": "s1q6",
+          "type": "single_choice",
+          "title": "Coefficient de x²",
+          "prompt": "Quel est le coefficient de x² dans −6x²+4x−1 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "−6"
+            },
+            {
+              "id": "b",
+              "label": "2"
+            },
+            {
+              "id": "c",
+              "label": "4"
+            },
+            {
+              "id": "d",
+              "label": "−1"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "identifier_coefficient"
+          ]
+        },
+        {
+          "id": "solution",
+          "type": "guided_solution",
+          "title": "Correction et bilan",
+          "prompt": "Compare ton raisonnement avec la correction.",
+          "solution_blocks": [
+            {
+              "kind": "step",
+              "content": "Une lettre peut représenter un nombre."
+            },
+            {
+              "kind": "step",
+              "content": "Le coefficient multiplie la variable."
+            },
+            {
+              "kind": "step",
+              "content": "Le degré est le plus grand exposant."
+            },
+            {
+              "kind": "step",
+              "content": "Une variable au dénominateur n’appartient pas à un polynôme."
+            }
+          ]
+        }
+      ],
+      "remediation": []
+    },
+    {
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "3ème",
+      "subject": "Mathématiques",
+      "chapter": "Calcul littéral",
+      "difficulty": "progressif",
+      "paper_required": true,
+      "statement_before_guidance": true,
+      "chapter_promise": "Apprends à calculer avec des nombres et des lettres, à transformer des expressions et à résoudre des problèmes plus rapidement.",
+      "chapter_duration_minutes": 180,
+      "unlock_score": 60,
+      "id": "FR-3M-CL-S02",
+      "title": "Calculer avec les puissances",
+      "estimated_minutes": 20,
+      "objective": "Utiliser les exposants positifs, nuls et négatifs. Reconnaître deux nombres inverses.",
+      "situation": "L’exposant indique combien de fois la base est utilisée comme facteur : a³=a×a×a.",
+      "materials": [
+        "cahier de brouillon",
+        "stylo"
+      ],
+      "skills": [
+        "calculer_puissances"
+      ],
+      "session_objectives": [
+        "Utiliser les exposants positifs, nuls et négatifs.",
+        "Reconnaître deux nombres inverses."
+      ],
+      "path_kind": "session",
+      "path_order": 2,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Découvre la session",
+          "prompt": "L’exposant indique combien de fois la base est utilisée comme facteur : a³=a×a×a.",
+          "main_questions": [
+            "Quelles règles utiliser pour multiplier, diviser et élever une puissance ?"
+          ],
+          "paper_instructions": [
+            "Prends ton cahier.",
+            "Essaie d’abord sur papier, puis choisis ta réponse."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "Commencer"
+        },
+        {
+          "id": "lesson1",
+          "type": "lesson",
+          "title": "Même base : multiplication",
+          "prompt": "Lorsque l’on multiplie deux puissances de même base, on additionne les exposants : aᵐ×aⁿ=aᵐ⁺ⁿ. Par exemple, x³×x²=x⁵.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s2q1",
+          "type": "single_choice",
+          "title": "Multiplier",
+          "prompt": "Simplifie x⁴×x³.",
+          "options": [
+            {
+              "id": "a",
+              "label": "x⁷"
+            },
+            {
+              "id": "b",
+              "label": "x¹²"
+            },
+            {
+              "id": "c",
+              "label": "2x⁷"
+            },
+            {
+              "id": "d",
+              "label": "x"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [
+            "Même base et multiplication : additionne les exposants."
+          ],
+          "feedback": {},
+          "skills": [
+            "calculer_puissances"
+          ]
+        },
+        {
+          "id": "lesson2",
+          "type": "lesson",
+          "title": "Même base : division",
+          "prompt": "Pour a≠0, aᵐ/aⁿ=aᵐ⁻ⁿ. Par exemple, x⁷/x³=x⁴.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s2q2",
+          "type": "single_choice",
+          "title": "Diviser",
+          "prompt": "Simplifie a⁸/a³.",
+          "options": [
+            {
+              "id": "a",
+              "label": "a⁵"
+            },
+            {
+              "id": "b",
+              "label": "a¹¹"
+            },
+            {
+              "id": "c",
+              "label": "a²⁴"
+            },
+            {
+              "id": "d",
+              "label": "a"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_puissances"
+          ]
+        },
+        {
+          "id": "lesson3",
+          "type": "lesson",
+          "title": "Puissance d’une puissance",
+          "prompt": "Pour élever une puissance à une autre puissance, on multiplie les exposants : (aᵐ)ⁿ=aᵐⁿ. Par exemple, (x³)²=x⁶.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s2q3",
+          "type": "single_choice",
+          "title": "Puissance d’une puissance",
+          "prompt": "Simplifie (y²)⁴.",
+          "options": [
+            {
+              "id": "a",
+              "label": "y⁶"
+            },
+            {
+              "id": "b",
+              "label": "y⁸"
+            },
+            {
+              "id": "c",
+              "label": "y¹⁶"
+            },
+            {
+              "id": "d",
+              "label": "2y⁴"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_puissances"
+          ]
+        },
+        {
+          "id": "lesson4",
+          "type": "lesson",
+          "title": "Exposant nul",
+          "prompt": "Pour tout nombre non nul a, a⁰=1. Ainsi 5⁰=1 et x⁰=1 si x≠0.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "lesson5",
+          "type": "lesson",
+          "title": "Exposant négatif",
+          "prompt": "Pour a≠0, a⁻ⁿ=1/aⁿ. Ainsi 2⁻³=1/2³=1/8. Un exposant négatif ne rend pas le résultat négatif.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s2q4",
+          "type": "single_choice",
+          "title": "Exposant négatif",
+          "prompt": "Que vaut 3⁻² ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "−9"
+            },
+            {
+              "id": "b",
+              "label": "−6"
+            },
+            {
+              "id": "c",
+              "label": "1/6"
+            },
+            {
+              "id": "d",
+              "label": "1/9"
+            }
+          ],
+          "correct_option_ids": [
+            "d"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_puissances"
+          ]
+        },
+        {
+          "id": "lesson6",
+          "type": "lesson",
+          "title": "Les nombres inverses",
+          "prompt": "Deux nombres non nuls sont inverses lorsque leur produit vaut 1. L’inverse de 4 est 1/4. L’inverse de a/b est b/a lorsque a et b sont non nuls.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s2q5",
+          "type": "single_choice",
+          "title": "Inverse",
+          "prompt": "Quel est l’inverse de −5 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "5"
+            },
+            {
+              "id": "b",
+              "label": "−1/5"
+            },
+            {
+              "id": "c",
+              "label": "1/5"
+            },
+            {
+              "id": "d",
+              "label": "−5"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_puissances"
+          ]
+        },
+        {
+          "id": "lesson7",
+          "type": "lesson",
+          "title": "Erreur fréquente",
+          "prompt": "Ne confonds pas addition et multiplication : x²+x³ ne devient pas x⁵. L’addition des exposants fonctionne dans x²×x³=x⁵.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s2q6",
+          "type": "single_choice",
+          "title": "Ne pas confondre",
+          "prompt": "Quelle égalité est correcte ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "x²+x³=x⁵"
+            },
+            {
+              "id": "b",
+              "label": "x²×x³=x⁵"
+            },
+            {
+              "id": "c",
+              "label": "x²×x³=x⁶"
+            },
+            {
+              "id": "d",
+              "label": "x²+x³=2x⁵"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_puissances"
+          ]
+        },
+        {
+          "id": "solution",
+          "type": "guided_solution",
+          "title": "Correction et bilan",
+          "prompt": "Compare ton raisonnement avec la correction.",
+          "solution_blocks": [
+            {
+              "kind": "step",
+              "content": "Pour une multiplication de même base, additionne les exposants."
+            },
+            {
+              "kind": "step",
+              "content": "Pour une puissance de puissance, multiplie les exposants."
+            },
+            {
+              "kind": "step",
+              "content": "Un exposant négatif crée un inverse, pas un nombre négatif."
+            }
+          ]
+        }
+      ],
+      "remediation": []
+    },
+    {
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "3ème",
+      "subject": "Mathématiques",
+      "chapter": "Calcul littéral",
+      "difficulty": "progressif",
+      "paper_required": true,
+      "statement_before_guidance": true,
+      "chapter_promise": "Apprends à calculer avec des nombres et des lettres, à transformer des expressions et à résoudre des problèmes plus rapidement.",
+      "chapter_duration_minutes": 180,
+      "unlock_score": 60,
+      "id": "FR-3M-CL-S03",
+      "title": "Remplacer une lettre par un nombre",
+      "estimated_minutes": 20,
+      "objective": "Calculer la valeur numérique d’une expression. Respecter parenthèses et ordre des opérations.",
+      "situation": "Calculer une valeur numérique consiste à remplacer chaque lettre par le nombre donné. Pour x=4, 3x+2=3×4+2=14.",
+      "materials": [
+        "cahier de brouillon",
+        "stylo"
+      ],
+      "skills": [
+        "calculer_valeur_numerique"
+      ],
+      "session_objectives": [
+        "Calculer la valeur numérique d’une expression.",
+        "Respecter parenthèses et ordre des opérations."
+      ],
+      "path_kind": "session",
+      "path_order": 3,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Découvre la session",
+          "prompt": "Calculer une valeur numérique consiste à remplacer chaque lettre par le nombre donné. Pour x=4, 3x+2=3×4+2=14.",
+          "main_questions": [
+            "Comment gérer une valeur négative ?"
+          ],
+          "paper_instructions": [
+            "Prends ton cahier.",
+            "Essaie d’abord sur papier, puis choisis ta réponse."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "Commencer"
+        },
+        {
+          "id": "lesson1",
+          "type": "lesson",
+          "title": "Valeurs négatives",
+          "prompt": "Place toujours un nombre négatif entre parenthèses. Pour x=−2, x² s’écrit (−2)² et vaut 4.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s3q1",
+          "type": "single_choice",
+          "title": "Écriture correcte",
+          "prompt": "Pour x=−3, quelle première ligne est correcte pour B=x²+2x−5 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "B=−3²+2×−3−5"
+            },
+            {
+              "id": "b",
+              "label": "B=(−3)²+2(−3)−5"
+            },
+            {
+              "id": "c",
+              "label": "B=(−3)×2+2(−3)−5"
+            },
+            {
+              "id": "d",
+              "label": "B=3²+2(3)−5"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_valeur_numerique"
+          ]
+        },
+        {
+          "id": "lesson2",
+          "type": "lesson",
+          "title": "Deux variables",
+          "prompt": "Pour C=3a−2b avec a=4 et b=−1 : C=3×4−2×(−1)=12+2=14. Remplace séparément chaque lettre.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "lesson3",
+          "type": "lesson",
+          "title": "Ordre des opérations",
+          "prompt": "Commence par les puissances, puis effectue multiplications et divisions, enfin additions et soustractions.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "paper1",
+          "type": "paper_work",
+          "title": "À toi sur papier",
+          "prompt": "Pour x=−1, calcule 3x²−4x+2 sur ton cahier.",
+          "action_label": "J’ai essayé"
+        },
+        {
+          "id": "s3q2",
+          "type": "single_choice",
+          "title": "Vérifier",
+          "prompt": "Pour x=−1, combien vaut 3x²−4x+2 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "1"
+            },
+            {
+              "id": "b",
+              "label": "5"
+            },
+            {
+              "id": "c",
+              "label": "9"
+            },
+            {
+              "id": "d",
+              "label": "−9"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [
+            "Calcule d’abord (−1)²."
+          ],
+          "feedback": {},
+          "skills": [
+            "calculer_valeur_numerique"
+          ]
+        },
+        {
+          "id": "s3q3",
+          "type": "single_choice",
+          "title": "Deux variables",
+          "prompt": "Pour a=3 et b=4, combien vaut 2a+b ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "7"
+            },
+            {
+              "id": "b",
+              "label": "10"
+            },
+            {
+              "id": "c",
+              "label": "11"
+            },
+            {
+              "id": "d",
+              "label": "14"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_valeur_numerique"
+          ]
+        },
+        {
+          "id": "s3q4",
+          "type": "single_choice",
+          "title": "Deux valeurs",
+          "prompt": "Pour m=2 et n=−3, combien vaut m²−2n ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "−2"
+            },
+            {
+              "id": "b",
+              "label": "4"
+            },
+            {
+              "id": "c",
+              "label": "10"
+            },
+            {
+              "id": "d",
+              "label": "14"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_valeur_numerique"
+          ]
+        },
+        {
+          "id": "s3q5",
+          "type": "single_choice",
+          "title": "Produit",
+          "prompt": "Pour x=2, combien vaut (x+3)(x−1) ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "3"
+            },
+            {
+              "id": "b",
+              "label": "5"
+            },
+            {
+              "id": "c",
+              "label": "6"
+            },
+            {
+              "id": "d",
+              "label": "15"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_valeur_numerique"
+          ]
+        },
+        {
+          "id": "s3q6",
+          "type": "multiple_choice",
+          "title": "Défi",
+          "prompt": "Pour quelles valeurs P=x²−4 vaut-il 0 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "x=2"
+            },
+            {
+              "id": "b",
+              "label": "x=−2"
+            },
+            {
+              "id": "c",
+              "label": "x=4"
+            },
+            {
+              "id": "d",
+              "label": "x=0"
+            }
+          ],
+          "correct_option_ids": [
+            "a",
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "utiliser_nombres_meme_carre"
+          ]
+        },
+        {
+          "id": "solution",
+          "type": "guided_solution",
+          "title": "Correction et bilan",
+          "prompt": "Compare ton raisonnement avec la correction.",
+          "solution_blocks": [
+            {
+              "kind": "step",
+              "content": "Recopie l’expression."
+            },
+            {
+              "kind": "step",
+              "content": "Remplace la lettre par le nombre entre parenthèses."
+            },
+            {
+              "kind": "step",
+              "content": "Respecte l’ordre des opérations et vérifie les signes."
+            }
+          ]
+        }
+      ],
+      "remediation": []
+    },
+    {
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "3ème",
+      "subject": "Mathématiques",
+      "chapter": "Calcul littéral",
+      "difficulty": "progressif",
+      "paper_required": true,
+      "statement_before_guidance": true,
+      "chapter_promise": "Apprends à calculer avec des nombres et des lettres, à transformer des expressions et à résoudre des problèmes plus rapidement.",
+      "chapter_duration_minutes": 180,
+      "unlock_score": 60,
+      "id": "FR-3M-CL-S04",
+      "title": "Calculer avec des polynômes",
+      "estimated_minutes": 22,
+      "objective": "Reconnaître les termes semblables. Additionner, soustraire et multiplier des polynômes simples.",
+      "situation": "On additionne uniquement les termes qui ont exactement la même partie littérale : 3x+5x=8x, mais 3x+5x² ne se réduit pas.",
+      "materials": [
+        "cahier de brouillon",
+        "stylo"
+      ],
+      "skills": [
+        "additionner_polynomes",
+        "soustraire_polynomes",
+        "multiplier_polynomes"
+      ],
+      "session_objectives": [
+        "Reconnaître les termes semblables.",
+        "Additionner, soustraire et multiplier des polynômes simples."
+      ],
+      "path_kind": "session",
+      "path_order": 4,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Découvre la session",
+          "prompt": "On additionne uniquement les termes qui ont exactement la même partie littérale : 3x+5x=8x, mais 3x+5x² ne se réduit pas.",
+          "main_questions": [
+            "Comment traiter une parenthèse précédée d’un moins ?"
+          ],
+          "paper_instructions": [
+            "Prends ton cahier.",
+            "Essaie d’abord sur papier, puis choisis ta réponse."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "Commencer"
+        },
+        {
+          "id": "s4q1",
+          "type": "multiple_choice",
+          "title": "Termes semblables",
+          "prompt": "Quels termes sont semblables à 4x² ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "−3x²"
+            },
+            {
+              "id": "b",
+              "label": "7x"
+            },
+            {
+              "id": "c",
+              "label": "x²"
+            },
+            {
+              "id": "d",
+              "label": "5"
+            }
+          ],
+          "correct_option_ids": [
+            "a",
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "additionner_polynomes"
+          ]
+        },
+        {
+          "id": "lesson1",
+          "type": "lesson",
+          "title": "Additionner deux polynômes",
+          "prompt": "(3x²+2x−5)+(x²−4x+1) devient 3x²+x²+2x−4x−5+1, donc 4x²−2x−4.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s4q2",
+          "type": "single_choice",
+          "title": "Additionner",
+          "prompt": "Réduis (2x²+3x+1)+(x²−5x+4).",
+          "options": [
+            {
+              "id": "a",
+              "label": "3x²−2x+5"
+            },
+            {
+              "id": "b",
+              "label": "3x²+8x+5"
+            },
+            {
+              "id": "c",
+              "label": "x²−2x+3"
+            },
+            {
+              "id": "d",
+              "label": "3x²−2x−3"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "additionner_polynomes"
+          ]
+        },
+        {
+          "id": "lesson2",
+          "type": "lesson",
+          "title": "Soustraire un polynôme",
+          "prompt": "Dans (5x²−x+3)−(2x²+3x−4), le signe moins change tous les signes de la seconde parenthèse. On obtient 3x²−4x+7.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s4q3",
+          "type": "single_choice",
+          "title": "Soustraire",
+          "prompt": "Réduis (6x²+2x−3)−(4x²−x+5).",
+          "options": [
+            {
+              "id": "a",
+              "label": "2x²+x+2"
+            },
+            {
+              "id": "b",
+              "label": "2x²+3x−8"
+            },
+            {
+              "id": "c",
+              "label": "10x²+x−8"
+            },
+            {
+              "id": "d",
+              "label": "2x²−3x+2"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "soustraire_polynomes"
+          ]
+        },
+        {
+          "id": "lesson3",
+          "type": "lesson",
+          "title": "Erreur fréquente",
+          "prompt": "Quand une parenthèse est précédée d’un moins, change tous ses signes : −(2x²+3x−4)=−2x²−3x+4.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "lesson4",
+          "type": "lesson",
+          "title": "Multiplier par un monôme",
+          "prompt": "Multiplie chaque terme : 2x(3x²−x+4)=6x³−2x²+8x.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s4q4",
+          "type": "single_choice",
+          "title": "Monôme",
+          "prompt": "Développe 3x(2x−5).",
+          "options": [
+            {
+              "id": "a",
+              "label": "6x²−15x"
+            },
+            {
+              "id": "b",
+              "label": "6x−15"
+            },
+            {
+              "id": "c",
+              "label": "5x²−8x"
+            },
+            {
+              "id": "d",
+              "label": "6x²+15x"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "multiplier_polynomes"
+          ]
+        },
+        {
+          "id": "lesson5",
+          "type": "lesson",
+          "title": "Multiplier deux parenthèses",
+          "prompt": "Dans (x+3)(x+2), chaque terme multiplie chaque terme : x²+2x+3x+6=x²+5x+6.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s4q5",
+          "type": "single_choice",
+          "title": "Deux parenthèses",
+          "prompt": "Développe (x+4)(x−1).",
+          "options": [
+            {
+              "id": "a",
+              "label": "x²+3x−4"
+            },
+            {
+              "id": "b",
+              "label": "x²+5x−4"
+            },
+            {
+              "id": "c",
+              "label": "x²−3x−4"
+            },
+            {
+              "id": "d",
+              "label": "2x+3"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "multiplier_polynomes"
+          ]
+        },
+        {
+          "id": "s4q6",
+          "type": "single_choice",
+          "title": "Deux coefficients",
+          "prompt": "Développe (2x−1)(x+4).",
+          "options": [
+            {
+              "id": "a",
+              "label": "2x²+7x−4"
+            },
+            {
+              "id": "b",
+              "label": "2x²+8x−1"
+            },
+            {
+              "id": "c",
+              "label": "2x²−7x−4"
+            },
+            {
+              "id": "d",
+              "label": "3x²+3"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "multiplier_polynomes"
+          ]
+        },
+        {
+          "id": "solution",
+          "type": "guided_solution",
+          "title": "Correction et bilan",
+          "prompt": "Compare ton raisonnement avec la correction.",
+          "solution_blocks": [
+            {
+              "kind": "step",
+              "content": "Regroupe uniquement les termes semblables."
+            },
+            {
+              "kind": "step",
+              "content": "Une soustraction change tous les signes de la parenthèse retirée."
+            },
+            {
+              "kind": "step",
+              "content": "Dans un produit, chaque terme doit être multiplié."
+            }
+          ]
+        }
+      ],
+      "remediation": []
+    },
+    {
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "3ème",
+      "subject": "Mathématiques",
+      "chapter": "Calcul littéral",
+      "difficulty": "progressif",
+      "paper_required": true,
+      "statement_before_guidance": true,
+      "chapter_promise": "Apprends à calculer avec des nombres et des lettres, à transformer des expressions et à résoudre des problèmes plus rapidement.",
+      "chapter_duration_minutes": 180,
+      "unlock_score": 60,
+      "id": "FR-3M-CL-S05",
+      "title": "Développer et réduire",
+      "estimated_minutes": 22,
+      "objective": "Utiliser la distributivité. Reconnaître les trois identités remarquables.",
+      "situation": "Développer signifie supprimer les parenthèses en effectuant les multiplications : k(a+b)=ka+kb.",
+      "materials": [
+        "cahier de brouillon",
+        "stylo"
+      ],
+      "skills": [
+        "developper_expression",
+        "reduire_expression"
+      ],
+      "session_objectives": [
+        "Utiliser la distributivité.",
+        "Reconnaître les trois identités remarquables."
+      ],
+      "path_kind": "session",
+      "path_order": 5,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Découvre la session",
+          "prompt": "Développer signifie supprimer les parenthèses en effectuant les multiplications : k(a+b)=ka+kb.",
+          "main_questions": [
+            "Comment développer puis réduire ?"
+          ],
+          "paper_instructions": [
+            "Prends ton cahier.",
+            "Essaie d’abord sur papier, puis choisis ta réponse."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "Commencer"
+        },
+        {
+          "id": "lesson0",
+          "type": "lesson",
+          "title": "Développer",
+          "prompt": "La distributivité donne k(a+b)=ka+kb. Par exemple, 3(x+5)=3x+15.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "lesson1",
+          "type": "lesson",
+          "title": "Avec un signe négatif",
+          "prompt": "−2(x−3)=−2x+6, car −2×(−3)=+6.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s5q1",
+          "type": "single_choice",
+          "title": "Distributivité",
+          "prompt": "Développe −3(2x−4).",
+          "options": [
+            {
+              "id": "a",
+              "label": "−6x−12"
+            },
+            {
+              "id": "b",
+              "label": "−6x+12"
+            },
+            {
+              "id": "c",
+              "label": "−3x+4"
+            },
+            {
+              "id": "d",
+              "label": "6x−12"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "developper_expression"
+          ]
+        },
+        {
+          "id": "lesson2",
+          "type": "lesson",
+          "title": "Développer puis réduire",
+          "prompt": "Pour 3(2x−5)+4x, développe d’abord : 6x−15+4x. Regroupe ensuite les termes semblables : 10x−15.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s5q2",
+          "type": "single_choice",
+          "title": "Développer puis réduire",
+          "prompt": "Réduis 2(x+5)+3x.",
+          "options": [
+            {
+              "id": "a",
+              "label": "5x+10"
+            },
+            {
+              "id": "b",
+              "label": "5x+5"
+            },
+            {
+              "id": "c",
+              "label": "6x+10"
+            },
+            {
+              "id": "d",
+              "label": "2x+15"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "reduire_expression"
+          ]
+        },
+        {
+          "id": "lesson3",
+          "type": "lesson",
+          "title": "Double distributivité",
+          "prompt": "Dans (a+b)(c+d), chaque terme de la première parenthèse multiplie chaque terme de la seconde : ac+ad+bc+bd.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "lesson4",
+          "type": "lesson",
+          "title": "Carré d’une somme",
+          "prompt": "(a+b)²=a²+2ab+b². Par exemple, (x+3)²=x²+6x+9.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s5q3",
+          "type": "single_choice",
+          "title": "Carré d’une somme",
+          "prompt": "Développe (x+6)².",
+          "options": [
+            {
+              "id": "a",
+              "label": "x²+36"
+            },
+            {
+              "id": "b",
+              "label": "x²+6x+36"
+            },
+            {
+              "id": "c",
+              "label": "x²+12x+36"
+            },
+            {
+              "id": "d",
+              "label": "2x²+36"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "developper_expression"
+          ]
+        },
+        {
+          "id": "lesson5",
+          "type": "lesson",
+          "title": "Carré d’une différence",
+          "prompt": "(a−b)²=a²−2ab+b². Par exemple, (2x−3)²=4x²−12x+9.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s5q4",
+          "type": "single_choice",
+          "title": "Carré d’une différence",
+          "prompt": "Développe (3x−2)².",
+          "options": [
+            {
+              "id": "a",
+              "label": "9x²−12x+4"
+            },
+            {
+              "id": "b",
+              "label": "9x²−4"
+            },
+            {
+              "id": "c",
+              "label": "6x²−12x+4"
+            },
+            {
+              "id": "d",
+              "label": "9x²+12x+4"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "developper_expression"
+          ]
+        },
+        {
+          "id": "lesson6",
+          "type": "lesson",
+          "title": "Différence de deux carrés",
+          "prompt": "(a−b)(a+b)=a²−b². Par exemple, (x−5)(x+5)=x²−25.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s5q5",
+          "type": "single_choice",
+          "title": "Différence de carrés",
+          "prompt": "Développe (2x−5)(2x+5).",
+          "options": [
+            {
+              "id": "a",
+              "label": "4x²−25"
+            },
+            {
+              "id": "b",
+              "label": "4x²+25"
+            },
+            {
+              "id": "c",
+              "label": "2x²−25"
+            },
+            {
+              "id": "d",
+              "label": "4x²−20x+25"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "developper_expression"
+          ]
+        },
+        {
+          "id": "paper1",
+          "type": "paper_work",
+          "title": "À toi sur papier",
+          "prompt": "Développe et réduis A=2(x−3)+(x+1)(x−2), puis compare avec la correction.",
+          "action_label": "J’ai essayé"
+        },
+        {
+          "id": "solution",
+          "type": "guided_solution",
+          "title": "Correction et bilan",
+          "prompt": "Compare ton raisonnement avec la correction.",
+          "solution_blocks": [
+            {
+              "kind": "step",
+              "content": "Développe d’abord chaque produit."
+            },
+            {
+              "kind": "step",
+              "content": "Regroupe ensuite les termes semblables."
+            },
+            {
+              "kind": "step",
+              "content": "Pour le défi : A=2x−6+x²−2x+x−2=x²+x−8."
+            }
+          ]
+        }
+      ],
+      "remediation": []
+    },
+    {
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "3ème",
+      "subject": "Mathématiques",
+      "chapter": "Calcul littéral",
+      "difficulty": "progressif",
+      "paper_required": true,
+      "statement_before_guidance": true,
+      "chapter_promise": "Apprends à calculer avec des nombres et des lettres, à transformer des expressions et à résoudre des problèmes plus rapidement.",
+      "chapter_duration_minutes": 180,
+      "unlock_score": 60,
+      "id": "FR-3M-CL-S06",
+      "title": "Factoriser une expression",
+      "estimated_minutes": 22,
+      "objective": "Trouver un facteur commun. Utiliser une identité remarquable à l’envers. Appliquer le produit nul.",
+      "situation": "Factoriser transforme une somme en produit. C’est l’opération inverse de développer : 3x+6=3(x+2).",
+      "materials": [
+        "cahier de brouillon",
+        "stylo"
+      ],
+      "skills": [
+        "factoriser_facteur_commun",
+        "factoriser_identite",
+        "utiliser_produit_nul",
+        "utiliser_nombres_meme_carre"
+      ],
+      "session_objectives": [
+        "Trouver un facteur commun.",
+        "Utiliser une identité remarquable à l’envers.",
+        "Appliquer le produit nul."
+      ],
+      "path_kind": "session",
+      "path_order": 6,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Découvre la session",
+          "prompt": "Factoriser transforme une somme en produit. C’est l’opération inverse de développer : 3x+6=3(x+2).",
+          "main_questions": [
+            "Quel facteur commun choisir ?"
+          ],
+          "paper_instructions": [
+            "Prends ton cahier.",
+            "Essaie d’abord sur papier, puis choisis ta réponse."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "Commencer"
+        },
+        {
+          "id": "lesson0",
+          "type": "lesson",
+          "title": "Chercher le facteur commun",
+          "prompt": "Dans 6x²+9x, les deux termes contiennent 3x. Donc 6x²+9x=3x(2x+3).",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s6q1",
+          "type": "single_choice",
+          "title": "Facteur commun",
+          "prompt": "Quel est le plus grand facteur commun de 8x² et 12x ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "2"
+            },
+            {
+              "id": "b",
+              "label": "4"
+            },
+            {
+              "id": "c",
+              "label": "4x"
+            },
+            {
+              "id": "d",
+              "label": "8x"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "factoriser_facteur_commun"
+          ]
+        },
+        {
+          "id": "lesson1",
+          "type": "lesson",
+          "title": "Différence de deux carrés",
+          "prompt": "a²−b²=(a−b)(a+b). Ainsi x²−16=x²−4²=(x−4)(x+4).",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s6q2",
+          "type": "single_choice",
+          "title": "Différence de carrés",
+          "prompt": "Factorise x²−49.",
+          "options": [
+            {
+              "id": "a",
+              "label": "(x−7)(x+7)"
+            },
+            {
+              "id": "b",
+              "label": "(x−49)(x+1)"
+            },
+            {
+              "id": "c",
+              "label": "(x−7)²"
+            },
+            {
+              "id": "d",
+              "label": "(x+7)²"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "factoriser_identite"
+          ]
+        },
+        {
+          "id": "lesson2",
+          "type": "lesson",
+          "title": "Carré parfait",
+          "prompt": "a²+2ab+b²=(a+b)². Ainsi x²+6x+9=(x+3)².",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s6q3",
+          "type": "single_choice",
+          "title": "Carré parfait",
+          "prompt": "Factorise x²+10x+25.",
+          "options": [
+            {
+              "id": "a",
+              "label": "(x+5)²"
+            },
+            {
+              "id": "b",
+              "label": "(x−5)²"
+            },
+            {
+              "id": "c",
+              "label": "(x+10)(x+15)"
+            },
+            {
+              "id": "d",
+              "label": "x(x+10)+25"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "factoriser_identite"
+          ]
+        },
+        {
+          "id": "lesson3",
+          "type": "lesson",
+          "title": "Produit nul",
+          "prompt": "Si un produit est nul, au moins un facteur est nul : AB=0 signifie A=0 ou B=0.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s6q4",
+          "type": "multiple_choice",
+          "title": "Résoudre",
+          "prompt": "Résous (x−3)(x+6)=0.",
+          "options": [
+            {
+              "id": "a",
+              "label": "x=3"
+            },
+            {
+              "id": "b",
+              "label": "x=−6"
+            },
+            {
+              "id": "c",
+              "label": "x=−3"
+            },
+            {
+              "id": "d",
+              "label": "x=6"
+            }
+          ],
+          "correct_option_ids": [
+            "a",
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "utiliser_produit_nul"
+          ]
+        },
+        {
+          "id": "lesson4",
+          "type": "lesson",
+          "title": "Produit non nul",
+          "prompt": "Un produit est non nul si et seulement si chacun de ses facteurs est non nul : AB≠0 équivaut à A≠0 et B≠0.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "lesson5",
+          "type": "lesson",
+          "title": "Nombres de même carré",
+          "prompt": "Si a²=b², alors a=b ou a=−b. Ainsi x²=25 donne x=5 ou x=−5.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s6q5",
+          "type": "multiple_choice",
+          "title": "Même carré",
+          "prompt": "Résous x²=36.",
+          "options": [
+            {
+              "id": "a",
+              "label": "x=6"
+            },
+            {
+              "id": "b",
+              "label": "x=−6"
+            },
+            {
+              "id": "c",
+              "label": "x=18"
+            },
+            {
+              "id": "d",
+              "label": "x=−18"
+            }
+          ],
+          "correct_option_ids": [
+            "a",
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "utiliser_nombres_meme_carre"
+          ]
+        },
+        {
+          "id": "s6q6",
+          "type": "multiple_choice",
+          "title": "Factoriser puis résoudre",
+          "prompt": "Quelles sont les solutions de 2x²−8x=0 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "x=0"
+            },
+            {
+              "id": "b",
+              "label": "x=4"
+            },
+            {
+              "id": "c",
+              "label": "x=−4"
+            },
+            {
+              "id": "d",
+              "label": "x=8"
+            }
+          ],
+          "correct_option_ids": [
+            "a",
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "utiliser_produit_nul"
+          ]
+        },
+        {
+          "id": "lesson6",
+          "type": "lesson",
+          "title": "Erreur fréquente",
+          "prompt": "x²+9 ne se factorise pas en (x+3)(x−3), car ce produit vaut x²−9 : le signe est différent.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "solution",
+          "type": "guided_solution",
+          "title": "Correction et bilan",
+          "prompt": "Compare ton raisonnement avec la correction.",
+          "solution_blocks": [
+            {
+              "kind": "step",
+              "content": "Cherche d’abord un facteur commun."
+            },
+            {
+              "kind": "step",
+              "content": "Puis une identité remarquable ou une différence de deux carrés."
+            },
+            {
+              "kind": "step",
+              "content": "Un produit nul donne une équation pour chaque facteur."
+            }
+          ]
+        }
+      ],
+      "remediation": []
+    },
+    {
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "3ème",
+      "subject": "Mathématiques",
+      "chapter": "Calcul littéral",
+      "difficulty": "progressif",
+      "paper_required": true,
+      "statement_before_guidance": true,
+      "chapter_promise": "Apprends à calculer avec des nombres et des lettres, à transformer des expressions et à résoudre des problèmes plus rapidement.",
+      "chapter_duration_minutes": 180,
+      "unlock_score": 60,
+      "id": "FR-3M-CL-S07",
+      "title": "Utiliser les fractions rationnelles",
+      "estimated_minutes": 22,
+      "objective": "Déterminer les valeurs interdites. Simplifier des facteurs complets. Résoudre une égalité de quotients.",
+      "situation": "Une fraction rationnelle est un quotient de polynômes. Elle existe seulement lorsque son dénominateur n’est pas nul.",
+      "materials": [
+        "cahier de brouillon",
+        "stylo"
+      ],
+      "skills": [
+        "determiner_valeur_interdite",
+        "simplifier_fraction_rationnelle",
+        "resoudre_egalite_quotients"
+      ],
+      "session_objectives": [
+        "Déterminer les valeurs interdites.",
+        "Simplifier des facteurs complets.",
+        "Résoudre une égalité de quotients."
+      ],
+      "path_kind": "session",
+      "path_order": 7,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Découvre la session",
+          "prompt": "Une fraction rationnelle est un quotient de polynômes. Elle existe seulement lorsque son dénominateur n’est pas nul.",
+          "main_questions": [
+            "Quelle valeur faut-il exclure avant de calculer ?"
+          ],
+          "paper_instructions": [
+            "Prends ton cahier.",
+            "Essaie d’abord sur papier, puis choisis ta réponse."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "Commencer"
+        },
+        {
+          "id": "lesson0",
+          "type": "lesson",
+          "title": "Domaine de définition",
+          "prompt": "Pour déterminer les valeurs interdites, cherche les nombres qui annulent le dénominateur. Pour 3/(x−2), il faut x−2≠0, donc x≠2.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s7q1",
+          "type": "single_choice",
+          "title": "Valeur interdite",
+          "prompt": "Quelle est la valeur interdite de (x+1)/(x−5) ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "−5"
+            },
+            {
+              "id": "b",
+              "label": "−1"
+            },
+            {
+              "id": "c",
+              "label": "1"
+            },
+            {
+              "id": "d",
+              "label": "5"
+            }
+          ],
+          "correct_option_ids": [
+            "d"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "determiner_valeur_interdite"
+          ]
+        },
+        {
+          "id": "lesson1",
+          "type": "lesson",
+          "title": "Simplifier une fraction",
+          "prompt": "Factorise le numérateur et le dénominateur, puis simplifie uniquement un facteur complet. Par exemple, (x²−16)/(x−4)=(x−4)(x+4)/(x−4)=x+4 pour x≠4.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s7q2",
+          "type": "single_choice",
+          "title": "Facteur complet",
+          "prompt": "Pour x≠4, simplifie (x²−16)/(x−4).",
+          "options": [
+            {
+              "id": "a",
+              "label": "x−4"
+            },
+            {
+              "id": "b",
+              "label": "x+4"
+            },
+            {
+              "id": "c",
+              "label": "x"
+            },
+            {
+              "id": "d",
+              "label": "1"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [
+            "Factorise x²−16."
+          ],
+          "feedback": {},
+          "skills": [
+            "simplifier_fraction_rationnelle"
+          ]
+        },
+        {
+          "id": "lesson2",
+          "type": "lesson",
+          "title": "Conserver la valeur interdite",
+          "prompt": "Même après simplification, la valeur interdite de l’expression de départ reste exclue. x+4 est ici obtenu seulement pour x≠4.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "lesson3",
+          "type": "lesson",
+          "title": "Simplification interdite",
+          "prompt": "On simplifie des facteurs, pas les termes d’une somme. Dans (x+2)/x, x n’est pas facteur de tout le numérateur : aucun x ne peut être supprimé.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s7q3",
+          "type": "single_choice",
+          "title": "Simplification interdite",
+          "prompt": "Pourquoi ne peut-on pas supprimer les x dans (x+2)/x ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "x est négatif"
+            },
+            {
+              "id": "b",
+              "label": "x est une somme"
+            },
+            {
+              "id": "c",
+              "label": "x n’est pas un facteur de tout le numérateur"
+            },
+            {
+              "id": "d",
+              "label": "Le quotient vaut toujours 1"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "simplifier_fraction_rationnelle"
+          ]
+        },
+        {
+          "id": "lesson4",
+          "type": "lesson",
+          "title": "Égalité de quotients",
+          "prompt": "Si a/b=c/d avec b et d non nuls, alors ad=bc. Commence toujours par noter les valeurs interdites, puis effectue le produit en croix.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s7q4",
+          "type": "single_choice",
+          "title": "Quotients",
+          "prompt": "Si 3/(x−1)=1/2, quelle équation obtient-on par produit en croix ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "6=x−1"
+            },
+            {
+              "id": "b",
+              "label": "3x−3=2"
+            },
+            {
+              "id": "c",
+              "label": "3x−1=2"
+            },
+            {
+              "id": "d",
+              "label": "6x=1"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "resoudre_egalite_quotients"
+          ]
+        },
+        {
+          "id": "s7q5",
+          "type": "single_choice",
+          "title": "Résoudre",
+          "prompt": "Quelle solution obtient-on avec 6=x−1 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "x=5"
+            },
+            {
+              "id": "b",
+              "label": "x=6"
+            },
+            {
+              "id": "c",
+              "label": "x=7"
+            },
+            {
+              "id": "d",
+              "label": "x=−7"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "resoudre_egalite_quotients"
+          ]
+        },
+        {
+          "id": "lesson5",
+          "type": "lesson",
+          "title": "Les trois questions à se poser",
+          "prompt": "1. Quelle valeur annule le dénominateur ? 2. Numérateur et dénominateur sont-ils factorisés ? 3. Ce que je supprime est-il un facteur complet ?",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "solution",
+          "type": "guided_solution",
+          "title": "Correction et bilan",
+          "prompt": "Compare ton raisonnement avec la correction.",
+          "solution_blocks": [
+            {
+              "kind": "step",
+              "content": "Annule le dénominateur pour trouver les valeurs interdites."
+            },
+            {
+              "kind": "step",
+              "content": "Factorise avant de simplifier."
+            },
+            {
+              "kind": "step",
+              "content": "Supprime seulement un facteur complet et conserve les exclusions."
+            }
+          ]
+        }
+      ],
+      "remediation": []
+    },
+    {
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "3ème",
+      "subject": "Mathématiques",
+      "chapter": "Calcul littéral",
+      "difficulty": "progressif",
+      "paper_required": true,
+      "statement_before_guidance": true,
+      "chapter_promise": "Apprends à calculer avec des nombres et des lettres, à transformer des expressions et à résoudre des problèmes plus rapidement.",
+      "chapter_duration_minutes": 180,
+      "unlock_score": 60,
+      "id": "FR-3M-CL-S08",
+      "title": "Résoudre un problème complet",
+      "estimated_minutes": 25,
+      "objective": "Modéliser une situation. Développer, factoriser et vérifier une solution cohérente.",
+      "situation": "Un terrain carré de côté x mètres contient une zone de 6 m sur 6 m réservée au rangement. L’aire disponible vaut donc x²−36.",
+      "materials": [
+        "cahier de brouillon",
+        "stylo"
+      ],
+      "skills": [
+        "modeliser_situation",
+        "developper_expression",
+        "factoriser_identite",
+        "utiliser_nombres_meme_carre"
+      ],
+      "session_objectives": [
+        "Modéliser une situation.",
+        "Développer, factoriser et vérifier une solution cohérente."
+      ],
+      "path_kind": "session",
+      "path_order": 8,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Découvre la session",
+          "prompt": "Un terrain carré de côté x mètres contient une zone de 6 m sur 6 m réservée au rangement. L’aire disponible vaut donc x²−36.",
+          "main_questions": [
+            "Exprime, transforme puis interprète le résultat."
+          ],
+          "paper_instructions": [
+            "Prends ton cahier.",
+            "Essaie d’abord sur papier, puis choisis ta réponse."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "Commencer"
+        },
+        {
+          "id": "lesson0",
+          "type": "lesson",
+          "title": "Comprendre la situation",
+          "prompt": "L’aire totale du terrain carré est x². La zone réservée mesure 6×6=36 m². L’aire disponible est donc A(x)=x²−36.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s8q1",
+          "type": "single_choice",
+          "title": "Modéliser",
+          "prompt": "Quelle expression représente l’aire disponible ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "x²−6"
+            },
+            {
+              "id": "b",
+              "label": "x²−12"
+            },
+            {
+              "id": "c",
+              "label": "x²−36"
+            },
+            {
+              "id": "d",
+              "label": "(x−6)²"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "modeliser_situation"
+          ]
+        },
+        {
+          "id": "lesson1",
+          "type": "lesson",
+          "title": "Développer et factoriser",
+          "prompt": "L’expression x²−36 est déjà développée et réduite. Comme 36=6², on reconnaît une différence de deux carrés : x²−36=(x−6)(x+6).",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s8q2",
+          "type": "single_choice",
+          "title": "Factoriser",
+          "prompt": "Factorise x²−36.",
+          "options": [
+            {
+              "id": "a",
+              "label": "(x−6)(x+6)"
+            },
+            {
+              "id": "b",
+              "label": "(x−18)(x+2)"
+            },
+            {
+              "id": "c",
+              "label": "(x−6)²"
+            },
+            {
+              "id": "d",
+              "label": "x(x−36)"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "factoriser_identite"
+          ]
+        },
+        {
+          "id": "lesson2",
+          "type": "lesson",
+          "title": "À quoi sert la forme factorisée ?",
+          "prompt": "La forme factorisée aide à résoudre certaines équations et à étudier quand l’aire est nulle. Elle fait apparaître les facteurs x−6 et x+6.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "paper1",
+          "type": "paper_work",
+          "title": "À toi sur papier",
+          "prompt": "Le collège veut 189 m² disponibles. Résous x²−36=189 sur ton cahier.",
+          "action_label": "J’ai essayé"
+        },
+        {
+          "id": "lesson3",
+          "type": "lesson",
+          "title": "Résoudre le nouveau problème",
+          "prompt": "On cherche x tel que x²−36=189. Ajoute 36 aux deux membres : x²=225. Les solutions algébriques sont 15 et −15.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s8q3",
+          "type": "multiple_choice",
+          "title": "Résoudre",
+          "prompt": "Quelles valeurs algébriques vérifient x²=225 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "x=15"
+            },
+            {
+              "id": "b",
+              "label": "x=−15"
+            },
+            {
+              "id": "c",
+              "label": "x=112,5"
+            },
+            {
+              "id": "d",
+              "label": "x=225"
+            }
+          ],
+          "correct_option_ids": [
+            "a",
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "utiliser_nombres_meme_carre"
+          ]
+        },
+        {
+          "id": "lesson4",
+          "type": "lesson",
+          "title": "Interpréter",
+          "prompt": "Une longueur ne peut pas être négative. Même si −15 vérifie l’équation, seule la solution x=15 m convient à la situation.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s8q4",
+          "type": "single_choice",
+          "title": "Interpréter",
+          "prompt": "Quelle solution convient pour la longueur du côté ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "−15 m"
+            },
+            {
+              "id": "b",
+              "label": "0 m"
+            },
+            {
+              "id": "c",
+              "label": "15 m"
+            },
+            {
+              "id": "d",
+              "label": "225 m"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "modeliser_situation"
+          ]
+        },
+        {
+          "id": "lesson5",
+          "type": "lesson",
+          "title": "Toujours vérifier",
+          "prompt": "Remplace x par la solution retenue dans l’expression de départ : 15²−36=225−36=189. La valeur répond bien au problème.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s8q5",
+          "type": "single_choice",
+          "title": "Vérifier",
+          "prompt": "Quelle vérification est correcte ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "15²−36=189"
+            },
+            {
+              "id": "b",
+              "label": "15²+36=189"
+            },
+            {
+              "id": "c",
+              "label": "15×2−36=189"
+            },
+            {
+              "id": "d",
+              "label": "189²−36=15"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_valeur_numerique"
+          ]
+        },
+        {
+          "id": "lesson6",
+          "type": "lesson",
+          "title": "Défi de synthèse",
+          "prompt": "Un autre terrain a pour longueur x+4 mètres et largeur x−2 mètres. Son aire est (x+4)(x−2)=x²+2x−8. Il faut x>2 pour que la largeur soit positive.",
+          "action_label": "Continuer"
+        },
+        {
+          "id": "s8q6",
+          "type": "single_choice",
+          "title": "Aire sous forme d’un produit",
+          "prompt": "Quelle expression donne l’aire du nouveau terrain ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "(x+4)(x−2)"
+            },
+            {
+              "id": "b",
+              "label": "x+2"
+            },
+            {
+              "id": "c",
+              "label": "x²−8"
+            },
+            {
+              "id": "d",
+              "label": "(x−4)(x+2)"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "modeliser_situation"
+          ]
+        },
+        {
+          "id": "s8q7",
+          "type": "single_choice",
+          "title": "Développer l’aire",
+          "prompt": "Développe (x+4)(x−2).",
+          "options": [
+            {
+              "id": "a",
+              "label": "x²+2x−8"
+            },
+            {
+              "id": "b",
+              "label": "x²−2x−8"
+            },
+            {
+              "id": "c",
+              "label": "x²+6x−8"
+            },
+            {
+              "id": "d",
+              "label": "x²+2"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "developper_expression"
+          ]
+        },
+        {
+          "id": "s8q8",
+          "type": "single_choice",
+          "title": "Calculer l’aire",
+          "prompt": "Pour x=8, quelle est l’aire du terrain ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "60 m²"
+            },
+            {
+              "id": "b",
+              "label": "72 m²"
+            },
+            {
+              "id": "c",
+              "label": "80 m²"
+            },
+            {
+              "id": "d",
+              "label": "96 m²"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_valeur_numerique"
+          ]
+        },
+        {
+          "id": "solution",
+          "type": "guided_solution",
+          "title": "Correction et bilan",
+          "prompt": "Compare ton raisonnement avec la correction.",
+          "solution_blocks": [
+            {
+              "kind": "step",
+              "content": "Traduis la situation par x²−36."
+            },
+            {
+              "kind": "step",
+              "content": "Résous x²=225 : x=15 ou x=−15."
+            },
+            {
+              "kind": "step",
+              "content": "Une longueur est positive, donc x=15 m."
+            },
+            {
+              "kind": "step",
+              "content": "Vérifie : 225−36=189."
+            }
+          ]
+        }
+      ],
+      "remediation": []
+    },
+    {
+      "country": "Côte d’Ivoire",
+      "education_system": "Programme ivoirien",
+      "level": "3ème",
+      "subject": "Mathématiques",
+      "chapter": "Calcul littéral",
+      "difficulty": "progressif",
+      "paper_required": true,
+      "statement_before_guidance": true,
+      "chapter_promise": "Apprends à calculer avec des nombres et des lettres, à transformer des expressions et à résoudre des problèmes plus rapidement.",
+      "chapter_duration_minutes": 180,
+      "unlock_score": 60,
+      "id": "FR-3M-CL-EVAL",
+      "title": "Évaluation — Calcul littéral",
+      "estimated_minutes": 20,
+      "objective": "Valider la maîtrise de toutes les notions du chapitre.",
+      "situation": "Cette évaluation mélange toutes les notions. Garde ton cahier à côté de toi.",
+      "materials": [
+        "cahier de brouillon",
+        "stylo"
+      ],
+      "skills": [
+        "identifier_polynome",
+        "calculer_puissances",
+        "calculer_valeur_numerique",
+        "reduire_expression",
+        "developper_expression",
+        "factoriser_identite",
+        "utiliser_produit_nul",
+        "determiner_valeur_interdite",
+        "modeliser_situation"
+      ],
+      "session_objectives": [
+        "Valider la maîtrise de toutes les notions du chapitre."
+      ],
+      "path_kind": "evaluation",
+      "path_order": 99,
+      "session_flow": [
+        {
+          "id": "statement",
+          "type": "statement",
+          "title": "Découvre la session",
+          "prompt": "Cette évaluation mélange toutes les notions. Garde ton cahier à côté de toi.",
+          "main_questions": [
+            "Réponds aux quinze questions sans indice si possible."
+          ],
+          "paper_instructions": [
+            "Prends ton cahier.",
+            "Essaie d’abord sur papier, puis choisis ta réponse."
+          ],
+          "display": {
+            "type": "text_problem"
+          },
+          "action_label": "Commencer"
+        },
+        {
+          "id": "e1",
+          "type": "single_choice",
+          "title": "Polynôme",
+          "prompt": "Quelle expression est un polynôme ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "2/x+1"
+            },
+            {
+              "id": "b",
+              "label": "3x²−4x+7"
+            },
+            {
+              "id": "c",
+              "label": "√x+5"
+            },
+            {
+              "id": "d",
+              "label": "1/(x−2)"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "identifier_polynome"
+          ]
+        },
+        {
+          "id": "e2",
+          "type": "single_choice",
+          "title": "Degré",
+          "prompt": "Quel est le degré de 5x⁴−2x²+x−8 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "2"
+            },
+            {
+              "id": "b",
+              "label": "4"
+            },
+            {
+              "id": "c",
+              "label": "5"
+            },
+            {
+              "id": "d",
+              "label": "8"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "determiner_degre"
+          ]
+        },
+        {
+          "id": "e3",
+          "type": "single_choice",
+          "title": "Puissances",
+          "prompt": "Simplifie x⁵×x⁻².",
+          "options": [
+            {
+              "id": "a",
+              "label": "x³"
+            },
+            {
+              "id": "b",
+              "label": "x⁷"
+            },
+            {
+              "id": "c",
+              "label": "x⁻¹⁰"
+            },
+            {
+              "id": "d",
+              "label": "x¹⁰"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_puissances"
+          ]
+        },
+        {
+          "id": "e4",
+          "type": "single_choice",
+          "title": "Valeur numérique",
+          "prompt": "Pour x=−2, combien vaut 3x²−2x+1 ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "9"
+            },
+            {
+              "id": "b",
+              "label": "13"
+            },
+            {
+              "id": "c",
+              "label": "17"
+            },
+            {
+              "id": "d",
+              "label": "−17"
+            }
+          ],
+          "correct_option_ids": [
+            "c"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "calculer_valeur_numerique"
+          ]
+        },
+        {
+          "id": "e5",
+          "type": "single_choice",
+          "title": "Réduire",
+          "prompt": "Réduis 5x²+3x−2x²−7x+4.",
+          "options": [
+            {
+              "id": "a",
+              "label": "3x²−4x+4"
+            },
+            {
+              "id": "b",
+              "label": "7x²−4x+4"
+            },
+            {
+              "id": "c",
+              "label": "3x²+10x+4"
+            },
+            {
+              "id": "d",
+              "label": "3x−4"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "reduire_expression"
+          ]
+        },
+        {
+          "id": "e6",
+          "type": "single_choice",
+          "title": "Soustraire",
+          "prompt": "Réduis (4x²−x+3)−(x²+2x−5).",
+          "options": [
+            {
+              "id": "a",
+              "label": "3x²−3x+8"
+            },
+            {
+              "id": "b",
+              "label": "3x²+x−2"
+            },
+            {
+              "id": "c",
+              "label": "5x²+x−2"
+            },
+            {
+              "id": "d",
+              "label": "3x²−3x−2"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "soustraire_polynomes"
+          ]
+        },
+        {
+          "id": "e7",
+          "type": "single_choice",
+          "title": "Distributivité",
+          "prompt": "Développe 3(x−2)+2x.",
+          "options": [
+            {
+              "id": "a",
+              "label": "5x−6"
+            },
+            {
+              "id": "b",
+              "label": "5x−2"
+            },
+            {
+              "id": "c",
+              "label": "6x−6"
+            },
+            {
+              "id": "d",
+              "label": "3x"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "developper_expression"
+          ]
+        },
+        {
+          "id": "e8",
+          "type": "single_choice",
+          "title": "Double distributivité",
+          "prompt": "Développe (x+5)(x−2).",
+          "options": [
+            {
+              "id": "a",
+              "label": "x²+3x−10"
+            },
+            {
+              "id": "b",
+              "label": "x²+7x−10"
+            },
+            {
+              "id": "c",
+              "label": "x²+3"
+            },
+            {
+              "id": "d",
+              "label": "2x+3"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "developper_expression"
+          ]
+        },
+        {
+          "id": "e9",
+          "type": "single_choice",
+          "title": "Identité",
+          "prompt": "Développe (2x−3)².",
+          "options": [
+            {
+              "id": "a",
+              "label": "4x²−9"
+            },
+            {
+              "id": "b",
+              "label": "4x²−12x+9"
+            },
+            {
+              "id": "c",
+              "label": "2x²−6x+9"
+            },
+            {
+              "id": "d",
+              "label": "4x²+12x+9"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "developper_expression"
+          ]
+        },
+        {
+          "id": "e10",
+          "type": "single_choice",
+          "title": "Facteur commun",
+          "prompt": "Factorise 8x²+12x.",
+          "options": [
+            {
+              "id": "a",
+              "label": "4x(2x+3)"
+            },
+            {
+              "id": "b",
+              "label": "4(2x²+3x)"
+            },
+            {
+              "id": "c",
+              "label": "2x(4x+12)"
+            },
+            {
+              "id": "d",
+              "label": "8x(x+12)"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "factoriser_facteur_commun"
+          ]
+        },
+        {
+          "id": "e11",
+          "type": "single_choice",
+          "title": "Différence de carrés",
+          "prompt": "Factorise x²−64.",
+          "options": [
+            {
+              "id": "a",
+              "label": "(x−8)(x+8)"
+            },
+            {
+              "id": "b",
+              "label": "(x−32)(x+2)"
+            },
+            {
+              "id": "c",
+              "label": "(x−8)²"
+            },
+            {
+              "id": "d",
+              "label": "(x+8)²"
+            }
+          ],
+          "correct_option_ids": [
+            "a"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "factoriser_identite"
+          ]
+        },
+        {
+          "id": "e12",
+          "type": "multiple_choice",
+          "title": "Produit nul",
+          "prompt": "Résous (x−7)(2x+4)=0.",
+          "options": [
+            {
+              "id": "a",
+              "label": "x=7"
+            },
+            {
+              "id": "b",
+              "label": "x=−2"
+            },
+            {
+              "id": "c",
+              "label": "x=−7"
+            },
+            {
+              "id": "d",
+              "label": "x=2"
+            }
+          ],
+          "correct_option_ids": [
+            "a",
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "utiliser_produit_nul"
+          ]
+        },
+        {
+          "id": "e13",
+          "type": "single_choice",
+          "title": "Valeur interdite",
+          "prompt": "Quelle est la valeur interdite de (x+1)/(x−5) ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "−5"
+            },
+            {
+              "id": "b",
+              "label": "−1"
+            },
+            {
+              "id": "c",
+              "label": "1"
+            },
+            {
+              "id": "d",
+              "label": "5"
+            }
+          ],
+          "correct_option_ids": [
+            "d"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "determiner_valeur_interdite"
+          ]
+        },
+        {
+          "id": "e14",
+          "type": "single_choice",
+          "title": "Simplifier",
+          "prompt": "Pour x≠4, simplifie (x²−16)/(x−4).",
+          "options": [
+            {
+              "id": "a",
+              "label": "x−4"
+            },
+            {
+              "id": "b",
+              "label": "x+4"
+            },
+            {
+              "id": "c",
+              "label": "x"
+            },
+            {
+              "id": "d",
+              "label": "1"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "simplifier_fraction_rationnelle"
+          ]
+        },
+        {
+          "id": "e15",
+          "type": "single_choice",
+          "title": "Problème final",
+          "prompt": "Un jardin carré de côté 12 m contient une zone carrée de 5 m de côté. Quelle aire reste disponible ?",
+          "options": [
+            {
+              "id": "a",
+              "label": "84 m²"
+            },
+            {
+              "id": "b",
+              "label": "119 m²"
+            },
+            {
+              "id": "c",
+              "label": "139 m²"
+            },
+            {
+              "id": "d",
+              "label": "144 m²"
+            }
+          ],
+          "correct_option_ids": [
+            "b"
+          ],
+          "hints": [],
+          "feedback": {},
+          "skills": [
+            "modeliser_situation"
+          ]
+        },
+        {
+          "id": "solution",
+          "type": "guided_solution",
+          "title": "Correction et bilan",
+          "prompt": "Compare ton raisonnement avec la correction.",
+          "solution_blocks": [
+            {
+              "kind": "step",
+              "content": "13 à 15 bonnes réponses : chapitre maîtrisé."
+            },
+            {
+              "kind": "step",
+              "content": "10 à 12 : renforce les quelques notions fragiles."
+            },
+            {
+              "kind": "step",
+              "content": "Moins de 10 : reprends les sessions signalées dans ton bilan."
+            }
+          ]
+        }
+      ],
+      "remediation": []
+    }
+  ]
+}

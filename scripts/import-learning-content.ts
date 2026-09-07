@@ -10,6 +10,7 @@ const sources: SourceFile[] = [
   { file: "bac-ci-2026-maths-serie-c.json", aliases: ["elima_bac_c_2026_correction_interactive.json"], importSubjects: true },
   { file: "terminale-c-demo-bank.json", aliases: ["elima_terminale_c_demo_bank.json"], importSubjects: false },
   { file: "6eme-maths-guided-sessions-v3.json", aliases: [], importSubjects: false, format: "guided_sessions_v3" },
+  { file: "3eme-maths-calcul-litteral-path-v1.json", aliases: [], importSubjects: false, format: "guided_sessions_v3" },
 ];
 const selectedSources = process.argv.includes("--guided-only") ? sources.filter((source) => source.format === "guided_sessions_v3") : sources;
 
@@ -160,6 +161,12 @@ try {
             statementBeforeGuidance: session.statement_before_guidance !== false,
             remediation: strings(session.remediation),
             scoring: session.scoring ?? {},
+            pathKind: session.path_kind ?? null,
+            pathOrder: Number(session.path_order ?? 999),
+            chapterPromise: session.chapter_promise ?? null,
+            chapterDurationMinutes: Number(session.chapter_duration_minutes ?? 0),
+            unlockScore: Number(session.unlock_score ?? 60),
+            sessionObjectives: strings(session.session_objectives),
           };
           const description = String(statement.context ?? session.situation ?? session.objective ?? "");
           const [exerciseRow] = await tx`
@@ -173,6 +180,15 @@ try {
             on conflict(exercise_id,external_id) do update set title=excluded.title,position=excluded.position,metadata=excluded.metadata returning id`;
           counts.exercises++;
           counts.parts++;
+
+          // Une mise à jour peut insérer de nouveaux écrans entre des questions
+          // existantes. On libère d'abord les positions finales pour éviter les
+          // collisions transitoires de la contrainte unique (exercise_id, position).
+          const positionOffset = 1_000_000;
+          await tx`
+            update public.learning_questions
+            set position = position + ${positionOffset}
+            where exercise_id = ${exerciseRow.id}`;
 
           for (const [position, step] of steps.entries()) {
             const questionExternal = required(step.id, `${externalId}.step.id`);
@@ -216,6 +232,15 @@ try {
               counts.corrections++;
             }
             counts.questions++;
+          }
+
+          const staleQuestions = await tx`
+            select external_id
+            from public.learning_questions
+            where exercise_id = ${exerciseRow.id}
+              and position >= ${positionOffset}`;
+          if (staleQuestions.length) {
+            throw new Error(`${externalId}: écrans retirés encore présents en base (${staleQuestions.map((item) => item.external_id).join(", ")}).`);
           }
         }
         continue;

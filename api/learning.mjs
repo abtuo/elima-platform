@@ -350,6 +350,31 @@ async function handleLearningBrowse({ body, demo, admin, user, response }) {
     return response.status(200).json({ kind, exam });
   }
 
+  if (body.action === "path") {
+    const subject = String(body.subject || ""); const chapter = String(body.chapter || "");
+    if (!subject || !chapter) return response.status(400).json({ message: "Choisis une matière et un chapitre." });
+    if (demo) return response.status(404).json({ message: "Ce parcours n’est pas disponible dans la démonstration." });
+    const profile = await resolveLearningProfile(admin, user);
+    const { data, error } = await admin.from("learning_exercises").select("id,title,description,country_code,education_system,difficulty,estimated_minutes,total_points,source_type,metadata,level:learning_levels(label),subject:learning_subjects(label),chapter:learning_chapters(label),questions:learning_questions(count)").eq("status", "published");
+    if (error) throw error;
+    const matches = (data || [])
+      .filter((item) => relation(item.subject)?.label === subject && relation(item.chapter)?.label === chapter && levelCompatible(relation(item.level)?.label, profile.level) && (!profile.country || !item.country_code || item.country_code === profile.country))
+      .map((item) => publicDbExercise(item))
+      .sort((a, b) => Number(a.metadata?.pathOrder ?? 999) - Number(b.metadata?.pathOrder ?? 999));
+    if (!matches.length) return response.status(404).json({ message: "Aucun parcours compatible pour cette sélection." });
+    const diagnostic = matches.find((item) => item.metadata?.pathKind === "diagnostic");
+    const evaluation = matches.find((item) => item.metadata?.pathKind === "evaluation");
+    const sessions = matches.filter((item) => item.metadata?.pathKind === "session" || !item.metadata?.pathKind);
+    const reference = diagnostic || sessions[0] || evaluation;
+    return response.status(200).json({
+      profile, subject, chapter,
+      promise: String(reference?.metadata?.chapterPromise || ""),
+      durationMinutes: Number(reference?.metadata?.chapterDurationMinutes || matches.reduce((sum, item) => sum + item.estimatedMinutes, 0)),
+      unlockScore: Number(reference?.metadata?.unlockScore || 60),
+      diagnostic, sessions, evaluation,
+    });
+  }
+
   if (body.action === "content") {
     const kind = body.kind === "exam" ? "exam" : "guided_exercise"; const id = String(body.id || "");
     if (!id) return response.status(400).json({ message: "Contenu manquant." });

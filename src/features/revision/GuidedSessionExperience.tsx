@@ -32,7 +32,7 @@ export function GuidedSessionExperience(props: Props) {
   const step = active.publicMetadata;
   const options = asOptions(step.options);
   const stepType = String(step.stepType || active.questionType);
-  const totalSteps = exercise.questions.filter((question) => question.questionType !== "orientation").length;
+  const totalSteps = exercise.questions.length;
   const isLast = activeIndex === totalSteps - 1;
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export function GuidedSessionExperience(props: Props) {
   }, [active.id, stepType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <PageContainer className="max-w-6xl">
-    <AppHeader title={exercise.title} subtitle={`${exercise.subject} · ${exercise.level}`} backTo="/student/reviser?mode=devoirs" />
+    <AppHeader title={exercise.title} subtitle={`${exercise.subject} · ${exercise.level}`} backTo="/student/reviser?mode=parcours" />
     {error ? <div className="mb-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900">{error}</div> : null}
     <div className="mb-4 rounded-2xl bg-accent px-4 py-3 text-white sm:px-5">
       <div className="mb-2 flex items-center justify-between gap-3 text-xs"><span>Étape {activeIndex + 1} sur {totalSteps}</span><span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />{exercise.estimatedMinutes} min</span></div>
@@ -48,7 +48,7 @@ export function GuidedSessionExperience(props: Props) {
     </div>
 
     {stepType !== "statement" ? <details className="card mb-4 overflow-hidden">
-      <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-revision sm:px-5">Relire l’énoncé complet</summary>
+      <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-revision sm:px-5">Relire l’introduction</summary>
       <div className="border-t border-gray-100 p-4 sm:p-5"><Statement exercise={exercise} compact /></div>
     </details> : null}
 
@@ -70,8 +70,8 @@ export function GuidedSessionExperience(props: Props) {
 
 function StepBody({ active, answer, solution, onPatchAnswer, stepType, options }: Props & { stepType: string; options: GuidedOption[] }) {
   const step = active.publicMetadata;
-  if (stepType === "orientation" || stepType === "paper_work") return null;
-  if (stepType === "guided_solution") return <><GuidedCorrection blocks={solution} loading={!solution.length} /><div className="mt-6"><p className="text-sm font-semibold text-accent">Avais-tu trouvé la bonne réponse ?</p><OptionButtons options={[{ id: "found", label: "Oui, j’avais trouvé" }, { id: "not_found", label: "Non, je n’avais pas trouvé" }]} value={answer.value} onChange={(value) => onPatchAnswer({ value })} /></div></>;
+  if (stepType === "lesson" || stepType === "orientation" || stepType === "paper_work") return null;
+  if (stepType === "guided_solution") return <GuidedCorrection blocks={solution} loading={!solution.length} />;
   if (stepType === "self_validation") return <SelfValidation checklist={asStrings(step.checklist)} options={asOptions(step.responseOptions)} value={answer.value} onChange={(value) => onPatchAnswer({ value })} />;
   if (stepType === "self_assessment") return <OptionButtons options={options} value={answer.value} onChange={(value) => onPatchAnswer({ value })} />;
   if (stepType === "ordering") return <Ordering items={asOptions(step.items)} value={answer.value} onChange={(value) => onPatchAnswer({ value, result: undefined })} />;
@@ -82,9 +82,9 @@ function StepBody({ active, answer, solution, onPatchAnswer, stepType, options }
 
 function StepActions(props: Props & { stepType: string; isLast: boolean }) {
   const { stepType, answer, busy } = props;
-  if (stepType === "statement" || stepType === "orientation" || stepType === "paper_work") return <button type="button" onClick={() => props.onCompleteStep("completed")} className="inline-flex items-center gap-1.5 rounded-xl bg-revision px-4 py-2.5 text-sm font-semibold text-white">{stepType === "statement" ? "Commencer" : "Valider"}<ChevronRight className="h-4 w-4" /></button>;
+  if (stepType === "statement" || stepType === "lesson" || stepType === "orientation" || stepType === "paper_work") return <button type="button" onClick={() => props.onCompleteStep("completed")} className="inline-flex items-center gap-1.5 rounded-xl bg-revision px-4 py-2.5 text-sm font-semibold text-white">{stepType === "statement" ? "Commencer" : "Continuer"}<ChevronRight className="h-4 w-4" /></button>;
   if (stepType === "self_validation" || stepType === "self_assessment") return <button type="button" disabled={!answer.value} onClick={() => props.onCompleteStep(answer.value)} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">Continuer<ChevronRight className="h-4 w-4" /></button>;
-  if (stepType === "guided_solution") return <button type="button" disabled={busy || !answer.value || !props.solution.length} onClick={props.onSubmit} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40"><Send className="h-4 w-4" />Voir la synthèse</button>;
+  if (stepType === "guided_solution") return <button type="button" disabled={busy || !props.solution.length} onClick={props.onSubmit} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40"><Send className="h-4 w-4" />Terminer la session</button>;
   if (CLOSED_TYPES.has(stepType)) return props.isLast ? <button type="button" disabled={busy || !answer.value} onClick={props.onSubmit} className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40"><Send className="h-4 w-4" />Terminer</button> : <button type="button" disabled={!answer.value} onClick={() => props.onCompleteStep(answer.value)} className="inline-flex items-center gap-1.5 rounded-xl bg-revision px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">Valider<ChevronRight className="h-4 w-4" /></button>;
   return null;
 }

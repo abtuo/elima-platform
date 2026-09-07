@@ -1,6 +1,6 @@
 import { isDemoHost, isDemoModeActive } from "@/services/env";
 import { mainDbClient } from "@/services/mainDbClient";
-import type { LearningCatalog, LearningContent, LearningDiscovery, LearningSession, LearningSuggestion, ValidationResult } from "@/types/learning";
+import type { LearningCatalog, LearningContent, LearningDiscovery, LearningPath, LearningSession, LearningSuggestion, ValidationResult } from "@/types/learning";
 
 const SESSION_PREFIX = "elima_learning_session:";
 const useDemoLearning = () => isDemoModeActive() || isDemoHost();
@@ -46,6 +46,10 @@ export async function suggestLearningContent(input: { kind: "guided_exercise" | 
   return api<LearningSuggestion>({ action: "suggest", ...input });
 }
 
+export async function getLearningPath(subject: string, chapter: string) {
+  return api<LearningPath>({ action: "path", subject, chapter });
+}
+
 export async function getLearningContent(kind: "guided_exercise" | "exam", id: string) {
   return api<LearningContent>({ action: "content", kind, id });
 }
@@ -73,6 +77,16 @@ export function sessionKey(contentType: LearningSession["contentType"], contentI
 
 export function readLearningSession(contentType: LearningSession["contentType"], contentId: string) {
   try { return JSON.parse(localStorage.getItem(sessionKey(contentType, contentId)) ?? "null") as LearningSession | null; } catch { return null; }
+}
+
+export function learningSessionScore(contentId: string, totalPoints?: number) {
+  const session = readLearningSession("guided_exercise", contentId);
+  if (!session || (session.status !== "submitted" && session.status !== "completed")) return null;
+  const assessed = Object.values(session.answers).filter((answer) => answer.result);
+  if (!assessed.length) return 0;
+  const earned = assessed.reduce((sum, answer) => sum + Number(answer.result?.score || 0), 0);
+  const maximum = Math.max(Number(totalPoints || assessed.length), 1);
+  return Math.round(earned * 100 / maximum);
 }
 
 export async function createLearningSession(contentType: LearningSession["contentType"], contentId: string, mode: LearningSession["mode"]): Promise<LearningSession> {

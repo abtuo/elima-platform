@@ -508,7 +508,9 @@ export default function Home() {
                 <p className="text-xs text-slate-500">© {new Date().getFullYear()} Elima. Tous droits réservés.</p>
                 <div className="flex flex-wrap gap-3 text-xs">
                   <span className="text-slate-400">Politique de confidentialité</span>
-                  <span className="text-slate-400">CGV</span>
+                  <Link className="text-slate-500 hover:text-slate-900" href="/cgv">
+                    CGV
+                  </Link>
                 </div>
               </div>
             </div>

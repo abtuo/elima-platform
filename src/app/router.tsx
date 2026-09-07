@@ -81,8 +81,10 @@ export function AppRouter() {
               <Route path="devoirs" element={<StudentAssignmentsPage />} />
               <Route path="emploi-du-temps" element={<StudentTimetablePage />} />
               <Route path="reviser" element={<RevisionDashboardPage />} />
-              <Route path="reviser/devoirs" element={<Navigate to="/student/reviser?mode=devoirs" replace />} />
-              <Route path="reviser/examen" element={<Navigate to="/student/reviser?mode=devoirs&section=examens" replace />} />
+              <Route path="reviser/devoirs" element={<Navigate to="/student/reviser?mode=parcours" replace />} />
+              <Route path="reviser/examen" element={<Navigate to="/student/reviser?mode=parcours" replace />} />
+              <Route path="reviser/parcours/session/:id" element={<LearningSolverPage contentType="guided_exercise" />} />
+              <Route path="reviser/parcours/resultats/:contentType/:id" element={<LearningResultsPage />} />
               <Route path="reviser/devoirs/exercice/:id" element={<LearningSolverPage contentType="guided_exercise" />} />
               <Route path="reviser/devoirs/examen/:id" element={<LearningSolverPage contentType="exam" />} />
               <Route path="reviser/devoirs/resultats/:contentType/:id" element={<LearningResultsPage />} />
