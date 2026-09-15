@@ -6,6 +6,10 @@ mobile/
 node_modules/
 .expo/
 dist/
+dist-revision/
+tmp/revision-browser-tools/
+tmp/revision-qa/
+tmp/revision-smoke.mjs
 supabase/generated/
 supabase/backups/
 build/

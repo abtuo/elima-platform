@@ -2,17 +2,18 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { ElimaLogo } from "@/components/common/ElimaLogo";
-import { demoAccounts } from "@/constants/demoData";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth, type DemoAuthAccount } from "@/features/auth/AuthProvider";
 import { isElimaIdentityConfigured, signInWithElimaPassword } from "@/services/elimaIdentityService";
-import { fetchUserProfile } from "@/services/roleService";
+import { fetchUserProfile } from "@/services/profileService";
 import { getProfileHomePath } from "@/types/roles";
 
-export function LoginPage() {
-  const { signIn, isDemo } = useAuth();
+type LoginDemoAccount = DemoAuthAccount & { label: string; role: string };
+
+export function LoginPage({ mode = "full", demoAccounts }: { mode?: "full" | "revision"; demoAccounts: readonly LoginDemoAccount[] }) {
+  const { signIn, signOut, isDemo } = useAuth();
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState(isDemo ? demoAccounts[0].email : "");
-  const [password, setPassword] = useState(isDemo ? demoAccounts[0].password : "");
+  const [identifier, setIdentifier] = useState(isDemo ? demoAccounts[0]?.email ?? "" : "");
+  const [password, setPassword] = useState(isDemo ? demoAccounts[0]?.password ?? "" : "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +31,11 @@ export function LoginPage() {
             if (!linkedProfile) throw new Error("Profil Elima introuvable.");
             return linkedProfile;
           });
-      navigate(getProfileHomePath(profile), { replace: true });
+      if (mode === "revision" && profile.role !== "STUDENT") {
+        await signOut();
+        throw new Error("Elima Révision est réservé aux comptes élèves.");
+      }
+      navigate(mode === "revision" ? "/student/reviser" : getProfileHomePath(profile), { replace: true });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Connexion impossible.");
     } finally {

@@ -44,6 +44,8 @@ import { CommunicationsPage } from "@/features/messages/CommunicationsPage";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getProfileHomePath } from "@/types/roles";
 import { isPublicLandingEnabled } from "@/services/env";
+import { demoAccounts } from "@/constants/demoData";
+import { getDemoProfile } from "@/services/roleService";
 
 function EntryPage() {
   const { authenticated, profile, loading } = useAuth();
@@ -55,10 +57,10 @@ function EntryPage() {
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <AuthProvider>
+      <AuthProvider demoAccounts={demoAccounts} getDemoProfile={getDemoProfile}>
         <Routes>
           <Route path="/" element={<EntryPage />} />
-          <Route path="/auth/login" element={<LoginPage />} />
+          <Route path="/auth/login" element={<LoginPage demoAccounts={demoAccounts} />} />
           <Route path="/auth/inscription" element={<RegistrationPage />} />
           <Route path="/auth/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
           <Route path="/auth/inscription-eleve" element={<Navigate to="/auth/inscription" replace />} />

@@ -3,10 +3,18 @@ import type { Session } from "@supabase/supabase-js";
 import type { MobileSpace, UserProfile } from "@/types/roles";
 import { mainDbClient } from "@/services/mainDbClient";
 import { isMainDbConfigured, isDemoModeActive, shouldShowSeedAccounts } from "@/services/env";
-import { fetchUserProfile, getDemoProfile, getHomeSpace, shouldUseDemoProfile } from "@/services/roleService";
+import { fetchUserProfile } from "@/services/profileService";
 import { signInWithIdentifier, signOut as authSignOut } from "@/services/authService";
-import { demoAccounts } from "@/constants/demoData";
 import { clearElimaIdentitySession, refreshElimaIdentityProfile } from "@/services/elimaIdentityService";
+import { ROLE_HOME } from "@/types/roles";
+
+export type DemoAuthAccount = { email: string; password: string };
+
+type AuthProviderProps = {
+  children: ReactNode;
+  demoAccounts: readonly DemoAuthAccount[];
+  getDemoProfile: (email?: string) => UserProfile;
+};
 
 type AuthContextValue = {
   session: Session | null;
@@ -22,13 +30,13 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile>(getDemoProfile());
   const [loading, setLoading] = useState(true);
   const [demoAuthenticated, setDemoAuthenticated] = useState(false);
   const isDemo = shouldShowSeedAccounts();
-  const usesLocalDemo = shouldUseDemoProfile();
+  const usesLocalDemo = isDemoModeActive();
 
   const loadProfile = useCallback(async (userId: string) => {
     const p = await fetchUserProfile(userId);
@@ -38,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (usesLocalDemo || !mainDbClient) {
       const demoEmail = localStorage.getItem("elima_demo_session");
-      if (demoEmail) {
+      if (demoEmail && demoAccounts.some((account) => account.email.toLowerCase() === demoEmail.toLowerCase())) {
         setProfile(getDemoProfile(demoEmail));
         setDemoAuthenticated(true);
       }
@@ -62,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => sub.subscription.unsubscribe();
-  }, [loadProfile, usesLocalDemo]);
+  }, [loadProfile, usesLocalDemo, getDemoProfile, demoAccounts]);
 
   const signIn = async (identifier: string, password: string) => {
     if (usesLocalDemo) {
@@ -100,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return nextProfile;
   };
 
-  const activeSpace = getHomeSpace(profile.role);
+  const activeSpace = ROLE_HOME[profile.role];
 
   return (
     <AuthContext.Provider value={{ session, profile, loading, isDemo, authenticated: Boolean(session) || demoAuthenticated, activeSpace, signIn, signOut, refreshProfile }}>

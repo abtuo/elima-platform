@@ -1,7 +1,7 @@
 import type { RevisionProgress, QuizAttemptSummary, QuizItem, CourseSheet, QuizQuestion } from "../types/revision";
 import { isDemoModeActive } from "./env";
 import { revisionDbClient } from "./revisionDbClient";
-import { demoRevisionProgress, demoQuizzes, demoCourseSheets, demoQuizAttempts, demoQuizQuestions } from "../constants/demoData";
+import { demoRevisionProgress, demoQuizzes, demoCourseSheets, demoQuizAttempts, demoQuizQuestions } from "../constants/revisionDemoData";
 import { seededShuffle } from "../lib/seededShuffle";
 import { subjectIdFromLabel } from "../lib/revisionSubjects";
 
