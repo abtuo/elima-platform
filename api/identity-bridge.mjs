@@ -1,7 +1,9 @@
+import { handleRevisionCors } from "../server/revisionCors.mjs";
 import { randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
 export default async function handler(request, response) {
+  if (handleRevisionCors(request, response, ["POST"])) return;
   if (request.method !== "POST") return response.status(405).json({ error: "Méthode non autorisée." });
   const identityUrl = String(process.env.VITE_ELIMA_IDENTITY_URL ?? "").replace(/\/+$/, "");
   const localUrl = String(process.env.VITE_SUPABASE_URL ?? "").replace(/\/+$/, "");

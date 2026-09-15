@@ -1,3 +1,4 @@
+import { apiFetch } from "./api/apiClient";
 export type RegistrationRole = "school_head" | "school_staff" | "teacher" | "parent" | "student";
 
 export type AccountRegistrationInput = {
@@ -27,7 +28,7 @@ async function readResponse(response: Response) {
 }
 
 export async function requestRegistrationCode(input: { identifier: string; phone: string }) {
-  const response = await fetch("/api/auth-verification-request", {
+  const response = await apiFetch("/api/auth-verification-request", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
@@ -38,7 +39,7 @@ export async function requestRegistrationCode(input: { identifier: string; phone
 }
 
 export async function requestPasswordResetCode(input: { identifier: string; phone: string }) {
-  const response = await fetch("/api/auth-password-reset", {
+  const response = await apiFetch("/api/auth-password-reset", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "request", ...input }),
@@ -49,7 +50,7 @@ export async function requestPasswordResetCode(input: { identifier: string; phon
 }
 
 export async function confirmPasswordReset(input: { identifier: string; phone: string; challengeId: string; code: string; password: string }) {
-  const response = await fetch("/api/auth-password-reset", {
+  const response = await apiFetch("/api/auth-password-reset", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "confirm", ...input }),
@@ -60,7 +61,7 @@ export async function confirmPasswordReset(input: { identifier: string; phone: s
 }
 
 export async function registerElimaAccount(input: AccountRegistrationInput) {
-  const response = await fetch("/api/elima-signup", {
+  const response = await apiFetch("/api/elima-signup", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),

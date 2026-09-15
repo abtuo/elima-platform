@@ -22,6 +22,8 @@ const forbiddenModules = [
   "/src/features/student/",
   "/src/app/",
   "/web/",
+  `${normalizedProjectRoot}/server/`,
+  `${normalizedProjectRoot}/api/`,
 ] as const;
 
 function revisionBoundaryPlugin(): Plugin {

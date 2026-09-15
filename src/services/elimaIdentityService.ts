@@ -1,3 +1,4 @@
+import { apiFetch } from "./api/apiClient";
 import { env } from "./env";
 import { mainDbClient } from "./mainDbClient";
 
@@ -97,7 +98,7 @@ export async function completeElimaIdentitySession(tokens: ElimaIdentityTokens) 
 
 async function bridgeElimaIdentitySession(tokens: ElimaIdentityTokens) {
   if (!mainDbClient) throw new Error("La base Révision n’est pas configurée.");
-  const bridgeResponse = await fetch("/api/identity-bridge", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accessToken: tokens.access_token }) });
+  const bridgeResponse = await apiFetch("/api/identity-bridge", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accessToken: tokens.access_token }) });
   const bridge = await bridgeResponse.json().catch(() => null) as { tokenHash?: string; profile?: unknown; error?: string } | null;
   if (!bridgeResponse.ok || !bridge?.tokenHash) throw new Error(bridge?.error ?? "Liaison du compte impossible.");
   const verified = await mainDbClient.auth.verifyOtp({ token_hash: bridge.tokenHash, type: "magiclink" });
@@ -110,7 +111,7 @@ async function bridgeElimaIdentitySession(tokens: ElimaIdentityTokens) {
 }
 
 export async function signInWithElimaPassword(identifier: string, password: string, options?: { recentSignup?: boolean }) {
-  const response = await fetch("/api/elima-password-login", {
+  const response = await apiFetch("/api/elima-password-login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ identifier: identifier.trim(), password, recentSignup: options?.recentSignup === true }),
@@ -132,7 +133,7 @@ export function getCachedElimaIdentityProfile(): ElimaCentralProfile | null {
 export async function refreshElimaIdentityProfile() {
   const token = await getValidElimaIdentityAccessToken();
   if (!token) return getCachedElimaIdentityProfile();
-  const response = await fetch("/api/elima-profile", { headers: { Authorization: `Bearer ${token}` } });
+  const response = await apiFetch("/api/elima-profile", { headers: { Authorization: `Bearer ${token}` } });
   if (!response.ok) return getCachedElimaIdentityProfile();
   const profile = normalizeCentralProfile(await response.json().catch(() => null));
   if (!profile) return getCachedElimaIdentityProfile();

@@ -1,3 +1,4 @@
+import { handleRevisionCors } from "../server/revisionCors.mjs";
 function normalizeIdentifier(value) {
   const identifier = String(value ?? "").trim().toLowerCase();
   if (identifier.includes("@")) return identifier;
@@ -6,6 +7,7 @@ function normalizeIdentifier(value) {
 }
 
 export default async function handler(request, response) {
+  if (handleRevisionCors(request, response, ["POST"])) return;
   if (request.method !== "POST") return response.status(405).json({ message: "Méthode non autorisée." });
   const identityUrl = String(process.env.VITE_ELIMA_IDENTITY_URL ?? "").replace(/\/+$/, "");
   const publishableKey = process.env.ELIMA_IDENTITY_PUBLISHABLE_KEY || process.env.VITE_ELIMA_IDENTITY_PUBLISHABLE_KEY;

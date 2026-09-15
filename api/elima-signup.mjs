@@ -1,3 +1,4 @@
+import { handleRevisionCors } from "../server/revisionCors.mjs";
 function normalizeIdentifier(value) {
   const identifier = String(value ?? "").trim().toLowerCase();
   if (identifier.includes("@")) return { email: identifier, phone: "" };
@@ -13,6 +14,7 @@ const roleMap = {
 };
 
 export default async function handler(request, response) {
+  if (handleRevisionCors(request, response, ["POST"])) return;
   if (request.method !== "POST") return response.status(405).json({ message: "Méthode non autorisée." });
   const webBaseUrl = String(process.env.VITE_WEB_BASE_URL || "https://www.elima.ci").replace(/\/+$/, "");
   const input = request.body ?? {};

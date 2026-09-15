@@ -1,9 +1,11 @@
+import { handleRevisionCors } from "../server/revisionCors.mjs";
 import { createClient } from "@supabase/supabase-js";
 
 const DEFAULT_HINT = "Repère l’idée clé du cours et élimine les propositions incompatibles avant de calculer.";
 const DEFAULT_EXPLANATION = "Reprends l’énoncé étape par étape et applique la règle du chapitre.";
 
 export default async function handler(request, response) {
+  if (handleRevisionCors(request, response, ["POST"])) return;
   if (request.method !== "POST") {
     response.setHeader("Allow", "POST");
     return response.status(405).json({ error: "Méthode non autorisée." });

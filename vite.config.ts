@@ -14,6 +14,7 @@ type ElimaViteConfigOptions = {
 };
 
 const SERVER_ENV_KEYS = [
+  "REVISION_ALLOWED_ORIGINS",
   "VITE_SUPABASE_URL",
   "VITE_SUPABASE_PUBLISHABLE_KEY",
   "VITE_SUPABASE_ANON_KEY",
@@ -52,6 +53,8 @@ function localServerlessApis(enabled: boolean, endpoints: readonly string[]): Pl
             const responseAdapter = {
               setHeader(name: string, value: string) { response.setHeader(name, value); return responseAdapter; },
               status(statusCode: number) { response.statusCode = statusCode; return responseAdapter; },
+              getHeader(name: string) { return response.getHeader(name); },
+              end() { response.end(); return responseAdapter; },
               json(payload: unknown) {
                 if (!response.hasHeader("Content-Type")) response.setHeader("Content-Type", "application/json; charset=utf-8");
                 response.end(JSON.stringify(payload));
@@ -84,6 +87,8 @@ function localRevisionApi(enabled: boolean): Plugin {
           const responseAdapter = {
             setHeader(name: string, value: string) { response.setHeader(name, value); return responseAdapter; },
             status(statusCode: number) { response.statusCode = statusCode; return responseAdapter; },
+            getHeader(name: string) { return response.getHeader(name); },
+            end() { response.end(); return responseAdapter; },
             json(payload: unknown) {
               if (!response.hasHeader("Content-Type")) response.setHeader("Content-Type", "application/json; charset=utf-8");
               response.end(JSON.stringify(payload));

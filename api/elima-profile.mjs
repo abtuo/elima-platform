@@ -1,4 +1,6 @@
+import { handleRevisionCors } from "../server/revisionCors.mjs";
 export default async function handler(request, response) {
+  if (handleRevisionCors(request, response, ["GET"])) return;
   if (request.method !== "GET") return response.status(405).json({ message: "Méthode non autorisée." });
   const token = request.headers.authorization?.replace(/^Bearer\s+/i, "").trim();
   if (!token) return response.status(401).json({ message: "Session Elima manquante." });

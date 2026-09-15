@@ -1,3 +1,4 @@
+import { handleRevisionCors } from "../server/revisionCors.mjs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
@@ -400,6 +401,7 @@ async function handleLearningBrowse({ body, demo, admin, user, response }) {
 }
 
 export default async function handler(request, response) {
+  if (handleRevisionCors(request, response, ["POST"])) return;
   if (request.method !== "POST") return response.status(405).json({ message: "Méthode non autorisée." });
   const body = jsonBody(request);
   const admin = supabaseAdmin();

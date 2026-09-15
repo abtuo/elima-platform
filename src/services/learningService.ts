@@ -1,3 +1,4 @@
+import { apiFetch } from "./api/apiClient";
 import { isDemoHost, isDemoModeActive } from "@/services/env";
 import { mainDbClient } from "@/services/mainDbClient";
 import type { LearningCatalog, LearningContent, LearningDiscovery, LearningPath, LearningSession, LearningSuggestion, ValidationResult } from "@/types/learning";
@@ -7,7 +8,7 @@ const useDemoLearning = () => isDemoModeActive() || isDemoHost();
 
 async function api<T>(body: Record<string, unknown>): Promise<T> {
   const token = (await mainDbClient?.auth.getSession())?.data.session?.access_token;
-  const response = await fetch("/api/learning", {
+  const response = await apiFetch("/api/learning", {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify({ ...body, demo: useDemoLearning() }),

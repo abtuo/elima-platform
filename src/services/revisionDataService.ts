@@ -1,3 +1,4 @@
+import { apiFetch } from "./api/apiClient";
 import type { RevisionProgress, QuizAttemptSummary, QuizItem, CourseSheet, QuizQuestion } from "../types/revision";
 import { isDemoModeActive } from "./env";
 import { revisionDbClient } from "./revisionDbClient";
@@ -33,7 +34,7 @@ async function callRevisionGenerator(kind: "quiz" | "sheet", input: GenerationIn
   const token = data.session?.access_token;
   if (!token) throw new Error("Ta session a expiré. Reconnecte-toi puis réessaie.");
 
-  const response = await fetch("/api/revision-generate", {
+  const response = await apiFetch("/api/revision-generate", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ kind, ...input }),
