@@ -10,22 +10,24 @@ test("MARKETING_PLANS exposes three tiers in order", () => {
   );
 });
 
-test("basic plan shows annual starting price and 24h support only there", () => {
+test("basic plan shows monthly per-student price and 24h support only there", () => {
   const basic = MARKETING_PLANS.find((p) => p.id === "basic");
   assert.ok(basic);
-  assert.equal(basic!.price, "À partir de 100 000 FCFA/an");
+  assert.equal(basic!.price, "1 000 FCFA par élève par mois");
   assert.equal(basic!.highlight, undefined);
   assert.equal(basic!.cta, "Commencer l'essai gratuit");
+  assert.equal(basic!.ctaHref, "/signup/admin");
   assert.ok(basic!.features.some((f) => f.includes("24h/24")));
   assert.ok(basic!.features.length >= 10);
 });
 
-test("premium is highlighted with starting price and priority support only", () => {
+test("premium is highlighted with monthly per-student price and priority support only", () => {
   const premium = MARKETING_PLANS.find((p) => p.id === "premium");
   assert.ok(premium);
-  assert.equal(premium!.price, "À partir de 300 000 FCFA/an");
+  assert.equal(premium!.price, "1 500 FCFA par élève par mois");
   assert.equal(premium!.highlight, true);
   assert.equal(premium!.cta, "Commencer l'essai gratuit");
+  assert.equal(premium!.ctaHref, "/signup/admin");
   assert.ok(premium!.features.some((f) => f.toLowerCase().includes("prioritaire")));
   assert.ok(!premium!.features.some((f) => f.includes("24h/24")));
 });
