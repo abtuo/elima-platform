@@ -13,8 +13,7 @@ export default defineConfig([
     "coverage/**",
     "tmp/**",
     "_references/**",
-    "apps/**",
-    "mobile/**",
+    "web/**",
     "assets/**",
     "public/**",
     "data/**",
@@ -35,7 +34,7 @@ export default defineConfig([
     },
   },
   {
-    files: ["apps/mobile/src/**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx}"],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
@@ -52,7 +51,7 @@ export default defineConfig([
     },
   },
   {
-    files: ["apps/mobile/src/**/*.tsx"],
+    files: ["src/**/*.tsx"],
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
@@ -64,7 +63,7 @@ export default defineConfig([
     },
   },
   {
-    files: ["scripts/**/*.ts", "tests/**/*.ts", "packages/**/*.ts", "vite*.config.ts"],
+    files: ["vite*.config.ts"],
     extends: [js.configs.recommended, tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: "latest",

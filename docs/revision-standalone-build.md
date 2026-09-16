@@ -2,8 +2,8 @@
 
 ## Entrée et commandes
 
-`src/apps/revision/index.html` charge `main.tsx`, `RevisionApp` puis le routeur
-Révision. Le routeur historique `src/app/router.tsx` reste celui du build normal.
+`apps/mobile/src/apps/revision/index.html` charge `main.tsx`, `RevisionApp` puis le routeur
+Révision. Le routeur historique `apps/mobile/src/app/router.tsx` reste celui du build Mobile.
 
 ```sh
 npm run dev:revision
@@ -14,12 +14,13 @@ npm test
 npm run build
 ```
 
-La sortie autonome est `dist-revision/`, celle de l'application actuelle reste
-`dist/`. Preview sert les fichiers statiques, pas les fonctions Vercel : les
+La sortie autonome est `apps/mobile/dist-revision/`, celle de Mobile est
+`apps/mobile/dist/`. Preview sert les fichiers statiques, pas les fonctions Vercel : les
 opérations backend réelles nécessitent un serveur API ou le déploiement web.
 Dev réutilise les handlers serveur existants, sans les embarquer dans le client.
-`envDir` reste la racine du dépôt malgré l'entrée imbriquée : toutes les variables
-Vite publiques existantes continuent d'être chargées pour les deux produits.
+`envDir` pointe vers apps/mobile malgré l'entrée imbriquée ; Vite lit également
+l'environnement racine pour la compatibilité locale. Les valeurs applicatives
+ont priorité. Les variables Vite publiques existantes sont conservées.
 
 ## Frontière du produit
 
@@ -31,7 +32,7 @@ sont conservés. Le guard exige le rôle STUDENT. Les routes inconnues reviennen
 
 Il n'importe aucune page parent, enseignant, admin ou dashboard élève School,
 ni scanner, messagerie, fournitures, finances, notes ou emplois du temps.
-`vite.revision.config.ts` vérifie les modules réellement présents dans les chunks
+`apps/mobile/vite.revision.config.ts` vérifie les modules réellement présents dans les chunks
 Rollup, échoue en cas de module interdit et émet `revision-build-modules.json`.
 Les tests du routeur complètent cette barrière de build.
 
@@ -45,7 +46,7 @@ rôles School et leur endpoint du bundle Révision.
 
 ## PWA web et futur natif
 
-La fabrique `createElimaViteConfig` dans `vite.config.ts` partage les plugins,
+La fabrique `createElimaViteConfig` dans `apps/mobile/vite.config.ts` partage les plugins,
 alias et handlers. Le paramètre `product` adapte uniquement l'identité du produit.
 La PWA/Workbox reste active pour Révision Web. À l'étape Capacitor, la distinction
 Web/Native sera ajoutée dans cette fabrique, autour de l'enregistrement du plugin

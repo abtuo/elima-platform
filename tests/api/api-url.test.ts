@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
-import { normalizeApiBase, resolveApiUrl } from "../../src/services/api/apiUrl.ts";
+import { normalizeApiBase, resolveApiUrl } from "../../apps/mobile/src/services/api/apiUrl.ts";
 
 test("sans base, les appels web restent same-origin", () => {
   assert.equal(resolveApiUrl("/api/learning", { environment: "production" }), "/api/learning");
@@ -44,7 +44,7 @@ test("le futur bootstrap natif peut exiger un backend HTTPS distant", () => {
 
 test("les huit APIs Révision utilisent apiFetch sans modifier Supabase/OAuth", async () => {
   const endpoints = ["learning", "revision-generate", "identity-bridge", "elima-password-login", "elima-profile", "elima-signup", "auth-verification-request", "auth-password-reset"];
-  const sources = await Promise.all(["learningService", "revisionDataService", "elimaIdentityService", "registrationService"].map(file => readFile(new URL(`../../src/services/${file}.ts`, import.meta.url), "utf8")));
+  const sources = await Promise.all(["learningService", "revisionDataService", "elimaIdentityService", "registrationService"].map(file => readFile(new URL(`../../apps/mobile/src/services/${file}.ts`, import.meta.url), "utf8")));
   const source = sources.join("\n");
   for (const endpoint of endpoints) {
     assert.ok(source.includes(`apiFetch("/api/${endpoint}"`));

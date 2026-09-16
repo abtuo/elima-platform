@@ -8,8 +8,8 @@ const config = getTargetConfig();
 assertDemoTarget(config);
 await verifyServerKey(config);
 
-const tsxCli = path.join(root, "web", "node_modules", "tsx", "dist", "cli.mjs");
-const seedFile = path.join(root, "web", "scripts", "seed-demo.ts");
+const tsxCli = fileURLToPath(import.meta.resolve("tsx/cli"));
+const seedFile = path.join(root, "apps", "web", "scripts", "seed-demo.ts");
 const child = spawn(process.execPath, [tsxCli, seedFile], {
   cwd: root,
   stdio: "inherit",

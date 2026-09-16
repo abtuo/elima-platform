@@ -6,5 +6,8 @@
   "exports": {
     "./environment": "./src/environment.ts",
     "./roles": "./src/roles.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --strict --skipLibCheck --target ES2020 --moduleResolution bundler --module ESNext src/environment.ts src/roles.ts"
   }
 }

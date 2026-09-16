@@ -2,7 +2,7 @@
 
 ## Audit et architecture
 
-`src/services/api/apiUrl.ts` contient le résolveur pur `resolveApiUrl` et la
+`apps/mobile/src/services/api/apiUrl.ts` contient le résolveur pur `resolveApiUrl` et la
 validation `normalizeApiBase`. `apiClient.ts` le configure avec l'environnement
 existant et expose `apiFetch`. Aucun changement de payload, méthode HTTP,
 Bearer token ou traitement d'erreur métier n'est introduit.

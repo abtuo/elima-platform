@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import process from "node:process";
 import postgres from "postgres";
 import {
@@ -151,14 +152,14 @@ for (const user of demoAuthUsers) {
   await authRequest(`/users/${user.id}`, { method: "DELETE" });
 }
 
-const tsxCli = path.join("web", "node_modules", "tsx", "dist", "cli.mjs");
+const tsxCli = fileURLToPath(import.meta.resolve("tsx/cli"));
 const seedEnv = {
   SUPABASE_URL: config.url,
   SUPABASE_SERVICE_ROLE_KEY: config.serverKey,
   ELIMA_APP_MODE: "demo",
   APP_ENV: "demo",
 };
-await run(process.execPath, [tsxCli, path.join("web", "scripts", "seed-demo.ts")], seedEnv);
+await run(process.execPath, [tsxCli, path.join("apps", "web", "scripts", "seed-demo.ts")], seedEnv);
 await run(process.execPath, [path.join("scripts", "seed-demo-quiz-history.mjs")], seedEnv);
 
 const demoSeedSql = await readFile(path.join("supabase", "seed.demo.sql"), "utf8");

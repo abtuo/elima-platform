@@ -1,5 +1,5 @@
 {
-  "name": "elima.tech",
+  "name": "@elima/web",
   "version": "0.1.0",
   "engines": {
     "node": ">=20.9.0"
@@ -18,10 +18,11 @@
     "reset:demo": "tsx scripts/reset-demo.ts",
     "demo:refresh": "npm run reset:demo && npm run seed:demo",
     "seed:store": "tsx scripts/seed-store-demo.ts",
-    "seed:demo-attendance": "tsx scripts/seed-demo-attendance.ts"
+    "seed:demo-attendance": "tsx scripts/seed-demo-attendance.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@elima/shared-domain": "file:../packages/shared-domain",
+    "@elima/shared-domain": "0.1.0",
     "@azure-rest/communication-messages": "^2.0.0",
     "@azure/core-auth": "^1.10.1",
     "@supabase/ssr": "^0.8.0",
@@ -40,6 +41,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "eslint-plugin-react-hooks": "7.0.1",
     "@faker-js/faker": "^10.4.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

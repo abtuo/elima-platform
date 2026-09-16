@@ -1,7 +1,7 @@
 import {
   assertEnvironmentPair,
   parseAppEnvironment,
-} from "../../packages/shared-domain/src/environment";
+} from "@elima/shared-domain/environment";
 
 export const env = {
   appEnv: parseAppEnvironment(import.meta.env.VITE_APP_ENV),

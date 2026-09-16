@@ -1,6 +1,6 @@
-# Elima Mobile
+# Elima
 
-Application mobile web/PWA Elima — scolaire et révision. Construite avec Vite, React, TypeScript et Tailwind CSS.
+Monorepo npm : Elima Web (Next.js), Elima Mobile (Vite/React) et Révision standalone temporairement hébergée dans Mobile. Voir [le guide monorepo](docs/monorepo.md).
 
 ## Installation
 
@@ -11,7 +11,8 @@ npm install
 ## Lancement
 
 ```bash
-npm run dev
+npm run dev:mobile
+# ou npm run dev:web / npm run dev:revision
 ```
 
 Ouvrir l'URL affichée (généralement `http://localhost:5173`).
@@ -25,7 +26,7 @@ npm run preview
 
 ## Variables d'environnement
 
-Copier `.env.example` vers `.env` et renseigner les clés publiques Supabase :
+Copier `apps/mobile/.env.example` vers `apps/mobile/.env` et renseigner les clés publiques Supabase :
 
 - `VITE_MAIN_SUPABASE_URL` / `VITE_MAIN_SUPABASE_ANON_KEY` — base commune scolaire + révision
 - `VITE_WEB_BASE_URL` — portail web (`https://www.elima.ci`)
@@ -33,7 +34,7 @@ Copier `.env.example` vers `.env` et renseigner les clés publiques Supabase :
 
 Sans Supabase configuré, le mode démo est actif (`VITE_ENABLE_DEMO_MODE=true`).
 
-Le projet racine est autonome : toutes les configurations publiques nécessaires sont lues depuis son propre `.env`. Les dossiers `_references` ne sont jamais consultés au build ni à l’exécution. Aucun secret serveur n'est injecté dans le client. Le fichier `.env` racine désactive actuellement le mode démo pour utiliser les données réelles.
+Mobile lit son environnement applicatif et conserve la lecture de l'environnement racine pour la compatibilité locale (les valeurs applicatives ont priorité). Les dossiers `_references` ne sont jamais consultés au build ni à l’exécution. Les variables `VITE_*` sont publiques ; aucun secret serveur ne doit y figurer.
 
 Les accès directs depuis la PWA dépendent des policies RLS multi-tenant. La migration non destructive `supabase/migrations/20260713090000_mobile_role_access.sql` ajoute les droits mobiles nécessaires pour les rôles établissement, toujours limités au `school_id` de l'utilisateur connecté.
 
@@ -43,14 +44,17 @@ Les accès directs depuis la PWA dépendent des policies RLS multi-tenant. La mi
 
 ```txt
 /
-  src/
+  apps/mobile/src/
     app/          — Router et layouts
     components/   — UI réutilisable
     features/     — Pages par espace (parent, student, teacher, admin, revision)
     services/     — Supabase, auth, données, offline
     theme/        — Couleurs, typographie
     constants/    — Navigation, données démo
-  public/         — PWA manifest, icônes
+  apps/mobile/public/ — PWA manifest, icônes
+  apps/web/       — Elima Web complet / Next.js
+  packages/       — Contrats communs existants
+  api/, server/   — Backend et helpers actuels
   docs/           — Documentation
 ```
 
@@ -76,7 +80,7 @@ Cette PWA pourra être packagée avec Capacitor pour Android/iOS sans refonte ma
 - **elima.tech** — auth, rôles, données scolaires, plans, messagerie, paiements
 - **elima.app** — design révision gamifié, quiz, fiches, Markdown/KaTeX
 
-La version web complète est active dans `web/`. Seule l'ancienne application
+La version web complète est active dans `apps/web/`. Seule l'ancienne application
 `_references/elima.app` reste une référence historique isolée ; aucun build actif
 ne dépend de ce dossier.
 

@@ -1,4 +1,4 @@
-import type { AppEnvironment } from "../../../packages/shared-domain/src/environment";
+import type { AppEnvironment } from "@elima/shared-domain/environment";
 
 export type ApiUrlConfig = {
   baseUrl?: string;

@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { getRevisionDemoProfile, revisionDemoAccounts } from "../../src/apps/revision/revisionDemoAuth.ts";
+import { getRevisionDemoProfile, revisionDemoAccounts } from "../../apps/mobile/src/apps/revision/revisionDemoAuth.ts";
 
-const routerUrl = new URL("../../src/apps/revision/router.tsx", import.meta.url);
+const routerUrl = new URL("../../apps/mobile/src/apps/revision/router.tsx", import.meta.url);
 
 test("le routeur autonome expose les parcours majeurs de Révision", async () => {
   const source = await readFile(routerUrl, "utf8");
@@ -31,13 +31,13 @@ test("le routeur autonome ne référence aucun espace School", async () => {
 });
 
 test("le build Révision possède une barrière d'imports School", async () => {
-  const source = await readFile(new URL("../../vite.revision.config.ts", import.meta.url), "utf8");
+  const source = await readFile(new URL("../../apps/mobile/vite.revision.config.ts", import.meta.url), "utf8");
   for (const boundary of ["/src/features/admin/", "/src/features/teacher/", "/src/features/parent/", "/src/services/mainDataService.", "/src/types/school."]) {
     assert.match(source, new RegExp(boundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
   assert.match(source, /this\.error/);
   assert.match(source, /revision-build-modules\.json/);
-  const commonConfig = await readFile(new URL("../../vite.config.ts", import.meta.url), "utf8");
+  const commonConfig = await readFile(new URL("../../apps/mobile/vite.config.ts", import.meta.url), "utf8");
   assert.match(commonConfig, /envDir: configDirectory/);
 });
 
@@ -53,7 +53,7 @@ test("les comptes de démonstration Révision sont uniquement des élèves auton
 
 test("les modules partagés utilisés par Révision ne chargent plus les données démo School", async () => {
   for (const file of ["src/features/auth/AuthProvider.tsx", "src/features/auth/LoginPage.tsx", "src/services/revisionDataService.ts"]) {
-    const source = await readFile(new URL(`../../${file}`, import.meta.url), "utf8");
+    const source = await readFile(new URL(`../../apps/mobile/${file}`, import.meta.url), "utf8");
     assert.doesNotMatch(source, /from ["'][^"']*constants\/demoData["']/);
   }
 });

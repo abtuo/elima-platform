@@ -5,6 +5,7 @@ import { createElimaViteConfig } from "./vite.config";
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 const normalizedProjectRoot = projectRoot.replaceAll("\\", "/");
+const normalizedRepositoryRoot = path.resolve(projectRoot, "../..").replaceAll("\\", "/");
 const forbiddenModules = [
   "/src/features/admin/",
   "/src/features/parent/",
@@ -22,8 +23,8 @@ const forbiddenModules = [
   "/src/features/student/",
   "/src/app/",
   "/web/",
-  `${normalizedProjectRoot}/server/`,
-  `${normalizedProjectRoot}/api/`,
+  `${normalizedRepositoryRoot}/server/`,
+  `${normalizedRepositoryRoot}/api/`,
 ] as const;
 
 function revisionBoundaryPlugin(): Plugin {

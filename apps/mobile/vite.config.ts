@@ -5,6 +5,7 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
 const configDirectory = path.dirname(fileURLToPath(import.meta.url));
+const repositoryRoot = path.resolve(configDirectory, "../..");
 
 type ElimaViteConfigOptions = {
   product?: "full" | "revision";
@@ -47,7 +48,7 @@ function localServerlessApis(enabled: boolean, endpoints: readonly string[]): Pl
             for await (const chunk of request) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
             const rawBody = Buffer.concat(chunks).toString("utf8");
             const body = rawBody ? JSON.parse(rawBody) : {};
-            const handlerUrl = pathToFileURL(path.resolve(configDirectory, `api/${endpoint}.mjs`)).href;
+            const handlerUrl = pathToFileURL(path.resolve(repositoryRoot, `api/${endpoint}.mjs`)).href;
             const handler = (await import(/* @vite-ignore */ handlerUrl)).default as (request: unknown, response: unknown) => Promise<unknown>;
             const requestAdapter = Object.assign(request, { body });
             const responseAdapter = {
@@ -81,7 +82,7 @@ function localRevisionApi(enabled: boolean): Plugin {
           const chunks: Buffer[] = [];
           for await (const chunk of request) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
           const body = Buffer.concat(chunks).toString("utf8");
-          const handlerUrl = pathToFileURL(path.resolve(configDirectory, "api/revision-generate.mjs")).href;
+          const handlerUrl = pathToFileURL(path.resolve(repositoryRoot, "api/revision-generate.mjs")).href;
           const handler = (await import(/* @vite-ignore */ handlerUrl)).default as (request: unknown, response: unknown) => Promise<unknown>;
           const requestAdapter = Object.assign(request, { body });
           const responseAdapter = {
@@ -107,7 +108,7 @@ function localRevisionApi(enabled: boolean): Plugin {
 export function createElimaViteConfig(options: ElimaViteConfigOptions = {}) {
   const revision = options.product === "revision";
   return defineConfig(({ mode, command }) => {
-  const env = loadEnv(mode, configDirectory, "");
+  const env = { ...loadEnv(mode, repositoryRoot, ""), ...loadEnv(mode, configDirectory, "") };
   const azureEndpoint = env.AZURE_OPENAI_ENDPOINT?.replace(/\/+$/, "");
   const azureKey = env.AZURE_OPENAI_API_KEY;
   for (const key of SERVER_ENV_KEYS) {
@@ -116,6 +117,8 @@ export function createElimaViteConfig(options: ElimaViteConfigOptions = {}) {
 
   return {
     envDir: configDirectory,
+    // Root platform env stays available locally; app values override it. Only VITE_* is public.
+    define: Object.fromEntries(Object.entries(env).filter(([key]) => key.startsWith("VITE_")).map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)])),
     plugins: [
       localRevisionApi(command === "serve" && Boolean(azureEndpoint && azureKey)),
       localServerlessApis(command === "serve", revision ? REVISION_API_HANDLERS : LOCAL_API_HANDLERS),

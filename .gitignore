@@ -1,9 +1,15 @@
-# Root repository for Elima Mobile.
+# Elima npm monorepo.
 # Reference projects stay local and are not versioned by this mobile repo.
 _references/
-mobile/
+/mobile/
 
 node_modules/
+apps/*/node_modules/
+apps/*/dist/
+apps/*/dist-revision/
+apps/*/.next/
+apps/*/.env
+apps/*/.env.local
 .expo/
 dist/
 dist-revision/

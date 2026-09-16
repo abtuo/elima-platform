@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { demoCatalog, validateAnswer } from "../../api/learning.mjs";
-import { canAccessExamSubjects, isLevelCompatible, recommendExercises } from "../../src/lib/learningRules.ts";
+import { canAccessExamSubjects, isLevelCompatible, recommendExercises } from "../../apps/mobile/src/lib/learningRules.ts";
 
 test("filtre les contenus par niveau et série", () => {
   assert.equal(isLevelCompatible("Terminale C", "Terminale C"), true);
@@ -68,8 +68,8 @@ test("l’import protège l’idempotence et la transaction", async () => {
 });
 
 test("l’interface charge les parcours progressivement", async () => {
-  const panel = await readFile(new URL("../../src/features/revision/LearningAssignmentsPanel.tsx", import.meta.url), "utf8");
-  const solver = await readFile(new URL("../../src/features/revision/LearningSolverPage.tsx", import.meta.url), "utf8");
+  const panel = await readFile(new URL("../../apps/mobile/src/features/revision/LearningAssignmentsPanel.tsx", import.meta.url), "utf8");
+  const solver = await readFile(new URL("../../apps/mobile/src/features/revision/LearningSolverPage.tsx", import.meta.url), "utf8");
   assert.match(panel, /getLearningDiscovery/);
   assert.match(panel, /getLearningPath/);
   assert.match(panel, /learningSessionScore/);
@@ -92,8 +92,8 @@ test("le parcours de calcul littéral contient le diagnostic, huit sessions et l
 });
 
 test("les sessions v3 affichent les cours et vérifient les réponses à la fin", async () => {
-  const solver = await readFile(new URL("../../src/features/revision/LearningSolverPage.tsx", import.meta.url), "utf8");
-  const experience = await readFile(new URL("../../src/features/revision/GuidedSessionExperience.tsx", import.meta.url), "utf8");
+  const solver = await readFile(new URL("../../apps/mobile/src/features/revision/LearningSolverPage.tsx", import.meta.url), "utf8");
+  const experience = await readFile(new URL("../../apps/mobile/src/features/revision/GuidedSessionExperience.tsx", import.meta.url), "utf8");
   assert.match(solver, /mode === "exam" \|\| guidedV3/);
   assert.match(solver, /question\.questionType !== "guided_solution"/);
   assert.match(solver, /\.\.\.flow, \.\.\.\(correction \? \[correction\] : \[\]\)/);

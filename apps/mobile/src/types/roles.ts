@@ -1,4 +1,4 @@
-import type { AppRole } from "../../packages/shared-domain/src/roles";
+import type { AppRole } from "@elima/shared-domain/roles";
 
 export type UserRole = AppRole;
 
