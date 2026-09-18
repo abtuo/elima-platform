@@ -2,7 +2,7 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
-const techRoot = path.join(root, "apps", "web", "supabase");
+const techRoot = path.join(root, "apps", "platform", "supabase");
 const mobileMigrations = path.join(root, "supabase", "migrations");
 const outputDir = path.join(root, "supabase", "generated");
 const output = path.join(outputDir, "elima-unified-database.sql");

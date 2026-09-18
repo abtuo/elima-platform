@@ -159,7 +159,7 @@ const seedEnv = {
   ELIMA_APP_MODE: "demo",
   APP_ENV: "demo",
 };
-await run(process.execPath, [tsxCli, path.join("apps", "web", "scripts", "seed-demo.ts")], seedEnv);
+await run(process.execPath, [tsxCli, path.join("apps", "platform", "scripts", "seed-demo.ts")], seedEnv);
 await run(process.execPath, [path.join("scripts", "seed-demo-quiz-history.mjs")], seedEnv);
 
 const demoSeedSql = await readFile(path.join("supabase", "seed.demo.sql"), "utf8");

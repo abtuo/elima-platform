@@ -1,7 +1,7 @@
 # Variables d'environnement — Elima Mobile
 
 Dans le monorepo, les exemples applicatifs sont dans `apps/mobile/.env.example`
-et `apps/web/.env.example`. Vite conserve la lecture de l'environnement racine
+et `apps/platform/.env.example`. Vite conserve la lecture de l'environnement racine
 pour le développement local ; apps/mobile a priorité. Les variables `VITE_*`
 sont publiques. Les secrets backend restent côté serveur. Voir [monorepo](monorepo.md).
 

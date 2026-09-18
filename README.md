@@ -1,6 +1,6 @@
 # Elima
 
-Monorepo npm : Elima Web (Next.js), Elima Mobile (Vite/React) et Révision standalone temporairement hébergée dans Mobile. Voir [le guide monorepo](docs/monorepo.md).
+Monorepo npm : Elima Platform (Next.js), Elima Mobile (Vite/React) et Révision standalone temporairement hébergée dans Mobile. Voir [le guide monorepo](docs/monorepo.md).
 
 ## Installation
 
@@ -12,7 +12,7 @@ npm install
 
 ```bash
 npm run dev:mobile
-# ou npm run dev:web / npm run dev:revision
+# ou npm run dev:platform / npm run dev:revision
 ```
 
 Ouvrir l'URL affichée (généralement `http://localhost:5173`).
@@ -52,7 +52,7 @@ Les accès directs depuis la PWA dépendent des policies RLS multi-tenant. La mi
     theme/        — Couleurs, typographie
     constants/    — Navigation, données démo
   apps/mobile/public/ — PWA manifest, icônes
-  apps/web/       — Elima Web complet / Next.js
+  apps/platform/  — Elima Platform complète / Next.js
   packages/       — Contrats communs existants
   api/, server/   — Backend et helpers actuels
   docs/           — Documentation
@@ -80,7 +80,7 @@ Cette PWA pourra être packagée avec Capacitor pour Android/iOS sans refonte ma
 - **elima.tech** — auth, rôles, données scolaires, plans, messagerie, paiements
 - **elima.app** — design révision gamifié, quiz, fiches, Markdown/KaTeX
 
-La version web complète est active dans `apps/web/`. Seule l'ancienne application
+Elima Platform complète est active dans `apps/platform/`. Seule l'ancienne application
 `_references/elima.app` reste une référence historique isolée ; aucun build actif
 ne dépend de ce dossier.
 
