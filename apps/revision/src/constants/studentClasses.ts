@@ -1,0 +1,18 @@
+export const STUDENT_CLASS_OPTIONS = [
+  "6ème",
+  "5ème",
+  "4ème",
+  "3ème",
+  "Seconde",
+  "2nde A",
+  "2nde C",
+  "Première",
+  "1ère A",
+  "1ère C",
+  "1ère D",
+  "Terminale",
+  "Terminale A",
+  "Terminale C",
+  "Terminale D",
+  "Autre",
+] as const;

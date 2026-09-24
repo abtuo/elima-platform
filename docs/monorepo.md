@@ -4,7 +4,8 @@ Cette architecture sépare les produits et leur socle technique partagé sans ch
 
 ```text
 apps/platform            Elima Platform complète (Next.js), cible ordinateur, tablette et navigateur mobile
-apps/mobile              Elima App légère (Vite) + Révision standalone temporaire
+apps/mobile              Elima App légère (Vite), avec intégration Révision élève
+apps/revision            Elima Révision autonome (Vite)
 packages/shared-domain   Contrats communs existants
 packages/auth            Primitives d'identité et stockage de session
 packages/api-client      Résolution d'URL et client fetch commun
@@ -42,15 +43,17 @@ npm run lint
 
 Le build global est séquentiel et s'arrête au premier échec. Platform produit `.next`
 sous apps/platform ; Mobile et Révision produisent `apps/mobile/dist` et
-`apps/mobile/dist-revision`. Révision reste sous `apps/mobile/src/apps/revision`.
+`apps/revision/dist`. Le shell autonome Révision vit dans `apps/revision` et réutilise
+`@elima/revision-core` et `@elima/revision-ui` comme l’intégration du compte élève Mobile.
 La barrière d'import School/backend reste active dans son build.
 
 ## Environnement et réseau
 
-Exemples : `apps/platform/.env.example`, `apps/mobile/.env.example`. Les variables
+Exemples : `apps/platform/.env.example`, `apps/mobile/.env.example`,
+`apps/revision/.env.example`. Les variables
 `VITE_*` sont publiques : aucun secret serveur ne doit y figurer. Pour la
 compatibilité locale, Vite lit aussi les fichiers env plateforme à la racine ;
-les valeurs de apps/mobile ont priorité. Les fichiers env réels restent ignorés.
+les valeurs de l’application ont priorité. Les fichiers env réels restent ignorés.
 Le backend et les scripts de plateforme continuent à utiliser l'environnement
 serveur racine. Aucun secret n'est copié dans la documentation.
 
@@ -72,5 +75,5 @@ Il faudra décider du placement des fonctions racine et des variables serveur
 avant de changer les Root Directories. Révision/API seront traités ensuite.
 Ne pas déployer cette migration avec les anciennes hypothèses de chemins.
 
-La cible future est `apps/platform`, `apps/mobile`, `apps/revision` et `apps/api`.
-Les deux derniers dossiers, ainsi que Capacitor/Android, ne sont pas créés ici.
+La cible applicative contient désormais `apps/platform`, `apps/mobile` et
+`apps/revision`. `apps/api`, Capacitor et Android ne sont pas créés ici.

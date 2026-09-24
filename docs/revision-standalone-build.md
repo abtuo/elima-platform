@@ -2,7 +2,7 @@
 
 ## Entrée et commandes
 
-`apps/mobile/src/apps/revision/index.html` charge `main.tsx`, `RevisionApp` puis le routeur
+`apps/revision/index.html` charge `src/main.tsx`, `RevisionApp` puis le routeur
 Révision. Le routeur historique `apps/mobile/src/app/router.tsx` reste celui du build Mobile.
 
 ```sh
@@ -14,11 +14,11 @@ npm test
 npm run build
 ```
 
-La sortie autonome est `apps/mobile/dist-revision/`, celle de Mobile est
+La sortie autonome est `apps/revision/dist/`, celle de Mobile est
 `apps/mobile/dist/`. Preview sert les fichiers statiques, pas les fonctions Vercel : les
 opérations backend réelles nécessitent un serveur API ou le déploiement web.
 Dev réutilise les handlers serveur existants, sans les embarquer dans le client.
-`envDir` pointe vers apps/mobile malgré l'entrée imbriquée ; Vite lit également
+`envDir` pointe vers apps/revision ; Vite lit également
 l'environnement racine pour la compatibilité locale. Les valeurs applicatives
 ont priorité. Les variables Vite publiques existantes sont conservées.
 
@@ -32,7 +32,7 @@ sont conservés. Le guard exige le rôle STUDENT. Les routes inconnues reviennen
 
 Il n'importe aucune page parent, enseignant, admin ou dashboard élève School,
 ni scanner, messagerie, fournitures, finances, notes ou emplois du temps.
-`apps/mobile/vite.revision.config.ts` vérifie les modules réellement présents dans les chunks
+`apps/revision/vite.config.ts` vérifie les modules réellement présents dans les chunks
 Rollup, échoue en cas de module interdit et émet `revision-build-modules.json`.
 Les tests du routeur complètent cette barrière de build.
 
@@ -40,14 +40,13 @@ AuthProvider et LoginPage reçoivent les comptes/profils démo depuis chaque
 routeur. Les données démo pédagogiques sont isolées dans `revisionDemoData.ts`.
 `profileService.ts` contient la lecture de profil partagée sans importer les
 données démo School. `roleService.ts` garde ses exports compatibles pour School.
-L'inscription expose un export élève dédié avec les mêmes services backend et
-le composant Field partagé : le tree-shaking retire ainsi la sélection des
-rôles School et leur endpoint du bundle Révision.
+L'inscription autonome ne contient que le parcours élève et ne référence aucun
+rôle ou endpoint d'inscription School.
 
 ## PWA web et futur natif
 
-La fabrique `createElimaViteConfig` dans `apps/mobile/vite.config.ts` partage les plugins,
-alias et handlers. Le paramètre `product` adapte uniquement l'identité du produit.
+La fabrique `createElimaViteConfig` dans `apps/revision/vite.base.ts` configure les
+plugins, alias et handlers propres au shell autonome.
 La PWA/Workbox reste active pour Révision Web. À l'étape Capacitor, la distinction
 Web/Native sera ajoutée dans cette fabrique, autour de l'enregistrement du plugin
 VitePWA, pour omettre manifest, service worker et enregistrement SW du natif.
@@ -80,8 +79,8 @@ sa base Supabase HTTPS ; ce n'est pas un appel relatif au backend Elima.
   le niveau du profil autonome dans une étape dédiée.
 - Les sessions pédagogiques et certains historiques utilisent localStorage ;
   le stockage et OAuth/redirects natifs seront traités avant la publication.
-- Les ressources public et les styles sont encore partagés avec le build normal.
-  Le scanner reste exclu jusqu'à son découplage.
+- Les ressources public et les styles nécessaires sont maintenant possédés par
+  `apps/revision`. Le scanner reste exclu.
 
 La prochaine étape est une abstraction commune de construction des URLs API,
 configurée par une base HTTPS publique validée, puis l'adaptation serveur des

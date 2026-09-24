@@ -1,11 +1,13 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
-import { createElimaViteConfig } from "./vite.config";
+import { createElimaViteConfig } from "./vite.base";
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 const normalizedProjectRoot = projectRoot.replaceAll("\\", "/");
 const normalizedRepositoryRoot = path.resolve(projectRoot, "../..").replaceAll("\\", "/");
+const normalizedMobileRoot = path.resolve(projectRoot, "../mobile").replaceAll("\\", "/");
+const normalizedPlatformRoot = path.resolve(projectRoot, "../platform").replaceAll("\\", "/");
 const forbiddenModules = [
   "/src/features/admin/",
   "/src/features/parent/",
@@ -25,6 +27,8 @@ const forbiddenModules = [
   "/web/",
   `${normalizedRepositoryRoot}/server/`,
   `${normalizedRepositoryRoot}/api/`,
+  `${normalizedMobileRoot}/`,
+  `${normalizedPlatformRoot}/`,
 ] as const;
 
 function revisionBoundaryPlugin(): Plugin {
@@ -57,7 +61,7 @@ function revisionBoundaryPlugin(): Plugin {
 
 export default createElimaViteConfig({
   product: "revision",
-  root: path.resolve(projectRoot, "src/apps/revision"),
-  outDir: path.resolve(projectRoot, "dist-revision"),
+  root: projectRoot,
+  outDir: path.resolve(projectRoot, "dist"),
   boundaryPlugin: revisionBoundaryPlugin(),
 });

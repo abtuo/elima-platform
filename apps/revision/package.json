@@ -1,5 +1,5 @@
 {
-  "name": "@elima/mobile",
+  "name": "@elima/revision",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,37 +8,34 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build --configLoader runner",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "lint": "eslint . --config eslint.config.mjs",
-    "test": "npm run test:learning && npm run test:api",
-    "test:learning": "node --experimental-strip-types --test ../../tests/learning/*.test.ts",
-    "test:api": "node --experimental-strip-types --test ../../tests/api/*.test.ts"
+    "test": "node --experimental-strip-types --test ../../tests/revision/*.test.ts"
   },
   "dependencies": {
     "@elima/api-client": "0.1.0",
     "@elima/auth": "0.1.0",
     "@elima/revision-core": "0.1.0",
     "@elima/revision-ui": "0.1.0",
+    "@elima/shared-domain": "0.1.0",
     "@elima/supabase-client": "0.1.0",
     "@supabase/supabase-js": "^2.110.5",
     "clsx": "^2.1.1",
     "katex": "^0.16.11",
     "lucide-react": "^0.475.0",
-    "postgres": "^3.4.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-markdown": "^9.0.1",
     "react-router-dom": "^6.30.0",
+    "react-markdown": "^9.0.1",
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.0",
-    "remark-math": "^6.0.0",
-    "@elima/shared-domain": "0.1.0"
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
-    "@types/node": "20.19.35",
     "@eslint/js": "^10.0.1",
+    "@types/node": "20.19.35",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.7.0",
