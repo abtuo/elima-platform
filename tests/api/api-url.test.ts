@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
-import { normalizeApiBase, resolveApiUrl } from "../../apps/mobile/src/services/api/apiUrl.ts";
+import { normalizeApiBase, resolveApiUrl } from "../../packages/api-client/src/apiUrl.ts";
 
 test("sans base, les appels web restent same-origin", () => {
   assert.equal(resolveApiUrl("/api/learning", { environment: "production" }), "/api/learning");

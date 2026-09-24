@@ -1,0 +1,17 @@
+{
+  "name": "@elima/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --experimental-strip-types --test ../../tests/packages/api-client.test.ts"
+  },
+  "dependencies": {
+    "@elima/shared-domain": "0.1.0"
+  }
+}

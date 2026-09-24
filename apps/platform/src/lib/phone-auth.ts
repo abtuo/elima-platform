@@ -4,12 +4,4 @@
  *
  * Example: +2250102030405 -> +2250102030405@phone.elima
  */
-export function normalizePhone(phone: string) {
-  // Keep leading +, remove spaces and common separators.
-  return phone.trim().replace(/[\s\-().]/g, "");
-}
-
-export function phoneToEmail(phone: string) {
-  const normalized = normalizePhone(phone);
-  return `${normalized}@phone.elima`;
-}
+export { normalizePhone, phoneToEmail } from "@elima/auth";

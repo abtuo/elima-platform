@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { browserLocalAuthStorage } from "@elima/auth";
 import type { MobileSpace, UserProfile } from "@/types/roles";
 import { mainDbClient } from "@/services/mainDbClient";
 import { isMainDbConfigured, isDemoModeActive, shouldShowSeedAccounts } from "@/services/env";
@@ -45,7 +46,7 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
 
   useEffect(() => {
     if (usesLocalDemo || !mainDbClient) {
-      const demoEmail = localStorage.getItem("elima_demo_session");
+      const demoEmail = browserLocalAuthStorage.getItem("elima_demo_session");
       if (demoEmail && demoAccounts.some((account) => account.email.toLowerCase() === demoEmail.toLowerCase())) {
         setProfile(getDemoProfile(demoEmail));
         setDemoAuthenticated(true);
@@ -77,7 +78,7 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
       const account = demoAccounts.find((item) => item.email.toLowerCase() === identifier.trim().toLowerCase() && item.password === password);
       if (!account) throw new Error("Email ou mot de passe incorrect.");
       const nextProfile = getDemoProfile(account.email);
-      localStorage.setItem("elima_demo_session", account.email);
+      browserLocalAuthStorage.setItem("elima_demo_session", account.email);
       setProfile(nextProfile);
       setDemoAuthenticated(true);
       return nextProfile;
@@ -94,7 +95,7 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
   const signOut = async () => {
     await authSignOut();
     setSession(null);
-    localStorage.removeItem("elima_demo_session");
+    browserLocalAuthStorage.removeItem("elima_demo_session");
     setDemoAuthenticated(false);
     setProfile(getDemoProfile());
     clearElimaIdentitySession();

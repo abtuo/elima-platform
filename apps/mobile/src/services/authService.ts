@@ -1,4 +1,5 @@
 import type { Session } from "@supabase/supabase-js";
+import { normalizeEmail, normalizePhone, phoneToEmail } from "@elima/auth";
 import { mainDbClient } from "./mainDbClient";
 
 export async function getCurrentSession(): Promise<Session | null> {
@@ -9,16 +10,10 @@ export async function getCurrentSession(): Promise<Session | null> {
 
 export async function signInWithEmailPassword(email: string, password: string) {
   if (!mainDbClient) throw new Error("Connexion indisponible. Vérifiez la configuration de l'établissement.");
-  return mainDbClient.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+  return mainDbClient.auth.signInWithPassword({ email: normalizeEmail(email), password });
 }
 
-export function normalizePhone(phone: string) {
-  return phone.trim().replace(/[\s\-().]/g, "");
-}
-
-export function phoneToEmail(phone: string) {
-  return `${normalizePhone(phone)}@phone.elima`;
-}
+export { normalizePhone, phoneToEmail };
 
 export async function signInWithIdentifier(identifier: string, password: string) {
   const cleaned = identifier.trim();

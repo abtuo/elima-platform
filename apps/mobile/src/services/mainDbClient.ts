@@ -1,8 +1,9 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createPublicSupabaseClient } from "@elima/supabase-client";
 import { env, isMainDbConfigured } from "./env";
 
 export const mainDbClient: SupabaseClient | null = isMainDbConfigured()
-  ? createClient(env.mainSupabaseUrl, env.mainSupabaseAnonKey, {
+  ? createPublicSupabaseClient({ url: env.mainSupabaseUrl, publishableKey: env.mainSupabaseAnonKey }, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
     })
   : null;
