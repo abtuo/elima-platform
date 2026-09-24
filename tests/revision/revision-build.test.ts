@@ -57,3 +57,14 @@ test("les modules partagés utilisés par Révision ne chargent plus les donnée
     assert.doesNotMatch(source, /from ["'][^"']*constants\/demoData["']/);
   }
 });
+
+test("les packages Révision restent séparés des applications et des espaces School", async () => {
+  for (const packageName of ["revision-core", "revision-ui"]) {
+    const directory = new URL(`../../packages/${packageName}/src/`, import.meta.url);
+    const entries = await (await import("node:fs/promises")).readdir(directory);
+    for (const entry of entries.filter((name) => /\.(?:ts|tsx)$/.test(name))) {
+      const source = await readFile(new URL(entry, directory), "utf8");
+      assert.doesNotMatch(source, /apps\/(?:mobile|platform)|features\/(?:admin|teacher|parent)|types\/school|services\/mainDataService/i);
+    }
+  }
+});

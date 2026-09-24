@@ -44,7 +44,11 @@ test("le futur bootstrap natif peut exiger un backend HTTPS distant", () => {
 
 test("les huit APIs Révision utilisent apiFetch sans modifier Supabase/OAuth", async () => {
   const endpoints = ["learning", "revision-generate", "identity-bridge", "elima-password-login", "elima-profile", "elima-signup", "auth-verification-request", "auth-password-reset"];
-  const sources = await Promise.all(["learningService", "revisionDataService", "elimaIdentityService", "registrationService"].map(file => readFile(new URL(`../../apps/mobile/src/services/${file}.ts`, import.meta.url), "utf8")));
+  const sources = await Promise.all([
+    ...["learningService", "revisionDataService", "elimaIdentityService", "registrationService"].map((file) => new URL(`../../apps/mobile/src/services/${file}.ts`, import.meta.url)),
+    new URL("../../packages/revision-core/src/learningApi.ts", import.meta.url),
+    new URL("../../packages/revision-core/src/revisionApi.ts", import.meta.url),
+  ].map((file) => readFile(file, "utf8")));
   const source = sources.join("\n");
   for (const endpoint of endpoints) {
     assert.ok(source.includes(`apiFetch("/api/${endpoint}"`));

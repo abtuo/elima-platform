@@ -8,6 +8,7 @@ import { LoadingState } from "@/components/common/LoadingState";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { MarkdownMathText } from "@/components/revision/MarkdownContent";
 import { SubjectIcon } from "@/components/revision/SubjectIcon";
+import { QuizProgress, QuizQuestionContent } from "@elima/revision-ui";
 import {
   consumeDailyHint,
   getDailyHintUsage,
@@ -158,10 +159,10 @@ export function QuizPage() {
         <button type="button" onClick={abandon} className="flex shrink-0 items-center gap-1.5 rounded-xl px-2 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"><X className="h-4 w-4" />Abandonner</button>
       </div>
 
-      <div className="mb-4 h-2 overflow-hidden rounded-full bg-gray-100"><div className="h-full rounded-full bg-revision transition-all" style={{ width: `${((index + 1) / questions.length) * 100}%` }} /></div>
+      <div className="mb-4"><QuizProgress current={index + 1} total={questions.length} /></div>
 
       <div className="card overflow-hidden p-5 sm:p-6">
-        <div className="font-title text-lg font-semibold leading-relaxed text-accent sm:text-xl"><MarkdownMathText content={question.question} /></div>
+        <QuizQuestionContent question={question} />
 
         <div className="mt-4 flex justify-end">
           <button

@@ -1,0 +1,26 @@
+{
+  "name": "@elima/revision-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --experimental-strip-types --test ../../tests/packages/revision-ui.test.ts"
+  },
+  "dependencies": {
+    "@elima/revision-core": "0.1.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.475.0",
+    "react-markdown": "^9.0.1",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.0",
+    "remark-math": "^6.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1"
+  }
+}

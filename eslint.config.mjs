@@ -64,7 +64,7 @@ export default defineConfig([
     },
   },
   {
-    files: ["scripts/**/*.ts", "tests/**/*.ts", "packages/**/*.ts", "vite*.config.ts"],
+    files: ["scripts/**/*.ts", "tests/**/*.ts", "packages/**/*.{ts,tsx}", "vite*.config.ts"],
     extends: [js.configs.recommended, tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: "latest",
@@ -74,6 +74,16 @@ export default defineConfig([
       "no-control-regex": "off",
       "preserve-caught-error": "warn",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+    },
+  },
+  {
+    files: ["packages/**/*.tsx"],
+    plugins: {
+      "react-hooks": reactHooks,
+    },
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
     },
   },
 ]);

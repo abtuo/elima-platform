@@ -3,7 +3,7 @@ import animate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
-  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  content: ["./index.html", "./src/**/*.{ts,tsx}", "../../packages/revision-ui/src/**/*.{ts,tsx}"],
   safelist: [
     "from-blue-500", "to-blue-600",
     "from-purple-500", "to-purple-600",

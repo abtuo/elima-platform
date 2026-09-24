@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { ArrowDown, ArrowUp, Check, ChevronLeft, ChevronRight, Clock3, Send } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronLeft, ChevronRight, Send } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
 import { GeneratedActionIcon } from "@/components/common/GeneratedActionIcon";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { MarkdownContent } from "@/components/revision/MarkdownContent";
-import { ProgressBar } from "@/components/revision/RevisionUI";
+import { GuidedSessionProgress } from "@elima/revision-ui";
 import type { GuidedOption, LearningExercise, LearningQuestion, LearningSession } from "@/types/learning";
 
 type Answer = LearningSession["answers"][string];
@@ -42,10 +42,7 @@ export function GuidedSessionExperience(props: Props) {
   return <PageContainer className="max-w-6xl">
     <AppHeader title={exercise.title} subtitle={`${exercise.subject} · ${exercise.level}`} backTo="/student/reviser?mode=parcours" />
     {error ? <div className="mb-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900">{error}</div> : null}
-    <div className="mb-4 rounded-2xl bg-accent px-4 py-3 text-white sm:px-5">
-      <div className="mb-2 flex items-center justify-between gap-3 text-xs"><span>Étape {activeIndex + 1} sur {totalSteps}</span><span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />{exercise.estimatedMinutes} min</span></div>
-      <ProgressBar value={activeIndex + 1} max={totalSteps} />
-    </div>
+    <GuidedSessionProgress step={activeIndex + 1} total={totalSteps} estimatedMinutes={exercise.estimatedMinutes} />
 
     {stepType !== "statement" ? <details className="card mb-4 overflow-hidden">
       <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-revision sm:px-5">Relire l’introduction</summary>

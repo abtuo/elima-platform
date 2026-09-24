@@ -5,17 +5,22 @@ import { revisionDbClient } from "./revisionDbClient";
 import { demoRevisionProgress, demoQuizzes, demoCourseSheets, demoQuizAttempts, demoQuizQuestions } from "../constants/revisionDemoData";
 import { seededShuffle } from "../lib/seededShuffle";
 import { subjectIdFromLabel } from "../lib/revisionSubjects";
+import { browserSessionAuthStorage } from "@elima/auth";
+import {
+  applyQuizScore,
+  cleanAnswerText,
+  createRevisionGenerationService,
+  pickQuizItem,
+  readGeneratedQuiz,
+  type HintUsage,
+  type RevisionGenerationInput,
+} from "@elima/revision-core";
 
 const PROGRESS_KEY = "elima-mobile-progress";
 const ATTEMPTS_KEY = "elima-mobile-quiz-attempts";
-const GENERATED_QUIZ_PREFIX = "generated:";
-const GENERATED_QUIZ_KEY = "elima-mobile-generated-quiz:";
 const GENERATED_SHEETS_KEY = "elima-mobile-generated-sheets:";
 const QUIZ_FEEDBACK_KEY = "elima-mobile-quiz-feedback";
 const MAX_DAILY_HINTS = 5;
-
-type GenerationInput = { subject: string; topic: string; level: string };
-type HintUsage = { used: number; limit: number; remaining: number };
 
 function generatedSheetsKey(userId?: string) { return `${GENERATED_SHEETS_KEY}${userId ?? "guest"}`; }
 function attemptsKey(userId?: string) { return `${ATTEMPTS_KEY}:${userId ?? "guest"}`; }
@@ -28,23 +33,15 @@ function writeGeneratedSheets(userId: string | undefined, sheets: CourseSheet[])
   localStorage.setItem(generatedSheetsKey(userId), JSON.stringify(sheets.slice(0, 30)));
 }
 
-async function callRevisionGenerator(kind: "quiz" | "sheet", input: GenerationInput) {
-  if (!revisionDbClient) throw new Error("La génération en temps réel nécessite une connexion à Elima.");
-  const { data } = await revisionDbClient.auth.getSession();
-  const token = data.session?.access_token;
-  if (!token) throw new Error("Ta session a expiré. Reconnecte-toi puis réessaie.");
-
-  const response = await apiFetch("/api/revision-generate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ kind, ...input }),
-  });
-  const raw = await response.text();
-  let payload: Record<string, unknown> = {};
-  try { payload = JSON.parse(raw) as Record<string, unknown>; } catch { /* handled below */ }
-  if (!response.ok) throw new Error(String(payload.error ?? `Génération impossible (${response.status}).`));
-  return payload;
-}
+const revisionGeneration = createRevisionGenerationService({
+  apiFetch,
+  async getAccessToken() {
+    if (!revisionDbClient) throw new Error("La génération en temps réel nécessite une connexion à Elima.");
+    return (await revisionDbClient.auth.getSession()).data.session?.access_token;
+  },
+  sessionStorage: browserSessionAuthStorage,
+  randomUUID: () => crypto.randomUUID(),
+});
 
 export async function getStudentRevisionLevel(userId?: string): Promise<string> {
   if (!revisionDbClient || !userId || isDemoModeActive()) return "Collège / lycée";
@@ -53,32 +50,12 @@ export async function getStudentRevisionLevel(userId?: string): Promise<string> 
   return String(klass?.level ?? klass?.name ?? "Collège / lycée");
 }
 
-export async function generateRealtimeQuiz(input: GenerationInput, shuffleSeed: string): Promise<{ id: string; questions: QuizQuestion[] }> {
-  const payload = await callRevisionGenerator("quiz", input);
-  const rawQuestions = Array.isArray(payload.questions) ? payload.questions as Array<Record<string, unknown>> : [];
-  const questions = rawQuestions.map((raw, questionIndex) => {
-    const options = Array.isArray(raw.options) ? raw.options.map((value) => cleanAnswerText(String(value))) : [];
-    const correctIndex = Number(raw.correctIndex);
-    const shuffled = seededShuffle(options.map((text, index) => ({ text, correct: index === correctIndex })), `${shuffleSeed}|generated-${questionIndex}`);
-    return {
-      id: String(raw.id ?? `generated-${questionIndex + 1}`),
-      question: String(raw.question ?? ""),
-      options: shuffled.map((option) => option.text),
-      correctIndex: shuffled.findIndex((option) => option.correct),
-      hint: raw.hint ? String(raw.hint) : undefined,
-      explanation: raw.explanation ? String(raw.explanation) : undefined,
-    };
-  }).filter((question) => question.question && question.options.length === 4 && question.correctIndex >= 0);
-  if (!questions.length) throw new Error("Aucune question valide n’a été générée.");
-  const id = `${GENERATED_QUIZ_PREFIX}${crypto.randomUUID()}`;
-  sessionStorage.setItem(`${GENERATED_QUIZ_KEY}${id}`, JSON.stringify(questions));
-  return { id, questions };
+export async function generateRealtimeQuiz(input: RevisionGenerationInput, shuffleSeed: string): Promise<{ id: string; questions: QuizQuestion[] }> {
+  return revisionGeneration.generateQuiz(input, shuffleSeed);
 }
 
-export async function generateRealtimeSheet(input: GenerationInput, userId: string): Promise<CourseSheet> {
-  const payload = await callRevisionGenerator("sheet", input);
-  const content = String(payload.content ?? "").trim();
-  if (!content) throw new Error("La fiche générée est vide.");
+export async function generateRealtimeSheet(input: RevisionGenerationInput, userId: string): Promise<CourseSheet> {
+  const content = await revisionGeneration.generateSheet(input);
   const cacheKey = `realtime:${crypto.randomUUID()}`;
   const base = {
     user_id: userId,
@@ -163,12 +140,7 @@ export async function recordQuizCompletion(input: {
     return getRevisionProgress(data.user?.id);
   }
 
-  const progress = readLocalProgress();
-  const xpGain = Math.max(10, Math.round(input.score * 0.5));
-  progress.xp += xpGain;
-  progress.level = Math.floor(progress.xp / 100) + 1;
-  progress.completedQuizCount += 1;
-  progress.averageScore = Math.round((progress.averageScore + input.score) / 2);
+  const progress = applyQuizScore(readLocalProgress(), input.score);
   writeLocalProgress(progress);
   const attempts = readLocalAttempts(input.userId);
   attempts.unshift({ id: crypto.randomUUID(), quizRef: input.quizRef, subject: input.subject, topic: input.topic, score: input.score, totalQuestions: input.totalQuestions, correctAnswers: input.correctAnswers, completedAt: new Date().toISOString() });
@@ -253,17 +225,7 @@ export async function getAvailableQuizzes(): Promise<QuizItem[]> {
 
 export async function pickQuiz(options: { subject?: string; topic?: string; random?: boolean }): Promise<QuizItem | null> {
   const quizzes = await getAvailableQuizzes();
-  const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-  const wantedSubject = normalize(options.subject ?? "");
-  const wantedTopic = normalize(options.topic ?? "");
-  let pool = quizzes.filter((quiz) => !wantedSubject || normalize(quiz.subject) === wantedSubject || normalize(quiz.subject).includes(wantedSubject));
-  if (wantedTopic) {
-    const topicMatches = pool.filter((quiz) => normalize(`${quiz.topic} ${quiz.subject}`).includes(wantedTopic));
-    if (!topicMatches.length) return null;
-    pool = topicMatches;
-  }
-  if (!pool.length) return null;
-  return options.random ? pool[Math.floor(Math.random() * pool.length)] : pool[0];
+  return pickQuizItem(quizzes, options);
 }
 
 export async function getCourseSheets(userId?: string): Promise<CourseSheet[]> {
@@ -291,9 +253,7 @@ export async function getCourseSheets(userId?: string): Promise<CourseSheet[]> {
 }
 
 export async function getQuizQuestions(quizSetId?: string, shuffleSeed = "guest"): Promise<QuizQuestion[]> {
-  if (quizSetId?.startsWith(GENERATED_QUIZ_PREFIX)) {
-    try { return JSON.parse(sessionStorage.getItem(`${GENERATED_QUIZ_KEY}${quizSetId}`) ?? "[]") as QuizQuestion[]; } catch { return []; }
-  }
+  if (quizSetId?.startsWith("generated:")) return readGeneratedQuiz(browserSessionAuthStorage, quizSetId);
   if (isDemoModeActive() || !revisionDbClient) {
     return demoQuizQuestions.map((question) => {
       const answers = seededShuffle(
@@ -318,10 +278,6 @@ export async function getQuizQuestions(quizSetId?: string, shuffleSeed = "guest"
     );
     return { id: String(row.id), question: String(row.prompt), options: answers.map((answer) => cleanAnswerText(answer.answer_text)), correctIndex: Math.max(0, answers.findIndex((answer) => answer.is_correct)), hint: row.hint ? String(row.hint) : undefined, explanation: row.explanation ? String(row.explanation) : undefined };
   });
-}
-
-function cleanAnswerText(value: string) {
-  return value.trim().replace(/^\s*(?:[A-D]|[1-4])\s*[.):\-]\s+/i, "");
 }
 
 function localHintKey(userId?: string) {
