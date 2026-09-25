@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/learning.mjs": {
+      "includeFiles": "../../data/exams/**"
+    },
+    "api/revision-generate.mjs": {
+      "maxDuration": 60
+    },
+    "api/elima-password-login.mjs": {
+      "maxDuration": 15
+    },
+    "api/elima-signup.mjs": {
+      "maxDuration": 15
+    }
+  }
+}

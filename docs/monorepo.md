@@ -6,12 +6,11 @@ Cette architecture sépare les produits et leur socle technique partagé sans ch
 apps/platform            Elima Platform complète (Next.js), cible ordinateur, tablette et navigateur mobile
 apps/mobile              Elima App légère (Vite), avec intégration Révision élève
 apps/revision            Elima Révision autonome (Vite)
+apps/api                 Backend Node/Vercel autonome
 packages/shared-domain   Contrats communs existants
 packages/auth            Primitives d'identité et stockage de session
 packages/api-client      Résolution d'URL et client fetch commun
 packages/supabase-client Configuration publique et client Supabase navigateur
-api                      Backend actuel temporaire
-server                   Helpers backend, dont revisionCors
 supabase                 Plateforme data commune ; migrations inchangées
 data, scripts, docs, tmp  Restent à la racine
 ```
@@ -25,16 +24,18 @@ seed ou changement distant n'est effectué. Les sources d'icônes `assets/` rest
 ## Commandes depuis la racine
 
 Installer avec `npm install`. Le seul lockfile applicatif est `package-lock.json`
-à la racine. Les workspaces applicatifs et les quatre packages sous `packages/`
+à la racine. Les workspaces applicatifs et les packages sous `packages/`
 sont découverts automatiquement par npm.
 
 ```sh
 npm run dev:platform
 npm run dev:mobile
 npm run dev:revision
+npm run dev:api
 npm run build:platform
 npm run build:mobile
 npm run build:revision
+npm run build:api
 npm run build
 npm run typecheck
 npm test
@@ -50,15 +51,16 @@ La barrière d'import School/backend reste active dans son build.
 ## Environnement et réseau
 
 Exemples : `apps/platform/.env.example`, `apps/mobile/.env.example`,
-`apps/revision/.env.example`. Les variables
+`apps/revision/.env.example`, `apps/api/.env.example`. Les variables
 `VITE_*` sont publiques : aucun secret serveur ne doit y figurer. Pour la
 compatibilité locale, Vite lit aussi les fichiers env plateforme à la racine ;
 les valeurs de l’application ont priorité. Les fichiers env réels restent ignorés.
 Le backend et les scripts de plateforme continuent à utiliser l'environnement
 serveur racine. Aucun secret n'est copié dans la documentation.
 
-`resolveApiUrl` et `apiFetch` viennent de `@elima/api-client` ; `server/revisionCors.mjs` et les
-huit routes Révision restent à la racine. Base vide : same-origin ; base HTTPS
+`resolveApiUrl` et `apiFetch` viennent de `@elima/api-client` ;
+`apps/api/server/revisionCors.mjs` et les huit routes Révision vivent dans le
+workspace `@elima/api`. Base vide : same-origin ; base HTTPS
 explicite : appels distants. Aucun changement de contrat réseau/CORS.
 
 Les responsabilités et frontières de runtime sont détaillées dans
@@ -71,9 +73,9 @@ racine actuelle est conservée, mais son outputDirectory `dist` et son filtre de
 chemins devront être adaptés au déplacement avant un déploiement. À terme,
 Le futur projet Vercel principal utilisera `apps/platform` comme Root Directory ;
 apps/mobile correspondra au projet Elima Mobile.
-Il faudra décider du placement des fonctions racine et des variables serveur
-avant de changer les Root Directories. Révision/API seront traités ensuite.
+Le futur projet API pourra utiliser `apps/api` comme Root Directory, après
+configuration de ses variables serveur et de l’inclusion des sources monorepo.
 Ne pas déployer cette migration avec les anciennes hypothèses de chemins.
 
-La cible applicative contient désormais `apps/platform`, `apps/mobile` et
-`apps/revision`. `apps/api`, Capacitor et Android ne sont pas créés ici.
+La cible applicative contient désormais `apps/platform`, `apps/mobile`,
+`apps/revision` et `apps/api`. Capacitor et Android ne sont pas créés ici.

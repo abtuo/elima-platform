@@ -15,7 +15,7 @@ Platform conserve ses clients Supabase Next.js spécifiques : `@supabase/ssr`, c
 
 Mobile crée son client navigateur via `@elima/supabase-client`. Mobile et Révision utilisent `@elima/api-client` via le wrapper de compatibilité `apps/mobile/src/services/api/apiClient.ts` et les primitives de stockage/session de `@elima/auth`.
 
-Le helper CORS `server/revisionCors.mjs`, les routes API et toute clé serveur restent hors des packages client.
+Le helper CORS `apps/api/server/revisionCors.mjs`, les routes API et toute clé serveur restent hors des packages client.
 
 ## Variables publiques actuelles
 

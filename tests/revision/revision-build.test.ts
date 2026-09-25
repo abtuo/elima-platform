@@ -45,7 +45,7 @@ test("l'application Révision est autonome et ne référence aucun espace School
 
 test("le build Révision possède une barrière d'imports inter-applications", async () => {
   const source = await readFile(new URL("../../apps/revision/vite.config.ts", import.meta.url), "utf8");
-  for (const boundary of ["/src/features/admin/", "/src/features/teacher/", "/src/features/parent/", "/src/services/mainDataService.", "/src/types/school.", "normalizedMobileRoot", "normalizedPlatformRoot"]) {
+  for (const boundary of ["/src/features/admin/", "/src/features/teacher/", "/src/features/parent/", "/src/services/mainDataService.", "/src/types/school.", "normalizedMobileRoot", "normalizedPlatformRoot", "normalizedApiRoot"]) {
     assert.match(source, new RegExp(boundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
   assert.match(source, /this\.error/);

@@ -12,9 +12,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "lint": "eslint . --config eslint.config.mjs",
-    "test": "npm run test:learning && npm run test:api",
-    "test:learning": "node --experimental-strip-types --test ../../tests/learning/*.test.ts",
-    "test:api": "node --experimental-strip-types --test ../../tests/api/*.test.ts"
+    "test": "node --test"
   },
   "dependencies": {
     "@elima/api-client": "0.1.0",

@@ -46,7 +46,7 @@ Toutes les variables VITE_* sont publiques. Aucun secret serveur ne doit y figur
 
 ## CORS côté serveur
 
-`server/revisionCors.mjs` est hors de `api/` : ce helper ne crée pas de route
+`apps/api/server/revisionCors.mjs` est hors de `apps/api/api/` : ce helper ne crée pas de route
 publique. Les huit fonctions Vercel Node request/response existantes l'appellent
 avant leur logique métier. Aucun serveur supplémentaire ni changement de runtime.
 Le filtre d'ignore Vercel inclut server pour déployer les modifications du helper.
@@ -72,15 +72,14 @@ ces contrôles indépendamment d'Origin.
 
 ## Production à configurer, sans la modifier ici
 
-Le repository documente la cible Vercel racine `app.elima.ci` dans
-`docs/deployment/vercel-production.md` et `.env.example`. La base attendue pour
-le futur frontend natif est donc `https://app.elima.ci`, sous réserve de vérifier
-la disponibilité effective des huit routes sur ce déploiement avant publication.
-Ne pas confondre cette cible avec elima.ci/www.elima.ci qui héberge le web amont.
+Le backend vit désormais dans le workspace `@elima/api`, préparé pour un futur
+projet Vercel indépendant dont le domaine cible sera `api.elima.ci`. Les clients
+conservent toutefois leur configuration actuelle : aucune base distante ni aucun
+domaine n’est activé par cette migration.
 
 ```dotenv
 # Build client distant (WebView ultérieure) : valeur publique
-VITE_REVISION_API_BASE_URL=https://app.elima.ci
+VITE_REVISION_API_BASE_URL=https://api.elima.ci
 VITE_APP_ENV=production
 # Fonctions Vercel : configuration serveur, exemple pour la cible documentée
 REVISION_ALLOWED_ORIGINS=https://localhost,https://app.elima.ci

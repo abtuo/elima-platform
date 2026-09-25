@@ -138,7 +138,7 @@ export { demoCatalog, validateAnswer };
 
 async function demoSources() {
   const loaded = [];
-  for (const file of FILES) loaded.push(JSON.parse(await readFile(new URL(`../data/exams/${file}`, import.meta.url), "utf8")));
+  for (const file of FILES) loaded.push(JSON.parse(await readFile(new URL(`../../../data/exams/${file}`, import.meta.url), "utf8")));
   return loaded;
 }
 

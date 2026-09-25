@@ -8,6 +8,7 @@ const normalizedProjectRoot = projectRoot.replaceAll("\\", "/");
 const normalizedRepositoryRoot = path.resolve(projectRoot, "../..").replaceAll("\\", "/");
 const normalizedMobileRoot = path.resolve(projectRoot, "../mobile").replaceAll("\\", "/");
 const normalizedPlatformRoot = path.resolve(projectRoot, "../platform").replaceAll("\\", "/");
+const normalizedApiRoot = path.resolve(projectRoot, "../api").replaceAll("\\", "/");
 const forbiddenModules = [
   "/src/features/admin/",
   "/src/features/parent/",
@@ -29,6 +30,7 @@ const forbiddenModules = [
   `${normalizedRepositoryRoot}/api/`,
   `${normalizedMobileRoot}/`,
   `${normalizedPlatformRoot}/`,
+  `${normalizedApiRoot}/`,
 ] as const;
 
 function revisionBoundaryPlugin(): Plugin {
