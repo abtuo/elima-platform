@@ -82,6 +82,15 @@ test("les adaptateurs Révision ne chargent aucune donnée démo School", async 
   }
 });
 
+test("l’inscription Révision utilise uniquement le numéro WhatsApp", async () => {
+  const source = await readFile(new URL("../../apps/revision/src/features/auth/RegistrationPage.tsx", import.meta.url), "utf8");
+  assert.match(source, /name="phone" autoComplete="tel"/);
+  assert.match(source, /Format international, ex\. \+225 05 00 00 00 00/);
+  assert.match(source, /Vérifier mon numéro/);
+  assert.match(source, /name="declaredSchoolName" autoComplete="organization"/);
+  assert.doesNotMatch(source, /Email ou téléphone|Ton compte Révision fonctionne|Recevoir mon code/);
+});
+
 test("les packages Révision restent séparés des applications et des espaces School", async () => {
   for (const packageName of ["revision-core", "revision-ui"]) {
     for (const file of await sourceFiles(new URL(`../../packages/${packageName}/src/`, import.meta.url))) {

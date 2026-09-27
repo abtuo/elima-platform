@@ -18,6 +18,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/api/auth/logout") ||
     pathname.startsWith("/api/auth/email/login") ||
     pathname.startsWith("/api/auth/signup") ||
+    pathname === "/api/auth/verification/request" ||
     pathname.startsWith("/api/mobile/me") ||
     pathname.startsWith("/api/mobile/activate-school") ||
     pathname.startsWith("/api/demo-requests") ||
