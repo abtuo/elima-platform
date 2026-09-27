@@ -10,6 +10,30 @@ export class AuthFlowError extends Error {
   }
 }
 
+function supabaseFailure(message, code, operation, table, error) {
+  const failure = new AuthFlowError(message, 503, code);
+  failure.safeSupabaseErrors = [{
+    operation,
+    table,
+    code: String(error?.code || "unknown"),
+    message: "Supabase request failed.",
+  }];
+  return failure;
+}
+
+function combinedSupabaseFailure(message, code, failures) {
+  const failure = new AuthFlowError(message, 503, code);
+  failure.safeSupabaseErrors = failures
+    .filter((entry) => entry.error)
+    .map((entry) => ({
+      operation: entry.operation,
+      table: entry.table,
+      code: String(entry.error?.code || "unknown"),
+      message: "Supabase request failed.",
+    }));
+  return failure;
+}
+
 export function normalizeWhatsAppPhone(value) {
   const compact = String(value ?? "").trim().replace(/[\s\-().]/g, "");
   const phone = compact.startsWith("00") ? `+${compact.slice(2)}` : compact;
@@ -76,7 +100,7 @@ export function createSupabaseIdentityStore({ env = process.env, now = () => new
       purpose,
       expires_at: expiresAt.toISOString(),
     });
-    if (inserted.error) throw new AuthFlowError("Service momentanément indisponible.", 503, "storage_unavailable");
+    if (inserted.error) throw supabaseFailure("Service momentanément indisponible.", "storage_unavailable", "insert", "auth_flow_authorizations", inserted.error);
     return { token, expiresAt };
   }
 
@@ -85,7 +109,7 @@ export function createSupabaseIdentityStore({ env = process.env, now = () => new
     const result = await admin.from("auth_flow_authorizations")
       .select("id,phone,purpose,expires_at,consumed_at,claimed_at,claim_id")
       .eq("token_hash", sha256(token)).eq("phone", phone).in("purpose", purposes).maybeSingle();
-    if (result.error) throw new AuthFlowError("Service momentanément indisponible.", 503, "storage_unavailable");
+    if (result.error) throw supabaseFailure("Service momentanément indisponible.", "storage_unavailable", "select", "auth_flow_authorizations", result.error);
     const row = result.data;
     if (!row || row.consumed_at || new Date(row.expires_at).getTime() <= now().getTime()) {
       throw new AuthFlowError("Autorisation invalide ou expirée.", 400, "invalid_authorization");
@@ -101,7 +125,7 @@ export function createSupabaseIdentityStore({ env = process.env, now = () => new
       .update({ claimed_at: now().toISOString(), claim_id: claimId })
       .eq("id", row.id).is("consumed_at", null).or(`claimed_at.is.null,claimed_at.lt.${staleClaim}`)
       .select("id,phone,purpose,expires_at,claim_id").maybeSingle();
-    if (claimed.error) throw new AuthFlowError("Service momentanément indisponible.", 503, "storage_unavailable");
+    if (claimed.error) throw supabaseFailure("Service momentanément indisponible.", "storage_unavailable", "update", "auth_flow_authorizations", claimed.error);
     if (!claimed.data) throw new AuthFlowError("Cette autorisation est déjà utilisée.", 409, "authorization_in_use");
     return claimed.data;
   }
@@ -110,7 +134,18 @@ export function createSupabaseIdentityStore({ env = process.env, now = () => new
     const consumed = await admin.from("auth_flow_authorizations")
       .update({ consumed_at: now().toISOString(), claimed_at: null, claim_id: null })
       .eq("id", claim.id).eq("claim_id", claim.claim_id).is("consumed_at", null).select("id").maybeSingle();
-    if (consumed.error || !consumed.data) throw new AuthFlowError("Cette autorisation a déjà été utilisée.", 409, "authorization_used");
+    if (consumed.error || !consumed.data) {
+      const failure = new AuthFlowError("Cette autorisation a déjà été utilisée.", 409, "authorization_used");
+      if (consumed.error) {
+        failure.safeSupabaseErrors = [{
+          operation: "update",
+          table: "auth_flow_authorizations",
+          code: String(consumed.error.code || "unknown"),
+          message: "Supabase request failed.",
+        }];
+      }
+      throw failure;
+    }
   }
 
   async function releaseAuthorization(claim) {
@@ -123,7 +158,12 @@ export function createSupabaseIdentityStore({ env = process.env, now = () => new
       admin.from("users").select("id,email,phone").eq("phone", phone).maybeSingle(),
       admin.from("users").select("id,email,phone").ilike("email", email).maybeSingle(),
     ]);
-    if (byPhone.error || byEmail.error) throw new AuthFlowError("Service d’authentification momentanément indisponible.", 503, "identity_unavailable");
+    if (byPhone.error || byEmail.error) {
+      throw combinedSupabaseFailure("Service d’authentification momentanément indisponible.", "identity_unavailable", [
+        { operation: "select_by_phone", table: "users", error: byPhone.error },
+        { operation: "select_by_email", table: "users", error: byEmail.error },
+      ]);
+    }
     return byPhone.data || byEmail.data || null;
   }
 

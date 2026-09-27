@@ -5,6 +5,18 @@ const REQUEST_TTL = 10 * 60;
 const AUTHORIZATION_TTL = 10 * 60;
 const CONTROL_TTL = 5 * 60;
 
+function logAuthCheckFailure(event, error) {
+  console.error(`auth_check: ${event}`);
+  for (const detail of error?.safeSupabaseErrors || []) {
+    console.error("auth_check: supabase_error", {
+      operation: detail.operation,
+      table: detail.table,
+      code: detail.code,
+      message: detail.message,
+    });
+  }
+}
+
 export function createAuthFlowService({ store, twilio, now = () => new Date() }) {
   const limit = (phone, ip, action, phoneLimit, ipLimit) => store.registerAttempt({ phone, ip, action, since: new Date(now().getTime() - 15 * 60_000), phoneLimit, ipLimit });
 
@@ -24,9 +36,25 @@ export function createAuthFlowService({ store, twilio, now = () => new Date() })
       const requestProof = await store.authorization(requestToken, phone, ["otp_signup", "otp_password_reset"]);
       await limit(phone, ip, "otp_check", 10, 30);
       await twilio.check(phone, String(code));
-      const claim = await store.claimAuthorization(requestToken, phone, requestProof.purpose);
+      console.info("auth_check: twilio_approved");
+      let claim;
       try {
-        const account = await store.accountByPhone(phone);
+        claim = await store.claimAuthorization(requestToken, phone, requestProof.purpose);
+        console.info("auth_check: otp_claim_ok");
+      } catch (error) {
+        logAuthCheckFailure("otp_claim_failed", error);
+        throw error;
+      }
+      try {
+        let account;
+        try {
+          account = await store.accountByPhone(phone);
+          console.info("auth_check: identity_lookup_ok");
+          console.info(`auth_check: existing_account=${Boolean(account)}`);
+        } catch (error) {
+          logAuthCheckFailure("identity_lookup_failed", error);
+          throw error;
+        }
         let purpose;
         let ttlSeconds;
         if (requestProof.purpose === "otp_password_reset") {
@@ -39,10 +67,23 @@ export function createAuthFlowService({ store, twilio, now = () => new Date() })
           purpose = "signup";
           ttlSeconds = AUTHORIZATION_TTL;
         }
-        const authorization = account || purpose === "signup"
-          ? await store.issueAuthorization({ phone, purpose, ttlSeconds })
-          : null;
-        await store.consumeAuthorization(claim);
+        let authorization = null;
+        if (account || purpose === "signup") {
+          try {
+            authorization = await store.issueAuthorization({ phone, purpose, ttlSeconds });
+            console.info("auth_check: authorization_create_ok");
+          } catch (error) {
+            logAuthCheckFailure("authorization_create_failed", error);
+            throw error;
+          }
+        }
+        try {
+          await store.consumeAuthorization(claim);
+          console.info("auth_check: authorization_finalize_ok");
+        } catch (error) {
+          logAuthCheckFailure("authorization_finalize_failed", error);
+          throw error;
+        }
         return { ok: true, phone, accountExists: Boolean(account), purpose, authorization: authorization?.token ?? null, expiresIn: ttlSeconds };
       } catch (error) {
         await store.releaseAuthorization(claim);
