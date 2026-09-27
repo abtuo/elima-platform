@@ -42,16 +42,17 @@ test("le futur bootstrap natif peut exiger un backend HTTPS distant", () => {
   assert.equal(normalizeApiBase({ baseUrl: "https://backend.example.com/", environment: "production", requireRemoteBackend: true }), "https://backend.example.com");
 });
 
-test("les huit APIs Révision utilisent apiFetch sans modifier Supabase/OAuth", async () => {
-  const endpoints = ["learning", "revision-generate", "identity-bridge", "elima-password-login", "elima-profile", "elima-signup", "auth-verification-request", "auth-password-reset"];
+test("les neuf APIs Révision utilisent apiFetch sans modifier Supabase/OAuth", async () => {
+  const endpoints = ["learning", "revision-generate", "identity-bridge", "elima-password-login", "elima-profile", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset"];
   const sources = await Promise.all([
     ...["learningService", "revisionDataService", "elimaIdentityService", "registrationService"].map((file) => new URL(`../../apps/mobile/src/services/${file}.ts`, import.meta.url)),
+    new URL("../../apps/revision/src/services/registrationService.ts", import.meta.url),
     new URL("../../packages/revision-core/src/learningApi.ts", import.meta.url),
     new URL("../../packages/revision-core/src/revisionApi.ts", import.meta.url),
   ].map((file) => readFile(file, "utf8")));
   const source = sources.join("\n");
   for (const endpoint of endpoints) {
-    assert.ok(source.includes(`apiFetch("/api/${endpoint}"`));
+    assert.ok(source.includes(`apiFetch("/api/${endpoint}"`) || source.includes(`request("/api/${endpoint}"`));
     assert.ok(!source.includes(`fetch("/api/${endpoint}"`));
   }
   assert.match(source, /fetch\(`\$\{env.elimaIdentityUrl/);

@@ -1,69 +1,65 @@
 import { apiFetch } from "./api/apiClient";
+
 export type AccountRegistrationInput = {
   role: "student";
   firstName: string;
   lastName: string;
-  identifier: string;
+  phone: string;
   password: string;
-  schoolLevel?: string;
+  schoolLevel: string;
   declaredSchoolName?: string;
   declaredSchoolCity?: string;
-  verificationPhone: string;
-  verificationId: string;
-  verificationCode: string;
+  authorization: string;
 };
 
-async function readResponse(response: Response) {
-  return await response.json().catch(() => null) as {
-    message?: string;
-    ok?: boolean;
-    loginIdentifier?: string;
-    session?: { access_token: string; refresh_token?: string; expires_in?: number } | null;
-    challengeId?: string | null;
-    expiresIn?: number;
-  } | null;
+type AuthFlowResponse = {
+  message?: string;
+  code?: string;
+  ok?: boolean;
+  phone?: string;
+  requestToken?: string;
+  authorization?: string | null;
+  accountExists?: boolean;
+  purpose?: "signup" | "password_reset" | "phone_control";
+  expiresIn?: number;
+  session?: { access_token: string; refresh_token?: string; expires_in?: number } | null;
+};
+
+async function request(path: string, body: unknown) {
+  const response = await apiFetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const payload = await response.json().catch(() => null) as AuthFlowResponse | null;
+  if (!response.ok) throw new Error(payload?.message ?? "Service momentanément indisponible.");
+  return payload ?? { ok: true };
 }
 
-export async function requestRegistrationCode(input: { identifier: string; phone: string }) {
-  const response = await apiFetch("/api/auth-verification-request", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  const body = await readResponse(response);
-  if (!response.ok || !body?.challengeId) throw new Error(body?.message ?? "Envoi du code impossible.");
-  return { challengeId: body.challengeId, expiresIn: body.expiresIn ?? 600 };
+export async function requestRegistrationCode(phone: string) {
+  const body = await request("/api/auth-verification-request", { phone, purpose: "signup" });
+  if (!body.requestToken) throw new Error("Demande de vérification invalide.");
+  return { requestToken: body.requestToken, expiresIn: body.expiresIn ?? 600 };
 }
 
-export async function requestPasswordResetCode(input: { identifier: string; phone: string }) {
-  const response = await apiFetch("/api/auth-password-reset", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "request", ...input }),
-  });
-  const body = await readResponse(response);
-  if (!response.ok) throw new Error(body?.message ?? "Demande impossible.");
-  return { challengeId: body?.challengeId ?? null, expiresIn: body?.expiresIn ?? 600 };
+export async function requestPasswordResetCode(phone: string) {
+  const body = await request("/api/auth-verification-request", { phone, purpose: "password_reset" });
+  if (!body.requestToken) throw new Error("Demande de vérification invalide.");
+  return { requestToken: body.requestToken, expiresIn: body.expiresIn ?? 600 };
 }
 
-export async function confirmPasswordReset(input: { identifier: string; phone: string; challengeId: string; code: string; password: string }) {
-  const response = await apiFetch("/api/auth-password-reset", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "confirm", ...input }),
-  });
-  const body = await readResponse(response);
-  if (!response.ok) throw new Error(body?.message ?? "Réinitialisation impossible.");
-  return body;
+export async function checkVerificationCode(input: { phone: string; code: string; requestToken: string }) {
+  const body = await request("/api/auth-verification-check", input);
+  if (!body.purpose) throw new Error("Vérification incomplète.");
+  return { phone: body.phone ?? input.phone, authorization: body.authorization ?? "", purpose: body.purpose, accountExists: body.accountExists === true };
+}
+
+export async function exchangePhoneControlForReset(input: { phone: string; authorization: string }) {
+  const body = await request("/api/auth-password-reset", { action: "authorize", ...input });
+  if (!body.authorization) throw new Error("Autorisation de réinitialisation invalide.");
+  return body.authorization;
+}
+
+export async function confirmPasswordReset(input: { phone: string; authorization: string; password: string }) {
+  return request("/api/auth-password-reset", { action: "confirm", ...input });
 }
 
 export async function registerElimaAccount(input: AccountRegistrationInput) {
-  const response = await apiFetch("/api/elima-signup", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  const body = await readResponse(response);
-  if (!response.ok) throw new Error(body?.message ?? "Inscription impossible.");
-  return body ?? { ok: true };
+  return request("/api/elima-signup", input);
 }

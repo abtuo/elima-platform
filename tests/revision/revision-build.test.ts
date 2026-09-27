@@ -89,6 +89,12 @@ test("l’inscription Révision utilise uniquement le numéro WhatsApp", async (
   assert.match(source, /Vérifier mon numéro/);
   assert.match(source, /name="declaredSchoolName" autoComplete="organization"/);
   assert.doesNotMatch(source, /Email ou téléphone|Ton compte Révision fonctionne|Recevoir mon code/);
+  const clientSources = (await Promise.all([
+    "features/auth/RegistrationPage.tsx",
+    "features/auth/ForgotPasswordPage.tsx",
+    "services/registrationService.ts",
+  ].map((file) => readFile(new URL(`../../apps/revision/src/${file}`, import.meta.url), "utf8")))).join("\n");
+  assert.doesNotMatch(clientSources, /TWILIO_API_SECRET|TWILIO_API_KEY|ELIMA_IDENTITY_SECRET_KEY/);
 });
 
 test("les packages Révision restent séparés des applications et des espaces School", async () => {

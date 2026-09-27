@@ -35,14 +35,23 @@ Variables serveur utilisées :
 
 - `REVISION_ALLOWED_ORIGINS`
 - `VITE_WEB_BASE_URL`
-- `VITE_ELIMA_IDENTITY_URL`
-- `ELIMA_IDENTITY_PUBLISHABLE_KEY` ou `VITE_ELIMA_IDENTITY_PUBLISHABLE_KEY`
+- `ELIMA_IDENTITY_URL`
+- `ELIMA_IDENTITY_PUBLISHABLE_KEY`
+- `ELIMA_IDENTITY_SECRET_KEY` ou `ELIMA_IDENTITY_SERVICE_ROLE_KEY` ; cette clé
+  doit appartenir exactement au projet indiqué par `ELIMA_IDENTITY_URL`
+- `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY`, `TWILIO_API_SECRET`,
+  `TWILIO_VERIFY_SERVICE_SID`
 - `VITE_SUPABASE_URL` ou `SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_ANON_KEY` ou `SUPABASE_ANON_KEY`
 - `SUPABASE_SECRET_KEY` ou `SUPABASE_SERVICE_ROLE_KEY`
 - `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`,
   `AZURE_OPENAI_API_VERSION`, `AZURE_OPENAI_API_KEY`
 
-Les secrets Supabase et Azure restent exclusivement côté serveur. Le CORS est
+Le signup, la vérification WhatsApp et la réinitialisation de mot de passe sont
+traités directement par `apps/api`, sans relais par Platform. La migration
+`supabase/migrations/20260927090000_twilio_verify_auth_flows.sql`
+doit être appliquée au projet Supabase d’identité avant activation.
+
+Les secrets Supabase, Twilio et Azure restent exclusivement côté serveur. Le CORS est
 géré par `server/revisionCors.mjs` : same-origin reste autorisé, et les origines
 cross-origin doivent figurer explicitement dans `REVISION_ALLOWED_ORIGINS`.

@@ -1,54 +1,35 @@
 import { handleRevisionCors } from "../server/revisionCors.mjs";
-function normalizeIdentifier(value) {
-  const identifier = String(value ?? "").trim().toLowerCase();
-  if (identifier.includes("@")) return { email: identifier, phone: "" };
-  const phone = identifier.replace(/[\s\-().]/g, "");
-  return { email: phone ? `${phone}@phone.elima` : "", phone };
+import { getAuthFlowService, sendAuthFlowError } from "../server/authFlowService.mjs";
+
+export function createHandler(resolveService = getAuthFlowService) {
+  return async function handler(request, response) {
+    if (handleRevisionCors(request, response, ["POST"])) return;
+    if (request.method !== "POST") return response.status(405).json({ message: "Méthode non autorisée." });
+    try {
+      if (request.body?.role && request.body.role !== "student") return response.status(400).json({ message: "Ce parcours est réservé aux comptes élèves." });
+      const service = resolveService();
+      const phone = request.body?.phone ?? request.body?.verificationPhone ?? request.body?.identifier;
+      let authorization = request.body?.authorization;
+      if (!authorization && request.body?.verificationId && request.body?.verificationCode) {
+        const verified = await service.checkVerification({ phone, code: request.body.verificationCode, requestToken: request.body.verificationId });
+        if (verified.accountExists || verified.purpose !== "signup" || !verified.authorization) return response.status(409).json({ message: "Ce numéro est déjà associé à un compte Elima." });
+        authorization = verified.authorization;
+      }
+      const result = await service.signup({
+        phone,
+        authorization,
+        firstName: request.body?.firstName,
+        lastName: request.body?.lastName,
+        password: request.body?.password,
+        schoolLevel: request.body?.schoolLevel,
+        declaredSchoolName: request.body?.declaredSchoolName,
+        declaredSchoolCity: request.body?.declaredSchoolCity,
+      });
+      return response.status(201).json(result);
+    } catch (error) {
+      return sendAuthFlowError(response, error, "Inscription momentanément indisponible.");
+    }
+  };
 }
 
-const roleMap = {
-  student: "STUDENT",
-  teacher: "TEACHER",
-  parent: "PARENT",
-  school_staff: "SCHOOL_STAFF",
-};
-
-export default async function handler(request, response) {
-  if (handleRevisionCors(request, response, ["POST"])) return;
-  if (request.method !== "POST") return response.status(405).json({ message: "Méthode non autorisée." });
-  const webBaseUrl = String(process.env.VITE_WEB_BASE_URL || "https://www.elima.ci").replace(/\/+$/, "");
-  const input = request.body ?? {};
-  const role = roleMap[String(input.role ?? "")];
-  const { email, phone } = normalizeIdentifier(input.identifier);
-  if (!role || !email) return response.status(400).json({ message: "Rôle et email ou téléphone valides requis." });
-
-  const upstream = await fetch(`${webBaseUrl}/api/auth/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Elima-Client": "mobile-app" },
-    body: JSON.stringify({
-      firstName: String(input.firstName ?? "").trim(),
-      lastName: String(input.lastName ?? "").trim(),
-      email,
-      phone: phone || String(input.verificationPhone ?? "").trim(),
-      password: String(input.password ?? ""),
-      role,
-      schoolCode: String(input.schoolCode ?? "").trim(),
-      schoolLevel: String(input.schoolLevel ?? "").trim(),
-      declaredSchoolName: String(input.declaredSchoolName ?? "").trim(),
-      declaredSchoolCity: String(input.declaredSchoolCity ?? "").trim(),
-      returnTo: "https://app.elima.ci/auth/elima/start",
-      verificationId: String(input.verificationId ?? ""),
-      verificationCode: String(input.verificationCode ?? ""),
-      verificationIdentifier: String(input.identifier ?? "").trim(),
-      verificationPhone: String(input.verificationPhone ?? phone).trim(),
-    }),
-  });
-  const body = await upstream.json().catch(() => null);
-  if (!upstream.ok) {
-    return response.status(upstream.status).json(body ?? { message: "Inscription Elima impossible." });
-  }
-  return response.status(upstream.status).json({
-    ...(body && typeof body === "object" ? body : { message: "Compte créé." }),
-    loginIdentifier: email,
-  });
-}
+export default createHandler();

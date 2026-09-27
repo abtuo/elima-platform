@@ -6,10 +6,10 @@ export function createHandler(resolveService = getAuthFlowService) {
     if (handleRevisionCors(request, response, ["POST"])) return;
     if (request.method !== "POST") return response.status(405).json({ message: "Méthode non autorisée." });
     try {
-      const result = await resolveService().requestVerification({ phone: request.body?.phone, purpose: request.body?.purpose === "password_reset" ? "password_reset" : "signup", ip: clientIp(request) });
-      return response.status(200).json({ ...result, challengeId: result.requestToken });
+      const result = await resolveService().checkVerification({ phone: request.body?.phone, code: request.body?.code, requestToken: request.body?.requestToken, ip: clientIp(request) });
+      return response.status(200).json(result);
     } catch (error) {
-      return sendAuthFlowError(response, error, "Nous n’avons pas pu envoyer le code pour le moment. Réessayez dans quelques instants.");
+      return sendAuthFlowError(response, error, "La vérification est momentanément indisponible. Réessayez dans quelques instants.");
     }
   };
 }

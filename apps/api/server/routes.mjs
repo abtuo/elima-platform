@@ -1,6 +1,7 @@
 export const API_ENDPOINTS = [
   "activate-school",
   "auth-password-reset",
+  "auth-verification-check",
   "auth-verification-request",
   "elima-password-login",
   "elima-profile",
@@ -16,6 +17,7 @@ export const REVISION_API_ENDPOINTS = [
   "elima-profile",
   "elima-password-login",
   "elima-signup",
+  "auth-verification-check",
   "auth-verification-request",
   "auth-password-reset",
   "learning",

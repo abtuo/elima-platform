@@ -3,8 +3,8 @@ import { API_ENDPOINTS, REVISION_API_ENDPOINTS } from "./routes.mjs";
 import { handleRevisionCors } from "./revisionCors.mjs";
 
 assert.equal(typeof handleRevisionCors, "function");
-assert.equal(API_ENDPOINTS.length, 10);
-assert.equal(REVISION_API_ENDPOINTS.length, 8);
+assert.equal(API_ENDPOINTS.length, 11);
+assert.equal(REVISION_API_ENDPOINTS.length, 9);
 
 for (const endpoint of API_ENDPOINTS) {
   const module = await import(new URL(`../api/${endpoint}.mjs`, import.meta.url));
