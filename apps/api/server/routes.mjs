@@ -10,6 +10,7 @@ export const API_ENDPOINTS = [
   "learning",
   "registration-request",
   "revision-generate",
+  "revision-document-analyze",
 ];
 
 export const REVISION_API_ENDPOINTS = [
@@ -22,4 +23,5 @@ export const REVISION_API_ENDPOINTS = [
   "auth-password-reset",
   "learning",
   "revision-generate",
+  "revision-document-analyze",
 ];

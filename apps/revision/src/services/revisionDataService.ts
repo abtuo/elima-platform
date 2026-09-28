@@ -1,5 +1,5 @@
 import { apiFetch } from "./api/apiClient";
-import type { RevisionProgress, QuizAttemptSummary, QuizItem, CourseSheet, QuizQuestion } from "../types/revision";
+import type { RevisionProgress, QuizAttemptSummary, QuizItem, CourseSheet, QuizQuestion, LearningAttemptSummary } from "../types/revision";
 import { isDemoModeActive } from "./env";
 import { revisionDbClient } from "./revisionDbClient";
 import { demoRevisionProgress, demoQuizzes, demoCourseSheets, demoQuizAttempts, demoQuizQuestions } from "../constants/revisionDemoData";
@@ -125,9 +125,11 @@ export async function recordQuizCompletion(input: {
   score: number;
   totalQuestions: number;
   correctAnswers: number;
+  source?: "catalog" | "generated" | "document";
+  sourceDocumentId?: string;
 }) {
   if (revisionDbClient && !isDemoModeActive()) {
-    const { error } = await revisionDbClient.rpc("record_quiz_attempt", {
+    const { data: attemptData, error } = await revisionDbClient.rpc("record_quiz_attempt", {
       p_quiz_ref: input.quizRef,
       p_subject_label: input.subject,
       p_score: input.score,
@@ -136,6 +138,10 @@ export async function recordQuizCompletion(input: {
       p_completed_at: new Date().toISOString(),
     });
     if (error) throw error;
+    const attemptId = attemptData && typeof attemptData === "object" && "id" in attemptData ? String(attemptData.id) : "";
+    if (attemptId && (input.topic || input.source)) {
+      await revisionDbClient.from("quiz_attempts").update({ topic: input.topic || null, source: input.source ?? (input.quizRef.startsWith("generated:") ? "generated" : "catalog"), source_document_id: input.sourceDocumentId || null }).eq("id", attemptId);
+    }
     const { data } = await revisionDbClient.auth.getUser();
     return getRevisionProgress(data.user?.id);
   }
@@ -143,7 +149,7 @@ export async function recordQuizCompletion(input: {
   const progress = applyQuizScore(readLocalProgress(), input.score);
   writeLocalProgress(progress);
   const attempts = readLocalAttempts(input.userId);
-  attempts.unshift({ id: crypto.randomUUID(), quizRef: input.quizRef, subject: input.subject, topic: input.topic, score: input.score, totalQuestions: input.totalQuestions, correctAnswers: input.correctAnswers, completedAt: new Date().toISOString() });
+  attempts.unshift({ id: crypto.randomUUID(), quizRef: input.quizRef, subject: input.subject, topic: input.topic, score: input.score, totalQuestions: input.totalQuestions, correctAnswers: input.correctAnswers, completedAt: new Date().toISOString(), source: input.source, sourceDocumentId: input.sourceDocumentId });
   localStorage.setItem(attemptsKey(input.userId), JSON.stringify(attempts.slice(0, 50)));
   return progress;
 }
@@ -189,17 +195,86 @@ export async function getQuizAttempts(userId?: string): Promise<QuizAttemptSumma
   const local = readLocalAttempts(userId);
   if (isDemoModeActive()) return [...local, ...demoQuizAttempts.filter((demo) => !local.some((attempt) => attempt.id === demo.id))].slice(0, 50);
   if (revisionDbClient && userId) {
-    const { data } = await revisionDbClient.from("quiz_attempts").select("id, quiz_ref, subject_label, score, total_questions, correct_answers, completed_at").eq("user_id", userId).order("completed_at", { ascending: false }).limit(50);
+    const { data } = await revisionDbClient.from("quiz_attempts").select("id, quiz_ref, subject_label, topic, source, source_document_id, score, total_questions, correct_answers, completed_at").eq("user_id", userId).order("completed_at", { ascending: false }).limit(50);
     if (data?.length) {
       const quizzes = await getAvailableQuizzes();
       return data.map((row) => {
         const quizRef = String(row.quiz_ref ?? "");
         const quiz = quizzes.find((item) => item.id === quizRef);
-        return { id: String(row.id), quizRef: quizRef || undefined, subject: String(row.subject_label ?? "Quiz"), topic: quiz?.topic, score: Number(row.score ?? 0), totalQuestions: Number(row.total_questions ?? 0) || undefined, correctAnswers: Number(row.correct_answers ?? 0), completedAt: String(row.completed_at) };
+        return { id: String(row.id), quizRef: quizRef || undefined, subject: String(row.subject_label ?? "Quiz"), topic: row.topic ? String(row.topic) : quiz?.topic, source: row.source ? String(row.source) as QuizAttemptSummary["source"] : undefined, sourceDocumentId: row.source_document_id ? String(row.source_document_id) : undefined, score: Number(row.score ?? 0), totalQuestions: Number(row.total_questions ?? 0) || undefined, correctAnswers: Number(row.correct_answers ?? 0), completedAt: String(row.completed_at) };
       });
     }
   }
   return local;
+}
+
+type LearningAttemptRow = {
+  id: unknown;
+  content_type: unknown;
+  exercise_id: unknown;
+  exam_subject_id: unknown;
+  status: unknown;
+  started_at: unknown;
+  completed_at: unknown;
+  elapsed_seconds: unknown;
+  adjusted_score: unknown;
+  max_score: unknown;
+  exercise?: unknown;
+  exam?: unknown;
+};
+
+function relatedRow(value: unknown): Record<string, unknown> | undefined {
+  if (Array.isArray(value)) return value[0] as Record<string, unknown> | undefined;
+  return value && typeof value === "object" ? value as Record<string, unknown> : undefined;
+}
+
+function relatedLabel(value: unknown): string | undefined {
+  const row = relatedRow(value);
+  return row?.label ? String(row.label) : undefined;
+}
+
+function mapLearningAttempt(row: LearningAttemptRow): LearningAttemptSummary | null {
+  const contentType = row.content_type === "exam" ? "exam" : "guided_exercise";
+  const contentId = String(contentType === "exam" ? row.exam_subject_id ?? "" : row.exercise_id ?? "");
+  if (!contentId) return null;
+
+  const content = relatedRow(contentType === "exam" ? row.exam : row.exercise);
+  const maxScore = Number(row.max_score ?? 0);
+  const adjustedScore = Number(row.adjusted_score ?? 0);
+  const status = ["in_progress", "submitted", "completed", "abandoned"].includes(String(row.status))
+    ? String(row.status) as LearningAttemptSummary["status"]
+    : "in_progress";
+
+  return {
+    id: String(row.id),
+    contentType,
+    contentId,
+    title: content?.title ? String(content.title) : contentType === "exam" ? "Sujet d’examen" : "Exercice guidé",
+    subject: relatedLabel(content?.subject),
+    chapter: relatedLabel(content?.chapter),
+    status,
+    startedAt: String(row.started_at ?? ""),
+    completedAt: row.completed_at ? String(row.completed_at) : undefined,
+    elapsedSeconds: Number(row.elapsed_seconds ?? 0),
+    score: maxScore > 0 ? Math.round((adjustedScore / maxScore) * 100) : undefined,
+  };
+}
+
+export async function getLearningAttempts(userId?: string): Promise<LearningAttemptSummary[]> {
+  if (!revisionDbClient || !userId || isDemoModeActive()) return [];
+
+  const fields = "id, content_type, exercise_id, exam_subject_id, status, started_at, completed_at, elapsed_seconds, adjusted_score, max_score, exercise:learning_exercises(title, subject:learning_subjects(label), chapter:learning_chapters(label)), exam:exam_subjects(title, subject:learning_subjects(label))";
+  const { data, error } = await revisionDbClient
+    .from("learning_attempts")
+    .select(fields)
+    .eq("user_id", userId)
+    .order("started_at", { ascending: false })
+    .limit(50);
+
+  if (error || !data) return [];
+  return (data as unknown as LearningAttemptRow[])
+    .map(mapLearningAttempt)
+    .filter((attempt): attempt is LearningAttemptSummary => Boolean(attempt));
 }
 
 export async function getAvailableQuizzes(): Promise<QuizItem[]> {

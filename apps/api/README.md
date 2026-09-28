@@ -40,6 +40,7 @@ Variables serveur utilisées :
 - `ELIMA_IDENTITY_SECRET_KEY` ou `ELIMA_IDENTITY_SERVICE_ROLE_KEY` ; cette clé
   doit appartenir exactement au projet indiqué par `ELIMA_IDENTITY_URL`
 - `REVISION_SUPABASE_URL`
+- `REVISION_SUPABASE_PUBLISHABLE_KEY` ou `REVISION_SUPABASE_ANON_KEY`
 - `REVISION_SUPABASE_SECRET_KEY` ou `REVISION_SUPABASE_SERVICE_ROLE_KEY` ; cette
   clé cible exclusivement le projet de données Révision utilisé par le bridge
 - `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY`, `TWILIO_API_SECRET`,
@@ -49,11 +50,17 @@ Variables serveur utilisées :
 - `SUPABASE_SECRET_KEY` ou `SUPABASE_SERVICE_ROLE_KEY`
 - `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`,
   `AZURE_OPENAI_API_VERSION`, `AZURE_OPENAI_API_KEY`
+- `AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT`, `AZURE_DOCUMENT_INTELLIGENCE_KEY`
 
 Le signup, la vérification WhatsApp et la réinitialisation de mot de passe sont
 traités directement par `apps/api`, sans relais par Platform. La migration
 `supabase/migrations/20260927090000_twilio_verify_auth_flows.sql`
 doit être appliquée au projet Supabase d’identité avant activation.
+
+La migration `supabase/migrations/20260928120000_revision_subject_preferences_and_documents.sql`
+doit être appliquée au projet Supabase Révision avant d’activer les préférences
+de matières et le Scanner. Les fichiers originaux ne sont pas conservés : seule
+l’analyse pédagogique structurée est stockée.
 
 `identity-bridge` valide la session auprès de `ELIMA_IDENTITY_URL`, puis crée la
 session technique et les liens RLS dans `REVISION_SUPABASE_URL`. Ces deux URLs et

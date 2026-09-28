@@ -1,42 +1,41 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { BookOpen, Brain, CalendarClock, ChevronRight, Flame, History, Search, Sparkles, Star } from "lucide-react";
+import { BookOpen, Brain, ChevronRight, History, ScanLine, Search, Sparkles } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
 import { EmptyState } from "@/components/common/EmptyState";
 import { GeneratedActionIcon } from "@/components/common/GeneratedActionIcon";
 import { GeneratedFeatureIcon } from "@/components/common/GeneratedFeatureIcon";
 import { QuizCard } from "@/components/cards/QuizCard";
-import { RevisionProgressCard } from "@/components/cards/RevisionProgressCard";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { SubjectIcon } from "@/components/revision/SubjectIcon";
-import { ActionCard, StatCard } from "@/components/revision/RevisionUI";
+import { ActionCard } from "@/components/revision/RevisionUI";
 import { useAuth } from "@/features/auth/AuthProvider";
-import { LearningAssignmentsPanel } from "@/features/revision/LearningAssignmentsPanel";
-import { REVISION_SUBJECT_OPTIONS } from "@/lib/revisionSubjects";
+import { DocumentScannerPanel } from "@/features/revision/DocumentScannerPanel";
+import { REVISION_SUBJECT_OPTIONS, subjectIdFromLabel } from "@/lib/revisionSubjects";
+import { getSubjectPreferences } from "@/services/subjectPreferencesService";
 import {
   generateRealtimeQuiz,
   generateRealtimeSheet,
   getAvailableQuizzes,
   getCourseSheets,
   getQuizAttempts,
-  getRevisionProgress,
   getStudentRevisionLevel,
   isDailyQuizCompleted,
   pickQuiz,
 } from "@/services/revisionDataService";
-import type { CourseSheet, QuizAttemptSummary, QuizItem, RevisionProgress } from "@/types/revision";
+import type { CourseSheet, QuizAttemptSummary, QuizItem } from "@/types/revision";
 
-type RevisionMode = "qcm" | "parcours" | "fiches";
+type RevisionMode = "qcm" | "scanner" | "fiches";
 
 const MODES: Array<{ id: RevisionMode; label: string; icon: typeof Brain }> = [
   { id: "qcm", label: "QCM", icon: Brain },
-  { id: "parcours", label: "Parcours", icon: CalendarClock },
+  { id: "scanner", label: "Scanner", icon: ScanLine },
   { id: "fiches", label: "Fiches", icon: BookOpen },
 ];
 
 function revisionMode(value: string | null): RevisionMode {
-  if (value === "devoirs" || value === "examens" || value === "examen") return "parcours";
-  return value === "parcours" || value === "fiches" ? value : "qcm";
+  if (value === "parcours" || value === "devoirs" || value === "examens" || value === "examen") return "scanner";
+  return value === "scanner" || value === "fiches" ? value : "qcm";
 }
 
 function formatHistoryDate(value: string) {
@@ -50,11 +49,11 @@ export function RevisionDashboardPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const mode = revisionMode(searchParams.get("mode"));
-  const [progress, setProgress] = useState<RevisionProgress | null>(null);
   const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
   const [attempts, setAttempts] = useState<QuizAttemptSummary[]>([]);
   const [sheets, setSheets] = useState<CourseSheet[]>([]);
   const [level, setLevel] = useState("Collège / lycée");
+  const [preferredSubjects, setPreferredSubjects] = useState<string[]>([]);
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
   const [error, setError] = useState("");
@@ -63,27 +62,29 @@ export function RevisionDashboardPage() {
 
   useEffect(() => {
     Promise.all([
-      getRevisionProgress(profile.id),
       getAvailableQuizzes(),
       getQuizAttempts(profile.id),
       getCourseSheets(profile.id),
       getStudentRevisionLevel(profile.id),
-    ]).then(([nextProgress, nextQuizzes, nextAttempts, nextSheets, nextLevel]) => {
-      setProgress(nextProgress);
+      getSubjectPreferences(profile.id),
+    ]).then(([nextQuizzes, nextAttempts, nextSheets, nextLevel, nextPreferredSubjects]) => {
       setQuizzes(nextQuizzes);
       setAttempts(nextAttempts);
       setSheets(nextSheets);
       setLevel(nextLevel);
+      setPreferredSubjects(nextPreferredSubjects);
     });
   }, [profile.id]);
 
   const subjectLabels = useMemo(() => {
-    const known = REVISION_SUBJECT_OPTIONS.map((item) => item.label);
-    const fromDatabase = quizzes.map((quiz) => quiz.subject).filter((item) => !known.some((knownItem) => knownItem.toLocaleLowerCase("fr") === item.toLocaleLowerCase("fr")));
+    const preferred = (label: string) => !preferredSubjects.length || preferredSubjects.includes(subjectIdFromLabel(label));
+    const known = REVISION_SUBJECT_OPTIONS.filter((item) => !preferredSubjects.length || preferredSubjects.includes(item.id)).map((item) => item.label);
+    const fromDatabase = quizzes.map((quiz) => quiz.subject).filter(preferred).filter((item) => !known.some((knownItem) => knownItem.toLocaleLowerCase("fr") === item.toLocaleLowerCase("fr")));
     return [...known, ...new Set(fromDatabase)].sort((a, b) => a.localeCompare(b, "fr"));
-  }, [quizzes]);
+  }, [preferredSubjects, quizzes]);
 
-  const suggestions = useMemo(() => quizzes.filter((quiz) => !subject || quiz.subject === subject).slice(0, 4), [quizzes, subject]);
+  const suggestions = useMemo(() => quizzes.filter((quiz) => (!preferredSubjects.length || preferredSubjects.includes(subjectIdFromLabel(quiz.subject))) && (!subject || quiz.subject === subject)).slice(0, 4), [preferredSubjects, quizzes, subject]);
+  const visibleSheets = useMemo(() => sheets.filter((sheet) => !preferredSubjects.length || preferredSubjects.includes(subjectIdFromLabel(sheet.subject))), [preferredSubjects, sheets]);
 
   function selectMode(nextMode: RevisionMode) {
     setError("");
@@ -94,7 +95,10 @@ export function RevisionDashboardPage() {
     setLaunching("random");
     setError("");
     try {
-      const quiz = await pickQuiz({ subject, random: true });
+      const preferredPool = quizzes.filter((quiz) => !preferredSubjects.length || preferredSubjects.includes(subjectIdFromLabel(quiz.subject)));
+      const quiz = subject
+        ? await pickQuiz({ subject, random: true })
+        : preferredPool[Math.floor(Math.random() * preferredPool.length)] ?? null;
       if (!quiz) throw new Error(subject ? "Aucun quiz disponible pour cette matière." : "Aucun quiz aléatoire n’est disponible.");
       navigate(`/student/reviser/quiz?id=${encodeURIComponent(quiz.id)}&subject=${encodeURIComponent(quiz.subject)}&topic=${encodeURIComponent(quiz.topic)}`);
     } catch (reason) {
@@ -141,11 +145,9 @@ export function RevisionDashboardPage() {
     navigate(`/student/reviser/quiz?${params.toString()}`);
   }
 
-  if (!progress) return null;
-
   return (
     <PageContainer>
-      <AppHeader title="Réviser" subtitle="QCM, parcours et fiches de révision" accent="#7C3AED" />
+      <AppHeader title="Réviser" subtitle="QCM, scanner et fiches de révision" accent="#7C3AED" />
 
       <div className="mb-5 grid grid-cols-3 rounded-2xl bg-gray-100 p-1" role="tablist" aria-label="Modes de révision">
         {MODES.map((item) => {
@@ -157,19 +159,10 @@ export function RevisionDashboardPage() {
 
       {mode === "qcm" ? (
         <div className="space-y-5">
-          <RevisionProgressCard progress={progress} />
-
           <GenerationPanel subject={subject} topic={topic} subjectLabels={subjectLabels} error={error} level={level} launching={launching} onSubjectChange={(value) => { setSubject(value); setError(""); }} onTopicChange={(value) => { setTopic(value); setError(""); }}>
             <button type="button" disabled={Boolean(launching)} onClick={launchRandomQuiz} className="flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-3 py-2.5 text-sm font-semibold disabled:opacity-50"><GeneratedActionIcon name="randomQuiz" className="h-8 w-8" />{launching === "random" ? "Chargement…" : "Quiz aléatoire"}</button>
             <button type="button" disabled={Boolean(launching) || !subject || !topic.trim()} onClick={launchSpecificQuiz} className="flex items-center justify-center gap-2 rounded-2xl bg-white px-3 py-2.5 text-sm font-semibold text-revision disabled:opacity-40"><GeneratedActionIcon name="generateQuiz" className="h-8 w-8" />{launching === "quiz" ? "Génération…" : "Générer le quiz"}</button>
           </GenerationPanel>
-
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <StatCard icon={Star} label="Niveau" value={progress.level} />
-            <StatCard icon={Flame} label="Série" value={`${progress.streakDays}j`} />
-            <StatCard icon={Brain} label="Quiz" value={progress.completedQuizCount} />
-            <StatCard icon={BookOpen} label="Fiches" value={sheets.length} />
-          </div>
 
           <ActionCard title="Quiz du jour" subtitle={dailyDone ? "Terminé pour aujourd’hui" : "10 questions rapides"} icon={Brain} colorClass="bg-gradient-to-br from-purple-500 to-purple-700" onClick={launchRandomQuiz} />
 
@@ -199,13 +192,13 @@ export function RevisionDashboardPage() {
           </GenerationPanel>
 
           <section className="space-y-3">
-            <div className="flex items-center justify-between gap-3"><div><h2 className="font-title text-lg font-semibold text-accent">Mes fiches</h2><p className="text-xs text-gray-500">Historique de tes fiches générées</p></div><span className="rounded-full bg-revision/10 px-3 py-1 text-xs font-bold text-revision">{sheets.length}</span></div>
-            {sheets.length ? sheets.map((sheet) => <button key={sheet.id} type="button" onClick={() => navigate(`/student/reviser/fiches/${encodeURIComponent(sheet.id)}`)} className="card tap flex w-full items-center gap-3 p-4 text-left"><SubjectIcon subject={sheet.subject} /><span className="min-w-0 flex-1"><span className="block truncate text-xs text-gray-500">{sheet.subject}</span><span className="block truncate font-title text-base font-semibold text-accent">{sheet.title}</span><span className="mt-1 block text-xs text-gray-400">Créée le {formatHistoryDate(sheet.createdAt)}</span></span><ChevronRight className="h-5 w-5 shrink-0 text-gray-300" /></button>) : <EmptyState icon={BookOpen} title="Aucune fiche" description="Choisis une matière et un sujet pour générer ta première fiche." />}
+            <div className="flex items-center justify-between gap-3"><div><h2 className="font-title text-lg font-semibold text-accent">Mes fiches</h2><p className="text-xs text-gray-500">Historique de tes fiches générées</p></div><span className="rounded-full bg-revision/10 px-3 py-1 text-xs font-bold text-revision">{visibleSheets.length}</span></div>
+            {visibleSheets.length ? visibleSheets.map((sheet) => <button key={sheet.id} type="button" onClick={() => navigate(`/student/reviser/fiches/${encodeURIComponent(sheet.id)}`)} className="card tap flex w-full items-center gap-3 p-4 text-left"><SubjectIcon subject={sheet.subject} /><span className="min-w-0 flex-1"><span className="block truncate text-xs text-gray-500">{sheet.subject}</span><span className="block truncate font-title text-base font-semibold text-accent">{sheet.title}</span><span className="mt-1 block text-xs text-gray-400">Créée le {formatHistoryDate(sheet.createdAt)}</span></span><ChevronRight className="h-5 w-5 shrink-0 text-gray-300" /></button>) : <EmptyState icon={BookOpen} title="Aucune fiche" description="Choisis une matière et un sujet pour générer ta première fiche." />}
           </section>
         </div>
       ) : null}
 
-      {mode === "parcours" ? <LearningAssignmentsPanel profile={profile} /> : null}
+      {mode === "scanner" ? <DocumentScannerPanel /> : null}
     </PageContainer>
   );
 }

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readdir, readFile } from "node:fs/promises";
 import test from "node:test";
 import { getRevisionDemoProfile, revisionDemoAccounts } from "../../apps/revision/src/revisionDemoAuth.ts";
+import { buildHomeActivities, isNewRevisionAccount, selectContinueActivity } from "../../apps/revision/src/features/home/homeModel.ts";
 
 const routerUrl = new URL("../../apps/revision/src/router.tsx", import.meta.url);
 
@@ -21,6 +22,7 @@ test("le routeur autonome expose les parcours majeurs de Révision", async () =>
     "/auth/login",
     "/auth/inscription",
     "/auth/mot-de-passe-oublie",
+    "/student",
     "/student/reviser",
     "/student/reviser/parcours/session/:id",
     "/student/reviser/parcours/resultats/:contentType/:id",
@@ -29,6 +31,107 @@ test("le routeur autonome expose les parcours majeurs de Révision", async () =>
     "/student/reviser/fiches/:id",
     "/student/profil",
   ]) assert.match(source, new RegExp(route.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.match(source, /path="\/student" element={<StudentHomePage \/>}/);
+});
+
+test("login et inscription arrivent sur l’accueil élève", async () => {
+  const login = await readFile(new URL("../../apps/revision/src/features/auth/LoginPage.tsx", import.meta.url), "utf8");
+  const registration = await readFile(new URL("../../apps/revision/src/features/auth/RegistrationPage.tsx", import.meta.url), "utf8");
+  const router = await readFile(routerUrl, "utf8");
+  assert.match(login, /mode === "revision" \? "\/student"/);
+  assert.match(registration, /navigate\("\/student", \{ replace: true \}\)/);
+  assert.match(router, /profile\.role === "STUDENT" \? "\/student"/);
+  assert.doesNotMatch(login, /mode === "revision" \? "\/student\/reviser"/);
+});
+
+test("la navigation Révision expose Accueil, Réviser et Profil sur desktop et mobile", async () => {
+  const shell = await readFile(new URL("../../apps/revision/src/RevisionShell.tsx", import.meta.url), "utf8");
+  for (const item of [
+    '{ href: "/student", label: "Accueil"',
+    '{ href: "/student/reviser", label: "Réviser"',
+    '{ href: "/student/profil", label: "Profil"',
+  ]) assert.match(shell, new RegExp(item.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.match(shell, /pathname === href/);
+  assert.match(shell, /lg:hidden/);
+  assert.match(shell, /hidden w-64[\s\S]*lg:flex/);
+  assert.match(shell, /profile\.className \|\| profile\.schoolLevelId/);
+});
+
+test("l’accueil élève utilise les données Révision réelles et couvre les états essentiels", async () => {
+  const home = await readFile(new URL("../../apps/revision/src/features/home/StudentHomePage.tsx", import.meta.url), "utf8");
+  for (const service of ["getRevisionProgress", "getQuizAttempts", "getLearningAttempts", "getCourseSheets", "getAvailableQuizzes"]) {
+    assert.match(home, new RegExp(`${service}\\(profile\\.id\\)|${service}\\(\\)`));
+  }
+  for (const copy of ["Progression cette semaine", "Continuer ma révision", "Commence ta première révision", "Mes matières", "Pour toi", "Activité récente", "Réessayer"]) {
+    assert.match(home, new RegExp(copy));
+  }
+  assert.match(home, /navigate\("\/student\/reviser"\)/);
+  assert.match(home, /grid-cols-2[\s\S]*lg:grid-cols-4/);
+  assert.doesNotMatch(home, /65\s*%|40\s*%|25\s*%/);
+  assert.doesNotMatch(home, /revisionDemoData|demoRevision/);
+});
+
+test("l’accueil ordonne l’historique et reprend en priorité un parcours commencé", () => {
+  const attempts = [{ id: "quiz-1", quizRef: "quiz-set-1", subject: "Mathématiques", topic: "Fractions", score: 45, completedAt: "2026-09-25T10:00:00Z" }];
+  const learningAttempts = [{ id: "attempt-1", contentType: "guided_exercise" as const, contentId: "exercise-1", title: "Équations", subject: "Mathématiques", chapter: "Calcul littéral", status: "in_progress" as const, startedAt: "2026-09-27T10:00:00Z", elapsedSeconds: 300 }];
+  const sheets = [{ id: "sheet-1", title: "Les fonctions", subject: "Mathématiques", topic: "Fonctions", content: "", createdAt: "2026-09-26" }];
+  const activities = buildHomeActivities(attempts, learningAttempts, sheets);
+  assert.deepEqual(activities.map((activity) => activity.kind), ["learning", "sheet", "quiz"]);
+  assert.deepEqual(selectContinueActivity(attempts, learningAttempts, sheets), {
+    subject: "Mathématiques",
+    title: "Équations",
+    detail: "Calcul littéral",
+    href: "/student/reviser/parcours/session/exercise-1",
+  });
+});
+
+test("un nouveau compte obtient l’état de démarrage sans historique", () => {
+  const progress = { xp: 0, level: 1, streakDays: 0, completedQuizCount: 0, averageScore: 0 };
+  assert.equal(isNewRevisionAccount(progress, [], [], []), true);
+  assert.equal(selectContinueActivity([], [], []), null);
+  assert.deepEqual(buildHomeActivities([], [], []), []);
+});
+
+test("la page Réviser conserve ses QCM, fiches et historique et affiche Scanner", async () => {
+  const page = await readFile(new URL("../../apps/revision/src/features/revision/RevisionDashboardPage.tsx", import.meta.url), "utf8");
+  for (const feature of ["Quiz du jour", "Historique des QCM", "QCM populaires", "Mes fiches", "DocumentScannerPanel", 'label: "Scanner"']) {
+    assert.match(page, new RegExp(feature));
+  }
+  assert.doesNotMatch(page, /id: "parcours", label: "Parcours"/);
+});
+
+test("l’onboarding exige et sauvegarde au moins une matière canonique", async () => {
+  const registration = await readFile(new URL("../../apps/revision/src/features/auth/RegistrationPage.tsx", import.meta.url), "utf8");
+  assert.match(registration, /revisionSubjectsForLevel\(form\.schoolLevel\)\.map/);
+  assert.match(registration, /Dans quelles matières souhaites-tu progresser/);
+  assert.match(registration, /if \(!subjectIds\.length\).*Choisis au moins une matière/);
+  assert.match(registration, /await saveSubjectPreferences\(subjectIds\)/);
+});
+
+test("le profil permet de modifier les matières sans toucher aux historiques", async () => {
+  const profile = await readFile(new URL("../../apps/revision/src/RevisionStudentProfilePage.tsx", import.meta.url), "utf8");
+  const service = await readFile(new URL("../../apps/revision/src/services/subjectPreferencesService.ts", import.meta.url), "utf8");
+  assert.match(profile, /Modifier mes matières/);
+  assert.match(profile, /saveSubjectPreferences\(subjectIds\)/);
+  assert.match(service, /student_revision_subject_preferences/);
+  assert.doesNotMatch(service, /quiz_attempts|learning_attempts|user_course_summaries/);
+});
+
+test("Scanner gère caméra, formats, états, historique et quiz documentaire", async () => {
+  const scanner = await readFile(new URL("../../apps/revision/src/features/revision/DocumentScannerPanel.tsx", import.meta.url), "utf8");
+  const service = await readFile(new URL("../../apps/revision/src/services/revisionDocumentService.ts", import.meta.url), "utf8");
+  for (const value of ["capture=\"environment\"", "application/pdf,image/jpeg,image/png", "Upload du document", "Analyse du document", "Mes documents", "Créer un quiz sur ce document", 'source: "document"']) assert.match(scanner, new RegExp(value));
+  assert.match(scanner, /profile\.className \|\| profile\.schoolLevelId/);
+  assert.match(service, /\/api\/revision-document-analyze/);
+  assert.doesNotMatch(service, /localStorage/);
+});
+
+test("les matières préférées filtrent Réviser et priorisent l’accueil", async () => {
+  const dashboard = await readFile(new URL("../../apps/revision/src/features/revision/RevisionDashboardPage.tsx", import.meta.url), "utf8");
+  const home = await readFile(new URL("../../apps/revision/src/features/home/StudentHomePage.tsx", import.meta.url), "utf8");
+  assert.match(dashboard, /preferredSubjects\.includes\(subjectIdFromLabel/);
+  assert.match(home, /preferredSubjects\.includes\(subjectIdFromLabel/);
+  assert.match(home, /Scanner un document/);
 });
 
 test("l'application Révision est autonome et ne référence aucun espace School", async () => {

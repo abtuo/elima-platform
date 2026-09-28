@@ -26,7 +26,7 @@ export function LoginPage({ mode = "full", demoAccounts }: { mode?: "full" | "re
         await signOut();
         throw new Error("Elima Révision est réservé aux comptes élèves.");
       }
-      navigate(mode === "revision" ? "/student/reviser" : getProfileHomePath(profile), { replace: true });
+      navigate(mode === "revision" ? "/student" : getProfileHomePath(profile), { replace: true });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Connexion impossible.");
     } finally {

@@ -200,7 +200,15 @@ export type QuizAttemptSummary = {
   totalQuestions?: number;
   correctAnswers?: number;
   completedAt: string;
+  source?: "catalog" | "generated" | "document";
+  sourceDocumentId?: string;
 };
 
-export type RevisionGenerationInput = { subject: string; topic: string; level: string };
+export type RevisionGenerationInput = {
+  subject: string;
+  topic: string;
+  level: string;
+  source?: "topic" | "document";
+  sourceContext?: string;
+};
 export type HintUsage = { used: number; limit: number; remaining: number };

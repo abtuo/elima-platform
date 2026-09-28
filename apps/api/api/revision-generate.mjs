@@ -1,5 +1,6 @@
 import { handleRevisionCors } from "../server/revisionCors.mjs";
 import { createClient } from "@supabase/supabase-js";
+import { azureChat } from "../server/azureOpenAi.mjs";
 
 const DEFAULT_HINT = "Repère l’idée clé du cours et élimine les propositions incompatibles avant de calculer.";
 const DEFAULT_EXPLANATION = "Reprends l’énoncé étape par étape et applique la règle du chapitre.";
@@ -18,6 +19,8 @@ export default async function handler(request, response) {
     const subject = cleanInput(body.subject, 100);
     const topic = cleanInput(body.topic, 180);
     const level = cleanInput(body.level, 80) || "Collège / lycée";
+    const source = body.source === "document" ? "document" : "topic";
+    const sourceContext = source === "document" ? cleanInput(body.sourceContext, 45_000) : "";
 
     if (!subject || !topic) return response.status(400).json({ error: "La matière et le sujet sont obligatoires." });
 
@@ -26,8 +29,8 @@ export default async function handler(request, response) {
       return response.status(200).json({ kind, subject, topic, level, content });
     }
 
-    const questions = await generateQuiz({ subject, topic, level });
-    return response.status(200).json({ kind, subject, topic, level, questions });
+    const questions = await generateQuiz({ subject, topic, level, source, sourceContext });
+    return response.status(200).json({ kind, subject, topic, level, source, questions });
   } catch (error) {
     const status = error?.statusCode ?? 500;
     const message = error instanceof Error ? error.message : "La génération a échoué.";
@@ -61,7 +64,7 @@ Utilise du Markdown léger. Pour les mathématiques, écris les formules avec $.
 Ne mets pas de bloc markdown autour du JSON.`;
   const raw = await azureChat([
     { role: "system", content: system },
-    { role: "user", content: `Niveau : ${input.level}\nMatière : ${input.subject}\nSujet : ${input.topic}` },
+    { role: "user", content: `Niveau : ${input.level}\nMatière : ${input.subject}\nSujet : ${input.topic}${input.source === "document" ? `\nSource documentaire (reste strictement ancré dans ce texte) :\n${input.sourceContext}` : ""}` },
   ], { json: true, maxTokens: 7000 });
   const parsed = parseJsonLenient(raw);
   const list = Array.isArray(parsed) ? parsed : parsed?.questions;
@@ -81,39 +84,6 @@ Ajoute des exemples courts. Pour les mathématiques et sciences, utilise $...$ o
     { role: "system", content: system },
     { role: "user", content: `Niveau : ${input.level}\nMatière : ${input.subject}\nSujet : ${input.topic}` },
   ], { maxTokens: 4500 });
-}
-
-async function azureChat(messages, options = {}) {
-  const endpoint = String(process.env.AZURE_OPENAI_ENDPOINT ?? "").replace(/\/+$/, "");
-  const deployment = String(process.env.AZURE_OPENAI_DEPLOYMENT ?? "").trim();
-  const apiKey = String(process.env.AZURE_OPENAI_API_KEY ?? "").trim();
-  const apiVersion = String(process.env.AZURE_OPENAI_API_VERSION ?? "2024-02-15-preview").trim();
-  if (!endpoint || !deployment || !apiKey) throw new Error("Configuration Azure OpenAI serveur incomplète.");
-
-  const url = `${endpoint}/openai/deployments/${encodeURIComponent(deployment)}/chat/completions?api-version=${encodeURIComponent(apiVersion)}`;
-  const payload = { messages, max_completion_tokens: options.maxTokens ?? 4000 };
-  if (options.json) payload.response_format = { type: "json_object" };
-
-  let result = await callAzure(url, apiKey, payload);
-  if (!result.ok && options.json && /response_format|json_object/i.test(result.text)) {
-    delete payload.response_format;
-    result = await callAzure(url, apiKey, payload);
-  }
-  if (!result.ok) throw new Error(`Azure OpenAI (${result.status}) : ${readAzureError(result.text)}`);
-
-  const data = JSON.parse(result.text);
-  const content = data?.choices?.[0]?.message?.content;
-  if (typeof content !== "string" || !content.trim()) throw new Error("Azure OpenAI a renvoyé une réponse vide.");
-  return content.trim();
-}
-
-async function callAzure(url, apiKey, payload) {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "api-key": apiKey },
-    body: JSON.stringify(payload),
-  });
-  return { ok: response.ok, status: response.status, text: await response.text() };
 }
 
 function normalizeQuestion(raw) {
@@ -165,10 +135,6 @@ function cleanText(value) {
 
 function cleanInput(value, maxLength) {
   return cleanText(value).replace(/[<>]/g, "").slice(0, maxLength);
-}
-
-function readAzureError(raw) {
-  try { return JSON.parse(raw)?.error?.message ?? "Erreur de génération."; } catch { return String(raw).slice(0, 300); }
 }
 
 function httpError(statusCode, message) {

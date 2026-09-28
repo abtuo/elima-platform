@@ -41,6 +41,8 @@ export function QuizPage() {
   const [feedbackSent, setFeedbackSent] = useState(false);
   const subject = params.get("subject") ?? "Quiz";
   const topic = params.get("topic");
+  const source = params.get("source") === "document" ? "document" : undefined;
+  const sourceDocumentId = params.get("documentId") ?? undefined;
 
   useEffect(() => {
     const quizId = params.get("id") ?? undefined;
@@ -91,6 +93,8 @@ export function QuizPage() {
         score: Math.round((score / questions.length) * 100),
         totalQuestions: questions.length,
         correctAnswers: score,
+        source,
+        sourceDocumentId,
       });
     } catch (error) {
       console.warn("Enregistrement du résultat du quiz :", error);

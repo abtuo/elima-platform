@@ -7,6 +7,9 @@
     "api/revision-generate.mjs": {
       "maxDuration": 60
     },
+    "api/revision-document-analyze.mjs": {
+      "maxDuration": 60
+    },
     "api/elima-password-login.mjs": {
       "maxDuration": 15
     },

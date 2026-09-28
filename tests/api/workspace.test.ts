@@ -3,13 +3,13 @@ import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 import { API_ENDPOINTS, REVISION_API_ENDPOINTS } from "../../apps/api/server/routes.mjs";
 
-test("@elima/api possède les onze routes et les neuf routes Révision", () => {
+test("@elima/api possède les douze routes et les dix routes Révision", () => {
   assert.deepEqual(API_ENDPOINTS, [
     "activate-school", "auth-password-reset", "auth-verification-check", "auth-verification-request",
     "elima-password-login", "elima-profile", "elima-signup", "identity-bridge",
-    "learning", "registration-request", "revision-generate",
+    "learning", "registration-request", "revision-generate", "revision-document-analyze",
   ]);
-  assert.equal(REVISION_API_ENDPOINTS.length, 9);
+  assert.equal(REVISION_API_ENDPOINTS.length, 10);
 });
 
 test("les adaptateurs Vite chargent le backend autonome", async () => {

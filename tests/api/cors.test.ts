@@ -66,8 +66,8 @@ test("preflight avec méthode ou header non autorisé est refusé", () => {
   }
 });
 
-test("les neuf endpoints court-circuitent OPTIONS avant leur logique métier", async () => {
-  for (const name of ["learning", "revision-generate", "identity-bridge", "elima-password-login", "elima-profile", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset"]) {
+test("les dix endpoints court-circuitent OPTIONS avant leur logique métier", async () => {
+  for (const name of ["learning", "revision-generate", "revision-document-analyze", "identity-bridge", "elima-password-login", "elima-profile", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset"]) {
     const { default: handler } = await import(new URL(`../../apps/api/api/${name}.mjs`, import.meta.url).href);
     const res = response();
     const previous = process.env.REVISION_ALLOWED_ORIGINS;

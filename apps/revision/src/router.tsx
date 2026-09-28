@@ -4,6 +4,7 @@ import { LoginPage } from "@/features/auth/LoginPage";
 import { RevisionRegistrationPage } from "@/features/auth/RegistrationPage";
 import { ForgotPasswordPage } from "@/features/auth/ForgotPasswordPage";
 import { ElimaOAuthCallbackPage, ElimaOAuthStartPage } from "@/features/auth/ElimaOAuthPages";
+import { StudentHomePage } from "@/features/home/StudentHomePage";
 import { RevisionDashboardPage } from "@/features/revision/RevisionDashboardPage";
 import { QuizPage } from "@/features/revision/QuizPage";
 import { CoursesPage, CourseSheetDetailPage } from "@/features/revision/CoursesPage";
@@ -18,7 +19,7 @@ function RevisionEntryPage() {
   const { authenticated, loading, profile } = useAuth();
   if (loading) return null;
   if (!authenticated) return <RevisionWelcomePage />;
-  return <Navigate to={profile.role === "STUDENT" ? "/student/reviser" : "/auth/login"} replace />;
+  return <Navigate to={profile.role === "STUDENT" ? "/student" : "/auth/login"} replace />;
 }
 
 function RevisionProtectedLayout() {
@@ -49,10 +50,10 @@ export function RevisionRouter() {
           <Route path="/auth/elima/callback" element={<ElimaOAuthCallbackPage />} />
 
           <Route element={<RevisionProtectedLayout />}>
-            <Route path="/student" element={<Navigate to="/student/reviser" replace />} />
+            <Route path="/student" element={<StudentHomePage />} />
             <Route path="/student/reviser" element={<RevisionDashboardPage />} />
-            <Route path="/student/reviser/devoirs" element={<Navigate to="/student/reviser?mode=parcours" replace />} />
-            <Route path="/student/reviser/examen" element={<Navigate to="/student/reviser?mode=parcours" replace />} />
+            <Route path="/student/reviser/devoirs" element={<Navigate to="/student/reviser?mode=scanner" replace />} />
+            <Route path="/student/reviser/examen" element={<Navigate to="/student/reviser?mode=scanner" replace />} />
             <Route path="/student/reviser/parcours/session/:id" element={<LearningSolverPage contentType="guided_exercise" />} />
             <Route path="/student/reviser/parcours/resultats/:contentType/:id" element={<LearningResultsPage />} />
             <Route path="/student/reviser/devoirs/exercice/:id" element={<LearningSolverPage contentType="guided_exercise" />} />

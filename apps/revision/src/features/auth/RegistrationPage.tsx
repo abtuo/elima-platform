@@ -3,8 +3,10 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ElimaLogo } from "@/components/common/ElimaLogo";
 import { STUDENT_CLASS_OPTIONS } from "@/constants/studentClasses";
+import { revisionSubjectsForLevel } from "@/lib/revisionSubjects";
 import { completeElimaIdentitySession, signInWithElimaPassword } from "@/services/elimaIdentityService";
 import { checkVerificationCode, confirmPasswordReset, exchangePhoneControlForReset, registerElimaAccount, requestRegistrationCode } from "@/services/registrationService";
+import { saveSubjectPreferences } from "@/services/subjectPreferencesService";
 
 type Phase = "identity" | "otp" | "account" | "existing" | "reset" | "reset-complete";
 
@@ -16,6 +18,7 @@ export function RevisionRegistrationPage() {
   const [authorization, setAuthorization] = useState("");
   const [code, setCode] = useState("");
   const [accepted, setAccepted] = useState(false);
+  const [subjectIds, setSubjectIds] = useState<string[]>([]);
   const [cooldown, setCooldown] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -60,11 +63,13 @@ export function RevisionRegistrationPage() {
     if (!accepted) return setError("Vous devez accepter les conditions d’utilisation.");
     if (form.password.length < 8) return setError("Le mot de passe doit contenir au moins 8 caractères.");
     if (form.password !== form.confirmPassword) return setError("Les deux mots de passe ne correspondent pas.");
+    if (!subjectIds.length) return setError("Choisis au moins une matière.");
     await run(async () => {
       const registration = await registerElimaAccount({ role: "student", firstName: form.firstName, lastName: form.lastName, phone: form.phone, password: form.password, schoolLevel: form.schoolLevel, declaredSchoolName: form.declaredSchoolName, declaredSchoolCity: form.declaredSchoolCity, authorization });
       if (registration.session?.access_token) await completeElimaIdentitySession(registration.session);
       else await signInWithElimaPassword(form.phone, form.password, { recentSignup: true });
-      navigate("/student/reviser", { replace: true });
+      await saveSubjectPreferences(subjectIds);
+      navigate("/student", { replace: true });
     });
   }
 
@@ -100,7 +105,7 @@ export function RevisionRegistrationPage() {
 
   if (phase === "reset") return card(<form onSubmit={resetPassword}>{title("Nouveau mot de passe")}<div className="mt-7 grid gap-4 sm:grid-cols-2"><Field name="password" autoComplete="new-password" label="Nouveau mot de passe" type="password" value={form.password} onChange={(value) => update("password", value)} required /><Field name="confirmPassword" autoComplete="new-password" label="Confirmer le mot de passe" type="password" value={form.confirmPassword} onChange={(value) => update("confirmPassword", value)} required /></div>{errorMessage}<PrimaryButton loading={loading}>Modifier mon mot de passe</PrimaryButton></form>);
 
-  return card(<form onSubmit={createAccount}>{title("Créer mon compte", `Numéro vérifié : ${form.phone}`)}<div className="mt-7 grid gap-4 sm:grid-cols-2"><Field name="password" autoComplete="new-password" label="Mot de passe" type="password" value={form.password} onChange={(value) => update("password", value)} required hint="8 caractères minimum" /><Field name="confirmPassword" autoComplete="new-password" label="Confirmer le mot de passe" type="password" value={form.confirmPassword} onChange={(value) => update("confirmPassword", value)} required /></div><div className="mt-4 space-y-4 rounded-2xl bg-revision/[.04] p-4"><label className="block"><span className="mb-2 block text-sm font-semibold text-gray-700">Classe / niveau</span><select name="schoolLevel" autoComplete="off" value={form.schoolLevel} onChange={(event) => update("schoolLevel", event.target.value)} required className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none focus:border-revision"><option value="">Choisir</option>{STUDENT_CLASS_OPTIONS.map((level) => <option key={level}>{level}</option>)}</select></label><div className="grid gap-3 sm:grid-cols-2"><Field name="declaredSchoolName" autoComplete="organization" label="Nom de mon école (facultatif)" value={form.declaredSchoolName} onChange={(value) => update("declaredSchoolName", value)} /><Field name="declaredSchoolCity" autoComplete="address-level2" label="Ville (facultatif)" value={form.declaredSchoolCity} onChange={(value) => update("declaredSchoolCity", value)} /></div></div><label className="mt-5 flex items-start gap-3 text-xs leading-5 text-gray-500"><input name="acceptTerms" type="checkbox" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-primary" /><span>J’accepte les conditions d’utilisation et la politique de confidentialité d’Elima.</span></label>{errorMessage}<PrimaryButton loading={loading}>Créer mon compte</PrimaryButton></form>);
+  return card(<form onSubmit={createAccount}>{title("Créer mon compte", `Numéro vérifié : ${form.phone}`)}<div className="mt-7 grid gap-4 sm:grid-cols-2"><Field name="password" autoComplete="new-password" label="Mot de passe" type="password" value={form.password} onChange={(value) => update("password", value)} required hint="8 caractères minimum" /><Field name="confirmPassword" autoComplete="new-password" label="Confirmer le mot de passe" type="password" value={form.confirmPassword} onChange={(value) => update("confirmPassword", value)} required /></div><div className="mt-4 space-y-4 rounded-2xl bg-revision/[.04] p-4"><label className="block"><span className="mb-2 block text-sm font-semibold text-gray-700">Classe / niveau</span><select name="schoolLevel" autoComplete="off" value={form.schoolLevel} onChange={(event) => { update("schoolLevel", event.target.value); setSubjectIds([]); }} required className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none focus:border-revision"><option value="">Choisir</option>{STUDENT_CLASS_OPTIONS.map((level) => <option key={level}>{level}</option>)}</select></label>{form.schoolLevel ? <fieldset><legend className="text-sm font-semibold text-gray-700">Dans quelles matières souhaites-tu progresser ?</legend><p className="mt-1 text-xs text-gray-500">Choisis au moins une matière.</p><div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">{revisionSubjectsForLevel(form.schoolLevel).map((item) => { const selected = subjectIds.includes(item.id); return <button key={item.id} type="button" aria-pressed={selected} onClick={() => setSubjectIds((current) => selected ? current.filter((id) => id !== item.id) : [...current, item.id])} className={`rounded-2xl border px-3 py-2.5 text-left text-xs font-semibold transition ${selected ? "border-revision bg-revision text-white" : "border-gray-200 bg-white text-gray-600"}`}>{item.label}</button>; })}</div></fieldset> : null}<div className="grid gap-3 sm:grid-cols-2"><Field name="declaredSchoolName" autoComplete="organization" label="Nom de mon école (facultatif)" value={form.declaredSchoolName} onChange={(value) => update("declaredSchoolName", value)} /><Field name="declaredSchoolCity" autoComplete="address-level2" label="Ville (facultatif)" value={form.declaredSchoolCity} onChange={(value) => update("declaredSchoolCity", value)} /></div></div><label className="mt-5 flex items-start gap-3 text-xs leading-5 text-gray-500"><input name="acceptTerms" type="checkbox" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-primary" /><span>J’accepte les conditions d’utilisation et la politique de confidentialité d’Elima.</span></label>{errorMessage}<PrimaryButton loading={loading}>Créer mon compte</PrimaryButton></form>);
 }
 
 function PrimaryButton({ loading, children }: { loading: boolean; children: React.ReactNode }) {

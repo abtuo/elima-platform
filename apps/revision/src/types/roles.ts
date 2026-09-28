@@ -29,7 +29,7 @@ export function isStandaloneStudent(profile: UserProfile) {
 }
 
 export function getProfileHomePath(profile: UserProfile) {
-  return isStandaloneStudent(profile) ? "/student/reviser" : `/${ROLE_HOME[profile.role]}`;
+  return isStandaloneStudent(profile) ? "/student" : `/${ROLE_HOME[profile.role]}`;
 }
 
 export const ROLE_HOME: Record<UserRole, MobileSpace> = {

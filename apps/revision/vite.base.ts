@@ -30,6 +30,8 @@ const SERVER_ENV_KEYS = [
   "ELIMA_IDENTITY_SECRET_KEY",
   "ELIMA_IDENTITY_SERVICE_ROLE_KEY",
   "REVISION_SUPABASE_URL",
+  "REVISION_SUPABASE_PUBLISHABLE_KEY",
+  "REVISION_SUPABASE_ANON_KEY",
   "REVISION_SUPABASE_SECRET_KEY",
   "REVISION_SUPABASE_SERVICE_ROLE_KEY",
   "TWILIO_ACCOUNT_SID",
@@ -41,10 +43,12 @@ const SERVER_ENV_KEYS = [
   "AZURE_OPENAI_DEPLOYMENT",
   "AZURE_OPENAI_API_VERSION",
   "AZURE_OPENAI_API_KEY",
+  "AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT",
+  "AZURE_DOCUMENT_INTELLIGENCE_KEY",
 ] as const;
 
 const LOCAL_API_HANDLERS = ["identity-bridge", "elima-profile", "activate-school", "elima-password-login", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "registration-request", "learning"] as const;
-const REVISION_API_HANDLERS = ["identity-bridge", "elima-profile", "elima-password-login", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "learning"] as const;
+const REVISION_API_HANDLERS = ["identity-bridge", "elima-profile", "elima-password-login", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "learning", "revision-document-analyze"] as const;
 
 function localServerlessApis(enabled: boolean, endpoints: readonly string[]): Plugin {
   return {
