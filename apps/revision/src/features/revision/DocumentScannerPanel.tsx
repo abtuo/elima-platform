@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { REVISION_SUBJECT_OPTIONS, subjectIdFromLabel } from "@/lib/revisionSubjects";
 import { generateRealtimeQuiz } from "@/services/revisionDataService";
-import { analyzeRevisionDocument, attachDocumentQuiz, getRevisionDocuments, type RevisionDocument } from "@/services/revisionDocumentService";
+import { analyzeRevisionDocument, attachDocumentQuiz, ensureDocumentAnalysisSheets, getRevisionDocuments, saveDocumentAnalysisAsSheet, type RevisionDocument } from "@/services/revisionDocumentService";
 import { getSubjectPreferences, saveSubjectPreferences } from "@/services/subjectPreferencesService";
 
 type ScannerState = "idle" | "upload" | "analysis" | "success" | "error";
@@ -24,6 +24,7 @@ export function DocumentScannerPanel() {
   useEffect(() => {
     Promise.all([getRevisionDocuments(profile.id), getSubjectPreferences(profile.id)]).then(([nextDocuments, nextSubjects]) => {
       setDocuments(nextDocuments); setSubjectIds(nextSubjects);
+        void ensureDocumentAnalysisSheets(nextDocuments).catch(() => undefined);
     });
   }, [profile.id]);
 
@@ -38,6 +39,7 @@ export function DocumentScannerPanel() {
         selectedSubjects: REVISION_SUBJECT_OPTIONS.filter(item => subjectIds.includes(item.id)).map(item => item.label),
       }, () => setState("analysis"));
       const document: RevisionDocument = { id: result.id, fileName: file.name, status: "ready", subjectId: result.subjectId, subject: result.analysis.detectedSubject || "Document", title: result.analysis.title, studentLevel: profile.className || profile.schoolLevelId || undefined, createdAt: result.createdAt, analysis: result.analysis };
+      await saveDocumentAnalysisAsSheet(result.id, result.analysis, profile.className || profile.schoolLevelId || result.analysis.detectedLevel);
       setDocuments(current => [document, ...current]); setSelected(document); setState("success");
     } catch (caught) { setState("error"); setError(caught instanceof Error ? caught.message : "Erreur serveur pendant l’analyse."); }
   }
@@ -46,9 +48,15 @@ export function DocumentScannerPanel() {
     if (!selected) return;
     setQuizLoading(true); setError("");
     try {
-      const generated = await generateRealtimeQuiz({ subject: selected.subject, topic: `Document · ${selected.title}`, level: profile.className || profile.schoolLevelId || "Collège / lycée", source: "document", sourceContext: [selected.analysis.summary, ...selected.analysis.concepts, ...selected.analysis.keyPoints, selected.analysis.extractedText].join("\n") }, `${profile.id}|${crypto.randomUUID()}`);
+      const sourceContext = [
+        `Résumé : ${selected.analysis.summary}`,
+        `Notions : ${selected.analysis.concepts.join(" ; ")}`,
+        `Points clés : ${selected.analysis.keyPoints.join(" ; ")}`,
+        `Explications : ${selected.analysis.explanations.join(" ; ")}`,
+      ].filter((value) => !value.endsWith(": ")).join("\n");
+      const generated = await generateRealtimeQuiz({ subject: selected.subject, topic: `Révision des notions · ${selected.title}`, level: profile.className || profile.schoolLevelId || "Collège / lycée", source: "document", sourceContext }, `${profile.id}|${crypto.randomUUID()}`);
       await attachDocumentQuiz(selected.id, generated.id);
-      navigate(`/student/reviser/quiz?id=${encodeURIComponent(generated.id)}&subject=${encodeURIComponent(selected.subject)}&topic=${encodeURIComponent(`Document · ${selected.title}`)}&source=document&documentId=${encodeURIComponent(selected.id)}`);
+      navigate(`/student/reviser/quiz?id=${encodeURIComponent(generated.id)}&subject=${encodeURIComponent(selected.subject)}&topic=${encodeURIComponent(`Révision des notions · ${selected.title}`)}&source=document&documentId=${encodeURIComponent(selected.id)}`);
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Création du quiz impossible."); }
     finally { setQuizLoading(false); }
   }
@@ -81,7 +89,7 @@ export function DocumentScannerPanel() {
 
 function DocumentResult({ document, shouldOfferSubject, onAddSubject, onCreateQuiz, quizLoading }: { document: RevisionDocument; shouldOfferSubject: boolean; onAddSubject: () => void; onCreateQuiz: () => void; quizLoading: boolean }) {
   const analysis = document.analysis;
-  return <section className="card border border-primary/10 p-5 sm:p-6"><div className="flex items-center gap-2 text-primary"><CheckCircle2 className="h-5 w-5" /><p className="text-sm font-semibold">J’ai analysé ton document</p></div><h2 className="mt-3 font-title text-2xl font-semibold text-accent">{analysis.title}</h2><p className="mt-1 text-sm text-gray-500">{analysis.detectedSubject}{document.studentLevel ? ` · ${document.studentLevel}` : ""}</p>{analysis.summary ? <ResultSection title="Résumé"><p>{analysis.summary}</p></ResultSection> : null}{analysis.concepts.length ? <ResultSection title="Notions importantes"><ol className="list-decimal space-y-2 pl-5">{analysis.concepts.map((item, index) => <li key={index}>{item}</li>)}</ol></ResultSection> : null}{analysis.keyPoints.length ? <ResultSection title="À retenir"><ul className="list-disc space-y-2 pl-5">{analysis.keyPoints.map((item, index) => <li key={index}>{item}</li>)}</ul></ResultSection> : null}{analysis.explanations.length ? <ResultSection title="Explications"><div className="space-y-2">{analysis.explanations.map((item, index) => <p key={index}>{item}</p>)}</div></ResultSection> : null}{analysis.sourceWarnings.length ? <div className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">{analysis.sourceWarnings.join(" ")}</div> : null}{shouldOfferSubject ? <div className="mt-4 rounded-2xl bg-revision/5 p-4 text-sm"><p>Ce document semble être en {analysis.detectedSubject}. Ajouter cette matière à mes matières ?</p><button type="button" onClick={onAddSubject} className="mt-2 font-semibold text-revision">Ajouter</button></div> : null}<button type="button" disabled={quizLoading} onClick={onCreateQuiz} className="tap mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"><Sparkles className="h-4 w-4" />{quizLoading ? "Création…" : "Créer un quiz sur ce document"}</button></section>;
+  return <section className="card border border-primary/10 p-5 sm:p-6"><div className="flex items-center gap-2 text-primary"><CheckCircle2 className="h-5 w-5" /><p className="text-sm font-semibold">J’ai analysé ton document</p></div><h2 className="mt-3 font-title text-2xl font-semibold text-accent">{analysis.title}</h2><p className="mt-1 text-sm text-gray-500">{analysis.detectedSubject}{document.studentLevel ? ` · ${document.studentLevel}` : ""}</p><p className="mt-3 flex items-center gap-2 rounded-2xl bg-primary/5 px-4 py-3 text-xs font-semibold text-primary"><FileText className="h-4 w-4" />Analyse enregistrée dans tes fiches</p>{analysis.summary ? <ResultSection title="Résumé"><p>{analysis.summary}</p></ResultSection> : null}{analysis.concepts.length ? <ResultSection title="Notions importantes"><ol className="list-decimal space-y-2 pl-5">{analysis.concepts.map((item, index) => <li key={index}>{item}</li>)}</ol></ResultSection> : null}{analysis.keyPoints.length ? <ResultSection title="À retenir"><ul className="list-disc space-y-2 pl-5">{analysis.keyPoints.map((item, index) => <li key={index}>{item}</li>)}</ul></ResultSection> : null}{analysis.explanations.length ? <ResultSection title="Explications"><div className="space-y-2">{analysis.explanations.map((item, index) => <p key={index}>{item}</p>)}</div></ResultSection> : null}{analysis.sourceWarnings.length ? <div className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">{analysis.sourceWarnings.join(" ")}</div> : null}{shouldOfferSubject ? <div className="mt-4 rounded-2xl bg-revision/5 p-4 text-sm"><p>Ce document semble être en {analysis.detectedSubject}. Ajouter cette matière à mes matières ?</p><button type="button" onClick={onAddSubject} className="mt-2 font-semibold text-revision">Ajouter</button></div> : null}<button type="button" disabled={quizLoading} onClick={onCreateQuiz} className="tap mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"><Sparkles className="h-4 w-4" />{quizLoading ? "Préparation du QCM…" : "Réviser les notions"}</button></section>;
 }
 
 function ResultSection({ title, children }: { title: string; children: React.ReactNode }) {

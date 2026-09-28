@@ -120,9 +120,13 @@ test("le profil permet de modifier les matières sans toucher aux historiques", 
 test("Scanner gère caméra, formats, états, historique et quiz documentaire", async () => {
   const scanner = await readFile(new URL("../../apps/revision/src/features/revision/DocumentScannerPanel.tsx", import.meta.url), "utf8");
   const service = await readFile(new URL("../../apps/revision/src/services/revisionDocumentService.ts", import.meta.url), "utf8");
-  for (const value of ["capture=\"environment\"", "application/pdf,image/jpeg,image/png", "Upload du document", "Analyse du document", "Mes documents", "Créer un quiz sur ce document", 'source: "document"']) assert.match(scanner, new RegExp(value));
+  for (const value of ["capture=\"environment\"", "application/pdf,image/jpeg,image/png", "Upload du document", "Analyse du document", "Mes documents", "Réviser les notions", 'source: "document"', "saveDocumentAnalysisAsSheet", "ensureDocumentAnalysisSheets"]) assert.match(scanner, new RegExp(value));
   assert.match(scanner, /profile\.className \|\| profile\.schoolLevelId/);
+  assert.doesNotMatch(scanner, /sourceContext:.*extractedText/);
   assert.match(service, /\/api\/revision-document-analyze/);
+  assert.match(service, /user_course_summaries/);
+  assert.match(service, /cache_key: `document-analysis:\$\{documentId\}`/);
+  assert.match(service, /documentAnalysisMarkdown/);
   assert.doesNotMatch(service, /localStorage/);
 });
 

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 import { createHandler } from "../../apps/api/api/revision-document-analyze.mjs";
 import { documentError, extractDocument } from "../../apps/api/server/revisionDocumentService.mjs";
 
@@ -57,4 +58,12 @@ test("Azure Document Intelligence utilise prebuilt-layout et traite le polling",
   const fetchImpl = async (url: string) => { urls.push(url); if (urls.length === 1) return new Response("", { status: 202, headers: { "operation-location": "https://azure.example/operations/1" } }); return Response.json({ status: "succeeded", analyzeResult: { content: "Un contenu documentaire suffisamment long.", paragraphs: [], tables: [], pages: [] } }); };
   const result = await extractDocument(Buffer.from("pdf"), "application/pdf", { env: { AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: "https://azure.example", AZURE_DOCUMENT_INTELLIGENCE_KEY: "secret" }, fetchImpl, wait: async () => {} });
   assert.match(urls[0], /prebuilt-layout:analyze/); assert.equal(result.text, "Un contenu documentaire suffisamment long.");
+});
+
+test("le QCM documentaire crée des questions inédites sur les mêmes notions", async () => {
+  const source = await readFile(new URL("../../apps/api/api/revision-generate.mjs", import.meta.url), "utf8");
+  assert.match(source, /questions entièrement nouvelles/);
+  assert.match(source, /Ne copie, ne reformule et ne complète aucune question/);
+  assert.match(source, /nouveaux contextes, exemples, données et formulations/);
+  assert.match(source, /compréhension et le transfert/);
 });

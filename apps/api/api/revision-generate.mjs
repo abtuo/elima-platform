@@ -55,7 +55,14 @@ async function requireAuthenticatedUser(request) {
 
 async function generateQuiz(input) {
   const count = 10;
-  const system = `Tu es un professeur expert du système éducatif francophone. Génère un QCM adapté au niveau indiqué.
+  const documentInstructions = input.source === "document" ? `
+Le document sert uniquement à identifier les notions, méthodes et difficultés à travailler.
+Crée des questions entièrement nouvelles sur les mêmes notions et problématiques pédagogiques.
+Ne copie, ne reformule et ne complète aucune question ou aucun exercice présent dans le document.
+Utilise de nouveaux contextes, exemples, données et formulations afin d'évaluer la compréhension et le transfert.
+Ne demande jamais à l'élève de se souvenir du texte ou de la formulation du document.
+Reste strictement dans le périmètre des notions réellement identifiées dans l'analyse fournie.` : "";
+  const system = `Tu es un professeur expert du système éducatif francophone. Génère un QCM adapté au niveau indiqué.${documentInstructions}
 Réponds uniquement avec un objet JSON valide ayant une clé "questions" contenant exactement ${count} objets.
 Chaque objet contient : "question", "options" (exactement 4 textes), "correctIndex" (entier de 0 à 3), "hint" et "explanation".
 Une seule option est correcte. L’indice aide sans donner la réponse.
@@ -64,7 +71,7 @@ Utilise du Markdown léger. Pour les mathématiques, écris les formules avec $.
 Ne mets pas de bloc markdown autour du JSON.`;
   const raw = await azureChat([
     { role: "system", content: system },
-    { role: "user", content: `Niveau : ${input.level}\nMatière : ${input.subject}\nSujet : ${input.topic}${input.source === "document" ? `\nSource documentaire (reste strictement ancré dans ce texte) :\n${input.sourceContext}` : ""}` },
+    { role: "user", content: `Niveau : ${input.level}\nMatière : ${input.subject}\nSujet : ${input.topic}${input.source === "document" ? `\nAnalyse pédagogique du document — utilise-la pour créer des exercices inédits :\n${input.sourceContext}` : ""}` },
   ], { json: true, maxTokens: 7000 });
   const parsed = parseJsonLenient(raw);
   const list = Array.isArray(parsed) ? parsed : parsed?.questions;
