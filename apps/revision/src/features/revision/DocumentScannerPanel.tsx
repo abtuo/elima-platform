@@ -7,7 +7,7 @@ import { generateRealtimeQuiz } from "@/services/revisionDataService";
 import { analyzeRevisionDocument, attachDocumentQuiz, ensureDocumentAnalysisSheets, getRevisionDocuments, saveDocumentAnalysisAsSheet, type RevisionDocument } from "@/services/revisionDocumentService";
 import { getSubjectPreferences, saveSubjectPreferences } from "@/services/subjectPreferencesService";
 
-type ScannerState = "idle" | "upload" | "analysis" | "success" | "error";
+type ScannerState = "idle" | "ready" | "analysis" | "success" | "error";
 
 export function DocumentScannerPanel() {
   const { profile } = useAuth();
@@ -15,6 +15,7 @@ export function DocumentScannerPanel() {
   const cameraInput = useRef<HTMLInputElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<ScannerState>("idle");
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [documents, setDocuments] = useState<RevisionDocument[]>([]);
   const [selected, setSelected] = useState<RevisionDocument | null>(null);
@@ -28,20 +29,28 @@ export function DocumentScannerPanel() {
     });
   }, [profile.id]);
 
-  async function upload(file?: File) {
+  function prepareUpload(file?: File) {
     if (!file) return;
     if (!["application/pdf", "image/jpeg", "image/png"].includes(file.type)) { setState("error"); setError("Format incorrect. Utilise un PDF, JPEG ou PNG."); return; }
     if (file.size > 3 * 1024 * 1024) { setState("error"); setError("Le document doit peser moins de 3 Mo."); return; }
-    setError(""); setState("upload");
+    setPendingFile(file);
+    setSelected(null);
+    setError("");
+    setState("ready");
+  }
+
+  async function analyzePendingDocument() {
+    if (!pendingFile) return;
+    setError(""); setState("analysis");
     try {
-      const result = await analyzeRevisionDocument(file, {
+      const result = await analyzeRevisionDocument(pendingFile, {
         level: profile.className || profile.schoolLevelId || "",
         selectedSubjects: REVISION_SUBJECT_OPTIONS.filter(item => subjectIds.includes(item.id)).map(item => item.label),
-      }, () => setState("analysis"));
-      const document: RevisionDocument = { id: result.id, fileName: file.name, status: "ready", subjectId: result.subjectId, subject: result.analysis.detectedSubject || "Document", title: result.analysis.title, studentLevel: profile.className || profile.schoolLevelId || undefined, createdAt: result.createdAt, analysis: result.analysis };
+      });
+      const document: RevisionDocument = { id: result.id, fileName: pendingFile.name, status: "ready", subjectId: result.subjectId, subject: result.analysis.detectedSubject || "Document", title: result.analysis.title, studentLevel: profile.className || profile.schoolLevelId || undefined, createdAt: result.createdAt, analysis: result.analysis };
       await saveDocumentAnalysisAsSheet(result.id, result.analysis, profile.className || profile.schoolLevelId || result.analysis.detectedLevel);
-      setDocuments(current => [document, ...current]); setSelected(document); setState("success");
-    } catch (caught) { setState("error"); setError(caught instanceof Error ? caught.message : "Erreur serveur pendant l’analyse."); }
+      setDocuments(current => [document, ...current]); setSelected(document); setPendingFile(null); setState("success");
+    } catch (caught) { setState("ready"); setError(caught instanceof Error ? caught.message : "Erreur serveur pendant l’analyse."); }
   }
 
   async function createQuiz() {
@@ -75,9 +84,10 @@ export function DocumentScannerPanel() {
     <section className="card p-5 sm:p-6">
       <div className="flex items-start gap-3"><span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-revision/10 text-revision"><Camera className="h-6 w-6" /></span><div><h2 className="font-title text-xl font-semibold text-accent">Scanner un document</h2><p className="mt-1 text-sm leading-6 text-gray-500">Ajoute un cours, un devoir ou une fiche. Elima t’aide à comprendre les notions importantes.</p></div></div>
       <div className="mt-5 grid gap-3 sm:grid-cols-2"><button type="button" onClick={() => cameraInput.current?.click()} className="tap flex items-center justify-center gap-2 rounded-2xl bg-revision px-4 py-3 text-sm font-semibold text-white"><Camera className="h-4 w-4" />Prendre une photo</button><button type="button" onClick={() => fileInput.current?.click()} className="tap flex items-center justify-center gap-2 rounded-2xl border border-revision/20 bg-white px-4 py-3 text-sm font-semibold text-revision"><Upload className="h-4 w-4" />Importer un document</button></div>
-      <input ref={cameraInput} type="file" accept="image/jpeg,image/png" capture="environment" className="hidden" onChange={(event) => void upload(event.target.files?.[0])} />
-      <input ref={fileInput} type="file" accept="application/pdf,image/jpeg,image/png" className="hidden" onChange={(event) => void upload(event.target.files?.[0])} />
-      {state === "upload" || state === "analysis" ? <div className="mt-5 rounded-2xl bg-revision/5 p-4"><p className="flex items-center gap-2 text-sm font-semibold text-revision"><Loader2 className="h-4 w-4 animate-spin" />{state === "upload" ? "Upload du document…" : "Analyse du document…"}</p><p className="mt-2 text-xs text-gray-500">{state === "upload" ? "Préparation sécurisée du fichier" : "Extraction → compréhension → préparation des explications"}</p></div> : null}
+      <input ref={cameraInput} type="file" accept="image/jpeg,image/png" capture="environment" className="hidden" onChange={(event) => { prepareUpload(event.target.files?.[0]); event.currentTarget.value = ""; }} />
+      <input ref={fileInput} type="file" accept="application/pdf,image/jpeg,image/png" className="hidden" onChange={(event) => { prepareUpload(event.target.files?.[0]); event.currentTarget.value = ""; }} />
+      {state === "ready" && pendingFile ? <div className="mt-5 rounded-2xl border border-revision/10 bg-revision/5 p-4"><div className="flex items-start gap-3"><FileText className="mt-0.5 h-5 w-5 shrink-0 text-revision" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-accent">{pendingFile.name}</p><p className="mt-1 text-xs text-gray-500">Document importé · {(pendingFile.size / 1024 / 1024).toFixed(1)} Mo</p></div></div><button type="button" onClick={() => void analyzePendingDocument()} className="tap mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white"><Sparkles className="h-4 w-4" />Analyser</button><p className="mt-2 text-center text-xs text-gray-500">L’analyse ne commencera qu’après ce clic.</p></div> : null}
+      {state === "analysis" ? <div className="mt-5 rounded-2xl bg-revision/5 p-4"><p className="flex items-center gap-2 text-sm font-semibold text-revision"><Loader2 className="h-4 w-4 animate-spin" />Analyse du document…</p><p className="mt-2 text-xs text-gray-500">Extraction → compréhension → préparation des explications</p></div> : null}
       {state === "error" || error ? <p role="alert" className="mt-4 flex items-start gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm text-danger"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />{error}</p> : null}
     </section>
 
