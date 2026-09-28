@@ -97,6 +97,35 @@ test("l’inscription Révision utilise uniquement le numéro WhatsApp", async (
   assert.doesNotMatch(clientSources, /TWILIO_API_SECRET|TWILIO_API_KEY|ELIMA_IDENTITY_SECRET_KEY/);
 });
 
+test("login, signup et reset Révision utilisent Identity puis la session technique du bridge", async () => {
+  const loginPage = await readFile(new URL("../../apps/revision/src/features/auth/LoginPage.tsx", import.meta.url), "utf8");
+  const authProvider = await readFile(new URL("../../apps/revision/src/features/auth/AuthProvider.tsx", import.meta.url), "utf8");
+  const identityService = await readFile(new URL("../../apps/revision/src/services/elimaIdentityService.ts", import.meta.url), "utf8");
+  const registrationPage = await readFile(new URL("../../apps/revision/src/features/auth/RegistrationPage.tsx", import.meta.url), "utf8");
+  const registrationService = await readFile(new URL("../../apps/revision/src/services/registrationService.ts", import.meta.url), "utf8");
+
+  assert.doesNotMatch(loginPage, /isElimaIdentityConfigured/);
+  assert.match(authProvider, /signInWithElimaPassword\(identifier, password\)/);
+  assert.match(identityService, /apiFetch\("\/api\/elima-password-login"/);
+  assert.match(identityService, /apiFetch\("\/api\/identity-bridge"/);
+  assert.match(identityService, /mainDbClient\.auth\.verifyOtp/);
+  assert.match(registrationPage, /completeElimaIdentitySession\(registration\.session\)/);
+  assert.match(registrationService, /request\("\/api\/elima-signup"/);
+  assert.match(registrationService, /request\("\/api\/auth-password-reset"/);
+
+  for (const file of await sourceFiles(new URL("../../apps/revision/src/", import.meta.url))) {
+    const source = await readFile(file, "utf8");
+    assert.doesNotMatch(source, /mainDbClient\.auth\.signInWithPassword/, file.pathname);
+  }
+});
+
+test("l’authentification Mobile conserve son routage existant", async () => {
+  const loginPage = await readFile(new URL("../../apps/mobile/src/features/auth/LoginPage.tsx", import.meta.url), "utf8");
+  const authService = await readFile(new URL("../../apps/mobile/src/services/authService.ts", import.meta.url), "utf8");
+  assert.match(loginPage, /isElimaIdentityConfigured/);
+  assert.match(authService, /mainDbClient\.auth\.signInWithPassword/);
+});
+
 test("les packages Révision restent séparés des applications et des espaces School", async () => {
   for (const packageName of ["revision-core", "revision-ui"]) {
     for (const file of await sourceFiles(new URL(`../../packages/${packageName}/src/`, import.meta.url))) {

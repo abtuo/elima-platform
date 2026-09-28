@@ -5,8 +5,8 @@ import type { MobileSpace, UserProfile } from "@/types/roles";
 import { mainDbClient } from "@/services/mainDbClient";
 import { isMainDbConfigured, isDemoModeActive, shouldShowSeedAccounts } from "@/services/env";
 import { fetchUserProfile } from "@/services/profileService";
-import { signInWithIdentifier, signOut as authSignOut } from "@/services/authService";
-import { clearElimaIdentitySession, refreshElimaIdentityProfile } from "@/services/elimaIdentityService";
+import { signOut as authSignOut } from "@/services/authService";
+import { clearElimaIdentitySession, refreshElimaIdentityProfile, signInWithElimaPassword } from "@/services/elimaIdentityService";
 import { ROLE_HOME } from "@/types/roles";
 
 export type DemoAuthAccount = { email: string; password: string };
@@ -83,10 +83,9 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
       setDemoAuthenticated(true);
       return nextProfile;
     }
-    const { data, error } = await signInWithIdentifier(identifier, password);
-    if (error) throw error;
-    if (!data.session?.user) throw new Error("Connexion impossible.");
-    const nextProfile = await fetchUserProfile(data.session.user.id);
+    const { localUserId } = await signInWithElimaPassword(identifier, password);
+    if (!localUserId) throw new Error("Profil Elima introuvable.");
+    const nextProfile = await fetchUserProfile(localUserId);
     if (!nextProfile) throw new Error("Profil utilisateur introuvable.");
     setProfile(nextProfile);
     return nextProfile;

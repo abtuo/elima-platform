@@ -3,8 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { ElimaLogo } from "@/components/common/ElimaLogo";
 import { useAuth, type DemoAuthAccount } from "@/features/auth/AuthProvider";
-import { isElimaIdentityConfigured, signInWithElimaPassword } from "@/services/elimaIdentityService";
-import { fetchUserProfile } from "@/services/profileService";
 import { getProfileHomePath } from "@/types/roles";
 
 type LoginDemoAccount = DemoAuthAccount & { label: string; role: string };
@@ -23,14 +21,7 @@ export function LoginPage({ mode = "full", demoAccounts }: { mode?: "full" | "re
     setError("");
     setLoading(true);
     try {
-      const profile = !isElimaIdentityConfigured()
-        ? await signIn(identifier, password)
-        : await signInWithElimaPassword(identifier, password).then(async ({ localUserId }) => {
-            if (!localUserId) throw new Error("Profil Elima introuvable.");
-            const linkedProfile = await fetchUserProfile(localUserId);
-            if (!linkedProfile) throw new Error("Profil Elima introuvable.");
-            return linkedProfile;
-          });
+      const profile = await signIn(identifier, password);
       if (mode === "revision" && profile.role !== "STUDENT") {
         await signOut();
         throw new Error("Elima Révision est réservé aux comptes élèves.");

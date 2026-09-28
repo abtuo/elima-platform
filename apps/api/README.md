@@ -39,6 +39,9 @@ Variables serveur utilisées :
 - `ELIMA_IDENTITY_PUBLISHABLE_KEY`
 - `ELIMA_IDENTITY_SECRET_KEY` ou `ELIMA_IDENTITY_SERVICE_ROLE_KEY` ; cette clé
   doit appartenir exactement au projet indiqué par `ELIMA_IDENTITY_URL`
+- `REVISION_SUPABASE_URL`
+- `REVISION_SUPABASE_SECRET_KEY` ou `REVISION_SUPABASE_SERVICE_ROLE_KEY` ; cette
+  clé cible exclusivement le projet de données Révision utilisé par le bridge
 - `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY`, `TWILIO_API_SECRET`,
   `TWILIO_VERIFY_SERVICE_SID`
 - `VITE_SUPABASE_URL` ou `SUPABASE_URL`
@@ -51,6 +54,13 @@ Le signup, la vérification WhatsApp et la réinitialisation de mot de passe son
 traités directement par `apps/api`, sans relais par Platform. La migration
 `supabase/migrations/20260927090000_twilio_verify_auth_flows.sql`
 doit être appliquée au projet Supabase d’identité avant activation.
+
+`identity-bridge` valide la session auprès de `ELIMA_IDENTITY_URL`, puis crée la
+session technique et les liens RLS dans `REVISION_SUPABASE_URL`. Ces deux URLs et
+leurs clés ne doivent jamais pointer vers le même projet.
+La liaison canonique est `identity_links(issuer, external_subject)`, où
+`external_subject` contient l’UUID Identity ; sa contrainte unique garantit qu’une
+identité centrale ne possède qu’un seul profil technique Révision.
 
 Les secrets Supabase, Twilio et Azure restent exclusivement côté serveur. Le CORS est
 géré par `server/revisionCors.mjs` : same-origin reste autorisé, et les origines

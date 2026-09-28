@@ -2,16 +2,50 @@ import { handleRevisionCors } from "../server/revisionCors.mjs";
 import { randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
+export function resolveIdentityBridgeConfig(env = process.env) {
+  const identityUrl = String(env.ELIMA_IDENTITY_URL ?? "").replace(/\/+$/, "");
+  const identityPublishableKey = env.ELIMA_IDENTITY_PUBLISHABLE_KEY;
+  const revisionUrl = String(env.REVISION_SUPABASE_URL ?? "").replace(/\/+$/, "");
+  const revisionSecret = env.REVISION_SUPABASE_SECRET_KEY || env.REVISION_SUPABASE_SERVICE_ROLE_KEY;
+  if (!identityUrl || !identityPublishableKey || !revisionUrl || !revisionSecret || identityUrl === revisionUrl) {
+    throw new Error("Configuration SSO incomplète.");
+  }
+  return { identityUrl, identityPublishableKey, revisionUrl, revisionSecret };
+}
+
+async function ensureRevisionProfile(admin, localUserId, identityEmail, fullName, phone) {
+  const existing = await admin.from("users").select("id").eq("id", localUserId).maybeSingle();
+  if (existing.error) return existing.error;
+  if (existing.data) return null;
+  const inserted = await admin.from("users").insert({
+    id: localUserId,
+    email: identityEmail,
+    role: "STUDENT",
+    full_name: fullName,
+    phone: phone || null,
+  });
+  if (!inserted.error) return null;
+  if (inserted.error.code === "23505") {
+    const concurrent = await admin.from("users").select("id").eq("id", localUserId).maybeSingle();
+    if (!concurrent.error && concurrent.data) return null;
+  }
+  return inserted.error;
+}
+
 export default async function handler(request, response) {
   if (handleRevisionCors(request, response, ["POST"])) return;
   if (request.method !== "POST") return response.status(405).json({ error: "Méthode non autorisée." });
-  const identityUrl = String(process.env.VITE_ELIMA_IDENTITY_URL ?? "").replace(/\/+$/, "");
-  const localUrl = String(process.env.VITE_SUPABASE_URL ?? "").replace(/\/+$/, "");
-  const localSecret = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   const accessToken = String(request.body?.accessToken ?? "");
-  if (!identityUrl || !localUrl || !localSecret || !accessToken) return response.status(500).json({ error: "Configuration SSO incomplète." });
+  let config;
+  try {
+    config = resolveIdentityBridgeConfig();
+  } catch {
+    return response.status(500).json({ error: "Configuration SSO incomplète." });
+  }
+  if (!accessToken) return response.status(500).json({ error: "Configuration SSO incomplète." });
+  const { identityUrl, identityPublishableKey, revisionUrl, revisionSecret } = config;
 
-  const userInfoResponse = await fetch(`${identityUrl}/auth/v1/oauth/userinfo`, { headers: { Authorization: `Bearer ${accessToken}` } });
+  const userInfoResponse = await fetch(`${identityUrl}/auth/v1/user`, { headers: { Authorization: `Bearer ${accessToken}`, apikey: identityPublishableKey } });
   if (!userInfoResponse.ok) return response.status(401).json({ error: "Identité Elima invalide ou expirée." });
   const identity = await userInfoResponse.json();
 
@@ -21,29 +55,49 @@ export default async function handler(request, response) {
     if (profileResponse.ok) profile = await profileResponse.json();
   } catch { /* le profil minimal OIDC reste utilisable */ }
 
-  const externalSubject = String(identity.sub ?? "").trim();
+  const externalSubject = String(identity.id ?? identity.sub ?? "").trim();
   const identityEmail = String(identity.email ?? profile?.email ?? "").trim().toLowerCase();
   if (!externalSubject) return response.status(403).json({ error: "L’identité Elima ne contient pas d’identifiant utilisateur." });
   if (profile?.id && String(profile.id) !== externalSubject) return response.status(403).json({ error: "Le profil Elima ne correspond pas à l’identité connectée." });
   if (!identityEmail) return response.status(403).json({ error: "Le profil Elima ne contient pas d’identifiant de connexion exploitable." });
 
   const issuer = `${identityUrl}/auth/v1`;
-  const admin = createClient(localUrl, localSecret, { auth: { persistSession: false, autoRefreshToken: false } });
-  let { data: link } = await admin.from("identity_links").select("local_user_id").eq("issuer", issuer).eq("external_subject", externalSubject).maybeSingle();
+  const admin = createClient(revisionUrl, revisionSecret, { auth: { persistSession: false, autoRefreshToken: false } });
+  const linkResult = await admin.from("identity_links").select("local_user_id").eq("issuer", issuer).eq("external_subject", externalSubject).maybeSingle();
+  if (linkResult.error) return response.status(400).json({ error: linkResult.error.message });
+  const link = linkResult.data;
   let localUserId = link?.local_user_id ?? null;
   if (!localUserId) {
-    const { data: existingProfile } = await admin.from("users").select("id").ilike("email", identityEmail).maybeSingle();
+    const profileResult = await admin.from("users").select("id").ilike("email", identityEmail).maybeSingle();
+    if (profileResult.error) return response.status(400).json({ error: profileResult.error.message });
+    const existingProfile = profileResult.data;
     localUserId = existingProfile?.id ?? null;
     if (!localUserId) {
-      const created = await admin.auth.admin.createUser({ email: identityEmail, password: randomBytes(32).toString("base64url"), email_confirm: true, user_metadata: { role: profile?.role ?? "STUDENT", full_name: profile?.fullName ?? identity.name ?? identityEmail } });
+      const created = await admin.auth.admin.createUser({ email: identityEmail, password: randomBytes(32).toString("base64url"), email_confirm: true, user_metadata: { role: profile?.role ?? "STUDENT", full_name: profile?.fullName ?? identity.user_metadata?.full_name ?? identity.name ?? identityEmail } });
       if (created.error || !created.data.user) return response.status(400).json({ error: created.error?.message ?? "Création du profil Révision impossible." });
       localUserId = created.data.user.id;
     }
     const inserted = await admin.from("identity_links").insert({ local_user_id: localUserId, issuer, external_subject: externalSubject, external_school_id: profile?.schoolId ?? null, external_student_id: profile?.student?.id ?? null });
-    if (inserted.error) return response.status(400).json({ error: inserted.error.message });
+    if (inserted.error) {
+      if (inserted.error.code !== "23505") return response.status(400).json({ error: inserted.error.message });
+      const concurrent = await admin.from("identity_links").select("local_user_id").eq("issuer", issuer).eq("external_subject", externalSubject).maybeSingle();
+      if (concurrent.error || !concurrent.data?.local_user_id) return response.status(400).json({ error: concurrent.error?.message ?? "Liaison du profil Révision impossible." });
+      localUserId = concurrent.data.local_user_id;
+    }
   } else {
-    await admin.from("identity_links").update({ external_school_id: profile?.schoolId ?? null, external_student_id: profile?.student?.id ?? null, updated_at: new Date().toISOString() }).eq("local_user_id", localUserId);
+    const updated = await admin.from("identity_links").update({ external_school_id: profile?.schoolId ?? null, external_student_id: profile?.student?.id ?? null, updated_at: new Date().toISOString() }).eq("local_user_id", localUserId);
+    if (updated.error) return response.status(400).json({ error: updated.error.message });
   }
+  const localIdentity = await admin.auth.admin.getUserById(localUserId);
+  if (localIdentity.error || !localIdentity.data.user) return response.status(400).json({ error: "Identité technique Révision introuvable." });
+  const localProfileError = await ensureRevisionProfile(
+    admin,
+    localUserId,
+    identityEmail,
+    String(profile?.fullName ?? identity.user_metadata?.full_name ?? identity.name ?? identityEmail),
+    String(identity.user_metadata?.phone ?? ""),
+  );
+  if (localProfileError) return response.status(400).json({ error: localProfileError.message });
   if ((profile?.role ?? "STUDENT") === "STUDENT") {
     const linked = Boolean(profile?.schoolId && profile?.student?.id);
     const membership = await admin.from("student_profiles").upsert({

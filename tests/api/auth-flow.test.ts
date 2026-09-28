@@ -4,6 +4,7 @@ import test from "node:test";
 import { AuthFlowError, resolveIdentityPublicConfig } from "../../apps/api/server/identityAuth.mjs";
 import { createAuthFlowService } from "../../apps/api/server/authFlowService.mjs";
 import { createTwilioVerifyClient } from "../../apps/api/server/twilioVerify.mjs";
+import { resolveIdentityBridgeConfig } from "../../apps/api/api/identity-bridge.mjs";
 
 const phone = "+2250500000000";
 
@@ -211,4 +212,38 @@ test("la configuration d’identité ne retombe jamais sur le Supabase Revision"
     ELIMA_IDENTITY_PUBLISHABLE_KEY: "public-test-key",
   });
   assert.equal(config.url, "https://nnsgvnjzfrcmbxfwlyow.supabase.co");
+});
+
+test("le bridge sépare explicitement Identity de la session technique Revision", async () => {
+  assert.throws(() => resolveIdentityBridgeConfig({
+    VITE_ELIMA_IDENTITY_URL: "https://nnsgvnjzfrcmbxfwlyow.supabase.co",
+    VITE_SUPABASE_URL: "https://rydnrvvmwixrkmnvpajf.supabase.co",
+    SUPABASE_SECRET_KEY: "legacy-secret",
+  }));
+
+  const config = resolveIdentityBridgeConfig({
+    ELIMA_IDENTITY_URL: "https://nnsgvnjzfrcmbxfwlyow.supabase.co/",
+    ELIMA_IDENTITY_PUBLISHABLE_KEY: "identity-public-key",
+    REVISION_SUPABASE_URL: "https://rydnrvvmwixrkmnvpajf.supabase.co/",
+    REVISION_SUPABASE_SECRET_KEY: "revision-secret-key",
+  });
+  assert.equal(config.identityUrl, "https://nnsgvnjzfrcmbxfwlyow.supabase.co");
+  assert.equal(config.revisionUrl, "https://rydnrvvmwixrkmnvpajf.supabase.co");
+  assert.notEqual(config.identityUrl, config.revisionUrl);
+
+  const source = await readFile(new URL("../../apps/api/api/identity-bridge.mjs", import.meta.url), "utf8");
+  assert.match(source, /ELIMA_IDENTITY_URL/);
+  assert.match(source, /ELIMA_IDENTITY_PUBLISHABLE_KEY/);
+  assert.match(source, /REVISION_SUPABASE_URL/);
+  assert.match(source, /REVISION_SUPABASE_(?:SECRET|SERVICE_ROLE)_KEY/);
+  assert.match(source, /\/auth\/v1\/user/);
+  assert.match(source, /external_subject.*externalSubject/);
+  assert.match(source, /admin\.auth\.admin\.getUserById\(localUserId\)/);
+  assert.match(source, /ensureRevisionProfile/);
+  assert.doesNotMatch(source, /external_subject:\s*(?:phone|identityEmail)/);
+  assert.doesNotMatch(source, /process\.env\.VITE_(?:ELIMA_IDENTITY|SUPABASE)_URL/);
+
+  const migration = await readFile(new URL("../../supabase/migrations/20260715170000_elima_identity_links.sql", import.meta.url), "utf8");
+  assert.match(migration, /local_user_id uuid not null unique references auth\.users\(id\)/i);
+  assert.match(migration, /unique \(issuer, external_subject\)/i);
 });
