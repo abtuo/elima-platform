@@ -13,7 +13,7 @@ export const env = {
   productionProjectId: import.meta.env.VITE_SUPABASE_PRODUCTION_PROJECT_ID ?? "",
   mainApiBaseUrl: import.meta.env.VITE_MAIN_API_BASE_URL ?? "",
   revisionApiBaseUrl: import.meta.env.VITE_REVISION_API_BASE_URL ?? "",
-  enableDemoMode: import.meta.env.VITE_ENABLE_DEMO_MODE !== "false",
+  enableDemoMode: import.meta.env.VITE_ENABLE_DEMO_MODE === "true",
   enableRevision: import.meta.env.VITE_ENABLE_REVISION !== "false",
   enableStudentScanner: import.meta.env.VITE_ENABLE_STUDENT_SCANNER !== "false",
   enableTeacherOffline: import.meta.env.VITE_ENABLE_TEACHER_OFFLINE !== "false",
@@ -52,9 +52,18 @@ export function isMainDbConfigured() {
 export const isRevisionDbConfigured = isMainDbConfigured;
 
 export function isDemoModeActive() {
-  return env.enableDemoMode && env.appEnv !== "production" && !isMainDbConfigured();
+  return import.meta.env.DEV && env.appEnv === "development" && env.appMode === "demo" && env.enableDemoMode && !isMainDbConfigured();
 }
 
 export function shouldShowSeedAccounts() {
-  return isDemoHost();
+  return isDemoModeActive();
+}
+
+export function getRevisionConfigurationError() {
+  if (isDemoModeActive()) return "";
+  if (!isMainDbConfigured()) return "Configuration de l’application incomplète. Le service Révision est indisponible.";
+  if (import.meta.env.PROD && (!env.revisionApiBaseUrl || !/^https:\/\//i.test(env.revisionApiBaseUrl))) {
+    return "Configuration de l’API Révision incomplète. Réessaie plus tard.";
+  }
+  return "";
 }

@@ -1,5 +1,5 @@
 import { apiFetch } from "./api/apiClient";
-import { isDemoHost, isDemoModeActive } from "@/services/env";
+import { isDemoModeActive } from "@/services/env";
 import { mainDbClient } from "@/services/mainDbClient";
 import type { LearningCatalog, LearningSession } from "@/types/learning";
 import { browserLocalAuthStorage } from "@elima/auth";
@@ -13,7 +13,7 @@ import {
   submitLocalLearningSession,
 } from "@elima/revision-core";
 
-const useDemoLearning = () => isDemoModeActive() || isDemoHost();
+const useDemoLearning = () => isDemoModeActive();
 const learningApi = createLearningApi({
   apiFetch,
   async getAccessToken() { return (await mainDbClient?.auth.getSession())?.data.session?.access_token; },

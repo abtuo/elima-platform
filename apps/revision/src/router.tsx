@@ -16,10 +16,15 @@ import { RevisionStudentProfilePage } from "./RevisionStudentProfilePage";
 import { getRevisionDemoProfile, revisionDemoAccounts } from "./revisionDemoAuth";
 
 function RevisionEntryPage() {
-  const { authenticated, loading, profile } = useAuth();
+  const { authenticated, loading, profile, configurationError } = useAuth();
   if (loading) return null;
+  if (configurationError) return <ConfigurationError message={configurationError} />;
   if (!authenticated) return <RevisionWelcomePage />;
   return <Navigate to={profile.role === "STUDENT" ? "/student" : "/auth/login"} replace />;
+}
+
+function ConfigurationError({ message }: { message: string }) {
+  return <main className="flex min-h-screen items-center justify-center bg-gray-50 p-6"><section className="card max-w-lg p-8 text-center"><h1 className="font-title text-2xl font-semibold text-accent">Elima Révision indisponible</h1><p className="mt-3 text-sm leading-6 text-gray-600">{message}</p></section></main>;
 }
 
 function RevisionProtectedLayout() {
@@ -40,6 +45,16 @@ export function RevisionRouter() {
   return (
     <BrowserRouter>
       <AuthProvider demoAccounts={revisionDemoAccounts} getDemoProfile={getRevisionDemoProfile}>
+        <ConfiguredRoutes />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+
+function ConfiguredRoutes() {
+  const { configurationError } = useAuth();
+  if (configurationError) return <ConfigurationError message={configurationError} />;
+  return (
         <Routes>
           <Route path="/" element={<RevisionEntryPage />} />
           <Route path="/auth/login" element={<LoginPage mode="revision" demoAccounts={revisionDemoAccounts} />} />
@@ -67,7 +82,5 @@ export function RevisionRouter() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </AuthProvider>
-    </BrowserRouter>
   );
 }

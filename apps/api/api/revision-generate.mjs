@@ -1,6 +1,6 @@
 import { handleRevisionCors } from "../server/revisionCors.mjs";
-import { createClient } from "@supabase/supabase-js";
 import { azureChat } from "../server/azureOpenAi.mjs";
+import { authorizeRevisionRequest, consumeRevisionAiQuota } from "../server/revisionAiQuota.mjs";
 
 const DEFAULT_HINT = "Repère l’idée clé du cours et élimine les propositions incompatibles avant de calculer.";
 const DEFAULT_EXPLANATION = "Reprends l’énoncé étape par étape et applique la règle du chapitre.";
@@ -13,7 +13,7 @@ export default async function handler(request, response) {
   }
 
   try {
-    await requireAuthenticatedUser(request);
+    const authorized = await authorizeRevisionRequest(request);
     const body = typeof request.body === "string" ? JSON.parse(request.body) : request.body ?? {};
     const kind = body.kind === "sheet" ? "sheet" : "quiz";
     const subject = cleanInput(body.subject, 100);
@@ -23,6 +23,12 @@ export default async function handler(request, response) {
     const sourceContext = source === "document" ? cleanInput(body.sourceContext, 45_000) : "";
 
     if (!subject || !topic) return response.status(400).json({ error: "La matière et le sujet sont obligatoires." });
+    await consumeRevisionAiQuota(authorized.admin, authorized.user.id, {
+      action: "revision_generate",
+      windowSeconds: 15 * 60,
+      windowLimit: 12,
+      dailyLimit: 60,
+    });
 
     if (kind === "sheet") {
       const content = await generateSheet({ subject, topic, level });
@@ -33,24 +39,10 @@ export default async function handler(request, response) {
     return response.status(200).json({ kind, subject, topic, level, source, questions });
   } catch (error) {
     const status = error?.statusCode ?? 500;
-    const message = error instanceof Error ? error.message : "La génération a échoué.";
-    return response.status(status).json({ error: message });
+    const message = error?.statusCode && error instanceof Error ? error.message : "La génération est momentanément indisponible.";
+    if (error?.retryAfter) response.setHeader("Retry-After", String(error.retryAfter));
+    return response.status(status).json({ code: error?.code ?? "revision_generation_error", error: message, message });
   }
-}
-
-async function requireAuthenticatedUser(request) {
-  const authorization = String(request.headers.authorization ?? "");
-  const token = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
-  if (!token) throw httpError(401, "Connexion requise pour générer du contenu.");
-
-  const url = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
-  const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_ANON_KEY ?? process.env.SUPABASE_ANON_KEY;
-  if (!url || !key) throw httpError(500, "Configuration Supabase serveur incomplète.");
-
-  const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data, error } = await client.auth.getUser(token);
-  if (error || !data.user) throw httpError(401, "Session invalide ou expirée.");
-  return data.user;
 }
 
 async function generateQuiz(input) {
@@ -142,10 +134,4 @@ function cleanText(value) {
 
 function cleanInput(value, maxLength) {
   return cleanText(value).replace(/[<>]/g, "").slice(0, maxLength);
-}
-
-function httpError(statusCode, message) {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
 }

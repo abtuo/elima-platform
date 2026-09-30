@@ -7,14 +7,6 @@ function normalizeIdentifier(value) {
   return phone ? `${phone}@phone.elima` : "";
 }
 
-function identityProjectRef(identityUrl) {
-  try {
-    return new URL(identityUrl).hostname.split(".")[0] || "unknown";
-  } catch {
-    return "invalid";
-  }
-}
-
 export default async function handler(request, response) {
   if (handleRevisionCors(request, response, ["POST"])) return;
   if (request.method !== "POST") return response.status(405).json({ message: "Méthode non autorisée." });
@@ -26,14 +18,9 @@ export default async function handler(request, response) {
   }
   const { url: identityUrl, publishableKey } = identityConfig;
   const email = normalizeIdentifier(request.body?.identifier);
-  const normalizedPhone = email.endsWith("@phone.elima") ? email.slice(0, -"@phone.elima".length) : "not_phone_identifier";
   const password = String(request.body?.password ?? "");
   const recentSignup = request.body?.recentSignup === true;
   if (!email || !password) return response.status(400).json({ message: "Numéro WhatsApp et mot de passe requis." });
-
-  console.info("login_identity_project_ref", identityProjectRef(identityUrl));
-  console.info("normalized_phone", normalizedPhone);
-  console.info("synthetic_email", email);
 
   let upstream;
   let body;
@@ -46,8 +33,6 @@ export default async function handler(request, response) {
       body: JSON.stringify({ email, password }),
     });
     body = await upstream.json().catch(() => null);
-    console.info("supabase_auth_status", upstream.status);
-    console.info("supabase_auth_error_code", String(body?.error_code ?? body?.code ?? "none"));
     if (upstream.ok && body?.access_token) break;
     if (!isInvalidCredentials(body)) break;
   }

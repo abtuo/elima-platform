@@ -139,7 +139,7 @@ export function createElimaViteConfig(options: ElimaViteConfigOptions = {}) {
       react(),
       VitePWA({
         registerType: "autoUpdate",
-        includeAssets: ["icons/elima-app.png", "brand/elima-logo.png"],
+        includeAssets: ["icons/pwa-192.png", "icons/pwa-512.png", "icons/pwa-maskable-192.png", "icons/pwa-maskable-512.png", "brand/elima-logo.png"],
         manifest: {
           name: revision ? "Elima Révision" : "Elima Mobile",
           short_name: revision ? "Révision" : "Elima",
@@ -147,13 +147,21 @@ export function createElimaViteConfig(options: ElimaViteConfigOptions = {}) {
           theme_color: revision ? "#7C3AED" : "#2E8B57",
           background_color: "#F9FAFB",
           display: "standalone",
+          lang: "fr",
+          id: "/",
+          scope: "/",
           start_url: "/",
           icons: [
-            { src: "/icons/elima-app.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+            { src: "/icons/pwa-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+            { src: "/icons/pwa-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+            { src: "/icons/pwa-maskable-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+            { src: "/icons/pwa-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
           ],
         },
         workbox: {
           globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+          navigateFallback: "/index.html",
+          cleanupOutdatedCaches: true,
         },
       }),
       ...(options.boundaryPlugin ? [options.boundaryPlugin] : []),

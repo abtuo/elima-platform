@@ -3,7 +3,7 @@ import type { Session } from "@supabase/supabase-js";
 import { browserLocalAuthStorage } from "@elima/auth";
 import type { MobileSpace, UserProfile } from "@/types/roles";
 import { mainDbClient } from "@/services/mainDbClient";
-import { isMainDbConfigured, isDemoModeActive, shouldShowSeedAccounts } from "@/services/env";
+import { getRevisionConfigurationError, isMainDbConfigured, isDemoModeActive, shouldShowSeedAccounts } from "@/services/env";
 import { fetchUserProfile } from "@/services/profileService";
 import { signOut as authSignOut } from "@/services/authService";
 import { clearElimaIdentitySession, refreshElimaIdentityProfile, signInWithElimaPassword } from "@/services/elimaIdentityService";
@@ -21,6 +21,7 @@ type AuthContextValue = {
   session: Session | null;
   profile: UserProfile;
   loading: boolean;
+  configurationError: string;
   isDemo: boolean;
   activeSpace: MobileSpace;
   authenticated: boolean;
@@ -38,6 +39,7 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
   const [demoAuthenticated, setDemoAuthenticated] = useState(false);
   const isDemo = shouldShowSeedAccounts();
   const usesLocalDemo = isDemoModeActive();
+  const configurationError = getRevisionConfigurationError();
 
   const loadProfile = useCallback(async (userId: string) => {
     const p = await fetchUserProfile(userId);
@@ -45,6 +47,10 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
   }, []);
 
   useEffect(() => {
+    if (configurationError) {
+      setLoading(false);
+      return;
+    }
     if (usesLocalDemo || !mainDbClient) {
       const demoEmail = browserLocalAuthStorage.getItem("elima_demo_session");
       if (demoEmail && demoAccounts.some((account) => account.email.toLowerCase() === demoEmail.toLowerCase())) {
@@ -71,9 +77,10 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
     });
 
     return () => sub.subscription.unsubscribe();
-  }, [loadProfile, usesLocalDemo, getDemoProfile, demoAccounts]);
+  }, [loadProfile, usesLocalDemo, getDemoProfile, demoAccounts, configurationError]);
 
   const signIn = async (identifier: string, password: string) => {
+    if (configurationError) throw new Error(configurationError);
     if (usesLocalDemo) {
       const account = demoAccounts.find((item) => item.email.toLowerCase() === identifier.trim().toLowerCase() && item.password === password);
       if (!account) throw new Error("Email ou mot de passe incorrect.");
@@ -111,7 +118,7 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
   const activeSpace = ROLE_HOME[profile.role];
 
   return (
-    <AuthContext.Provider value={{ session, profile, loading, isDemo, authenticated: Boolean(session) || demoAuthenticated, activeSpace, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ session, profile, loading, configurationError, isDemo, authenticated: Boolean(session) || demoAuthenticated, activeSpace, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

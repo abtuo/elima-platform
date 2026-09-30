@@ -6,13 +6,12 @@ const AUTHORIZATION_TTL = 10 * 60;
 const CONTROL_TTL = 5 * 60;
 
 function logAuthCheckFailure(event, error) {
-  console.error(`auth_check: ${event}`);
+  console.error("auth_flow_failed", { operation: event });
   for (const detail of error?.safeSupabaseErrors || []) {
-    console.error("auth_check: supabase_error", {
+    console.error("auth_storage_operation_failed", {
       operation: detail.operation,
       table: detail.table,
       code: detail.code,
-      message: detail.message,
     });
   }
 }
@@ -36,11 +35,9 @@ export function createAuthFlowService({ store, twilio, now = () => new Date() })
       const requestProof = await store.authorization(requestToken, phone, ["otp_signup", "otp_password_reset"]);
       await limit(phone, ip, "otp_check", 10, 30);
       await twilio.check(phone, String(code));
-      console.info("auth_check: twilio_approved");
       let claim;
       try {
         claim = await store.claimAuthorization(requestToken, phone, requestProof.purpose);
-        console.info("auth_check: otp_claim_ok");
       } catch (error) {
         logAuthCheckFailure("otp_claim_failed", error);
         throw error;
@@ -49,8 +46,6 @@ export function createAuthFlowService({ store, twilio, now = () => new Date() })
         let account;
         try {
           account = await store.accountByPhone(phone);
-          console.info("auth_check: identity_lookup_ok");
-          console.info(`auth_check: existing_account=${Boolean(account)}`);
         } catch (error) {
           logAuthCheckFailure("identity_lookup_failed", error);
           throw error;
@@ -71,7 +66,6 @@ export function createAuthFlowService({ store, twilio, now = () => new Date() })
         if (account || purpose === "signup") {
           try {
             authorization = await store.issueAuthorization({ phone, purpose, ttlSeconds });
-            console.info("auth_check: authorization_create_ok");
           } catch (error) {
             logAuthCheckFailure("authorization_create_failed", error);
             throw error;
@@ -79,7 +73,6 @@ export function createAuthFlowService({ store, twilio, now = () => new Date() })
         }
         try {
           await store.consumeAuthorization(claim);
-          console.info("auth_check: authorization_finalize_ok");
         } catch (error) {
           logAuthCheckFailure("authorization_finalize_failed", error);
           throw error;
@@ -164,6 +157,6 @@ export function clientIp(request) {
 
 export function sendAuthFlowError(response, error, fallback) {
   if (error instanceof AuthFlowError) return response.status(error.status).json({ message: error.message, code: error.code });
-  console.error(`[auth-flow] ${fallback}`, error instanceof Error ? error.message : "unknown error");
+  console.error("auth_flow_unexpected_error", { code: String(error?.code ?? error?.name ?? "unknown") });
   return response.status(500).json({ message: fallback });
 }
