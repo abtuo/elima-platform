@@ -72,8 +72,21 @@ export function createSupabaseIdentityStore({ env = process.env, now = () => new
     ? createClient(config.url, config.publishableKey, { auth: { persistSession: false, autoRefreshToken: false } })
     : null;
   const fingerprint = (value) => createHmac("sha256", config.secret).update(String(value)).digest("hex");
+  let lastRetentionCleanup = 0;
+
+  async function cleanupExpiredAuthData() {
+    const current = now().getTime();
+    if (current - lastRetentionCleanup < 60 * 60_000) return;
+    lastRetentionCleanup = current;
+    const [attempts, authorizations] = await Promise.all([
+      admin.from("auth_flow_attempts").delete().lt("created_at", new Date(current - 30 * 24 * 60 * 60_000).toISOString()),
+      admin.from("auth_flow_authorizations").delete().lt("expires_at", new Date(current - 24 * 60 * 60_000).toISOString()),
+    ]);
+    if (attempts.error || authorizations.error) console.error("auth_retention_cleanup_failed", { code: String(attempts.error?.code ?? authorizations.error?.code ?? "unknown") });
+  }
 
   async function registerAttempt({ phone, ip, action, since, phoneLimit, ipLimit }) {
+    await cleanupExpiredAuthData();
     const phoneHash = fingerprint(`phone:${phone}`);
     const ipHash = ip ? fingerprint(`ip:${ip}`) : null;
     const phoneQuery = admin.from("auth_flow_attempts").select("id", { count: "exact", head: true }).eq("phone_hash", phoneHash).eq("action", action).gte("created_at", since.toISOString());

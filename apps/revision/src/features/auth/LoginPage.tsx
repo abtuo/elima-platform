@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { ElimaLogo } from "@/components/common/ElimaLogo";
+import { LegalLinks } from "@/components/common/LegalLinks";
 import { useAuth, type DemoAuthAccount } from "@/features/auth/AuthProvider";
 import { getProfileHomePath } from "@/types/roles";
 
@@ -68,6 +69,7 @@ export function LoginPage({ mode = "full", demoAccounts }: { mode?: "full" | "re
 
           <div className="mt-5 border-t border-gray-100 pt-5 text-center"><Link to="/auth/inscription" className="text-sm font-semibold text-primary">Créer un compte</Link></div>
           <p className="mt-6 text-center text-xs leading-5 text-gray-400">Connexion sécurisée · Vos données restent protégées.</p>
+          <LegalLinks className="mt-4 text-gray-400" />
         </div>
       </section>
     </main>

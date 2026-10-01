@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, Camera, CheckCircle2, ChevronDown, FileText, Loader2, Sparkles, Upload } from "lucide-react";
+import { AlertTriangle, Camera, CheckCircle2, ChevronDown, FileText, Loader2, Sparkles, Trash2, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { REVISION_SUBJECT_OPTIONS, subjectIdFromLabel } from "@/lib/revisionSubjects";
 import { generateRealtimeQuiz } from "@/services/revisionDataService";
-import { analyzeRevisionDocument, attachDocumentQuiz, ensureDocumentAnalysisSheets, getRevisionDocuments, prepareRevisionDocument, saveDocumentAnalysisAsSheet, type PreparedRevisionDocument, type RevisionDocument } from "@/services/revisionDocumentService";
+import { analyzeRevisionDocument, attachDocumentQuiz, deleteRevisionDocument, ensureDocumentAnalysisSheets, getRevisionDocuments, prepareRevisionDocument, saveDocumentAnalysisAsSheet, type PreparedRevisionDocument, type RevisionDocument } from "@/services/revisionDocumentService";
 import { getSubjectPreferences, saveSubjectPreferences } from "@/services/subjectPreferencesService";
 
 type ScannerState = "idle" | "upload" | "ready" | "analysis" | "success" | "error";
@@ -21,6 +21,7 @@ export function DocumentScannerPanel() {
   const [selected, setSelected] = useState<RevisionDocument | null>(null);
   const [subjectIds, setSubjectIds] = useState<string[]>([]);
   const [quizLoading, setQuizLoading] = useState(false);
+  const [documentDeleting, setDocumentDeleting] = useState(false);
 
   useEffect(() => {
     Promise.all([getRevisionDocuments(profile.id), getSubjectPreferences(profile.id)]).then(([nextDocuments, nextSubjects]) => {
@@ -80,6 +81,17 @@ export function DocumentScannerPanel() {
     await saveSubjectPreferences(next); setSubjectIds(next);
   }
 
+  async function removeSelectedDocument() {
+    if (!selected || !window.confirm("Supprimer définitivement ce document et sa fiche d’analyse ?")) return;
+    setDocumentDeleting(true); setError("");
+    try {
+      await deleteRevisionDocument(selected.id);
+      setDocuments((current) => current.filter((document) => document.id !== selected.id));
+      setSelected(null); setState("idle");
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "Suppression impossible."); }
+    finally { setDocumentDeleting(false); }
+  }
+
   const detectedSubjectId = selected ? subjectIdFromLabel(selected.subject) : "";
   const shouldOfferSubject = Boolean(selected && detectedSubjectId !== "autre" && subjectIds.length && !subjectIds.includes(detectedSubjectId));
 
@@ -95,15 +107,15 @@ export function DocumentScannerPanel() {
       {state === "error" || error ? <p role="alert" className="mt-4 flex items-start gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm text-danger"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />{error}</p> : null}
     </section>
 
-    {selected ? <DocumentResult document={selected} shouldOfferSubject={shouldOfferSubject} onAddSubject={() => void addDetectedSubject()} onCreateQuiz={() => void createQuiz()} quizLoading={quizLoading} /> : null}
+    {selected ? <DocumentResult document={selected} shouldOfferSubject={shouldOfferSubject} onAddSubject={() => void addDetectedSubject()} onCreateQuiz={() => void createQuiz()} onDelete={() => void removeSelectedDocument()} quizLoading={quizLoading} deleting={documentDeleting} /> : null}
 
     <section><h2 className="font-title text-lg font-semibold text-accent">Mes documents</h2><div className="mt-3 space-y-3">{documents.length ? documents.map(document => <button type="button" key={document.id} onClick={() => { setSelected(document); setState("success"); }} className="card tap flex w-full items-center gap-3 p-4 text-left"><FileText className="h-5 w-5 shrink-0 text-revision" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-accent">{document.title}</span><span className="block text-xs text-gray-500">{document.subject} · {new Date(document.createdAt).toLocaleDateString("fr-FR")}</span></span><span className="text-[11px] font-semibold text-primary">{document.quizRef ? "Quiz créé" : "Analysé"}</span></button>) : <div className="card p-5 text-sm text-gray-500">Tes documents analysés apparaîtront ici.</div>}</div></section>
   </div>;
 }
 
-function DocumentResult({ document, shouldOfferSubject, onAddSubject, onCreateQuiz, quizLoading }: { document: RevisionDocument; shouldOfferSubject: boolean; onAddSubject: () => void; onCreateQuiz: () => void; quizLoading: boolean }) {
+function DocumentResult({ document, shouldOfferSubject, onAddSubject, onCreateQuiz, onDelete, quizLoading, deleting }: { document: RevisionDocument; shouldOfferSubject: boolean; onAddSubject: () => void; onCreateQuiz: () => void; onDelete: () => void; quizLoading: boolean; deleting: boolean }) {
   const analysis = document.analysis;
-  return <section className="card border border-primary/10 p-5 sm:p-6"><div className="flex items-center gap-2 text-primary"><CheckCircle2 className="h-5 w-5" /><p className="text-sm font-semibold">J’ai analysé ton document</p></div><h2 className="mt-3 font-title text-2xl font-semibold text-accent">{analysis.title}</h2><p className="mt-1 text-sm text-gray-500">{analysis.detectedSubject}{document.studentLevel ? ` · ${document.studentLevel}` : ""}</p><p className="mt-3 flex items-center gap-2 rounded-2xl bg-primary/5 px-4 py-3 text-xs font-semibold text-primary"><FileText className="h-4 w-4" />Analyse enregistrée dans tes fiches</p>{analysis.summary ? <ResultSection title="Résumé"><p>{analysis.summary}</p></ResultSection> : null}{analysis.concepts.length ? <ResultSection title="Notions importantes"><ol className="list-decimal space-y-2 pl-5">{analysis.concepts.map((item, index) => <li key={index}>{item}</li>)}</ol></ResultSection> : null}{analysis.keyPoints.length ? <ResultSection title="À retenir"><ul className="list-disc space-y-2 pl-5">{analysis.keyPoints.map((item, index) => <li key={index}>{item}</li>)}</ul></ResultSection> : null}{analysis.explanations.length ? <ResultSection title="Explications"><div className="space-y-2">{analysis.explanations.map((item, index) => <p key={index}>{item}</p>)}</div></ResultSection> : null}{analysis.sourceWarnings.length ? <div className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">{analysis.sourceWarnings.join(" ")}</div> : null}{shouldOfferSubject ? <div className="mt-4 rounded-2xl bg-revision/5 p-4 text-sm"><p>Ce document semble être en {analysis.detectedSubject}. Ajouter cette matière à mes matières ?</p><button type="button" onClick={onAddSubject} className="mt-2 font-semibold text-revision">Ajouter</button></div> : null}<button type="button" disabled={quizLoading} onClick={onCreateQuiz} className="tap mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"><Sparkles className="h-4 w-4" />{quizLoading ? "Préparation du QCM…" : "Réviser les notions"}</button></section>;
+  return <section className="card border border-primary/10 p-5 sm:p-6"><div className="flex items-center gap-2 text-primary"><CheckCircle2 className="h-5 w-5" /><p className="text-sm font-semibold">J’ai analysé ton document</p></div><h2 className="mt-3 font-title text-2xl font-semibold text-accent">{analysis.title}</h2><p className="mt-1 text-sm text-gray-500">{analysis.detectedSubject}{document.studentLevel ? ` · ${document.studentLevel}` : ""}</p><p className="mt-3 flex items-center gap-2 rounded-2xl bg-primary/5 px-4 py-3 text-xs font-semibold text-primary"><FileText className="h-4 w-4" />Analyse enregistrée dans tes fiches</p>{analysis.summary ? <ResultSection title="Résumé"><p>{analysis.summary}</p></ResultSection> : null}{analysis.concepts.length ? <ResultSection title="Notions importantes"><ol className="list-decimal space-y-2 pl-5">{analysis.concepts.map((item, index) => <li key={index}>{item}</li>)}</ol></ResultSection> : null}{analysis.keyPoints.length ? <ResultSection title="À retenir"><ul className="list-disc space-y-2 pl-5">{analysis.keyPoints.map((item, index) => <li key={index}>{item}</li>)}</ul></ResultSection> : null}{analysis.explanations.length ? <ResultSection title="Explications"><div className="space-y-2">{analysis.explanations.map((item, index) => <p key={index}>{item}</p>)}</div></ResultSection> : null}{analysis.sourceWarnings.length ? <div className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">{analysis.sourceWarnings.join(" ")}</div> : null}{shouldOfferSubject ? <div className="mt-4 rounded-2xl bg-revision/5 p-4 text-sm"><p>Ce document semble être en {analysis.detectedSubject}. Ajouter cette matière à mes matières ?</p><button type="button" onClick={onAddSubject} className="mt-2 font-semibold text-revision">Ajouter</button></div> : null}<button type="button" disabled={quizLoading} onClick={onCreateQuiz} className="tap mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"><Sparkles className="h-4 w-4" />{quizLoading ? "Préparation du QCM…" : "Réviser les notions"}</button><button type="button" disabled={deleting} onClick={onDelete} className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-red-100 px-4 py-3 text-sm font-semibold text-danger disabled:opacity-50"><Trash2 className="h-4 w-4" />{deleting ? "Suppression…" : "Supprimer ce document"}</button></section>;
 }
 
 function ResultSection({ title, children }: { title: string; children: React.ReactNode }) {

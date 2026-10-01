@@ -1,4 +1,5 @@
 export const API_ENDPOINTS = [
+  "account-delete",
   "activate-school",
   "auth-password-reset",
   "auth-verification-check",
@@ -11,9 +12,11 @@ export const API_ENDPOINTS = [
   "registration-request",
   "revision-generate",
   "revision-document-analyze",
+  "revision-document-delete",
 ];
 
 export const REVISION_API_ENDPOINTS = [
+  "account-delete",
   "identity-bridge",
   "elima-profile",
   "elima-password-login",
@@ -24,4 +27,5 @@ export const REVISION_API_ENDPOINTS = [
   "learning",
   "revision-generate",
   "revision-document-analyze",
+  "revision-document-delete",
 ];

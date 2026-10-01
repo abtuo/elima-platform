@@ -48,7 +48,7 @@ const SERVER_ENV_KEYS = [
 ] as const;
 
 const LOCAL_API_HANDLERS = ["identity-bridge", "elima-profile", "activate-school", "elima-password-login", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "registration-request", "learning"] as const;
-const REVISION_API_HANDLERS = ["identity-bridge", "elima-profile", "elima-password-login", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "learning", "revision-document-analyze"] as const;
+const REVISION_API_HANDLERS = ["account-delete", "identity-bridge", "elima-profile", "elima-password-login", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "learning", "revision-document-analyze", "revision-document-delete"] as const;
 
 function localServerlessApis(enabled: boolean, endpoints: readonly string[]): Plugin {
   return {

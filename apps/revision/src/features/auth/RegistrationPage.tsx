@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ElimaLogo } from "@/components/common/ElimaLogo";
+import { LegalLinks } from "@/components/common/LegalLinks";
 import { STUDENT_CLASS_OPTIONS } from "@/constants/studentClasses";
 import { revisionSubjectsForLevel } from "@/lib/revisionSubjects";
 import { completeElimaIdentitySession, signInWithElimaPassword } from "@/services/elimaIdentityService";
@@ -91,7 +92,7 @@ export function RevisionRegistrationPage() {
     });
   }
 
-  const card = (content: React.ReactNode) => <main className="min-h-[100dvh] bg-[#f3f7f4] px-4 py-8 sm:px-6"><section className="mx-auto w-full max-w-2xl"><div className="flex items-center justify-between"><Link to="/" className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-gray-500 shadow-sm" aria-label="Retour"><ArrowLeft className="h-5 w-5" /></Link><ElimaLogo className="w-28" /><span className="w-11" /></div><div className="mt-8 rounded-[2rem] bg-white p-6 shadow-[0_24px_80px_rgba(21,55,42,.1)] sm:p-9">{content}</div></section></main>;
+  const card = (content: React.ReactNode) => <main className="min-h-[100dvh] bg-[#f3f7f4] px-4 py-8 sm:px-6"><section className="mx-auto w-full max-w-2xl"><div className="flex items-center justify-between"><Link to="/" className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-gray-500 shadow-sm" aria-label="Retour"><ArrowLeft className="h-5 w-5" /></Link><ElimaLogo className="w-28" /><span className="w-11" /></div><div className="mt-8 rounded-[2rem] bg-white p-6 shadow-[0_24px_80px_rgba(21,55,42,.1)] sm:p-9">{content}</div><LegalLinks className="mt-5 text-gray-500" /></section></main>;
   const title = (value: string, description?: React.ReactNode) => <><p className="text-sm font-semibold uppercase tracking-[.15em] text-revision">Elima Révision</p><h1 className="mt-2 font-title text-3xl font-semibold text-accent">{value}</h1>{description ? <p className="mt-2 text-sm leading-6 text-gray-500">{description}</p> : null}</>;
   const errorMessage = error ? <p role="alert" className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-danger">{error}</p> : null;
 

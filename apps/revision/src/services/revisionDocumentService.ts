@@ -14,41 +14,39 @@ export type RevisionDocument = {
 
 const DOCUMENT_UPLOAD_BUCKET = "revision-document-uploads";
 export const MAX_REVISION_DOCUMENT_BYTES = 10 * 1024 * 1024;
-export type PreparedRevisionDocument = { file: File; storagePath: string };
+export type PreparedRevisionDocument = { file: File };
 
 export async function prepareRevisionDocument(file: File): Promise<PreparedRevisionDocument> {
-  if (!mainDbClient) throw new Error("Service indisponible.");
   if (!["application/pdf", "image/jpeg", "image/png"].includes(file.type)) throw new Error("Utilise un fichier PDF, JPEG ou PNG.");
   const prepared = file.type.startsWith("image/") ? await compressRevisionPhoto(file) : file;
   if (prepared.size > MAX_REVISION_DOCUMENT_BYTES) throw new Error("Le document doit peser 10 Mo maximum.");
-  const user = (await mainDbClient.auth.getUser()).data.user;
-  if (!user) throw new Error("Session expirée.");
-  const safeName = prepared.name.replace(/[^A-Za-z0-9._-]+/g, "-").slice(-120) || "document";
-  const storagePath = `${user.id}/${crypto.randomUUID()}-${safeName}`;
-  const uploaded = await mainDbClient.storage.from(DOCUMENT_UPLOAD_BUCKET).upload(storagePath, prepared, { contentType: prepared.type, upsert: false });
-  if (uploaded.error) throw new Error("L’import du document a échoué. Réessaie.");
-  return { file: prepared, storagePath };
-}
-
-export async function discardRevisionDocument(prepared: PreparedRevisionDocument) {
-  if (!mainDbClient) return;
-  await mainDbClient.storage.from(DOCUMENT_UPLOAD_BUCKET).remove([prepared.storagePath]);
+  return { file: prepared };
 }
 
 export async function analyzeRevisionDocument(prepared: PreparedRevisionDocument, input: { level: string; selectedSubjects: string[] }) {
   if (!mainDbClient) throw new Error("Service indisponible.");
   const token = (await mainDbClient.auth.getSession()).data.session?.access_token;
   if (!token) throw new Error("Session expirée.");
-  const response = await apiFetch("/api/revision-document-analyze", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ fileName: prepared.file.name, mimeType: prepared.file.type, storagePath: prepared.storagePath, ...input }),
-  });
-  const payload = await response.json().catch(() => null) as { id?: string; createdAt?: string; status?: "ready"; analysis?: DocumentAnalysis; message?: string } | null;
-  if (!response.ok || !payload?.id || !payload.analysis) throw new Error(payload?.message ?? "Analyse impossible.");
-  const subjectId = subjectIdFromLabel(payload.analysis.detectedSubject);
-  await mainDbClient.from("revision_documents").update({ subject_id: subjectId }).eq("id", payload.id);
-  return { id: payload.id, createdAt: payload.createdAt ?? new Date().toISOString(), status: payload.status ?? "ready", subjectId, analysis: payload.analysis };
+  const user = (await mainDbClient.auth.getUser()).data.user;
+  if (!user) throw new Error("Session expirée.");
+  const safeName = prepared.file.name.replace(/[^A-Za-z0-9._-]+/g, "-").slice(-120) || "document";
+  const storagePath = `${user.id}/${crypto.randomUUID()}-${safeName}`;
+  const uploaded = await mainDbClient.storage.from(DOCUMENT_UPLOAD_BUCKET).upload(storagePath, prepared.file, { contentType: prepared.file.type, upsert: false });
+  if (uploaded.error) throw new Error("L’import du document a échoué. Réessaie.");
+  try {
+    const response = await apiFetch("/api/revision-document-analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ fileName: prepared.file.name, mimeType: prepared.file.type, storagePath, ...input }),
+    });
+    const payload = await response.json().catch(() => null) as { id?: string; createdAt?: string; status?: "ready"; analysis?: DocumentAnalysis; message?: string } | null;
+    if (!response.ok || !payload?.id || !payload.analysis) throw new Error(payload?.message ?? "Analyse impossible.");
+    const subjectId = subjectIdFromLabel(payload.analysis.detectedSubject);
+    await mainDbClient.from("revision_documents").update({ subject_id: subjectId }).eq("id", payload.id);
+    return { id: payload.id, createdAt: payload.createdAt ?? new Date().toISOString(), status: payload.status ?? "ready", subjectId, analysis: payload.analysis };
+  } finally {
+    await mainDbClient.storage.from(DOCUMENT_UPLOAD_BUCKET).remove([storagePath]);
+  }
 }
 
 async function compressRevisionPhoto(file: File) {
@@ -82,6 +80,19 @@ export async function getRevisionDocuments(userId: string): Promise<RevisionDocu
 export async function attachDocumentQuiz(documentId: string, quizRef: string) {
   if (!mainDbClient) return;
   await mainDbClient.from("revision_documents").update({ quiz_ref: quizRef, updated_at: new Date().toISOString() }).eq("id", documentId);
+}
+
+export async function deleteRevisionDocument(documentId: string) {
+  if (!mainDbClient) throw new Error("Service indisponible.");
+  const token = (await mainDbClient.auth.getSession()).data.session?.access_token;
+  if (!token) throw new Error("Session expirée.");
+  const response = await apiFetch("/api/revision-document-delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ documentId }),
+  });
+  const payload = await response.json().catch(() => null) as { message?: string } | null;
+  if (!response.ok) throw new Error(payload?.message ?? "La suppression du document est momentanément indisponible.");
 }
 
 export function documentAnalysisMarkdown(analysis: DocumentAnalysis) {

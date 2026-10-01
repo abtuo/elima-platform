@@ -10,6 +10,7 @@ import { QuizPage } from "@/features/revision/QuizPage";
 import { CoursesPage, CourseSheetDetailPage } from "@/features/revision/CoursesPage";
 import { LearningSolverPage } from "@/features/revision/LearningSolverPage";
 import { LearningResultsPage } from "@/features/revision/LearningResultsPage";
+import { LegalPage } from "@/features/legal/LegalPage";
 import { RevisionShell } from "./RevisionShell";
 import { RevisionWelcomePage } from "./RevisionWelcomePage";
 import { RevisionStudentProfilePage } from "./RevisionStudentProfilePage";
@@ -53,9 +54,13 @@ export function RevisionRouter() {
 
 function ConfiguredRoutes() {
   const { configurationError } = useAuth();
-  if (configurationError) return <ConfigurationError message={configurationError} />;
+  const location = useLocation();
+  if (configurationError && !location.pathname.startsWith("/legal/")) return <ConfigurationError message={configurationError} />;
   return (
         <Routes>
+          <Route path="/legal/terms" element={<LegalPage kind="terms" />} />
+          <Route path="/legal/privacy" element={<LegalPage kind="privacy" />} />
+          <Route path="/legal/account-deletion" element={<LegalPage kind="account-deletion" />} />
           <Route path="/" element={<RevisionEntryPage />} />
           <Route path="/auth/login" element={<LoginPage mode="revision" demoAccounts={revisionDemoAccounts} />} />
           <Route path="/auth/inscription" element={<RevisionRegistrationPage />} />
