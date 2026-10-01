@@ -1,19 +1,14 @@
 import { createServer } from "node:http";
-import { API_ENDPOINTS } from "./routes.mjs";
+import { resolveApiRoute } from "./routes.mjs";
 
 const port = Number(process.env.API_PORT || 3001);
 const host = process.env.API_HOST || "127.0.0.1";
-const handlers = new Map(await Promise.all(API_ENDPOINTS.map(async (endpoint) => {
-  const { default: handler } = await import(new URL(`../api/${endpoint}.mjs`, import.meta.url));
-  return [endpoint, handler];
-})));
-
 const server = createServer(async (request, response) => {
   const pathname = new URL(request.url || "/", `http://${request.headers.host || `${host}:${port}`}`).pathname;
   const match = pathname.match(/^\/api\/([^/]+)\/?$/);
   const endpoint = match?.[1];
-  const handler = endpoint ? handlers.get(endpoint) : undefined;
-  if (!handler) {
+  const route = endpoint ? resolveApiRoute(endpoint) : null;
+  if (!route) {
     response.statusCode = 404;
     response.setHeader("Content-Type", "application/json; charset=utf-8");
     response.end(JSON.stringify({ message: "Route API introuvable." }));
@@ -31,7 +26,7 @@ const server = createServer(async (request, response) => {
       response.end(JSON.stringify(payload));
       return response;
     };
-    await handler(request, response);
+    await route.handler(request, response);
   } catch (error) {
     if (response.headersSent) return response.end();
     response.statusCode = error instanceof SyntaxError ? 400 : 500;

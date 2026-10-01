@@ -1,4 +1,4 @@
-import { handleRevisionCors } from "../server/revisionCors.mjs";
+import { handleRevisionCors } from "../revisionCors.mjs";
 import { randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 

@@ -4,7 +4,7 @@ import test from "node:test";
 import { AuthFlowError, resolveIdentityPublicConfig } from "../../apps/api/server/identityAuth.mjs";
 import { createAuthFlowService } from "../../apps/api/server/authFlowService.mjs";
 import { createTwilioVerifyClient } from "../../apps/api/server/twilioVerify.mjs";
-import { resolveIdentityBridgeConfig } from "../../apps/api/api/identity-bridge.mjs";
+import { resolveIdentityBridgeConfig } from "../../apps/api/server/handlers/identity-bridge.mjs";
 
 const phone = "+2250500000000";
 
@@ -193,7 +193,7 @@ test("Twilio Verify envoie sur WhatsApp et n’approuve que status=approved", as
 });
 
 test("login normal reste mot de passe Supabase sans OTP", async () => {
-  const source = await readFile(new URL("../../apps/api/api/elima-password-login.mjs", import.meta.url), "utf8");
+  const source = await readFile(new URL("../../apps/api/server/handlers/elima-password-login.mjs", import.meta.url), "utf8");
   assert.match(source, /auth\/v1\/token\?grant_type=password/);
   assert.match(source, /resolveIdentityPublicConfig/);
   assert.doesNotMatch(source, /auth-verification|Twilio|VerificationCheck/);
@@ -231,7 +231,7 @@ test("le bridge sépare explicitement Identity de la session technique Revision"
   assert.equal(config.revisionUrl, "https://rydnrvvmwixrkmnvpajf.supabase.co");
   assert.notEqual(config.identityUrl, config.revisionUrl);
 
-  const source = await readFile(new URL("../../apps/api/api/identity-bridge.mjs", import.meta.url), "utf8");
+  const source = await readFile(new URL("../../apps/api/server/handlers/identity-bridge.mjs", import.meta.url), "utf8");
   assert.match(source, /ELIMA_IDENTITY_URL/);
   assert.match(source, /ELIMA_IDENTITY_PUBLISHABLE_KEY/);
   assert.match(source, /REVISION_SUPABASE_URL/);
@@ -242,6 +242,7 @@ test("le bridge sépare explicitement Identity de la session technique Revision"
   assert.match(source, /ensureRevisionProfile/);
   assert.doesNotMatch(source, /external_subject:\s*(?:phone|identityEmail)/);
   assert.doesNotMatch(source, /process\.env\.VITE_(?:ELIMA_IDENTITY|SUPABASE)_URL/);
+  assert.doesNotMatch(source, /\.error\??\.message|\.error\.message/);
 
   const migration = await readFile(new URL("../../supabase/migrations/20260715170000_elima_identity_links.sql", import.meta.url), "utf8");
   assert.match(migration, /local_user_id uuid not null unique references auth\.users\(id\)/i);

@@ -1,5 +1,5 @@
-import { handleRevisionCors } from "../server/revisionCors.mjs";
-import { resolveIdentityPublicConfig } from "../server/identityAuth.mjs";
+import { handleRevisionCors } from "../revisionCors.mjs";
+import { resolveIdentityPublicConfig } from "../identityAuth.mjs";
 function normalizeIdentifier(value) {
   const identifier = String(value ?? "").trim().toLowerCase();
   if (identifier.includes("@")) return identifier;

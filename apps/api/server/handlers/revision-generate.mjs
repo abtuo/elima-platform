@@ -1,6 +1,6 @@
-import { handleRevisionCors } from "../server/revisionCors.mjs";
-import { azureChat } from "../server/azureOpenAi.mjs";
-import { authorizeRevisionRequest, consumeRevisionAiQuota } from "../server/revisionAiQuota.mjs";
+import { handleRevisionCors } from "../revisionCors.mjs";
+import { azureChat } from "../azureOpenAi.mjs";
+import { authorizeRevisionRequest, consumeRevisionAiQuota } from "../revisionAiQuota.mjs";
 
 const DEFAULT_HINT = "Repère l’idée clé du cours et élimine les propositions incompatibles avant de calculer.";
 const DEFAULT_EXPLANATION = "Reprends l’énoncé étape par étape et applique la règle du chapitre.";

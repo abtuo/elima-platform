@@ -1,32 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/learning.mjs": {
-      "includeFiles": "../../data/exams/**"
-    },
-    "api/revision-generate.mjs": {
+    "api/*.mjs": {
+      "includeFiles": "../../data/exams/**",
       "maxDuration": 60
-    },
-    "api/revision-document-analyze.mjs": {
-      "maxDuration": 60
-    },
-    "api/account-delete.mjs": {
-      "maxDuration": 30
-    },
-    "api/elima-password-login.mjs": {
-      "maxDuration": 15
-    },
-    "api/elima-signup.mjs": {
-      "maxDuration": 15
-    },
-    "api/auth-verification-request.mjs": {
-      "maxDuration": 15
-    },
-    "api/auth-verification-check.mjs": {
-      "maxDuration": 15
-    },
-    "api/auth-password-reset.mjs": {
-      "maxDuration": 15
     }
   }
 }

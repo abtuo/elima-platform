@@ -1,19 +1,38 @@
-export const API_ENDPOINTS = [
-  "account-delete",
-  "activate-school",
-  "auth-password-reset",
-  "auth-verification-check",
-  "auth-verification-request",
-  "elima-password-login",
-  "elima-profile",
-  "elima-signup",
-  "identity-bridge",
-  "learning",
-  "registration-request",
-  "revision-generate",
-  "revision-document-analyze",
-  "revision-document-delete",
-];
+import accountDelete from "./handlers/account-delete.mjs";
+import activateSchool from "./handlers/activate-school.mjs";
+import authPasswordReset from "./handlers/auth-password-reset.mjs";
+import authVerificationCheck from "./handlers/auth-verification-check.mjs";
+import authVerificationRequest from "./handlers/auth-verification-request.mjs";
+import elimaPasswordLogin from "./handlers/elima-password-login.mjs";
+import elimaProfile from "./handlers/elima-profile.mjs";
+import elimaSignup from "./handlers/elima-signup.mjs";
+import identityBridge from "./handlers/identity-bridge.mjs";
+import learning from "./handlers/learning.mjs";
+import registrationRequest from "./handlers/registration-request.mjs";
+import revisionDocumentAnalyze from "./handlers/revision-document-analyze.mjs";
+import revisionDocumentDelete from "./handlers/revision-document-delete.mjs";
+import revisionGenerate from "./handlers/revision-generate.mjs";
+
+const POST = ["POST"];
+
+export const API_ROUTES = new Map([
+  ["account-delete", { methods: POST, handler: accountDelete }],
+  ["activate-school", { methods: POST, handler: activateSchool }],
+  ["auth-password-reset", { methods: POST, handler: authPasswordReset }],
+  ["auth-verification-check", { methods: POST, handler: authVerificationCheck }],
+  ["auth-verification-request", { methods: POST, handler: authVerificationRequest }],
+  ["elima-password-login", { methods: POST, handler: elimaPasswordLogin }],
+  ["elima-profile", { methods: ["GET"], handler: elimaProfile }],
+  ["elima-signup", { methods: POST, handler: elimaSignup }],
+  ["identity-bridge", { methods: POST, handler: identityBridge }],
+  ["learning", { methods: POST, handler: learning }],
+  ["registration-request", { methods: POST, handler: registrationRequest }],
+  ["revision-generate", { methods: POST, handler: revisionGenerate }],
+  ["revision-document-analyze", { methods: POST, handler: revisionDocumentAnalyze }],
+  ["revision-document-delete", { methods: POST, handler: revisionDocumentDelete }],
+]);
+
+export const API_ENDPOINTS = [...API_ROUTES.keys()];
 
 export const REVISION_API_ENDPOINTS = [
   "account-delete",
@@ -29,3 +48,7 @@ export const REVISION_API_ENDPOINTS = [
   "revision-document-analyze",
   "revision-document-delete",
 ];
+
+export function resolveApiRoute(endpoint) {
+  return API_ROUTES.get(String(endpoint ?? "")) ?? null;
+}

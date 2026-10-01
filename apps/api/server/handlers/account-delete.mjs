@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { handleRevisionCors } from "../server/revisionCors.mjs";
+import { handleRevisionCors } from "../revisionCors.mjs";
 
 export function resolveAccountDeletionConfig(env = process.env) {
   const identityUrl = String(env.ELIMA_IDENTITY_URL ?? "").replace(/\/+$/, "");

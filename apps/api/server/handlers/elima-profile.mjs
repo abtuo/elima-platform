@@ -1,4 +1,4 @@
-import { handleRevisionCors } from "../server/revisionCors.mjs";
+import { handleRevisionCors } from "../revisionCors.mjs";
 export default async function handler(request, response) {
   if (handleRevisionCors(request, response, ["GET"])) return;
   if (request.method !== "GET") return response.status(405).json({ message: "Méthode non autorisée." });

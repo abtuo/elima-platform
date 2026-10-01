@@ -1,5 +1,5 @@
-import { handleRevisionCors } from "../server/revisionCors.mjs";
-import { clientIp, getAuthFlowService, sendAuthFlowError } from "../server/authFlowService.mjs";
+import { handleRevisionCors } from "../revisionCors.mjs";
+import { clientIp, getAuthFlowService, sendAuthFlowError } from "../authFlowService.mjs";
 
 export function createHandler(resolveService = getAuthFlowService) {
   return async function handler(request, response) {

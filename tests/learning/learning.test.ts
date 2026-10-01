@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
-import { demoCatalog, validateAnswer } from "../../apps/api/api/learning.mjs";
+import { demoCatalog, validateAnswer } from "../../apps/api/server/handlers/learning.mjs";
 import { canAccessExamSubjects, isLevelCompatible, recommendExercises } from "../../apps/mobile/src/lib/learningRules.ts";
 
 test("filtre les contenus par niveau et série", () => {
@@ -105,7 +105,7 @@ test("les sessions v3 affichent les cours et vérifient les réponses à la fin"
 });
 
 test("la validation ouverte passe par GPT côté serveur", async () => {
-  const api = await readFile(new URL("../../apps/api/api/learning.mjs", import.meta.url), "utf8");
+  const api = await readFile(new URL("../../apps/api/server/handlers/learning.mjs", import.meta.url), "utf8");
   assert.match(api, /assessWithGpt/);
   assert.match(api, /gpt_assisted/);
   assert.match(api, /learning_ai_evaluations/);

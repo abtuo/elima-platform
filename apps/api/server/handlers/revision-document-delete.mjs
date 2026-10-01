@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import { handleRevisionCors } from "../server/revisionCors.mjs";
-import { authorizeRevisionRequest, RevisionApiError } from "../server/revisionAiQuota.mjs";
+import { handleRevisionCors } from "../revisionCors.mjs";
+import { authorizeRevisionRequest, RevisionApiError } from "../revisionAiQuota.mjs";
 
 export function createHandler(dependencies = {}) {
   const env = dependencies.env ?? process.env;

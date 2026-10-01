@@ -1,8 +1,8 @@
 import { Buffer } from "node:buffer";
 import { createClient } from "@supabase/supabase-js";
-import { handleRevisionCors } from "../server/revisionCors.mjs";
-import { createPedagogicalAnalysis, documentError, extractDocument } from "../server/revisionDocumentService.mjs";
-import { applyRevisionApiError, authorizeRevisionRequest, consumeRevisionAiQuota } from "../server/revisionAiQuota.mjs";
+import { handleRevisionCors } from "../revisionCors.mjs";
+import { createPedagogicalAnalysis, documentError, extractDocument } from "../revisionDocumentService.mjs";
+import { applyRevisionApiError, authorizeRevisionRequest, consumeRevisionAiQuota } from "../revisionAiQuota.mjs";
 
 const ALLOWED_TYPES = new Set(["application/pdf", "image/jpeg", "image/png"]);
 const MAX_BYTES = 10 * 1024 * 1024;

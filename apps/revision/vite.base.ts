@@ -62,7 +62,7 @@ function localServerlessApis(enabled: boolean, endpoints: readonly string[]): Pl
             for await (const chunk of request) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
             const rawBody = Buffer.concat(chunks).toString("utf8");
             const body = rawBody ? JSON.parse(rawBody) : {};
-            const handlerUrl = pathToFileURL(path.resolve(repositoryRoot, `apps/api/api/${endpoint}.mjs`)).href;
+            const handlerUrl = pathToFileURL(path.resolve(repositoryRoot, `apps/api/server/handlers/${endpoint}.mjs`)).href;
             const handler = (await import(/* @vite-ignore */ handlerUrl)).default as (request: unknown, response: unknown) => Promise<unknown>;
             const requestAdapter = Object.assign(request, { body });
             const responseAdapter = {
@@ -96,7 +96,7 @@ function localRevisionApi(enabled: boolean): Plugin {
           const chunks: Buffer[] = [];
           for await (const chunk of request) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
           const body = Buffer.concat(chunks).toString("utf8");
-          const handlerUrl = pathToFileURL(path.resolve(repositoryRoot, "apps/api/api/revision-generate.mjs")).href;
+          const handlerUrl = pathToFileURL(path.resolve(repositoryRoot, "apps/api/server/handlers/revision-generate.mjs")).href;
           const handler = (await import(/* @vite-ignore */ handlerUrl)).default as (request: unknown, response: unknown) => Promise<unknown>;
           const requestAdapter = Object.assign(request, { body });
           const responseAdapter = {

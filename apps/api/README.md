@@ -1,7 +1,8 @@
 # Elima API
 
-Backend Node autonome des clients Mobile et Révision. Les fonctions HTTP restent
-dans `api/` afin de conserver exactement leurs routes Vercel `/api/*`.
+Backend Node autonome des clients Mobile et Révision. Vercel expose un unique
+routeur `api/[...route].mjs`; les handlers HTTP internes vivent dans
+`server/handlers/` tout en conservant exactement les routes publiques `/api/*`.
 
 ## Développement et validation
 
@@ -28,8 +29,9 @@ mode développement.
 - Option monorepo : activer **Include source files outside of the Root Directory**
   afin d’inclure le lockfile racine et `data/exams`.
 
-`vercel.json` conserve les durées maximales existantes et force l’inclusion du
-corpus `../../data/exams/**` pour `/api/learning`. Aucun rewrite n’est requis.
+`vercel.json` applique une durée maximale de 60 secondes au routeur mutualisé et
+force l’inclusion du corpus `../../data/exams/**` pour `/api/learning`. Aucun
+rewrite n’est requis.
 
 Variables serveur utilisées :
 

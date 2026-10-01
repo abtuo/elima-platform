@@ -66,9 +66,9 @@ test("preflight avec méthode ou header non autorisé est refusé", () => {
   }
 });
 
-test("les dix endpoints court-circuitent OPTIONS avant leur logique métier", async () => {
-  for (const name of ["learning", "revision-generate", "revision-document-analyze", "identity-bridge", "elima-password-login", "elima-profile", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset"]) {
-    const { default: handler } = await import(new URL(`../../apps/api/api/${name}.mjs`, import.meta.url).href);
+test("les endpoints Révision court-circuitent OPTIONS avant leur logique métier", async () => {
+  for (const name of ["account-delete", "learning", "revision-generate", "revision-document-analyze", "revision-document-delete", "identity-bridge", "elima-password-login", "elima-profile", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset"]) {
+    const { default: handler } = await import(new URL(`../../apps/api/server/handlers/${name}.mjs`, import.meta.url).href);
     const res = response();
     const previous = process.env.REVISION_ALLOWED_ORIGINS;
     process.env.REVISION_ALLOWED_ORIGINS = "https://localhost";
@@ -84,7 +84,7 @@ test("les dix endpoints court-circuitent OPTIONS avant leur logique métier", as
 });
 
 test("CORS ne désactive pas l'authentification d'elima-profile", async () => {
-  const { default: handler } = await import("../../apps/api/api/elima-profile.mjs");
+  const { default: handler } = await import("../../apps/api/server/handlers/elima-profile.mjs");
   const res = response();
   await handler({ method: "GET", headers: { host: "app.example.com", "x-forwarded-proto": "https", origin: "https://app.example.com" } }, res);
   assert.equal(res.statusCode, 401);
