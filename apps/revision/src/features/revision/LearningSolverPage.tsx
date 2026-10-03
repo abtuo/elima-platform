@@ -7,6 +7,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { MarkdownContent } from "@/components/revision/MarkdownContent";
 import { ProgressBar } from "@/components/revision/RevisionUI";
 import { GuidedSessionExperience } from "@/features/revision/GuidedSessionExperience";
+import { useAndroidBack } from "@/hooks/useAndroidBack";
 import { autosaveLearningAnswer, createLearningSession, getLearningContent, getLearningHint, getLearningSolution, getSignedExamPdf, saveLearningSession, submitLearningSession, validateLearningAnswer } from "@/services/learningService";
 import type { ExamSubject, LearningExercise, LearningQuestion, LearningSession, ValidationResult } from "@/types/learning";
 
@@ -24,6 +25,12 @@ export function LearningSolverPage({ contentType }: { contentType: "guided_exerc
   const [solution, setSolution] = useState<string[]>([]);
   const [navOpen, setNavOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
+  useAndroidBack(() => {
+    if (pdfUrl) { setPdfUrl(""); return true; }
+    if (navOpen) { setNavOpen(false); return true; }
+    return false;
+  }, 100);
+  useAndroidBack(() => session?.status === "in_progress" && !window.confirm("Quitter cet exercice en cours ? Tu pourras reprendre ta progression enregistrée."), 10);
   const mode = contentType === "exam" && params.get("session") === "exam" ? "exam" : "guided";
   const questions = useMemo(() => exercises.flatMap((exercise) => {
     if (exercise.sourceType !== "guided_session_v3") return exercise.questions.map((question) => ({ ...question, exercise }));

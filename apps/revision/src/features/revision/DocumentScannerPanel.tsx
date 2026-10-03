@@ -6,6 +6,8 @@ import { REVISION_SUBJECT_OPTIONS, subjectIdFromLabel } from "@/lib/revisionSubj
 import { generateRealtimeQuiz } from "@/services/revisionDataService";
 import { analyzeRevisionDocument, attachDocumentQuiz, deleteRevisionDocument, ensureDocumentAnalysisSheets, getRevisionDocuments, prepareRevisionDocument, saveDocumentAnalysisAsSheet, type PreparedRevisionDocument, type RevisionDocument } from "@/services/revisionDocumentService";
 import { getSubjectPreferences, saveSubjectPreferences } from "@/services/subjectPreferencesService";
+import { isNativeRuntime } from "@/services/nativeRuntime";
+import { photoToFile, subscribeRecoveredPhoto, takeNativePhoto, takeRecoveredPhoto } from "@/services/nativeCamera";
 
 type ScannerState = "idle" | "upload" | "ready" | "analysis" | "success" | "error";
 
@@ -22,6 +24,27 @@ export function DocumentScannerPanel() {
   const [subjectIds, setSubjectIds] = useState<string[]>([]);
   const [quizLoading, setQuizLoading] = useState(false);
   const [documentDeleting, setDocumentDeleting] = useState(false);
+  const [cameraBusy, setCameraBusy] = useState(false);
+
+  useEffect(() => {
+    const recover = () => {
+      const recovered = takeRecoveredPhoto();
+      if (!recovered) return;
+      if (recovered.error) { setError(recovered.error); return; }
+      if (recovered.photo) void photoToFile(recovered.photo).then(file => prepareUpload(file)).catch(() => setError("Photo récupérée illisible. Prends une nouvelle photo."));
+    };
+    recover();
+    return subscribeRecoveredPhoto(recover);
+  }, []);
+
+  async function openCamera() {
+    if (!isNativeRuntime()) { cameraInput.current?.click(); return; }
+    if (cameraBusy) return;
+    setCameraBusy(true); setError("");
+    try { const file = await takeNativePhoto(); if (file) await prepareUpload(file); }
+    catch (caught) { setError(caught instanceof Error ? caught.message : "Caméra indisponible."); }
+    finally { setCameraBusy(false); }
+  }
 
   useEffect(() => {
     Promise.all([getRevisionDocuments(profile.id), getSubjectPreferences(profile.id)]).then(([nextDocuments, nextSubjects]) => {
@@ -98,7 +121,7 @@ export function DocumentScannerPanel() {
   return <div className="space-y-5">
     <section className="card p-5 sm:p-6">
       <div className="flex items-start gap-3"><span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-revision/10 text-revision"><Camera className="h-6 w-6" /></span><div><h2 className="font-title text-xl font-semibold text-accent">Scanner un document</h2><p className="mt-1 text-sm leading-6 text-gray-500">Ajoute un cours, un devoir ou une fiche. Elima t’aide à comprendre les notions importantes.</p></div></div>
-      <div className="mt-5 grid gap-3 sm:grid-cols-2"><button type="button" onClick={() => cameraInput.current?.click()} className="tap flex items-center justify-center gap-2 rounded-2xl bg-revision px-4 py-3 text-sm font-semibold text-white"><Camera className="h-4 w-4" />Prendre une photo</button><button type="button" onClick={() => fileInput.current?.click()} className="tap flex items-center justify-center gap-2 rounded-2xl border border-revision/20 bg-white px-4 py-3 text-sm font-semibold text-revision"><Upload className="h-4 w-4" />Importer un document</button></div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2"><button type="button" disabled={cameraBusy} onClick={() => void openCamera()} className="tap flex items-center justify-center gap-2 rounded-2xl bg-revision px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"><Camera className="h-4 w-4" />Prendre une photo</button><button type="button" onClick={() => fileInput.current?.click()} className="tap flex items-center justify-center gap-2 rounded-2xl border border-revision/20 bg-white px-4 py-3 text-sm font-semibold text-revision"><Upload className="h-4 w-4" />Importer un document</button></div>
       <input ref={cameraInput} type="file" accept="image/jpeg,image/png" capture="environment" className="hidden" onChange={(event) => { void prepareUpload(event.target.files?.[0]); event.currentTarget.value = ""; }} />
       <input ref={fileInput} type="file" accept="application/pdf,image/jpeg,image/png" className="hidden" onChange={(event) => { void prepareUpload(event.target.files?.[0]); event.currentTarget.value = ""; }} />
       {state === "upload" ? <div className="mt-5 rounded-2xl bg-revision/5 p-4"><p className="flex items-center gap-2 text-sm font-semibold text-revision"><Loader2 className="h-4 w-4 animate-spin" />Import du document…</p></div> : null}

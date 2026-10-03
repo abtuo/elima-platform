@@ -1,3 +1,4 @@
+import {azureFetch,azureBody,providerFailure} from './azureTransport.mjs';
 export async function azureChat(messages, options = {}, env = process.env, fetchImpl = fetch) {
   const endpoint = String(env.AZURE_OPENAI_ENDPOINT ?? "").replace(/\/+$/, "");
   const deployment = String(env.AZURE_OPENAI_DEPLOYMENT ?? "").trim();
@@ -14,7 +15,7 @@ export async function azureChat(messages, options = {}, env = process.env, fetch
     delete payload.response_format;
     result = await callAzure(url, apiKey, payload, fetchImpl);
   }
-  if (!result.ok) throw Object.assign(new Error(`Azure OpenAI (${result.status}) : ${readAzureError(result.text)}`), { statusCode: 502, code: "pedagogical_analysis_failed" });
+  if (!result.ok) throw providerFailure(Object.assign(new Error(`Azure OpenAI (${result.status}) : ${readAzureError(result.text)}`), { statusCode: 502, code: "pedagogical_analysis_failed" }),result.status);
 
   const data = JSON.parse(result.text);
   const content = data?.choices?.[0]?.message?.content;
@@ -23,8 +24,8 @@ export async function azureChat(messages, options = {}, env = process.env, fetch
 }
 
 async function callAzure(url, apiKey, payload, fetchImpl) {
-  const response = await fetchImpl(url, { method: "POST", headers: { "Content-Type": "application/json", "api-key": apiKey }, body: JSON.stringify(payload) });
-  return { ok: response.ok, status: response.status, text: await response.text() };
+  const response = await azureFetch(fetchImpl,url, { method: "POST", headers: { "Content-Type": "application/json", "api-key": apiKey }, body: JSON.stringify(payload) });
+  return { ok: response.ok, status: response.status, text: await azureBody(response) };
 }
 
 function readAzureError(raw) {

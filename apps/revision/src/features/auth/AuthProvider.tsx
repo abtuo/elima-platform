@@ -5,8 +5,7 @@ import type { MobileSpace, UserProfile } from "@/types/roles";
 import { mainDbClient } from "@/services/mainDbClient";
 import { getRevisionConfigurationError, isMainDbConfigured, isDemoModeActive, shouldShowSeedAccounts } from "@/services/env";
 import { fetchUserProfile } from "@/services/profileService";
-import { signOut as authSignOut } from "@/services/authService";
-import { clearElimaIdentitySession, refreshElimaIdentityProfile, signInWithElimaPassword } from "@/services/elimaIdentityService";
+import { clearElimaIdentitySession, restoreElimaSession, signInWithElimaPassword } from "@/services/elimaIdentityService";
 import { ROLE_HOME } from "@/types/roles";
 
 export type DemoAuthAccount = { email: string; password: string };
@@ -61,22 +60,48 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
       return;
     }
 
-    mainDbClient.auth.getSession().then(async ({ data }) => {
-      setSession(data.session);
-      if (data.session?.user) {
-        await refreshElimaIdentityProfile();
-        await loadProfile(data.session.user.id);
+    let active = true;
+    let restoring = false;
+    const restore = async () => {
+      if (restoring) return;
+      restoring = true;
+      try {
+        const restored = await restoreElimaSession();
+        if (!active) return;
+        setSession(restored);
+        if (restored?.user) await loadProfile(restored.user.id);
+      } catch {
+        // Temporary network/bridge failure: retain persisted tokens for the next retry.
+        // At cold start the UI remains unauthenticated until restoration succeeds.
+      } finally {
+        restoring = false;
+        if (active) setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+    void restore();
+    const interval = window.setInterval(() => { void restore(); }, 60_000);
+    const resume = () => { if (document.visibilityState === "visible") void restore(); };
+    document.addEventListener("visibilitychange", resume);
+    window.addEventListener("online", resume);
 
     const { data: sub } = mainDbClient.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      if (newSession?.user) refreshElimaIdentityProfile().finally(() => loadProfile(newSession.user.id));
-      else if (isDemoModeActive()) setProfile(getDemoProfile());
+      // Never call auth APIs inside Supabase's callback (auth lock/deadlock).
+      // INITIAL_SESSION alone is not proof of a valid central Identity session.
+      if (_event === "INITIAL_SESSION") return;
+      if (!newSession) setSession(null);
+      else if (!restoring) {
+        setSession(newSession);
+        window.setTimeout(() => { if (active) void loadProfile(newSession.user.id).catch(() => undefined); }, 0);
+      }
     });
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", resume);
+      window.removeEventListener("online", resume);
+      sub.subscription.unsubscribe();
+    };
   }, [loadProfile, usesLocalDemo, getDemoProfile, demoAccounts, configurationError]);
 
   const signIn = async (identifier: string, password: string) => {
@@ -99,12 +124,13 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
   };
 
   const signOut = async () => {
-    await authSignOut();
-    setSession(null);
-    browserLocalAuthStorage.removeItem("elima_demo_session");
-    setDemoAuthenticated(false);
-    setProfile(getDemoProfile());
-    clearElimaIdentitySession();
+    try { await clearElimaIdentitySession(); }
+    finally {
+      setSession(null);
+      browserLocalAuthStorage.removeItem("elima_demo_session");
+      setDemoAuthenticated(false);
+      setProfile(getDemoProfile());
+    }
   };
 
   const refreshProfile = async () => {

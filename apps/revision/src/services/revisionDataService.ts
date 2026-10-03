@@ -6,6 +6,7 @@ import { demoRevisionProgress, demoQuizzes, demoCourseSheets, demoQuizAttempts, 
 import { seededShuffle } from "../lib/seededShuffle";
 import { subjectIdFromLabel } from "../lib/revisionSubjects";
 import { browserSessionAuthStorage } from "@elima/auth";
+import { subscriptionRequest } from "./subscriptionService";
 import {
   applyQuizScore,
   cleanAnswerText,
@@ -366,20 +367,14 @@ function readLocalHintUsage(userId?: string): HintUsage {
 
 export async function getDailyHintUsage(userId?: string): Promise<HintUsage> {
   if (!revisionDbClient || !userId || isDemoModeActive()) return readLocalHintUsage(userId);
-  const today = new Date().toISOString().slice(0, 10);
-  const { data, error } = await revisionDbClient.from("user_daily_hints").select("hints_used").eq("user_id", userId).eq("usage_date", today).maybeSingle();
-  if (error) return readLocalHintUsage(userId);
-  const used = Math.min(MAX_DAILY_HINTS, Number(data?.hints_used ?? 0));
-  return { used, limit: MAX_DAILY_HINTS, remaining: Math.max(0, MAX_DAILY_HINTS - used) };
+  const usage = (await subscriptionRequest()).usage.ai_hint;
+  return { used: usage.used, limit: usage.limit ?? Infinity, remaining: usage.unlimited ? Infinity : usage.remaining };
 }
 
 export async function consumeDailyHint(userId?: string): Promise<HintUsage & { ok: boolean }> {
   if (revisionDbClient && userId && !isDemoModeActive()) {
-    const { data, error } = await revisionDbClient.rpc("consume_daily_hint", { p_max_per_day: MAX_DAILY_HINTS });
-    if (!error && data) {
-      const used = Number(data.used ?? 0);
-      return { ok: Boolean(data.ok), used, limit: MAX_DAILY_HINTS, remaining: Number(data.remaining ?? Math.max(0, MAX_DAILY_HINTS - used)) };
-    }
+    const usage = (await subscriptionRequest({ action: "hint" })).usage.ai_hint;
+    return { ok: true, used: usage.used, limit: usage.limit ?? Infinity, remaining: usage.unlimited ? Infinity : usage.remaining };
   }
   const current = readLocalHintUsage(userId);
   if (current.remaining <= 0) return { ...current, ok: false };

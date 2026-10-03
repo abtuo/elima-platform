@@ -15,6 +15,11 @@ type ElimaViteConfigOptions = {
 };
 
 const SERVER_ENV_KEYS = [
+  "GOOGLE_PLAY_PACKAGE_NAME",
+  "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON",
+  "GOOGLE_PLAY_ACCOUNT_HASH_SECRET",
+  "GOOGLE_PLAY_RTDN_AUDIENCE",
+  "GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL",
   "REVISION_ALLOWED_ORIGINS",
   "VITE_SUPABASE_URL",
   "VITE_SUPABASE_PUBLISHABLE_KEY",
@@ -48,7 +53,7 @@ const SERVER_ENV_KEYS = [
 ] as const;
 
 const LOCAL_API_HANDLERS = ["identity-bridge", "elima-profile", "activate-school", "elima-password-login", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "registration-request", "learning"] as const;
-const REVISION_API_HANDLERS = ["account-delete", "identity-bridge", "elima-profile", "elima-password-login", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "learning", "revision-document-analyze", "revision-document-delete"] as const;
+const REVISION_API_HANDLERS = ["revision-subscription", "account-delete", "identity-bridge", "elima-profile", "elima-password-login", "elima-session", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "learning", "revision-document-analyze", "revision-document-delete"] as const;
 
 function localServerlessApis(enabled: boolean, endpoints: readonly string[]): Plugin {
   return {
@@ -123,8 +128,18 @@ export function createElimaViteConfig(options: ElimaViteConfigOptions = {}) {
   const revision = options.product === "revision";
   return defineConfig(({ mode, command }) => {
   const env = { ...loadEnv(mode, repositoryRoot, ""), ...loadEnv(mode, configDirectory, "") };
+  const nativeBuild = revision && mode === "native";
   const azureEndpoint = env.AZURE_OPENAI_ENDPOINT?.replace(/\/+$/, "");
   const azureKey = env.AZURE_OPENAI_API_KEY;
+  if (nativeBuild) {
+    let apiUrl: URL;
+    try { apiUrl = new URL(env.VITE_REVISION_API_BASE_URL); }
+    catch { throw new Error("Le build natif exige VITE_REVISION_API_BASE_URL avec une origine HTTPS distante."); }
+    if (apiUrl.protocol !== "https:" || ["localhost", "127.0.0.1", "[::1]"].includes(apiUrl.hostname)
+      || apiUrl.username || apiUrl.password || apiUrl.search || apiUrl.hash || !/^\/*$/.test(apiUrl.pathname)) {
+      throw new Error("Le build natif exige VITE_REVISION_API_BASE_URL avec une origine HTTPS distante.");
+    }
+  }
   for (const key of SERVER_ENV_KEYS) {
     if (env[key] && !process.env[key]) process.env[key] = env[key];
   }
@@ -132,12 +147,12 @@ export function createElimaViteConfig(options: ElimaViteConfigOptions = {}) {
   return {
     envDir: configDirectory,
     // Root platform env stays available locally; app values override it. Only VITE_* is public.
-    define: Object.fromEntries(Object.entries(env).filter(([key]) => key.startsWith("VITE_")).map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)])),
+    define: Object.fromEntries(Object.entries({ ...env, VITE_NATIVE_BUILD: String(nativeBuild), VITE_CAPACITOR_ORIGIN: nativeBuild ? "https://localhost" : env.VITE_CAPACITOR_ORIGIN }).filter(([key]) => key.startsWith("VITE_")).map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)])),
     plugins: [
       localRevisionApi(command === "serve" && Boolean(azureEndpoint && azureKey)),
       localServerlessApis(command === "serve", revision ? REVISION_API_HANDLERS : LOCAL_API_HANDLERS),
       react(),
-      VitePWA({
+      ...(!nativeBuild ? [VitePWA({
         registerType: "autoUpdate",
         includeAssets: ["icons/pwa-192.png", "icons/pwa-512.png", "icons/pwa-maskable-192.png", "icons/pwa-maskable-512.png", "brand/elima-logo.png"],
         manifest: {
@@ -163,7 +178,7 @@ export function createElimaViteConfig(options: ElimaViteConfigOptions = {}) {
           navigateFallback: "/index.html",
           cleanupOutdatedCaches: true,
         },
-      }),
+      })] : []),
       ...(options.boundaryPlugin ? [options.boundaryPlugin] : []),
     ],
     ...(options.root ? { root: options.root, publicDir: path.resolve(configDirectory, "public") } : {}),

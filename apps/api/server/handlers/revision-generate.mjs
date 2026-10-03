@@ -1,6 +1,7 @@
 import { handleRevisionCors } from "../revisionCors.mjs";
 import { azureChat } from "../azureOpenAi.mjs";
 import { authorizeRevisionRequest, consumeRevisionAiQuota } from "../revisionAiQuota.mjs";
+import { reserveRevisionQuota, refundFailedRevisionQuota } from "../revisionEntitlement.mjs";
 
 const DEFAULT_HINT = "Repère l’idée clé du cours et élimine les propositions incompatibles avant de calculer.";
 const DEFAULT_EXPLANATION = "Reprends l’énoncé étape par étape et applique la règle du chapitre.";
@@ -12,8 +13,9 @@ export default async function handler(request, response) {
     return response.status(405).json({ error: "Méthode non autorisée." });
   }
 
+  let authorized, reservation;
   try {
-    const authorized = await authorizeRevisionRequest(request);
+    authorized = await authorizeRevisionRequest(request);
     const body = typeof request.body === "string" ? JSON.parse(request.body) : request.body ?? {};
     const kind = body.kind === "sheet" ? "sheet" : "quiz";
     const subject = cleanInput(body.subject, 100);
@@ -26,9 +28,10 @@ export default async function handler(request, response) {
     await consumeRevisionAiQuota(authorized.admin, authorized.user.id, {
       action: "revision_generate",
       windowSeconds: 15 * 60,
-      windowLimit: 12,
-      dailyLimit: 60,
+      windowLimit: 100,
+      dailyLimit: 700,
     });
+    reservation = await reserveRevisionQuota(authorized.admin, authorized.user.id, kind === "sheet" ? "ai_flashcard" : "ai_quiz");
 
     if (kind === "sheet") {
       const content = await generateSheet({ subject, topic, level });
@@ -38,10 +41,11 @@ export default async function handler(request, response) {
     const questions = await generateQuiz({ subject, topic, level, source, sourceContext });
     return response.status(200).json({ kind, subject, topic, level, source, questions });
   } catch (error) {
+    try { await refundFailedRevisionQuota(authorized?.admin,reservation,error); } catch (refundError) { error=refundError; }
     const status = error?.statusCode ?? 500;
     const message = error?.statusCode && error instanceof Error ? error.message : "La génération est momentanément indisponible.";
     if (error?.retryAfter) response.setHeader("Retry-After", String(error.retryAfter));
-    return response.status(status).json({ code: error?.code ?? "revision_generation_error", error: message, message });
+    return response.status(status).json({ code: error?.code ?? "revision_generation_error", error: message, message, ...(error?.code === "quota_exceeded" ? {feature: error.feature,plan: error.plan,resetAt: error.resetAt} : {}) });
   }
 }
 

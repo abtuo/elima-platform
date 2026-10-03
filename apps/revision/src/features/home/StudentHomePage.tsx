@@ -139,7 +139,7 @@ export function StudentHomePage() {
   const discoveryQuiz = quizzes.find(quiz => preferred(quiz.subject));
 
   return (
-    <PageContainer className="max-w-6xl">
+    <PageContainer className="student-home max-w-6xl">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div><p className="text-sm font-semibold text-primary">Ton espace Révision</p><h1 className="mt-1 font-title text-2xl font-bold text-accent sm:text-3xl">Bonjour {firstName(profile.fullName)} 👋</h1><p className="mt-1 text-sm text-gray-500">Continue ta progression.</p></div>
         <button type="button" onClick={() => navigate("/student/reviser")} className="tap hidden items-center gap-2 rounded-2xl bg-revision px-4 py-2.5 text-sm font-semibold text-white sm:flex">Réviser <ArrowRight className="h-4 w-4" /></button>
@@ -152,8 +152,8 @@ export function StudentHomePage() {
         <MetricCard icon={CheckCircle2} label="Quiz terminés" value={progress.completedQuizCount} />
       </section>
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
-        <div className="space-y-5">
+      <div className="mt-5 grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,.8fr)]">
+        <div className="min-w-0 space-y-5">
           <section className="card border border-revision/10 p-5 sm:p-6">
             <div className="flex items-center gap-2 text-revision"><Target className="h-5 w-5" /><p className="text-xs font-bold uppercase tracking-[.12em]">Continuer ma révision</p></div>
             {continueActivity ? <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center"><SubjectIcon subject={continueActivity.subject} className="h-12 w-12 shrink-0" /><div className="min-w-0 flex-1"><p className="text-xs font-semibold text-gray-500">{continueActivity.subject}</p><h2 className="mt-1 truncate font-title text-xl font-semibold text-accent">{continueActivity.title}</h2><p className="mt-1 text-sm text-gray-500">{continueActivity.detail}</p></div><button type="button" onClick={() => navigate(continueActivity.href)} className="tap flex items-center justify-center gap-2 rounded-2xl bg-revision px-5 py-3 text-sm font-semibold text-white">Continuer <ArrowRight className="h-4 w-4" /></button></div>
@@ -172,7 +172,7 @@ export function StudentHomePage() {
           </section> : null}
         </div>
 
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           {subjectSummaries.length ? <section className="card p-5"><h2 className="font-title text-lg font-semibold text-accent">Mes matières</h2><div className="mt-4 space-y-4">{subjectSummaries.map((summary) => <div key={summary.subject} className="flex items-center gap-3"><SubjectIcon subject={summary.subject} className="h-10 w-10 shrink-0" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-accent">{summary.subject}</p><p className="text-xs text-gray-500">{summary.activities} activité{summary.activities > 1 ? "s" : ""}</p></div>{summary.averageScore !== undefined ? <p className={`text-sm font-bold ${summary.averageScore >= 70 ? "text-primary" : "text-amber-600"}`}>{summary.averageScore}%</p> : null}</div>)}</div></section> : null}
 
           <section className="card p-5">

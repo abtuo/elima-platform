@@ -2,6 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RevisionApp } from "./RevisionApp";
 import "@/index.css";
+import { initializeCameraRecovery } from "./services/nativeCamera";
+
+initializeCameraRecovery();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

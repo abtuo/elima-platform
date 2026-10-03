@@ -1,5 +1,6 @@
 import type { Session } from "@supabase/supabase-js";
-import { mainDbClient } from "./mainDbClient";
+import { mainDbClient, revisionSessionStorageKey } from "./mainDbClient";
+import { sensitiveAuthStorage } from "./authStorage";
 
 export async function getCurrentSession(): Promise<Session | null> {
   if (!mainDbClient) return null;
@@ -8,8 +9,12 @@ export async function getCurrentSession(): Promise<Session | null> {
 }
 
 export async function signOut() {
-  if (!mainDbClient) return;
-  await mainDbClient.auth.signOut();
+  try {
+    await mainDbClient?.auth.signOut({ scope: "local" });
+  } finally {
+    await Promise.all([revisionSessionStorageKey, `${revisionSessionStorageKey}-user`, `${revisionSessionStorageKey}-code-verifier`]
+      .map((key) => sensitiveAuthStorage.removeItem(key)));
+  }
 }
 
 export async function getBearerToken() {

@@ -14,9 +14,11 @@
     "lint": "eslint api server --config eslint.config.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.110.5"
+    "@supabase/supabase-js": "^2.110.5",
+    "google-auth-library": "^11.1.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@eslint/js": "^10.0.1",
     "eslint": "^10.7.0",
     "globals": "^17.7.0"

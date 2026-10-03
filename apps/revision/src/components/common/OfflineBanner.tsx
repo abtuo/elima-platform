@@ -10,9 +10,9 @@ export function OfflineBanner() {
   if (online) return null;
 
   return (
-    <div className="flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-sm font-medium text-white">
+    <div role="status" className="offline-banner flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-sm font-medium text-white">
       <WifiOff className="h-4 w-4" />
-      <span>Connexion limitée — certaines actions seront synchronisées plus tard</span>
+      <span>Tu es hors connexion. Les actions en ligne seront disponibles au retour du réseau.</span>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { revisionSubjectsForLevel } from "@/lib/revisionSubjects";
 import { completeElimaIdentitySession, signInWithElimaPassword } from "@/services/elimaIdentityService";
 import { checkVerificationCode, confirmPasswordReset, exchangePhoneControlForReset, registerElimaAccount, requestRegistrationCode } from "@/services/registrationService";
 import { saveSubjectPreferences } from "@/services/subjectPreferencesService";
+import { useAndroidBack, useRevealAuthError } from "@/hooks/useAndroidBack";
 
 type Phase = "identity" | "otp" | "account" | "existing" | "reset" | "reset-complete";
 
@@ -17,12 +18,27 @@ export function RevisionRegistrationPage() {
   const [form, setForm] = useState({ firstName: "", lastName: "", phone: "", password: "", confirmPassword: "", schoolLevel: "", declaredSchoolName: "", declaredSchoolCity: "" });
   const [requestToken, setRequestToken] = useState("");
   const [authorization, setAuthorization] = useState("");
+  const [resetReady, setResetReady] = useState(false);
   const [code, setCode] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [subjectIds, setSubjectIds] = useState<string[]>([]);
   const [cooldown, setCooldown] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  useRevealAuthError(error);
+  useAndroidBack(() => {
+    if (loading) return true;
+    if (phase === "identity") return false;
+    if (phase === "reset-complete") { navigate("/auth/login", { replace: true }); return true; }
+    setError(""); setCode("");
+    setForm(current => ({ ...current, password: "", confirmPassword: "" }));
+    // Consumed OTP proofs cannot be replayed: returning to verification requires a new code.
+    if (phase === "reset") { setPhase("existing"); return true; }
+    setPhase(phase === "otp" ? "identity" : "otp");
+    setAuthorization(""); setRequestToken(""); setResetReady(false);
+    if (phase !== "otp") { setCooldown(0); setError("Demande un nouveau code pour vérifier à nouveau ton numéro."); }
+    return true;
+  });
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -52,6 +68,7 @@ export function RevisionRegistrationPage() {
 
   async function verifyCode(event: React.FormEvent) {
     event.preventDefault();
+    if (!requestToken) return setError("Demande un nouveau code pour vérifier ton numéro.");
     await run(async () => {
       const result = await checkVerificationCode({ phone: form.phone, code, requestToken });
       setAuthorization(result.authorization);
@@ -76,7 +93,10 @@ export function RevisionRegistrationPage() {
 
   async function startReset() {
     await run(async () => {
-      setAuthorization(await exchangePhoneControlForReset({ phone: form.phone, authorization }));
+      if (!resetReady) {
+        setAuthorization(await exchangePhoneControlForReset({ phone: form.phone, authorization }));
+        setResetReady(true);
+      }
       setForm((current) => ({ ...current, password: "", confirmPassword: "" }));
       setPhase("reset");
     });

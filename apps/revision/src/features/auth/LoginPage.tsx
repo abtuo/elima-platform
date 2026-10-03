@@ -5,6 +5,7 @@ import { ElimaLogo } from "@/components/common/ElimaLogo";
 import { LegalLinks } from "@/components/common/LegalLinks";
 import { useAuth, type DemoAuthAccount } from "@/features/auth/AuthProvider";
 import { getProfileHomePath } from "@/types/roles";
+import { useRevealAuthError } from "@/hooks/useAndroidBack";
 
 type LoginDemoAccount = DemoAuthAccount & { label: string; role: string };
 
@@ -16,6 +17,7 @@ export function LoginPage({ mode = "full", demoAccounts }: { mode?: "full" | "re
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  useRevealAuthError(error);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -36,7 +38,7 @@ export function LoginPage({ mode = "full", demoAccounts }: { mode?: "full" | "re
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#f3f7f4] px-4 py-8 sm:px-6 lg:grid lg:grid-cols-[1.05fr_.95fr] lg:p-0">
+    <main className="relative min-h-[100dvh] bg-[#f3f7f4] px-4 py-8 sm:px-6 lg:grid lg:grid-cols-[1.05fr_.95fr] lg:p-0">
       <section className="relative hidden overflow-hidden bg-[#123c2d] p-14 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-primary/30 blur-3xl" />
         <div className="absolute -bottom-24 left-16 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" />
@@ -49,7 +51,7 @@ export function LoginPage({ mode = "full", demoAccounts }: { mode?: "full" | "re
         <p className="relative z-10 text-sm text-white/45">Elima · L’éducation connectée avec confiance</p>
       </section>
 
-      <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-lg items-center lg:min-h-screen lg:px-10">
+      <section className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-lg items-center lg:px-10">
         <div className="w-full rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-[0_24px_80px_rgba(21,55,42,.12)] backdrop-blur sm:p-9">
           <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500"><ArrowLeft className="h-4 w-4" /> Accueil</Link>
           <div className="mb-8 mt-4">

@@ -8,5 +8,5 @@
     "strict": true,
     "noEmit": true
   },
-  "include": ["vite.config.ts", "vite.base.ts"]
+  "include": ["vite.config.ts", "vite.base.ts", "capacitor.config.ts"]
 }

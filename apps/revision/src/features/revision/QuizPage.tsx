@@ -19,6 +19,7 @@ import {
 } from "@/services/revisionDataService";
 import { useAuth } from "@/features/auth/AuthProvider";
 import type { QuizQuestion } from "@/types/revision";
+import { useAndroidBack } from "@/hooks/useAndroidBack";
 
 export function QuizPage() {
   const { profile } = useAuth();
@@ -35,6 +36,7 @@ export function QuizPage() {
   const [hintOpen, setHintOpen] = useState(false);
   const [hintRemaining, setHintRemaining] = useState<number | null>(null);
   const [hintBusy, setHintBusy] = useState(false);
+  const [hintError, setHintError] = useState("");
   const [rating, setRating] = useState(0);
   const [difficultyFeedback, setDifficultyFeedback] = useState<"too_easy" | "balanced" | "too_hard" | "">("");
   const [feedbackBusy, setFeedbackBusy] = useState(false);
@@ -43,12 +45,15 @@ export function QuizPage() {
   const topic = params.get("topic");
   const source = params.get("source") === "document" ? "document" : undefined;
   const sourceDocumentId = params.get("documentId") ?? undefined;
+  useAndroidBack(() => { if (!hintOpen) return false; setHintOpen(false); return true; }, 100);
+  useAndroidBack(() => !loading && !done && questions.length > 0 && !window.confirm("Quitter ce quiz en cours ? Les réponses non terminées seront perdues."), 10);
 
   useEffect(() => {
     const quizId = params.get("id") ?? undefined;
     Promise.all([
       getQuizQuestions(quizId, `${profile.id}|${sessionAttemptId}`),
-      getDailyHintUsage(profile.id),
+      // Billing availability never blocks a catalog/random quiz.
+      getDailyHintUsage(profile.id).catch(() => ({ used: 0, limit: 0, remaining: 0 })),
     ]).then(([nextQuestions, usage]) => {
       setQuestions(nextQuestions);
       setHintRemaining(usage.remaining);
@@ -70,10 +75,14 @@ export function QuizPage() {
   async function revealHint() {
     if (hintOpen || hintBusy || showResult || !question.hint || hintRemaining === 0) return;
     setHintBusy(true);
-    const usage = await consumeDailyHint(profile.id);
-    setHintRemaining(usage.remaining);
-    if (usage.ok) setHintOpen(true);
-    setHintBusy(false);
+    setHintError("");
+    try {
+      const usage = await consumeDailyHint(profile.id);
+      setHintRemaining(usage.remaining);
+      if (usage.ok) setHintOpen(true);
+    } catch (error) {
+      setHintError(error instanceof Error ? error.message : "Indice momentanément indisponible.");
+    } finally { setHintBusy(false); }
   }
 
   async function next() {
@@ -176,12 +185,13 @@ export function QuizPage() {
             className="relative flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 py-2 pl-3 pr-10 text-xs font-semibold text-amber-900 disabled:cursor-not-allowed disabled:opacity-45"
           >
             <GeneratedActionIcon name="hint" className="h-7 w-7" />{hintBusy ? "Ouverture…" : "Indice"}
-            <span className="absolute right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-700 px-1 text-[10px] font-bold text-white">{hintRemaining ?? "…"}</span>
+            <span className="absolute right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-700 px-1 text-[10px] font-bold text-white">{hintRemaining === Infinity ? "∞" : hintRemaining ?? "…"}</span>
           </button>
         </div>
 
         {hintOpen && question.hint ? <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><p className="mb-1 text-xs font-bold uppercase tracking-wide text-amber-800">Indice</p><MarkdownMathText content={question.hint} /></div> : null}
-        {!hintOpen && hintRemaining === 0 ? <p className="mt-2 text-right text-xs text-gray-400">Limite quotidienne d’indices atteinte.</p> : null}
+        {hintError ? <p role="alert" className="mt-2 text-xs text-red-600">{hintError}</p> : null}
+        {!hintOpen && hintRemaining === 0 ? <button type="button" onClick={() => navigate("/student/abonnement")} className="mt-2 text-right text-xs text-revision">Indices indisponibles · Voir Standard et Premium</button> : null}
 
         <div className="mt-5 space-y-3">
           {question.options.map((option, optionIndex) => {

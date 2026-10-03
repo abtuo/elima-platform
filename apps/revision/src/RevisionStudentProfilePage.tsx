@@ -16,6 +16,8 @@ import { getQuizAttempts, getRevisionProgress } from "@/services/revisionDataSer
 import { getSubjectPreferences, saveSubjectPreferences } from "@/services/subjectPreferencesService";
 import { deleteCurrentAccount } from "@/services/accountDeletionService";
 import type { QuizAttemptSummary, RevisionProgress } from "@/types/revision";
+import { useAndroidBack } from "@/hooks/useAndroidBack";
+import { SubscriptionSummary } from "@/features/subscription/SubscriptionPage";
 
 export function RevisionStudentProfilePage() {
   const { profile, refreshProfile, signOut } = useAuth();
@@ -36,6 +38,11 @@ export function RevisionStudentProfilePage() {
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [deleting, setDeleting] = useState(false);
+  useAndroidBack(() => {
+    if (!deleteOpen) return false;
+    if (!deleting) { setDeleteOpen(false); setDeletePassword(""); setDeleteConfirmation(""); setDeleteError(""); }
+    return true;
+  }, 100);
 
   useEffect(() => {
     Promise.all([getQuizAttempts(profile.id), getRevisionProgress(profile.id), getSubjectPreferences(profile.id)]).then(([nextAttempts, nextProgress, nextSubjectIds]) => {
@@ -95,6 +102,7 @@ export function RevisionStudentProfilePage() {
         <div className="mt-4 grid grid-cols-3 gap-2"><Metric value={progress?.completedQuizCount ?? 0} label="Quiz" /><Metric value={`${progress?.averageScore ?? 0}%`} label="Score" /><Metric value={progress?.xp ?? 0} label="XP" /></div>
       </ElimaCard>
 
+      <SubscriptionSummary />
       {!profile.schoolId ? <ElimaCard className="mt-5">
         <div className="flex items-start gap-3"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-revision/10 text-revision"><Building2 className="h-5 w-5" /></span><div><h2 className="font-title text-lg font-semibold text-accent">Compte Révision</h2><p className="mt-1 text-xs leading-5 text-gray-500">Ces informations permettent d’adapter les contenus, même sans établissement Elima.</p></div></div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2"><Field label="École (facultatif)" value={schoolName} onChange={setSchoolName} /><Field label="Ville (facultatif)" value={schoolCity} onChange={setSchoolCity} /><label className="block sm:col-span-2"><span className="mb-2 block text-sm font-semibold text-gray-700">Classe / niveau</span><select value={level} onChange={(event) => setLevel(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-revision"><option value="">Choisir</option>{STUDENT_CLASS_OPTIONS.map((item) => <option key={item} value={item}>{item}</option>)}</select></label></div>

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, CheckCircle2, KeyRound, Send } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAndroidBack, useRevealAuthError } from "@/hooks/useAndroidBack";
 import { ElimaLogo } from "@/components/common/ElimaLogo";
 import { checkVerificationCode, confirmPasswordReset, requestPasswordResetCode } from "@/services/registrationService";
 
 type Phase = "phone" | "otp" | "password" | "complete";
 
 export function ForgotPasswordPage() {
+  const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>("phone");
   const [phone, setPhone] = useState("");
   const [requestToken, setRequestToken] = useState("");
@@ -17,6 +19,16 @@ export function ForgotPasswordPage() {
   const [cooldown, setCooldown] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  useRevealAuthError(error);
+  useAndroidBack(() => {
+    if (loading) return true;
+    if (phase === "phone") return false;
+    if (phase === "complete") { navigate("/auth/login", { replace: true }); return true; }
+    setPhase(phase === "password" ? "otp" : "phone");
+    setAuthorization(""); setRequestToken(""); setCode(""); setPassword(""); setConfirmPassword(""); setError("");
+    if (phase === "password") { setCooldown(0); setError("Demande un nouveau code pour vérifier à nouveau ton numéro."); }
+    return true;
+  });
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -44,6 +56,7 @@ export function ForgotPasswordPage() {
 
   async function verifyCode(event: React.FormEvent) {
     event.preventDefault();
+    if (!requestToken) return setError("Demande un nouveau code pour vérifier ton numéro.");
     await run(async () => {
       const result = await checkVerificationCode({ phone, code, requestToken });
       if (!result.accountExists || result.purpose !== "password_reset") throw new Error("Aucun compte Elima ne correspond à ce numéro.");

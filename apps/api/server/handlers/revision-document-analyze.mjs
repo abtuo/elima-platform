@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { handleRevisionCors } from "../revisionCors.mjs";
 import { createPedagogicalAnalysis, documentError, extractDocument } from "../revisionDocumentService.mjs";
 import { applyRevisionApiError, authorizeRevisionRequest, consumeRevisionAiQuota } from "../revisionAiQuota.mjs";
+import { reserveRevisionQuota, refundFailedRevisionQuota } from "../revisionEntitlement.mjs";
 
 const ALLOWED_TYPES = new Set(["application/pdf", "image/jpeg", "image/png"]);
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -13,6 +14,7 @@ export function createHandler(dependencies = {}) {
   const createSupabaseClient = dependencies.createClient ?? createClient;
   const authorize = dependencies.authorize ?? ((request) => authorizeRevisionRequest(request, { env, createSupabaseClient }));
   const consumeQuota = dependencies.consumeQuota ?? consumeRevisionAiQuota;
+  const consumeEntitlement = dependencies.consumeEntitlement ?? reserveRevisionQuota;
   const extract = dependencies.extractDocument ?? ((bytes, mimeType) => extractDocument(bytes, mimeType, { env }));
   const structure = dependencies.createPedagogicalAnalysis ?? ((extraction, input) => createPedagogicalAnalysis(extraction, input, { env }));
 
@@ -21,6 +23,7 @@ export function createHandler(dependencies = {}) {
     if (request.method !== "POST") return response.status(405).json({ code: "method_not_allowed", message: "Méthode non autorisée." });
     let uploadedPath = "";
     let admin = null;
+    let reservation;
     try {
       const authorized = await authorize(request);
       admin = authorized.admin;
@@ -39,12 +42,14 @@ export function createHandler(dependencies = {}) {
       await consumeQuota(admin, authorized.user.id, {
         action: "revision_document_analyze",
         windowSeconds: 60 * 60,
-        windowLimit: 5,
-        dailyLimit: 15,
+        windowLimit: 30,
+        dailyLimit: 100,
       });
+      reservation = await consumeEntitlement(admin, authorized.user.id, "document_scan");
 
       const extraction = await extract(bytes, mimeType);
       const analysis = await structure(extraction, { fileName, level, selectedSubjects });
+      reservation = null; // A produced analysis remains consumed, even if persistence fails.
       const inserted = await admin.from("revision_documents").insert({
         user_id: authorized.user.id,
         file_name: fileName,
@@ -60,6 +65,7 @@ export function createHandler(dependencies = {}) {
       if (inserted.error || !inserted.data) throw documentError(503, "document_storage_unavailable", "Impossible d’enregistrer l’analyse pour le moment.");
       return response.status(201).json({ id: inserted.data.id, createdAt: inserted.data.created_at, status: "ready", analysis });
     } catch (error) {
+      try { await refundFailedRevisionQuota(admin,reservation,error); } catch (refundError) { error=refundError; }
       return applyRevisionApiError(response, error, "L’analyse du document est momentanément indisponible.");
     } finally {
       if (admin && uploadedPath) {

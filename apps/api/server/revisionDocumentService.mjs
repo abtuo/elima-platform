@@ -1,4 +1,5 @@
 import { azureChat } from "./azureOpenAi.mjs";
+import {azureFetch,azureBody,providerFailure} from './azureTransport.mjs';
 
 const API_VERSION = "2024-11-30";
 
@@ -7,20 +8,20 @@ export async function extractDocument(bytes, mimeType, { env = process.env, fetc
   const key = String(env.AZURE_DOCUMENT_INTELLIGENCE_KEY ?? "").trim();
   if (!endpoint || !key) throw documentError(503, "azure_document_configuration_missing", "Configuration Azure Document Intelligence incomplète.");
 
-  const started = await fetchImpl(`${endpoint}/documentintelligence/documentModels/prebuilt-layout:analyze?_overload=analyzeDocument&api-version=${API_VERSION}`, {
+  const started = await azureFetch(fetchImpl,`${endpoint}/documentintelligence/documentModels/prebuilt-layout:analyze?_overload=analyzeDocument&api-version=${API_VERSION}`, {
     method: "POST",
     headers: { "Content-Type": mimeType, "Ocp-Apim-Subscription-Key": key },
     body: bytes,
   });
-  if (!started.ok) throw documentError(502, "document_analysis_failed", "Azure n’a pas pu analyser ce document.");
+  if (!started.ok) throw providerFailure(documentError(502, "document_analysis_failed", "Azure n’a pas pu analyser ce document."),started.status);
   const operation = started.headers.get("operation-location");
   if (!operation) throw documentError(502, "document_analysis_failed", "Réponse Azure incomplète.");
 
   for (let attempt = 0; attempt < 20; attempt += 1) {
     if (attempt) await wait(750);
-    const polled = await fetchImpl(operation, { headers: { "Ocp-Apim-Subscription-Key": key } });
-    if (!polled.ok) throw documentError(502, "document_analysis_failed", "Le suivi de l’analyse Azure a échoué.");
-    const payload = await polled.json();
+    const polled = await azureFetch(fetchImpl,operation, { headers: { "Ocp-Apim-Subscription-Key": key } });
+    if (!polled.ok) throw providerFailure(documentError(502, "document_analysis_failed", "Le suivi de l’analyse Azure a échoué."),polled.status);
+    const payload = await azureBody(polled,'json');
     if (payload.status === "failed") throw documentError(422, "document_unreadable", "Le document est illisible ou ne contient pas assez de texte.");
     if (payload.status === "succeeded") {
       const result = payload.analyzeResult ?? {};
@@ -34,7 +35,7 @@ export async function extractDocument(bytes, mimeType, { env = process.env, fetc
       };
     }
   }
-  throw documentError(504, "document_analysis_timeout", "L’analyse du document prend trop de temps. Réessaie.");
+  throw providerFailure(documentError(504, "document_analysis_timeout", "L’analyse du document prend trop de temps. Réessaie."));
 }
 
 export async function createPedagogicalAnalysis(extraction, input, dependencies = {}) {

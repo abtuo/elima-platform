@@ -9,6 +9,57 @@
   color-scheme: light;
 }
 
+/* Auth/welcome screens remain scrollable as the visual viewport shrinks. */
+#root > main { min-height: 100dvh; }
+input, textarea, select, [role="alert"] { scroll-margin-block: 6rem; }
+.native-app #root > main {
+  padding-top: calc(2rem + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+}
+.native-app #root {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+.native-app nav[aria-label="Navigation Révision"] {
+  padding-left: max(.5rem, env(safe-area-inset-left, 0px));
+  padding-right: max(.5rem, env(safe-area-inset-right, 0px));
+}
+.native-keyboard-open nav.fixed[aria-label="Navigation Révision"] { display: none; }
+.native-keyboard-open #root > div { padding-bottom: 1rem; }
+.native-app .fixed.inset-0 {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.native-app .offline-banner { padding-top: max(.5rem, env(safe-area-inset-top, 0px)); }
+
+/* One mobile viewport/scroll owner for Accueil, Réviser and Profil.
+   The shell's bottom padding reserves the fixed nav, including its safe area. */
+@media (max-width: 1023px) {
+  .revision-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .revision-shell-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+  }
+  .revision-shell .revision-page-container { padding-bottom: 1.25rem; }
+  .student-home { overflow-wrap: anywhere; }
+  .student-home :is(section, article, button) {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .student-home :is(section, article) { width: 100%; }
+}
+
 * {
   box-sizing: border-box;
 }

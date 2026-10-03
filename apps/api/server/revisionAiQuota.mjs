@@ -48,7 +48,7 @@ export async function consumeRevisionAiQuota(admin, userId, policy) {
   }
   if (data.allowed !== true) {
     const retryAfter = Math.max(1, Number(data.retry_after ?? policy.windowSeconds));
-    throw new RevisionApiError("Limite temporaire atteinte. Réessaie un peu plus tard.", 429, "quota_exceeded", retryAfter);
+    throw new RevisionApiError("Limite temporaire atteinte. Réessaie un peu plus tard.", 429, "rate_limited", retryAfter);
   }
   return data;
 }
@@ -58,5 +58,5 @@ export function applyRevisionApiError(response, error, fallbackMessage) {
   const code = String(error?.code || "revision_service_error");
   if (error?.retryAfter) response.setHeader("Retry-After", String(error.retryAfter));
   const message = status < 500 && error instanceof Error ? error.message : error instanceof RevisionApiError ? error.message : fallbackMessage;
-  return response.status(status).json({ code, message });
+  return response.status(status).json({ code, message, ...(code === "quota_exceeded" ? { feature: error.feature, plan: error.plan, resetAt: error.resetAt } : {}) });
 }

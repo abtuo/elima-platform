@@ -1,6 +1,9 @@
 import { handleRevisionCors } from "../revisionCors.mjs";
 import { readFile } from "node:fs/promises";
 import { createClient } from "@supabase/supabase-js";
+import { consumeRevisionQuota, reserveRevisionQuota, refundFailedRevisionQuota } from "../revisionEntitlement.mjs";
+import {azureFetch,azureBody,providerFailure} from '../azureTransport.mjs';
+import { applyRevisionApiError } from "../revisionAiQuota.mjs";
 
 const FILES = [
   "elima_bac_francais_2026_jour1_correction_interactive.json",
@@ -251,16 +254,16 @@ Réponds uniquement en JSON avec : status (correct|partially_correct|incorrect|n
   };
   const url = `${endpoint}/openai/deployments/${encodeURIComponent(deployment)}/chat/completions?api-version=${encodeURIComponent(apiVersion)}`;
   const payload = { messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify(userPayload) }], max_completion_tokens: 1800, response_format: { type: "json_object" } };
-  let response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "api-key": apiKey }, body: JSON.stringify(payload) });
+  let response = await azureFetch(fetch,url, { method: "POST", headers: { "Content-Type": "application/json", "api-key": apiKey }, body: JSON.stringify(payload) });
   if (!response.ok) {
-    const firstError = await response.text();
+    const firstError = await azureBody(response);
     if (/response_format|json_object/i.test(firstError)) {
       delete payload.response_format;
-      response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "api-key": apiKey }, body: JSON.stringify(payload) });
+      response = await azureFetch(fetch,url, { method: "POST", headers: { "Content-Type": "application/json", "api-key": apiKey }, body: JSON.stringify(payload) });
     }
   }
-  if (!response.ok) throw new Error(`Évaluation GPT indisponible (${response.status}).`);
-  const data = await response.json();
+  if (!response.ok) throw providerFailure(new Error(`Évaluation GPT indisponible (${response.status}).`),response.status);
+  const data = await azureBody(response,'json');
   const raw = String(data?.choices?.[0]?.message?.content || "").replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
   const parsed = JSON.parse(raw);
   const statuses = new Set(["correct", "partially_correct", "incorrect", "needs_justification", "invalid_format"]);
@@ -430,8 +433,8 @@ export default async function handler(request, response) {
         if (!found) return response.status(404).json({ message: "Question introuvable." });
         const secret = { expected_answer: found.question.expected_answer, validation_config: found.question.validation };
         const deterministic = validateAnswer(body.answer, secret, found.question.points);
-        const ai = shouldUseGpt(secret.validation_config, deterministic) ? await assessWithGpt({ question: found.question, exercise: { description: found.exercise.context || found.exercise.statement || "" }, answer: body.answer, steps: body.steps, secret, solutionSteps: found.question.solution_steps || found.question.solution || [], points: found.question.points, deterministic }).catch(() => null) : null;
-        return response.status(200).json(ai || deterministic);
+        // Public/demo answers remain deterministic: never bypass authenticated AI quotas.
+        return response.status(200).json(deterministic);
       }
       const { data: attempt } = await admin.from("learning_attempts").select("id,status,mode,user_id").eq("id", body.attemptId).eq("user_id", user.id).single();
       if (!attempt || (attempt.mode === "exam" && attempt.status === "in_progress")) return response.status(403).json({ message: "Validation indisponible avant la remise." });
@@ -442,7 +445,8 @@ export default async function handler(request, response) {
       ]);
       const deterministic = validateAnswer(body.answer, secret, question.points);
       const exercise = relation(question.exercise);
-      const ai = shouldUseGpt(secret.validation_config, deterministic) ? await assessWithGpt({ question, exercise, answer: body.answer, steps: body.steps, secret, solutionSteps: (solutionRows || []).map((item) => item.content), points: question.points, deterministic }).catch(() => null) : null;
+      const reservation = shouldUseGpt(secret.validation_config, deterministic) ? await reserveRevisionQuota(admin, user.id, "ai_hint") : null;
+      const ai = reservation ? await assessWithGpt({ question, exercise, answer: body.answer, steps: body.steps, secret, solutionSteps: (solutionRows || []).map((item) => item.content), points: question.points, deterministic }).catch(async(error) => { await refundFailedRevisionQuota(admin,reservation,error); return null; }) : null;
       const result = ai || deterministic;
       const { data: savedAnswer, error: saveError } = await admin.from("learning_answers").upsert({ attempt_id: attempt.id, question_id: body.questionId, raw_answer: String(body.answer ?? ""), structured_answer: { steps: Array.isArray(body.steps) ? body.steps : [] }, status: result.status, is_correct: result.status === "correct", score_awarded: result.score, confidence_level: body.confidence, detected_error_type: result.errorType, feedback: result, attempts_count: Number(body.attemptsCount || 1) }, { onConflict: "attempt_id,question_id" }).select("id").single();
       if (saveError) throw saveError;
@@ -472,6 +476,7 @@ export default async function handler(request, response) {
       const { data: attempt } = await admin.from("learning_attempts").select("id,status,mode,user_id").eq("id", body.attemptId).eq("user_id", user.id).single();
       if (!attempt || (attempt.mode === "exam" && attempt.status === "in_progress")) return response.status(403).json({ message: "Aide indisponible dans cette session." });
       if (body.action === "hint") {
+        await consumeRevisionQuota(admin, user.id, "ai_hint");
         const { data } = await admin.from("learning_question_hints").select("level,content,score_penalty").eq("question_id", body.questionId).eq("level", Number(body.level || 1)).single();
         return response.status(200).json(data);
       }
@@ -491,6 +496,6 @@ export default async function handler(request, response) {
     }
     return response.status(400).json({ message: "Action inconnue." });
   } catch (error) {
-    return response.status(500).json({ message: error instanceof Error ? error.message : "Erreur serveur." });
+    return applyRevisionApiError(response, error, "L’aide est momentanément indisponible.");
   }
 }

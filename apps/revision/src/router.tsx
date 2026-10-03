@@ -5,6 +5,9 @@ import { RevisionRegistrationPage } from "@/features/auth/RegistrationPage";
 import { ForgotPasswordPage } from "@/features/auth/ForgotPasswordPage";
 import { ElimaOAuthCallbackPage, ElimaOAuthStartPage } from "@/features/auth/ElimaOAuthPages";
 import { StudentHomePage } from "@/features/home/StudentHomePage";
+import { SubscriptionPage } from "@/features/subscription/SubscriptionPage";
+import { QuotaNotice } from "@/features/subscription/QuotaNotice";
+import { BillingSync } from "@/features/subscription/BillingSync";
 import { RevisionDashboardPage } from "@/features/revision/RevisionDashboardPage";
 import { QuizPage } from "@/features/revision/QuizPage";
 import { CoursesPage, CourseSheetDetailPage } from "@/features/revision/CoursesPage";
@@ -12,6 +15,8 @@ import { LearningSolverPage } from "@/features/revision/LearningSolverPage";
 import { LearningResultsPage } from "@/features/revision/LearningResultsPage";
 import { LegalPage } from "@/features/legal/LegalPage";
 import { RevisionShell } from "./RevisionShell";
+import { NativeRuntimeEffects } from "./components/NativeRuntimeEffects";
+import { OfflineBanner } from "./components/common/OfflineBanner";
 import { RevisionWelcomePage } from "./RevisionWelcomePage";
 import { RevisionStudentProfilePage } from "./RevisionStudentProfilePage";
 import { getRevisionDemoProfile, revisionDemoAccounts } from "./revisionDemoAuth";
@@ -46,6 +51,10 @@ export function RevisionRouter() {
   return (
     <BrowserRouter>
       <AuthProvider demoAccounts={revisionDemoAccounts} getDemoProfile={getRevisionDemoProfile}>
+        <NativeRuntimeEffects />
+        <BillingSync />
+        <OfflineBanner />
+        <QuotaNotice />
         <ConfiguredRoutes />
       </AuthProvider>
     </BrowserRouter>
@@ -71,6 +80,7 @@ function ConfiguredRoutes() {
 
           <Route element={<RevisionProtectedLayout />}>
             <Route path="/student" element={<StudentHomePage />} />
+            <Route path="/student/abonnement" element={<SubscriptionPage />} />
             <Route path="/student/reviser" element={<RevisionDashboardPage />} />
             <Route path="/student/reviser/devoirs" element={<Navigate to="/student/reviser?mode=scanner" replace />} />
             <Route path="/student/reviser/examen" element={<Navigate to="/student/reviser?mode=scanner" replace />} />

@@ -11,6 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_MAIN_SUPABASE_ANON_KEY: string;
   readonly VITE_MAIN_API_BASE_URL: string;
   readonly VITE_REVISION_API_BASE_URL: string;
+  readonly VITE_CAPACITOR_ORIGIN?: "https://localhost";
+  readonly VITE_NATIVE_BUILD?: "true" | "false";
   readonly VITE_ENABLE_DEMO_MODE: string;
   readonly VITE_ENABLE_REVISION: string;
   readonly VITE_ELIMA_IDENTITY_URL?: string;
