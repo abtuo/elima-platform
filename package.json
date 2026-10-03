@@ -51,6 +51,8 @@
     "lint:mobile": "npm run lint --workspace @elima/mobile",
     "dev:revision": "npm run dev --workspace @elima/revision --",
     "build:revision": "npm run build --workspace @elima/revision",
+    "build:revision:web": "npm run build:web --workspace @elima/revision",
+    "build:revision:native": "npm run build:native --workspace @elima/revision",
     "preview:revision": "npm run preview --workspace @elima/revision",
     "dev": "npm run dev:mobile",
     "build": "npm run build:api && npm run build:platform && npm run build:mobile && npm run build:revision",
