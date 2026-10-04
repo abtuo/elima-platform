@@ -1,3 +1,5 @@
+import {ensureRevisionSession} from "@/services/elimaIdentityService";
+import {revisionDbClient} from "@/services/revisionDbClient";
 import { useEffect, useMemo, useState } from "react";
 import { BadgeCheck, BarChart3, BookOpenCheck, Building2, GraduationCap, KeyRound, LogOut, Save, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -44,11 +46,12 @@ export function StudentProfilePage() {
   const displayedClass = standalone ? level || "Non renseignée" : profile.className || profile.schoolLevelId || "Non renseignée";
 
   useEffect(() => {
-    Promise.all([standalone ? Promise.resolve([]) : getRecentGrades(profile.id), getQuizAttempts(profile.id), getRevisionProgress(profile.id)]).then(([nextGrades, nextAttempts, nextProgress]) => {
+    Promise.all([standalone ? Promise.resolve([]) : getRecentGrades(profile.id), ensureRevisionSession().then(s=>getQuizAttempts(s.user.id)), ensureRevisionSession().then(s=>getRevisionProgress(s.user.id))]).then(([nextGrades, nextAttempts, nextProgress]) => {
       setGrades(nextGrades);
       setAttempts(nextAttempts);
       setProgress(nextProgress);
-    });
+    }).catch(()=>setAccountError("Données Révision indisponibles."));
+    ensureRevisionSession().then(async s=>{const {data}=await revisionDbClient!.from("student_profiles").select("school_level_id,declared_school_name,declared_school_city").eq("id",s.user.id).maybeSingle();if(data){setLevel(data.school_level_id??"");setSchoolName(data.declared_school_name??"");setSchoolCity(data.declared_school_city??"");}}).catch(()=>undefined);
   }, [profile.id, standalone]);
 
   async function saveDeclaredSchool() {

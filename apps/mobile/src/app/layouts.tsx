@@ -34,7 +34,7 @@ function SpaceRedirect({ space }: { space: MobileSpace }) {
   if (home !== space) {
     return <Navigate to={`/${home}`} replace />;
   }
-  if (isStandaloneStudent(profile) && !location.pathname.startsWith("/student/reviser") && location.pathname !== "/student/profil") {
+  if (isStandaloneStudent(profile) && !location.pathname.startsWith("/student/reviser") && !["/student/profil","/student/documents","/student/scanner"].includes(location.pathname)) {
     return <Navigate to={getProfileHomePath(profile)} replace />;
   }
   return <Outlet />;

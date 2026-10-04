@@ -1,3 +1,4 @@
+import {updateStandaloneStudentProfile} from "@/services/studentAccountService";
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, BriefcaseBusiness, CheckCircle2, GraduationCap, KeyRound, School, UsersRound } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -32,7 +33,7 @@ export function RegistrationPage({ mode = "full" }: { mode?: "full" | "revision"
     if (name === "identifier" || name === "verificationPhone") setVerification({ challengeId: "", code: "" });
   };
   const requiresSchoolCode = role === "school_staff" || role === "teacher" || role === "parent";
-  const verificationPhone = form.identifier.includes("@") ? form.verificationPhone : form.identifier;
+  const verificationPhone = form.identifier;
 
   async function sendVerificationCode() {
     setError("");
@@ -51,6 +52,7 @@ export function RegistrationPage({ mode = "full" }: { mode?: "full" | "revision"
     event.preventDefault();
     setError("");
     if (!role) return;
+    if (role !== "student" && role !== "school_head") return setError("La création de ce compte nécessite votre établissement. Contactez son administration.");
     if (!accepted) return setError("Vous devez accepter les conditions d’utilisation.");
     if (role === "school_head") {
       setLoading(true);
@@ -74,6 +76,7 @@ export function RegistrationPage({ mode = "full" }: { mode?: "full" | "revision"
       const registration = await registerElimaAccount({ role, firstName: form.firstName, lastName: form.lastName, identifier: form.identifier, password: form.password, schoolCode: requiresSchoolCode ? form.schoolCode : undefined, schoolLevel: role === "student" ? form.schoolLevel : undefined, declaredSchoolName: role === "student" ? form.declaredSchoolName : undefined, declaredSchoolCity: role === "student" ? form.declaredSchoolCity : undefined, verificationPhone, verificationId: verification.challengeId, verificationCode: verification.code });
       if (registration.session?.access_token) await completeElimaIdentitySession(registration.session);
       else await signInWithElimaPassword(registration.loginIdentifier ?? form.identifier, form.password, { recentSignup: true });
+      if(role==="student")await updateStandaloneStudentProfile({schoolLevelId:form.schoolLevel,declaredSchoolName:form.declaredSchoolName,declaredSchoolCity:form.declaredSchoolCity});
       navigate(role === "student" ? "/student/reviser" : "/", { replace: true });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Inscription impossible.");
@@ -102,7 +105,7 @@ export function RegistrationPage({ mode = "full" }: { mode?: "full" | "revision"
             <p className="mt-2 text-sm leading-6 text-gray-500">{role === "school_head" ? "Votre demande sera étudiée par l’équipe Elima avant l’ouverture de l’école." : requiresSchoolCode ? "Le code école permet de vous rattacher au bon établissement." : "Votre compte Révision peut fonctionner sans établissement partenaire."}</p>
 
             <div className="mt-7 grid gap-4 sm:grid-cols-2"><Field label="Prénom" value={form.firstName} onChange={(value) => update("firstName", value)} required /><Field label="Nom" value={form.lastName} onChange={(value) => update("lastName", value)} required /></div>
-            <div className="mt-4"><Field label="Email ou téléphone" value={form.identifier} onChange={(value) => update("identifier", value)} placeholder="nom@exemple.ci ou +225..." required /></div>
+            <div className="mt-4"><Field label="Numéro WhatsApp" value={form.identifier} onChange={(value) => update("identifier", value)} placeholder="+225 05 00 00 00 00" required /></div>
             {role !== "school_head" && form.identifier.includes("@") ? <div className="mt-4"><Field label="Numéro WhatsApp de vérification" value={form.verificationPhone} onChange={(value) => update("verificationPhone", value)} placeholder="+225..." required hint="Format international" /></div> : null}
 
             {role === "school_head" ? <div className="mt-4 grid gap-4 sm:grid-cols-2"><Field label="Nom de l’établissement" value={form.schoolName} onChange={(value) => update("schoolName", value)} required /><Field label="Ville" value={form.schoolCity} onChange={(value) => update("schoolCity", value)} required /><Field label="Fonction" value={form.jobTitle} onChange={(value) => update("jobTitle", value)} placeholder="Directeur, proviseur…" /><Field label="Nombre approximatif d’élèves" type="number" value={form.studentCount} onChange={(value) => update("studentCount", value)} /></div> : <><div className="mt-4 grid gap-4 sm:grid-cols-2"><Field label="Mot de passe" type="password" value={form.password} onChange={(value) => update("password", value)} required hint="8 caractères minimum" /><Field label="Confirmer le mot de passe" type="password" value={form.confirmPassword} onChange={(value) => update("confirmPassword", value)} required /></div>{requiresSchoolCode ? <div className="mt-4 rounded-2xl bg-primary/[.05] p-4"><Field label="Code école" value={form.schoolCode} onChange={(value) => update("schoolCode", value.toUpperCase())} placeholder="EX. ECOLE-A1B2" required /><p className="mt-2 text-xs leading-5 text-gray-500">Ce code est fourni par le chef d’établissement ou l’administration de l’école.</p></div> : null}{role === "student" ? <div className="mt-4 space-y-4 rounded-2xl bg-revision/[.04] p-4"><label className="block"><span className="mb-2 block text-sm font-semibold text-gray-700">Classe / niveau</span><select value={form.schoolLevel} onChange={(event) => update("schoolLevel", event.target.value)} required className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none focus:border-revision"><option value="">Choisir</option>{levels.map((level) => <option key={level}>{level}</option>)}</select></label><div className="grid gap-3 sm:grid-cols-2"><Field label="Nom de mon école (facultatif)" value={form.declaredSchoolName} onChange={(value) => update("declaredSchoolName", value)} /><Field label="Ville (facultatif)" value={form.declaredSchoolCity} onChange={(value) => update("declaredSchoolCity", value)} /></div></div> : null}</>}
@@ -125,7 +128,7 @@ export function RevisionRegistrationPage() {
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const verificationPhone = form.identifier.includes("@") ? form.verificationPhone : form.identifier;
+  const verificationPhone = form.identifier;
 
   const update = (name: keyof typeof form, value: string) => {
     setForm((current) => ({ ...current, [name]: value }));
@@ -158,6 +161,7 @@ export function RevisionRegistrationPage() {
       const registration = await registerElimaAccount({ role: "student", firstName: form.firstName, lastName: form.lastName, identifier: form.identifier, password: form.password, schoolLevel: form.schoolLevel, declaredSchoolName: form.declaredSchoolName, declaredSchoolCity: form.declaredSchoolCity, verificationPhone, verificationId: verification.challengeId, verificationCode: verification.code });
       if (registration.session?.access_token) await completeElimaIdentitySession(registration.session);
       else await signInWithElimaPassword(registration.loginIdentifier ?? form.identifier, form.password, { recentSignup: true });
+      await updateStandaloneStudentProfile({schoolLevelId:form.schoolLevel,declaredSchoolName:form.declaredSchoolName,declaredSchoolCity:form.declaredSchoolCity});
       navigate("/student/reviser", { replace: true });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Inscription impossible.");
@@ -171,7 +175,7 @@ export function RevisionRegistrationPage() {
     <form onSubmit={submit} className="mt-8 rounded-[2rem] bg-white p-6 shadow-[0_24px_80px_rgba(21,55,42,.1)] sm:p-9">
       <p className="text-sm font-semibold uppercase tracking-[.15em] text-revision">Elima Révision</p><h1 className="mt-2 font-title text-3xl font-semibold text-accent">Créer mon compte élève</h1><p className="mt-2 text-sm leading-6 text-gray-500">Ton compte Révision fonctionne même si ton école n’utilise pas encore Elima.</p>
       <div className="mt-7 grid gap-4 sm:grid-cols-2"><Field label="Prénom" value={form.firstName} onChange={(value) => update("firstName", value)} required /><Field label="Nom" value={form.lastName} onChange={(value) => update("lastName", value)} required /></div>
-      <div className="mt-4"><Field label="Email ou téléphone" value={form.identifier} onChange={(value) => update("identifier", value)} placeholder="nom@exemple.ci ou +225..." required /></div>
+      <div className="mt-4"><Field label="Numéro WhatsApp" value={form.identifier} onChange={(value) => update("identifier", value)} placeholder="+225 05 00 00 00 00" required /></div>
       {form.identifier.includes("@") ? <div className="mt-4"><Field label="Numéro WhatsApp de vérification" value={form.verificationPhone} onChange={(value) => update("verificationPhone", value)} placeholder="+225..." required hint="Format international" /></div> : null}
       <div className="mt-4 grid gap-4 sm:grid-cols-2"><Field label="Mot de passe" type="password" value={form.password} onChange={(value) => update("password", value)} required hint="8 caractères minimum" /><Field label="Confirmer le mot de passe" type="password" value={form.confirmPassword} onChange={(value) => update("confirmPassword", value)} required /></div>
       <div className="mt-4 space-y-4 rounded-2xl bg-revision/[.04] p-4"><label className="block"><span className="mb-2 block text-sm font-semibold text-gray-700">Classe / niveau</span><select value={form.schoolLevel} onChange={(event) => update("schoolLevel", event.target.value)} required className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none focus:border-revision"><option value="">Choisir</option>{levels.map((level) => <option key={level}>{level}</option>)}</select></label><div className="grid gap-3 sm:grid-cols-2"><Field label="Nom de mon école (facultatif)" value={form.declaredSchoolName} onChange={(value) => update("declaredSchoolName", value)} /><Field label="Ville (facultatif)" value={form.declaredSchoolCity} onChange={(value) => update("declaredSchoolCity", value)} /></div></div>

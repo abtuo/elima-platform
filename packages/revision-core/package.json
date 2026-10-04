@@ -12,6 +12,7 @@
     "test": "node --experimental-strip-types --test ../../tests/packages/revision-core.test.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.5",
     "@elima/api-client": "0.1.0",
     "@elima/auth": "0.1.0",
     "@elima/shared-domain": "0.1.0"

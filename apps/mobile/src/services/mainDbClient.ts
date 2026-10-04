@@ -4,6 +4,6 @@ import { env, isMainDbConfigured } from "./env";
 
 export const mainDbClient: SupabaseClient | null = isMainDbConfigured()
   ? createPublicSupabaseClient({ url: env.mainSupabaseUrl, publishableKey: env.mainSupabaseAnonKey }, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+      auth: { storageKey: 'elima-mobile-identity', persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
     })
   : null;

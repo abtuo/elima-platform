@@ -3,8 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { ElimaLogo } from "@/components/common/ElimaLogo";
 import { useAuth, type DemoAuthAccount } from "@/features/auth/AuthProvider";
-import { isElimaIdentityConfigured, signInWithElimaPassword } from "@/services/elimaIdentityService";
-import { fetchUserProfile } from "@/services/profileService";
 import { getProfileHomePath } from "@/types/roles";
 
 type LoginDemoAccount = DemoAuthAccount & { label: string; role: string };
@@ -23,14 +21,7 @@ export function LoginPage({ mode = "full", demoAccounts }: { mode?: "full" | "re
     setError("");
     setLoading(true);
     try {
-      const profile = !isElimaIdentityConfigured()
-        ? await signIn(identifier, password)
-        : await signInWithElimaPassword(identifier, password).then(async ({ localUserId }) => {
-            if (!localUserId) throw new Error("Profil Elima introuvable.");
-            const linkedProfile = await fetchUserProfile(localUserId);
-            if (!linkedProfile) throw new Error("Profil Elima introuvable.");
-            return linkedProfile;
-          });
+      const profile = await signIn(identifier, password);
       if (mode === "revision" && profile.role !== "STUDENT") {
         await signOut();
         throw new Error("Elima Révision est réservé aux comptes élèves.");
@@ -68,7 +59,7 @@ export function LoginPage({ mode = "full", demoAccounts }: { mode?: "full" | "re
           {isDemo ? <details open className="mb-5 rounded-2xl border border-primary/10 bg-primary/[.04] p-4"><summary className="cursor-pointer text-sm font-semibold text-primary">Comptes de démonstration</summary><div className="mt-3 grid max-h-64 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">{demoAccounts.map((account) => <button key={account.email} type="button" onClick={() => { setIdentifier(account.email); setPassword(account.password); }} className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-left text-xs font-semibold text-gray-700 transition hover:border-primary/30">{account.label}</button>)}</div></details> : null}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <label className="block"><span className="mb-2 block text-sm font-semibold text-gray-700">Email ou téléphone</span><input type="text" value={identifier} onChange={(event) => setIdentifier(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-primary" placeholder="email@exemple.ci ou +225..." autoComplete="username" required /></label>
+            <label className="block"><span className="mb-2 block text-sm font-semibold text-gray-700">Numéro WhatsApp</span><input type="text" value={identifier} onChange={(event) => setIdentifier(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-primary" placeholder="+225 05 00 00 00 00" name="username" inputMode="tel" autoComplete="username" required /></label>
             <label className="block"><span className="mb-2 block text-sm font-semibold text-gray-700">Mot de passe</span><span className="relative block"><input type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 pr-12 text-sm outline-none transition focus:border-primary" autoComplete="current-password" required /><button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-gray-400" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}>{showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button></span></label>
             <div className="text-right"><Link to="/auth/mot-de-passe-oublie" className="text-xs font-semibold text-primary">Mot de passe oublié ?</Link></div>
             {error ? <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-danger">{error}</p> : null}

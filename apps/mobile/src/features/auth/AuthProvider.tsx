@@ -3,6 +3,7 @@ import type { Session } from "@supabase/supabase-js";
 import { browserLocalAuthStorage } from "@elima/auth";
 import type { MobileSpace, UserProfile } from "@/types/roles";
 import { mainDbClient } from "@/services/mainDbClient";
+import {revisionDbClient} from '@/services/revisionDbClient';
 import { isMainDbConfigured, isDemoModeActive, shouldShowSeedAccounts } from "@/services/env";
 import { fetchUserProfile } from "@/services/profileService";
 import { signInWithIdentifier, signOut as authSignOut } from "@/services/authService";
@@ -29,7 +30,7 @@ type AuthContextValue = {
   refreshProfile: () => Promise<UserProfile | null>;
 };
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
@@ -45,7 +46,7 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
   }, []);
 
   useEffect(() => {
-    if (usesLocalDemo || !mainDbClient) {
+    if (usesLocalDemo) {
       const demoEmail = browserLocalAuthStorage.getItem("elima_demo_session");
       if (demoEmail && demoAccounts.some((account) => account.email.toLowerCase() === demoEmail.toLowerCase())) {
         setProfile(getDemoProfile(demoEmail));
@@ -55,19 +56,19 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
       return;
     }
 
+    if (!mainDbClient) { setLoading(false); return; }
     mainDbClient.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
       if (data.session?.user) {
         await refreshElimaIdentityProfile();
         await loadProfile(data.session.user.id);
       }
-      setLoading(false);
-    });
+    }).catch(() => setSession(null)).finally(() => setLoading(false));
 
     const { data: sub } = mainDbClient.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      if (newSession?.user) refreshElimaIdentityProfile().finally(() => loadProfile(newSession.user.id));
-      else if (isDemoModeActive()) setProfile(getDemoProfile());
+      if (newSession?.user) setTimeout(() => { void refreshElimaIdentityProfile().catch(() => null).then(() => loadProfile(newSession.user.id)); },0);
+      else { void revisionDbClient?.auth.signOut({scope:'local'}); if (isDemoModeActive()) setProfile(getDemoProfile()); }
     });
 
     return () => sub.subscription.unsubscribe();
@@ -89,6 +90,7 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
     const nextProfile = await fetchUserProfile(data.session.user.id);
     if (!nextProfile) throw new Error("Profil utilisateur introuvable.");
     setProfile(nextProfile);
+    setSession(data.session);
     return nextProfile;
   };
 
@@ -98,7 +100,6 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
     browserLocalAuthStorage.removeItem("elima_demo_session");
     setDemoAuthenticated(false);
     setProfile(getDemoProfile());
-    clearElimaIdentitySession();
   };
 
   const refreshProfile = async () => {
@@ -112,7 +113,7 @@ export function AuthProvider({ children, demoAccounts, getDemoProfile }: AuthPro
   const activeSpace = ROLE_HOME[profile.role];
 
   return (
-    <AuthContext.Provider value={{ session, profile, loading, isDemo, authenticated: Boolean(session) || demoAuthenticated, activeSpace, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ session, profile, loading, isDemo, authenticated: Boolean(session && profile.id===session.user.id) || demoAuthenticated, activeSpace, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

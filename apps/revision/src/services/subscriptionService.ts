@@ -1,4 +1,5 @@
 import { registerPlugin, Capacitor, type PluginListenerHandle } from '@capacitor/core';
+import {createSubscriptionApi} from '@elima/revision-core';
 import { mainDbClient } from './mainDbClient';
 import { apiFetch } from './api/apiClient';
 import type { PlayProduct } from './playOffers';
@@ -15,14 +16,7 @@ export const PlayBilling = registerPlugin<{
   purchase(options:{productId:string;offerToken:string;accountId:string}):Promise<Purchases>;
 }>('RevisionBilling');
 export const isPlayBillingAvailable = () => Capacitor.isNativePlatform() && Capacitor.getPlatform()==='android';
-export async function subscriptionRequest(body?: Record<string,unknown>):Promise<Entitlement> {
-  const token=(await mainDbClient?.auth.getSession())?.data.session?.access_token;
-  if(!token) throw new Error('Reconnecte-toi pour consulter ton abonnement.');
-  const response=await apiFetch('/api/revision-subscription',{method:body?'POST':'GET',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
-  const data=await response.json();
-  if(!response.ok) throw new Error(data.message || 'Abonnement momentanément indisponible.');
-  return data;
-}
+export const subscriptionRequest=createSubscriptionApi(apiFetch,async()=>(await mainDbClient?.auth.getSession())?.data.session?.access_token);
 export async function restorePlayPurchases() {
   const owned=await PlayBilling.restore();
   for(const purchase of owned.purchases) await subscriptionRequest({action:'restore',purchaseToken:purchase.purchaseToken});

@@ -6,3 +6,8 @@ export * from "./revisionApi.ts";
 export * from "./session.ts";
 export * from "./subjects.ts";
 export * from "./types.ts";
+export * from './revisionDataService.ts';
+export * from './revisionDocumentService.ts';
+export * from './subjectPreferencesService.ts';
+export * from './learningService.ts';
+export * from './subscriptionApi.ts';

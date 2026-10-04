@@ -39,6 +39,7 @@ export function QuizPage() {
   const [difficultyFeedback, setDifficultyFeedback] = useState<"too_easy" | "balanced" | "too_hard" | "">("");
   const [feedbackBusy, setFeedbackBusy] = useState(false);
   const [feedbackSent, setFeedbackSent] = useState(false);
+  const [errorMessage,setErrorMessage]=useState('');
   const subject = params.get("subject") ?? "Quiz";
   const topic = params.get("topic");
 
@@ -46,11 +47,11 @@ export function QuizPage() {
     const quizId = params.get("id") ?? undefined;
     Promise.all([
       getQuizQuestions(quizId, `${profile.id}|${sessionAttemptId}`),
-      getDailyHintUsage(profile.id),
+      getDailyHintUsage(profile.id).catch(()=>({used:0,remaining:0,max:0})),
     ]).then(([nextQuestions, usage]) => {
       setQuestions(nextQuestions);
       setHintRemaining(usage.remaining);
-    }).finally(() => setLoading(false));
+    }).catch(()=>setErrorMessage('Quiz indisponible. Réessaie.')).finally(() => setLoading(false));
   }, [params, profile.id, sessionAttemptId]);
 
   if (loading) return <PageContainer><LoadingState label="Préparation du quiz…" /></PageContainer>;
@@ -68,10 +69,9 @@ export function QuizPage() {
   async function revealHint() {
     if (hintOpen || hintBusy || showResult || !question.hint || hintRemaining === 0) return;
     setHintBusy(true);
-    const usage = await consumeDailyHint(profile.id);
-    setHintRemaining(usage.remaining);
-    if (usage.ok) setHintOpen(true);
-    setHintBusy(false);
+    try { const usage = await consumeDailyHint(profile.id);setHintRemaining(usage.remaining);if(usage.ok)setHintOpen(true); }
+    catch(error){setErrorMessage(error instanceof Error?error.message:'Indice indisponible.');}
+    finally{setHintBusy(false);}
   }
 
   async function next() {
@@ -93,7 +93,8 @@ export function QuizPage() {
         correctAnswers: score,
       });
     } catch (error) {
-      console.warn("Enregistrement du résultat du quiz :", error);
+      setErrorMessage('Résultat non enregistré. Vérifie ta connexion et réessaie.');
+      return;
     }
     markDailyQuizCompleted(profile.id);
     setDone(true);
@@ -151,6 +152,7 @@ export function QuizPage() {
   return (
     <PageContainer>
       <AppHeader title="Quiz" subtitle={`Question ${index + 1}/${questions.length}`} accent="#7C3AED" />
+      {errorMessage&&<p role="alert" className="mb-3 text-red-600">{errorMessage}</p>}
       <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
         <div className="flex min-w-0 items-center gap-3">
           <SubjectIcon subject={subject} />

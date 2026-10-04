@@ -23,7 +23,9 @@ import { QuizPage } from "@/features/revision/QuizPage";
 import { CoursesPage, CourseSheetDetailPage } from "@/features/revision/CoursesPage";
 import { LearningSolverPage } from "@/features/revision/LearningSolverPage";
 import { LearningResultsPage } from "@/features/revision/LearningResultsPage";
-import { ScannerPage } from "@/features/scanner/ScannerPage";
+import {DocumentScannerPanel} from '@/features/revision/DocumentScannerPanel';
+import {RevisionBoundary} from '@/features/revision/RevisionBoundary';
+import {RevisionAccountPage} from '@/features/revision/RevisionAccountPage';
 
 import { TeacherTodayPage } from "@/features/teacher/TeacherTodayPage";
 import { TeacherClassesPage } from "@/features/teacher/TeacherClassesPage";
@@ -82,18 +84,19 @@ export function AppRouter() {
               <Route index element={<StudentHomePage />} />
               <Route path="devoirs" element={<StudentAssignmentsPage />} />
               <Route path="emploi-du-temps" element={<StudentTimetablePage />} />
-              <Route path="reviser" element={<RevisionDashboardPage />} />
+              <Route path="reviser" element={<RevisionBoundary><RevisionDashboardPage /></RevisionBoundary>} />
               <Route path="reviser/devoirs" element={<Navigate to="/student/reviser?mode=parcours" replace />} />
               <Route path="reviser/examen" element={<Navigate to="/student/reviser?mode=parcours" replace />} />
-              <Route path="reviser/parcours/session/:id" element={<LearningSolverPage contentType="guided_exercise" />} />
-              <Route path="reviser/parcours/resultats/:contentType/:id" element={<LearningResultsPage />} />
-              <Route path="reviser/devoirs/exercice/:id" element={<LearningSolverPage contentType="guided_exercise" />} />
-              <Route path="reviser/devoirs/examen/:id" element={<LearningSolverPage contentType="exam" />} />
-              <Route path="reviser/devoirs/resultats/:contentType/:id" element={<LearningResultsPage />} />
-              <Route path="reviser/quiz" element={<QuizPage />} />
-              <Route path="reviser/fiches" element={<CoursesPage />} />
-              <Route path="reviser/fiches/:id" element={<CourseSheetDetailPage />} />
-              <Route path="documents" element={<ScannerPage />} />
+              <Route path="reviser/parcours/session/:id" element={<RevisionBoundary><LearningSolverPage contentType="guided_exercise" /></RevisionBoundary>} />
+              <Route path="reviser/parcours/resultats/:contentType/:id" element={<RevisionBoundary><LearningResultsPage /></RevisionBoundary>} />
+              <Route path="reviser/devoirs/exercice/:id" element={<RevisionBoundary><LearningSolverPage contentType="guided_exercise" /></RevisionBoundary>} />
+              <Route path="reviser/devoirs/examen/:id" element={<RevisionBoundary><LearningSolverPage contentType="exam" /></RevisionBoundary>} />
+              <Route path="reviser/devoirs/resultats/:contentType/:id" element={<RevisionBoundary><LearningResultsPage /></RevisionBoundary>} />
+              <Route path="reviser/quiz" element={<RevisionBoundary><QuizPage /></RevisionBoundary>} />
+              <Route path="reviser/fiches" element={<RevisionBoundary><CoursesPage /></RevisionBoundary>} />
+              <Route path="reviser/fiches/:id" element={<RevisionBoundary><CourseSheetDetailPage /></RevisionBoundary>} />
+              <Route path="reviser/compte" element={<RevisionBoundary><RevisionAccountPage/></RevisionBoundary>} />
+              <Route path="documents" element={<RevisionBoundary><DocumentScannerPanel /></RevisionBoundary>} />
               <Route path="messages" element={<StudentMessagesPage />} />
               <Route path="alertes" element={<CommunicationsPage kind="alert" />} />
               <Route path="scanner" element={<Navigate to="/student/documents" replace />} />

@@ -11,6 +11,7 @@ import type { GradeSummary, Assignment, TimetableEvent } from "@/types/school";
 import { TimetableCard } from "@/components/cards/TimetableCard";
 import { Link } from "react-router-dom";
 import { ArrowRight, Brain, Flame, ScanLine, Sparkles } from "lucide-react";
+import {ensureRevisionSession} from "@/services/elimaIdentityService";
 import { getRevisionProgress } from "@/services/revisionDataService";
 import type { RevisionProgress } from "@/types/revision";
 
@@ -24,7 +25,7 @@ export function StudentHomePage() {
   useEffect(() => {
     getRecentGrades(profile.id).then(setGrades);
     getAssignments().then(setAssignments);
-    getRevisionProgress(profile.id).then(setProgress);
+    ensureRevisionSession().then(session=>getRevisionProgress(session.user.id)).then(setProgress).catch(()=>setProgress(null));
     getTimetable().then(setTimetable);
   }, [profile.id]);
 

@@ -1,4 +1,5 @@
-export { normalizeEmail, normalizePhone, phoneToEmail, type AuthUser } from "./identity";
+export { normalizeEmail, normalizePhone, phoneToEmail, type AuthUser } from "./identity.ts";
+export { createWhatsAppAuthApi, type AccountRegistrationInput } from './whatsapp.ts';
 export {
   browserLocalAuthStorage,
   browserSessionAuthStorage,
@@ -18,4 +19,4 @@ export {
   type AuthStorage,
   type NativeSecureStorageDriver,
   type StoredAuthSession,
-} from "./storage";
+} from "./storage.ts";

@@ -16,6 +16,10 @@ type ElimaViteConfigOptions = {
 
 const SERVER_ENV_KEYS = [
   "REVISION_ALLOWED_ORIGINS",
+  "ELIMA_IDENTITY_SECRET_KEY", "ELIMA_IDENTITY_SERVICE_ROLE_KEY",
+  "TWILIO_ACCOUNT_SID", "TWILIO_API_KEY", "TWILIO_API_SECRET", "TWILIO_VERIFY_SERVICE_SID",
+  "GOOGLE_PLAY_PACKAGE_NAME", "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "GOOGLE_PLAY_ACCOUNT_HASH_SECRET",
+  "AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT", "AZURE_DOCUMENT_INTELLIGENCE_KEY",
   "VITE_SUPABASE_URL",
   "VITE_SUPABASE_PUBLISHABLE_KEY",
   "VITE_SUPABASE_ANON_KEY",
@@ -37,8 +41,8 @@ const SERVER_ENV_KEYS = [
   "AZURE_OPENAI_API_KEY",
 ] as const;
 
-const LOCAL_API_HANDLERS = ["identity-bridge", "elima-profile", "activate-school", "elima-password-login", "elima-signup", "auth-verification-request", "auth-password-reset", "registration-request", "learning"] as const;
-const REVISION_API_HANDLERS = ["identity-bridge", "elima-profile", "elima-password-login", "elima-signup", "auth-verification-request", "auth-password-reset", "learning"] as const;
+const LOCAL_API_HANDLERS = ["identity-bridge", "elima-profile", "activate-school", "elima-password-login", "elima-signup", "auth-verification-request", "auth-password-reset", "auth-verification-check", "elima-session", "revision-generate", "revision-document-analyze", "revision-subscription", "registration-request", "learning"] as const;
+const REVISION_API_HANDLERS = ["identity-bridge", "elima-profile", "elima-password-login", "elima-signup", "auth-verification-request", "auth-password-reset", "auth-verification-check", "elima-session", "revision-generate", "revision-document-analyze", "revision-subscription", "learning"] as const;
 
 function localServerlessApis(enabled: boolean, endpoints: readonly string[]): Plugin {
   return {

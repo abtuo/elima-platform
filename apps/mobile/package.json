@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "lint": "eslint . --config eslint.config.mjs",
-    "test": "node --test"
+    "test": "node --experimental-strip-types --test ../../tests/mobile/*.test.ts"
   },
   "dependencies": {
     "@elima/api-client": "0.1.0",

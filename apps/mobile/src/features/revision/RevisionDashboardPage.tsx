@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BookOpen, Brain, CalendarClock, ChevronRight, Flame, History, Search, Sparkles, Star } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -12,7 +12,8 @@ import { SubjectIcon } from "@/components/revision/SubjectIcon";
 import { ActionCard, StatCard } from "@/components/revision/RevisionUI";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { LearningAssignmentsPanel } from "@/features/revision/LearningAssignmentsPanel";
-import { REVISION_SUBJECT_OPTIONS } from "@/lib/revisionSubjects";
+import { REVISION_SUBJECT_OPTIONS, subjectIdFromLabel } from "@/lib/revisionSubjects";
+import {getSubjectPreferences} from '@/services/subjectPreferencesService';
 import {
   generateRealtimeQuiz,
   generateRealtimeSheet,
@@ -56,12 +57,14 @@ export function RevisionDashboardPage() {
   const [sheets, setSheets] = useState<CourseSheet[]>([]);
   const [level, setLevel] = useState("Collège / lycée");
   const [subject, setSubject] = useState("");
+  const [preferredSubjects,setPreferredSubjects]=useState<string[]>([]);
   const [topic, setTopic] = useState("");
   const [error, setError] = useState("");
   const [launching, setLaunching] = useState<"random" | "quiz" | "sheet" | null>(null);
   const dailyDone = isDailyQuizCompleted(profile.id);
 
   useEffect(() => {
+    getSubjectPreferences(profile.id).then(setPreferredSubjects).catch(()=>undefined);
     Promise.all([
       getRevisionProgress(profile.id),
       getAvailableQuizzes(),
@@ -73,15 +76,15 @@ export function RevisionDashboardPage() {
       setQuizzes(nextQuizzes);
       setAttempts(nextAttempts);
       setSheets(nextSheets);
-      setLevel(nextLevel);
-    });
+      setLevel(profile.schoolLevelId || profile.className || nextLevel);
+    }).catch(()=>setError('Données Révision indisponibles. Réessaie.'));
   }, [profile.id]);
 
   const subjectLabels = useMemo(() => {
     const known = REVISION_SUBJECT_OPTIONS.map((item) => item.label);
     const fromDatabase = quizzes.map((quiz) => quiz.subject).filter((item) => !known.some((knownItem) => knownItem.toLocaleLowerCase("fr") === item.toLocaleLowerCase("fr")));
-    return [...known, ...new Set(fromDatabase)].sort((a, b) => a.localeCompare(b, "fr"));
-  }, [quizzes]);
+    return [...known, ...new Set(fromDatabase)].filter(label=>!preferredSubjects.length||preferredSubjects.includes(subjectIdFromLabel(label))).sort((a, b) => a.localeCompare(b, "fr"));
+  }, [quizzes,preferredSubjects]);
 
   const suggestions = useMemo(() => quizzes.filter((quiz) => !subject || quiz.subject === subject).slice(0, 4), [quizzes, subject]);
 
@@ -144,7 +147,7 @@ export function RevisionDashboardPage() {
   if (!progress) return null;
 
   return (
-    <PageContainer>
+    <PageContainer><div className="mb-4 flex gap-4 text-sm font-semibold text-revision"><Link to="/student/documents">Scanner / documents</Link><Link to="/student/reviser/compte">Mes matières et abonnement</Link></div>
       <AppHeader title="Réviser" subtitle="QCM, parcours et fiches de révision" accent="#7C3AED" />
 
       <div className="mb-5 grid grid-cols-3 rounded-2xl bg-gray-100 p-1" role="tablist" aria-label="Modes de révision">
