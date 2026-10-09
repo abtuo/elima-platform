@@ -1,6 +1,7 @@
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StudentPortalView } from "@/components/portal/StudentPortalView";
 import { getPortalContext } from "@/lib/portal/queries";
+import Link from 'next/link';
 
 export default async function StudentHomePage() {
   const ctx = await getPortalContext();
@@ -8,10 +9,10 @@ export default async function StudentHomePage() {
 
   if (!me) {
     return (
-      <EmptyState
+      <div className="space-y-4"><Link href="/student/reviser" className="elima-card block font-semibold text-purple-700">Ouvrir mon espace Révision</Link><EmptyState
         title="Profil élève introuvable"
         description="Votre compte n'est rattaché à aucun dossier élève. Contactez l'établissement."
-      />
+      /></div>
     );
   }
 

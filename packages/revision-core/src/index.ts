@@ -11,3 +11,4 @@ export * from './revisionDocumentService.ts';
 export * from './subjectPreferencesService.ts';
 export * from './learningService.ts';
 export * from './subscriptionApi.ts';
+export * from './quizResult.ts';

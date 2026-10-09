@@ -1,102 +1,27 @@
-import { NextResponse } from "next/server";
-import { createSupabaseAdminServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { normalizePhone, phoneToEmail } from "@/lib/phone-auth";
-import { getRoleHomePath } from "@/lib/auth";
-import { isValidRole } from "@/lib/rbac";
+import { NextResponse } from 'next/server';
+import { normalizePhone } from '@elima/auth';
+import { centralPasswordLogin, isSameOrigin, requireProject, IDENTITY_PROJECT, schoolLoginIdentifier } from '@/lib/elima-api';
+import { installCentralSession } from '@/lib/central-session';
+import { createSupabaseAdminServerClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => null)) as null | { phone?: string; password?: string };
-  const phone = normalizePhone(String(body?.phone ?? ""));
-  const password = String(body?.password ?? "");
-
-  if (!phone || !password) {
-    return NextResponse.json({ message: "Téléphone et mot de passe requis" }, { status: 400 });
-  }
-
-  // We need to resolve which Supabase Auth identity (email) corresponds to that phone.
-  // This lookup must bypass RLS -> service role.
-  let admin: Awaited<ReturnType<typeof createSupabaseAdminServerClient>>;
+  if (!isSameOrigin(request)) return NextResponse.json({ message: 'Origine non autorisée.' }, { status: 403 });
+  const body = await request.json().catch(() => null);
+  const phone = normalizePhone(String(body?.phone ?? ''));
+  const password = typeof body?.password === 'string' ? body.password : '';
+  if (!phone || !password) return NextResponse.json({ message: 'Numéro WhatsApp et mot de passe requis.' }, { status: 400 });
   try {
-    admin = await createSupabaseAdminServerClient();
-  } catch (e) {
-    // Avoid crashing the whole app on Vercel (Digest error page).
-    // Return a clear message so we can diagnose missing env vars quickly.
-    const message = e instanceof Error ? e.message : "Server misconfiguration";
-    return NextResponse.json(
-      {
-        message:
-          message.includes("SUPABASE_SERVICE_ROLE_KEY")
-            ? "Configuration serveur incomplète (SUPABASE_SERVICE_ROLE_KEY manquante)."
-            : message,
-      },
-      { status: 500 },
-    );
-  }
-  const { data: profile, error: profileErr } = await admin
-    .from("users")
-    .select("email, role")
-    .eq("phone", phone)
-    .maybeSingle();
-
-  if (profileErr) {
-    return NextResponse.json({ message: profileErr.message }, { status: 400 });
-  }
-
-  const resolvedEmail = String(profile?.email ?? "").trim().toLowerCase();
-  const roleRaw = String(profile?.role ?? "");
-
-  // Fallback for older datasets where we created auth users with a deterministic email.
-  const emailForAuth = resolvedEmail || phoneToEmail(phone);
-
-  const supabase = await createSupabaseServerClient();
-  const { error: signInErr } = await supabase.auth.signInWithPassword({
-    email: emailForAuth,
-    password,
-  });
-
-  if (signInErr) {
-    return NextResponse.json({ message: "Identifiants invalides" }, { status: 400 });
-  }
-
-  // Resolve role (prefer the service-role lookup, but keep a fallback using the logged-in user).
-  let resolvedRole = roleRaw;
-  if (!resolvedRole) {
-    const { data: userRes, error: userErr } = await supabase.auth.getUser();
-    if (userErr) {
-      return NextResponse.json({ message: userErr.message }, { status: 400 });
+    requireProject(process.env.NEXT_PUBLIC_SUPABASE_URL, IDENTITY_PROJECT);
+    const admin = await createSupabaseAdminServerClient();
+    const profile = await admin.from('users').select('email').eq('phone', phone).maybeSingle();
+    if (profile.error) throw new Error('Profil indisponible');
+    const upstream = await centralPasswordLogin(schoolLoginIdentifier(phone, profile.data), password);
+    if (!upstream.ok) {
+      const status = [400, 401, 403, 429].includes(upstream.status) ? upstream.status : 503;
+      return NextResponse.json({ message: status === 429 ? 'Trop de tentatives. Réessayez plus tard.' : status === 503 ? 'Connexion momentanément indisponible.' : 'Numéro WhatsApp ou mot de passe incorrect.' }, { status });
     }
-    const userId = userRes.user?.id;
-    if (!userId) {
-      return NextResponse.json({ message: "Utilisateur non trouvé" }, { status: 400 });
-    }
-    const { data: profile2, error: profileErr2 } = await admin
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .maybeSingle();
-    if (profileErr2) {
-      return NextResponse.json({ message: profileErr2.message }, { status: 400 });
-    }
-    resolvedRole = String(profile2?.role ?? "");
+    return await installCentralSession(await upstream.json());
+  } catch {
+    return NextResponse.json({ message: 'Connexion Elima momentanément indisponible.' }, { status: 503 });
   }
-
-  if (!resolvedRole || !isValidRole(resolvedRole)) {
-    return NextResponse.json(
-      {
-        message: "Votre compte n’est pas encore rattaché à une école. Contactez l’administrateur.",
-      },
-      { status: 403 },
-    );
-  }
-
-  const redirectTo = getRoleHomePath(resolvedRole);
-  const response = NextResponse.json({ ok: true, redirectTo });
-  response.cookies.set("elima_role", resolvedRole, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false,
-    path: "/",
-    maxAge: 60 * 60 * 12,
-  });
-  return response;
 }

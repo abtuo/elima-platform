@@ -22,13 +22,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@elima/api-client": "0.1.0",
+    "@elima/revision-core": "0.1.0",
+    "@elima/revision-ui": "0.1.0",
     "@elima/auth": "0.1.0",
     "@elima/shared-domain": "0.1.0",
     "@elima/supabase-client": "0.1.0",
     "@azure-rest/communication-messages": "^2.0.0",
     "@azure/core-auth": "^1.10.1",
     "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.98.0",
+    "@supabase/supabase-js": "2.110.5",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.575.0",

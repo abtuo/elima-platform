@@ -32,6 +32,7 @@ const envSchema = z.object({
   ACS_WHATSAPP_TEMPLATE_WELCOME: optionalNonEmptyString(),
   ACS_WHATSAPP_TEMPLATE_WELCOME_LANG: optionalNonEmptyString(),
   RESEND_API_KEY: optionalNonEmptyString(),
+  SENDGRID_API_KEY: optionalNonEmptyString(),
   NOTIFY_EMAIL_TO: optionalNonEmptyString().pipe(z.string().email().default("tuoaboubacar@gmail.com")),
   NOTIFY_EMAIL_FROM: optionalNonEmptyString(),
   OPENAI_API_KEY: optionalNonEmptyString(),

@@ -1,107 +1,48 @@
 "use client";
-
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-
-function PhonePasswordLoginInner() {
-  const router = useRouter();
-  const sp = useSearchParams();
-  const redirectTo = sp.get("redirect") ?? "/dashboard";
-
-  const [mode, setMode] = useState<"LOGIN" | "SIGNUP">("LOGIN");
-  const [phone, setPhone] = useState("+225");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function submit() {
-    setLoading(true);
-    setError(null);
-    const endpoint = mode === "LOGIN" ? "/api/auth/password/login" : "/api/auth/password/signup";
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, password }),
-    });
-    setLoading(false);
-    if (!res.ok) {
-      const body = (await res.json().catch(() => null)) as unknown;
-      const message =
-        body && typeof body === "object" && "message" in body
-          ? String((body as { message?: unknown }).message ?? "")
-          : "";
-      setError(message || "Erreur");
-      return;
-    }
-    const body = (await res.json().catch(() => null)) as unknown;
-    const apiRedirectTo =
-      body && typeof body === "object" && "redirectTo" in body
-        ? String((body as { redirectTo?: unknown }).redirectTo ?? "")
-        : "";
-    router.replace(apiRedirectTo || redirectTo);
-    router.refresh();
-  }
-
-  return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl items-center px-4 py-8 md:px-8">
-      <section className="elima-card mx-auto w-full max-w-lg space-y-5">
-        <h1 className="text-2xl font-bold">Connexion</h1>
-        <p className="text-sm text-slate-600">Saisissez votre numéro et votre mot de passe.</p>
-
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setMode("LOGIN")}
-            className={mode === "LOGIN" ? "rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white" : "rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"}
-          >
-            Se connecter
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("SIGNUP")}
-            className={mode === "SIGNUP" ? "rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white" : "rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"}
-          >
-            Créer un compte
-          </button>
-        </div>
-
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Téléphone</label>
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+2250102030405"
-            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
-          />
-
-          <label className="block text-sm font-medium text-slate-700">Mot de passe</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
-          />
-
-          {error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-
-          <button
-            disabled={loading}
-            onClick={submit}
-            className="w-full rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            {loading ? "…" : mode === "LOGIN" ? "Se connecter" : "Créer"}
-          </button>
-        </div>
-      </section>
-    </main>
-  );
-}
+import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function PhonePasswordLoginPage() {
-  return (
-    <Suspense>
-      <PhonePasswordLoginInner />
-    </Suspense>
-  );
+  const router = useRouter();
+  const [phone, setPhone] = useState('+225');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true); setError('');
+    try {
+      const response = await fetch('/api/auth/password/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, password }),
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.message || 'Connexion indisponible.');
+      router.replace(body.redirectTo || '/student');
+      router.refresh();
+    } catch (caught) { setError(caught instanceof Error ? caught.message : 'Connexion momentanément indisponible.'); }
+    finally { setLoading(false); }
+  }
+  return <main className="mx-auto flex min-h-dvh w-full max-w-5xl items-center px-4 py-8">
+    <section className="elima-card mx-auto w-full max-w-lg space-y-5">
+      <h1 className="text-2xl font-bold">Connexion Elima</h1>
+      <p className="text-sm text-slate-600">Votre numéro WhatsApp et votre mot de passe suffisent.</p>
+      <form onSubmit={submit} className="space-y-4">
+        <label className="block text-sm">Numéro WhatsApp
+          <input type="tel" name="phone" autoComplete="username" required value={phone} onChange={e => setPhone(e.target.value)} className="mt-1 w-full rounded-xl border p-3" />
+        </label>
+        <label className="block text-sm">Mot de passe
+          <input type="password" name="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} className="mt-1 w-full rounded-xl border p-3" />
+        </label>
+        {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+        <button disabled={loading} className="w-full rounded-xl bg-[var(--primary)] p-3 font-semibold text-white disabled:opacity-60">{loading ? 'Connexion…' : 'Se connecter'}</button>
+      </form>
+      <div className="flex flex-wrap justify-between gap-3 text-sm">
+        <Link href="/signup/student">Créer un compte</Link>
+        <Link href="/reset-password">Mot de passe oublié ?</Link>
+      </div>
+      <p className="text-xs text-slate-500">Après inscription ou réinitialisation sur Elima Mobile, revenez vous connecter ici.</p>
+      <div className="flex gap-4 text-sm"><Link href="/login/email">Accès scolaire par email</Link><Link href="/login/teacher-code">Code enseignant</Link></div>
+    </section>
+  </main>;
 }

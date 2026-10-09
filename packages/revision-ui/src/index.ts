@@ -4,3 +4,4 @@ export * from "./RevisionViews";
 export * from "./subjects";
 export * from './RevisionDocumentScanner';
 export * from './RevisionAccountPanel';
+export * from './RevisionQuizPlayer';

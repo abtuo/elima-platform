@@ -3,6 +3,7 @@ import path from "node:path";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  transpilePackages: ['@elima/auth', '@elima/api-client', '@elima/supabase-client', '@elima/shared-domain', '@elima/revision-core', '@elima/revision-ui'],
   turbopack: {
     root: path.resolve(process.cwd(), "../.."),
   },

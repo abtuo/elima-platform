@@ -30,6 +30,7 @@ export function PortalNavTabs({
       : [
           { href: basePath, label: "Tableau de bord", icon: LayoutDashboard },
           { href: `${basePath}/reports`, label: "Bulletins", icon: FileText },
+          { href: `${basePath}/reviser`, label: "Révision", icon: FileText },
           { href: messagesHref, label: "Messagerie", icon: MessageCircleMore, isMessaging: true },
         ];
 
