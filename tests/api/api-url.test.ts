@@ -42,20 +42,30 @@ test("le futur bootstrap natif peut exiger un backend HTTPS distant", () => {
   assert.equal(normalizeApiBase({ baseUrl: "https://backend.example.com/", environment: "production", requireRemoteBackend: true }), "https://backend.example.com");
 });
 
-test("les APIs Révision utilisent apiFetch sans modifier Supabase/OAuth", async () => {
-  const endpoints = ["account-delete", "learning", "revision-generate", "revision-document-analyze", "revision-document-delete", "identity-bridge", "elima-password-login", "elima-profile", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset"];
-  const sources = await Promise.all([
-    ...["learningService", "revisionDataService", "elimaIdentityService", "registrationService"].map((file) => new URL(`../../apps/mobile/src/services/${file}.ts`, import.meta.url)),
-    new URL("../../apps/revision/src/services/registrationService.ts", import.meta.url),
-    new URL("../../apps/revision/src/services/accountDeletionService.ts", import.meta.url),
-    new URL("../../apps/revision/src/services/revisionDocumentService.ts", import.meta.url),
-    new URL("../../packages/revision-core/src/learningApi.ts", import.meta.url),
-    new URL("../../packages/revision-core/src/revisionApi.ts", import.meta.url),
-  ].map((file) => readFile(file, "utf8")));
-  const source = sources.join("\n");
-  for (const endpoint of endpoints) {
-    assert.ok(source.includes(`apiFetch("/api/${endpoint}"`) || source.includes(`request("/api/${endpoint}"`));
-    assert.ok(!source.includes(`fetch("/api/${endpoint}"`));
+test("les services Mobile/Révision et leurs modules partagés utilisent le client API commun", async () => {
+  // Les wrappers ne contiennent plus les URLs extraites dans auth/revision-core.
+  const implementations: Record<string, string[]> = {
+    "apps/revision/src/services/accountDeletionService.ts": ["account-delete"],
+    "packages/revision-core/src/learningApi.ts": ["learning"],
+    "packages/revision-core/src/revisionApi.ts": ["revision-generate"],
+    "packages/revision-core/src/revisionDocumentService.ts": ["revision-document-analyze", "revision-document-delete"],
+    "packages/auth/src/whatsapp.ts": ["elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset"],
+    "apps/mobile/src/services/elimaIdentityService.ts": ["identity-bridge", "elima-password-login", "elima-profile", "elima-session"],
+    "apps/revision/src/services/elimaIdentityService.ts": ["identity-bridge", "elima-password-login", "elima-profile", "elima-session"],
+  };
+  for (const [file, endpoints] of Object.entries(implementations)) {
+    const source = await readFile(new URL(`../../${file}`, import.meta.url), "utf8");
+    for (const endpoint of endpoints) {
+      assert.match(source, new RegExp(`\\b(?:apiFetch|request)\\s*\\(\\s*(["'])/api/${endpoint}\\1`), `${file}: /api/${endpoint} doit utiliser le client commun`);
+      assert.doesNotMatch(source, new RegExp(`\\bfetch\\s*\\(\\s*(["'])/api/${endpoint}\\1`), `${file}: fetch direct interdit pour /api/${endpoint}`);
+      assert.equal(resolveApiUrl(`/api/${endpoint}`, { baseUrl: "https://api.elima.ci", environment: "production" }), `https://api.elima.ci/api/${endpoint}`);
+    }
+    if (file === "packages/auth/src/whatsapp.ts") {
+      assert.match(source, /\bapiFetch\s*\(\s*path\s*,/, "le helper request doit déléguer au client injecté");
+    }
   }
-  assert.match(source, /fetch\(`\$\{env.elimaIdentityUrl/);
+  for (const app of ["mobile", "revision"]) {
+    const source = await readFile(new URL(`../../apps/${app}/src/services/registrationService.ts`, import.meta.url), "utf8");
+    assert.match(source, /createWhatsAppAuthApi\s*\(\s*apiFetch\s*\)/, `${app}: injecter le client dans l'auth partagée`);
+  }
 });

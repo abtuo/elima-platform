@@ -110,7 +110,7 @@ test("l’onboarding exige et sauvegarde au moins une matière canonique", async
 
 test("le profil permet de modifier les matières sans toucher aux historiques", async () => {
   const profile = await readFile(new URL("../../apps/revision/src/RevisionStudentProfilePage.tsx", import.meta.url), "utf8");
-  const service = await readFile(new URL("../../apps/revision/src/services/subjectPreferencesService.ts", import.meta.url), "utf8");
+  const service = await readFile(new URL("../../packages/revision-core/src/subjectPreferencesService.ts", import.meta.url), "utf8");
   assert.match(profile, /Modifier mes matières/);
   assert.match(profile, /saveSubjectPreferences\(subjectIds\)/);
   assert.match(service, /student_revision_subject_preferences/);
@@ -118,8 +118,8 @@ test("le profil permet de modifier les matières sans toucher aux historiques", 
 });
 
 test("Scanner gère caméra, formats, états, historique et quiz documentaire", async () => {
-  const scanner = await readFile(new URL("../../apps/revision/src/features/revision/DocumentScannerPanel.tsx", import.meta.url), "utf8");
-  const service = await readFile(new URL("../../apps/revision/src/services/revisionDocumentService.ts", import.meta.url), "utf8");
+  const scanner = await readFile(new URL("../../packages/revision-ui/src/RevisionDocumentScanner.tsx", import.meta.url), "utf8");
+  const service = await readFile(new URL("../../packages/revision-core/src/revisionDocumentService.ts", import.meta.url), "utf8");
   for (const value of ["capture=\"environment\"", "application/pdf,image/jpeg,image/png", "Document importé", "Analyser", "Analyse du document", "Mes documents", "Réviser les notions", 'source: "document"', "saveDocumentAnalysisAsSheet", "ensureDocumentAnalysisSheets"]) assert.match(scanner, new RegExp(value));
   assert.match(scanner, /onClick=\{\(\) => void analyzePendingDocument\(\)\}/);
   assert.doesNotMatch(scanner, /onChange=\{\(event\) => void analyzeRevisionDocument/);
@@ -211,7 +211,7 @@ test("login, signup et reset Révision utilisent Identity puis la session techni
   const authProvider = await readFile(new URL("../../apps/revision/src/features/auth/AuthProvider.tsx", import.meta.url), "utf8");
   const identityService = await readFile(new URL("../../apps/revision/src/services/elimaIdentityService.ts", import.meta.url), "utf8");
   const registrationPage = await readFile(new URL("../../apps/revision/src/features/auth/RegistrationPage.tsx", import.meta.url), "utf8");
-  const registrationService = await readFile(new URL("../../apps/revision/src/services/registrationService.ts", import.meta.url), "utf8");
+  const registrationService = await readFile(new URL("../../packages/auth/src/whatsapp.ts", import.meta.url), "utf8");
 
   assert.doesNotMatch(loginPage, /isElimaIdentityConfigured/);
   assert.match(authProvider, /signInWithElimaPassword\(identifier, password\)/);
@@ -231,8 +231,9 @@ test("login, signup et reset Révision utilisent Identity puis la session techni
 test("l’authentification Mobile conserve son routage existant", async () => {
   const loginPage = await readFile(new URL("../../apps/mobile/src/features/auth/LoginPage.tsx", import.meta.url), "utf8");
   const authService = await readFile(new URL("../../apps/mobile/src/services/authService.ts", import.meta.url), "utf8");
-  assert.match(loginPage, /isElimaIdentityConfigured/);
-  assert.match(authService, /mainDbClient\.auth\.signInWithPassword/);
+  assert.match(loginPage, /await signIn\(identifier, password\)/);
+  assert.doesNotMatch(authService, /mainDbClient\.auth\.signInWithPassword/);
+  assert.match(authService, /signInWithElimaPassword/);
 });
 
 test("les packages Révision restent séparés des applications et des espaces School", async () => {

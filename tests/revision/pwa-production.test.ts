@@ -35,7 +35,7 @@ test("les icônes PWA ont exactement les dimensions annoncées", async () => {
 });
 
 test("le Scanner compresse puis envoie en stockage privé seulement au lancement de l’analyse", async () => {
-  const service = await readFile(new URL("../../apps/revision/src/services/revisionDocumentService.ts", import.meta.url), "utf8");
+  const service = await readFile(new URL("../../packages/revision-core/src/revisionDocumentService.ts", import.meta.url), "utf8");
   assert.match(service, /10 \* 1024 \* 1024/);
   assert.match(service, /revision-document-uploads/);
   assert.match(service, /createImageBitmap/);

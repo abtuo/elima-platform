@@ -39,3 +39,23 @@ test("revision-ui ne connaît aucune route Mobile", async () => {
     assert.doesNotMatch(source, /\/student\/reviser|navigate\(|useNavigate|react-router/, file);
   }
 });
+
+test("revision-ui expose le renderer pedagogique partage et ses replis scientifiques surs", async () => {
+  const source = await readFile(new URL("../../packages/revision-ui/src/PedagogicalRenderer.tsx", import.meta.url), "utf8");
+  for (const block of ["heading", "rich_text", "definition", "callout", "formula", "worked_example", "summary", "image", "table", "chart", "diagram", "question", "exercise_group", "guided_activity", "assessment", "document_analysis"]) {
+    assert.match(source, new RegExp(`case ["']${block}["']`));
+  }
+  assert.match(source, /safeImageUri/);
+  assert.match(source, /ScientificChart/); assert.match(source, /ScientificDiagram/);
+  assert.doesNotMatch(source, /dangerouslySetInnerHTML/);
+});
+
+test("les rendus scientifiques sont des SVG déclaratifs, accessibles et réutilisent la géométrie canonique", async () => {
+  const chart = await readFile(new URL("../../packages/revision-ui/src/ScientificChart.tsx", import.meta.url), "utf8");
+  const diagram = await readFile(new URL("../../packages/revision-ui/src/ScientificDiagram.tsx", import.meta.url), "utf8");
+  for (const source of [chart, diagram]) {
+    assert.match(source, /<svg/); assert.match(source, /role="img"/); assert.match(source, /overflow-x-auto/);
+    assert.doesNotMatch(source, /dangerouslySetInnerHTML|<script/i);
+  }
+  assert.match(chart, /buildChartGeometry/); assert.match(diagram, /buildDiagramGeometry/);
+});

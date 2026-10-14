@@ -4,20 +4,22 @@ import test from "node:test";
 import { API_ENDPOINTS, API_ROUTES, REVISION_API_ENDPOINTS } from "../../apps/api/server/routes.mjs";
 import catchAllHandler, { endpointFromRequest } from "../../apps/api/api/[...route].mjs";
 
-test("@elima/api possède les quatorze routes et les douze routes Révision", () => {
+test("@elima/api possède vingt-quatre routes dont la livraison et l’export pédagogiques", () => {
   assert.deepEqual(API_ENDPOINTS, [
+    "revision-subscription", "google-play-rtdn",
     "account-delete",
     "activate-school", "auth-password-reset", "auth-verification-check", "auth-verification-request",
-    "elima-password-login", "elima-profile", "elima-signup", "identity-bridge",
+    "elima-password-login", "elima-session", "elima-profile", "elima-signup", "identity-bridge",
     "learning", "registration-request", "revision-generate", "revision-document-analyze", "revision-document-delete",
+    "pedagogical-resources", "pedagogical-versions", "pedagogical-validation", "pedagogical-publications", "pedagogical-generation", "pedagogical-learning", "pedagogical-export",
   ]);
-  assert.equal(REVISION_API_ENDPOINTS.length, 12);
+  assert.equal(REVISION_API_ENDPOINTS.length, 15);
 });
 
 test("Vercel expose un seul routeur catch-all", async () => {
   const entries = (await readdir(new URL("../../apps/api/api/", import.meta.url))).filter((name) => name.endsWith(".mjs"));
   assert.deepEqual(entries, ["[...route].mjs"]);
-  assert.equal(API_ROUTES.size, 14);
+  assert.equal(API_ROUTES.size, 24);
   assert.equal(endpointFromRequest({ url: "/api/elima-signup" }), "elima-signup");
   assert.equal(endpointFromRequest({ url: "/api/revision-document-analyze?source=scanner" }), "revision-document-analyze");
   assert.equal(endpointFromRequest({ query: { route: ["identity-bridge"] } }), "identity-bridge");

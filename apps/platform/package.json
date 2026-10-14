@@ -6,6 +6,8 @@
   },
   "private": true,
   "scripts": {
+    "predev": "node ../../packages/branding/copy-assets.mjs",
+    "prebuild": "node ../../packages/branding/copy-assets.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -22,7 +24,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@elima/branding": "0.1.0",
     "@elima/api-client": "0.1.0",
+    "@elima/pedagogy": "0.1.0",
     "@elima/revision-core": "0.1.0",
     "@elima/revision-ui": "0.1.0",
     "@elima/auth": "0.1.0",
@@ -35,7 +39,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.575.0",
-    "next": "^16.2.0",
+    "next": "^16.4.0",
     "pdf-lib": "^1.17.1",
     "pdf2json": "^4.0.2",
     "react": "19.2.3",
@@ -55,7 +59,7 @@
     "babel-plugin-react-compiler": "1.0.0",
     "dotenv": "^17.4.2",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "16.4.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"

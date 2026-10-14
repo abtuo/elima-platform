@@ -14,14 +14,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Elima | Gestion scolaire pour écoles d'Afrique de l'Ouest",
-  description:
-    "Elima aide les établissements à piloter élèves, absences, bulletins, communication parents et paiements depuis une seule plateforme.",
-  icons: {
-    icon: [{ url: "/logo_wo_bg.png", type: "image/png" }],
-    shortcut: [{ url: "/logo_wo_bg.png", type: "image/png" }],
-    apple: [{ url: "/logo_wo_bg.png", type: "image/png" }],
-  },
+  title: "Elima Platform — Votre espace scolaire",
+  description: "Connexion et gestion de votre espace scolaire Elima.",
+  robots: { index: false, follow: false },
+  icons: { icon: "/logo_wo_bg.png", apple: "/logo_wo_bg.png" },
 };
 
 export default function RootLayout({

@@ -234,7 +234,7 @@ export async function POST(request: Request) {
 function safeStudentReturn(value: string) {
   try {
     const url = new URL(value);
-    if (url.origin === "https://app.elima.ci" && url.pathname === "/auth/elima/start") return url.toString();
+    if (["https://app.elima.ci", "https://m.elima.ci"].includes(url.origin) && url.pathname === "/auth/elima/start") return url.toString();
     if (process.env.NODE_ENV !== "production" && url.origin === "http://localhost:5173" && url.pathname === "/auth/elima/start") return url.toString();
   } catch { /* URL absente ou invalide */ }
   return null;

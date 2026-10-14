@@ -56,7 +56,7 @@ function safeRedirect(value: string) {
   if (value.startsWith("/") && !value.startsWith("//")) return value;
   try {
     const url = new URL(value);
-    const allowed = url.origin === "https://app.elima.ci" || (process.env.NODE_ENV !== "production" && url.origin === "http://localhost:5173");
+    const allowed = ["https://app.elima.ci", "https://m.elima.ci"].includes(url.origin) || (process.env.NODE_ENV !== "production" && url.origin === "http://localhost:5173");
     return allowed && url.pathname.startsWith("/auth/elima/") ? url.toString() : null;
   } catch { return null; }
 }

@@ -29,8 +29,8 @@ test("le frontend confirme côté serveur, se déconnecte et ne contient aucune 
 });
 
 test("Mes documents permet la suppression et retire la fiche associée par migration", async () => {
-  const panel = await readFile(new URL("../../apps/revision/src/features/revision/DocumentScannerPanel.tsx", import.meta.url), "utf8");
-  const service = await readFile(new URL("../../apps/revision/src/services/revisionDocumentService.ts", import.meta.url), "utf8");
+  const panel = await readFile(new URL("../../packages/revision-ui/src/RevisionDocumentScanner.tsx", import.meta.url), "utf8");
+  const service = await readFile(new URL("../../packages/revision-core/src/revisionDocumentService.ts", import.meta.url), "utf8");
   const migration = await readFile(new URL("../../supabase/migrations/20260930090000_revision_document_deletion.sql", import.meta.url), "utf8");
   assert.match(panel, /Supprimer ce document/); assert.match(service, /\/api\/revision-document-delete/);
   assert.match(migration, /delete from public\.revision_documents/i); assert.match(migration, /delete from public\.user_course_summaries/i); assert.match(migration, /source_document_id = null/i);

@@ -1,12 +1,8 @@
 @import "tailwindcss";
+@import "@elima/branding/tokens.css";
 @source "../../../../packages/revision-ui/src";
 
 :root {
-  --background: #f9fafb;
-  --foreground: #1f2937;
-  --primary: #2e8b57;
-  --secondary: #ffd700;
-  --accent: #1f2937;
   /* Admin overview panel (mockup-inspired, main content only) */
   --dashboard-bg: #f4f1ea;
   --dashboard-forest: #2d5a4c;

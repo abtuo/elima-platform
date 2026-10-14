@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const needsAuth = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
+  const needsAuth = pathname === '/' || protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
 
   if (!needsAuth) return NextResponse.next();
 
@@ -58,5 +58,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/teacher/:path*", "/parent/:path*", "/student/:path*", "/api/:path*"],
+  matcher: ["/", "/dashboard/:path*", "/teacher/:path*", "/parent/:path*", "/student/:path*", "/api/:path*"],
 };

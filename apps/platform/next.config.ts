@@ -8,8 +8,10 @@ const nextConfig: NextConfig = {
     root: path.resolve(process.cwd(), "../.."),
   },
   async redirects() {
-    const mobileAppUrl = (process.env.ELIMA_MOBILE_APP_URL || "https://app.elima.ci").replace(/\/$/, "");
+    const mobileAppUrl = (process.env.ELIMA_MOBILE_APP_URL || "https://m.elima.ci").replace(/\/$/, "");
+    const siteUrl = (process.env.ELIMA_SITE_URL || 'https://elima.ci').replace(/\/$/, '');
     return [
+      ...['/tarifs', '/contact', '/a-propos', '/cgv', '/fonctionnalites/:path*', '/ecoles', '/revision'].map(source => ({ source, destination: `${siteUrl}${source}`, permanent: true })),
       {
         source: "/signup/:path*",
         destination: `${mobileAppUrl}/auth/inscription`,

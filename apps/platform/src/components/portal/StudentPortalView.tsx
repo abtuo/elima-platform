@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactElement } from "react";
 import {
   Bell,
   BookOpen,
@@ -52,7 +52,7 @@ function QuickAction({
   external = false,
 }: {
   href: string;
-  icon: ReactNode;
+  icon: ReactElement;
   label: string;
   external?: boolean;
 }) {
@@ -79,7 +79,7 @@ function QuickAction({
 
   return (
     <Link href={href} className={className}>
-      {icon}
+      {icon as unknown as ComponentProps<typeof Link>["children"]}
       {label}
     </Link>
   );

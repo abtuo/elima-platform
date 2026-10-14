@@ -3,9 +3,14 @@ import test from "node:test";
 import {
   clearAuthSession,
   hasUsableAccessToken,
+  NativeSecureStorage,
+  readAsyncAuthSession,
   readAuthSession,
+  WebStorage,
+  writeAsyncAuthSession,
   writeAuthSession,
   type AuthStorage,
+  type NativeSecureStorageDriver,
 } from "../../packages/auth/src/storage.ts";
 import { normalizeEmail, normalizePhone, phoneToEmail } from "../../packages/auth/src/identity.ts";
 
@@ -54,4 +59,55 @@ test("Auth nettoie la session au logout", () => {
   writeAuthSession(storage, "session", { accessToken: "access", expiresAt: 123 });
   clearAuthSession(storage, "session");
   assert.equal(readAuthSession(storage, "session"), null);
+});
+
+test("WebStorage conserve le contrat navigateur existant", () => {
+  const previous = globalThis.localStorage;
+  const storage = memoryStorage() as Storage;
+  Object.defineProperty(globalThis, "localStorage", { configurable: true, value: storage });
+  try {
+    const web = new WebStorage("localStorage");
+    web.setItem("session", "value");
+    assert.equal(web.getItem("session"), "value");
+    web.removeItem("session");
+    assert.equal(web.getItem("session"), null);
+  } finally {
+    Object.defineProperty(globalThis, "localStorage", { configurable: true, value: previous });
+  }
+});
+
+test("NativeSecureStorage migre une ancienne session puis utilise le coffre", async () => {
+  const legacy = memoryStorage();
+  legacy.setItem("session", JSON.stringify({ accessToken: "legacy-access", refreshToken: "legacy-refresh", expiresAt: 123 }));
+  const values = new Map<string, string>();
+  let prefix = "";
+  const driver: NativeSecureStorageDriver = {
+    async setKeyPrefix(value) { prefix = value; },
+    async getItem(key) { return values.get(key) ?? null; },
+    async setItem(key, value) { values.set(key, value); },
+    async removeItem(key) { values.delete(key); },
+  };
+  const native = new NativeSecureStorage(legacy, driver);
+  assert.equal((await readAsyncAuthSession(native, "session"))?.refreshToken, "legacy-refresh");
+  assert.equal(prefix, "elima_revision_auth_");
+  assert.equal(legacy.getItem("session"), null);
+
+  await writeAsyncAuthSession(native, "session", { accessToken: "native-access", expiresAt: 456 });
+  assert.equal((await readAsyncAuthSession(native, "session"))?.accessToken, "native-access");
+});
+
+test("le coffre indisponible ne perd pas la session a migrer et ne replie pas les ecritures", async () => {
+  const legacy = memoryStorage();
+  legacy.setItem("session", "original");
+  const driver: NativeSecureStorageDriver = {
+    async setKeyPrefix() {},
+    async getItem() { return null; },
+    async setItem() { throw new Error("secure storage unavailable"); },
+    async removeItem() {},
+  };
+  const native = new NativeSecureStorage(legacy, driver);
+  await assert.rejects(native.getItem("session"));
+  assert.equal(legacy.getItem("session"), "original");
+  await assert.rejects(native.setItem("other-session", "secret"));
+  assert.equal(legacy.getItem("other-session"), null);
 });

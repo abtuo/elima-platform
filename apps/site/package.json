@@ -1,0 +1,31 @@
+{
+  "name": "@elima/site",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "predev": "node ../../packages/branding/copy-assets.mjs",
+    "dev": "next dev --port 3001",
+    "prebuild": "node ../../packages/branding/copy-assets.mjs",
+    "build": "next build",
+    "start": "next start --port 3001",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test src/lib/__tests__/*.test.ts"
+  },
+  "dependencies": {
+    "@elima/branding": "0.1.0",
+    "clsx": "2.1.1",
+    "lucide-react": "0.575.0",
+    "next": "16.4.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.2.1",
+    "tailwindcss": "4.2.1",
+    "@types/node": "20.19.35",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  }
+}

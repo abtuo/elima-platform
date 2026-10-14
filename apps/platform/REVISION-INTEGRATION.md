@@ -11,11 +11,11 @@ Variables Platform :
 - `NEXT_PUBLIC_SUPABASE_URL=https://nnsgvnjzfrcmbxfwlyow.supabase.co`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` : clé publique Identity
 - `SUPABASE_SERVICE_ROLE_KEY` : clé serveur Identity, jamais publique
-- `ELIMA_API_BASE_URL=https://elima-api.vercel.app` : appels serveur login/bridge
-- `NEXT_PUBLIC_REVISION_API_BASE_URL=https://elima-api.vercel.app` : services Révision navigateur
+- `ELIMA_API_BASE_URL=https://api.elima.ci` : appels serveur login/bridge
+- `NEXT_PUBLIC_REVISION_API_BASE_URL=https://api.elima.ci` : services Révision navigateur
 - `NEXT_PUBLIC_REVISION_SUPABASE_URL=https://rydnrvvmwixrkmnvpajf.supabase.co`
 - `NEXT_PUBLIC_REVISION_SUPABASE_ANON_KEY` : clé publique Révision
-- `ELIMA_MOBILE_APP_URL=https://app.elima.ci` : inscription/reset partagés existants
+- `ELIMA_MOBILE_APP_URL=https://m.elima.ci` : inscription/reset partagés existants
 - Conserver les variables scolaires/communications existantes et `APP_ENV=production`, `ELIMA_APP_MODE=saas`.
 
 Dans **API**, conserver les deux configurations Supabase séparées, Twilio/Azure et
