@@ -17,7 +17,7 @@ export const MARKETING_PLANS: MarketingPlan[] = [
   {
     id: "basic",
     title: "Basic",
-    price: "1 000 FCFA par élève par mois",
+    price: "1 500 FCFA par élève par mois",
     cta: "Demander une démo",
     ctaHref: "/contact",
     features: [
@@ -38,7 +38,7 @@ export const MARKETING_PLANS: MarketingPlan[] = [
   {
     id: "premium",
     title: "Premium",
-    price: "1 500 FCFA par élève par mois",
+    price: "2 000 FCFA par élève par mois",
     cta: "Demander une démo",
     ctaHref: "/contact",
     highlight: true,

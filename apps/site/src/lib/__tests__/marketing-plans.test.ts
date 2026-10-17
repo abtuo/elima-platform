@@ -13,7 +13,7 @@ test("MARKETING_PLANS exposes three tiers in order", () => {
 test("basic plan shows monthly per-student price and 24h support only there", () => {
   const basic = MARKETING_PLANS.find((p) => p.id === "basic");
   assert.ok(basic);
-  assert.equal(basic!.price, "1 000 FCFA par élève par mois");
+  assert.equal(basic!.price, "1 500 FCFA par élève par mois");
   assert.equal(basic!.highlight, undefined);
   assert.equal(basic!.cta, "Demander une démo");
   assert.equal(basic!.ctaHref, "/contact");
@@ -24,7 +24,7 @@ test("basic plan shows monthly per-student price and 24h support only there", ()
 test("premium is highlighted with monthly per-student price and priority support only", () => {
   const premium = MARKETING_PLANS.find((p) => p.id === "premium");
   assert.ok(premium);
-  assert.equal(premium!.price, "1 500 FCFA par élève par mois");
+  assert.equal(premium!.price, "2 000 FCFA par élève par mois");
   assert.equal(premium!.highlight, true);
   assert.equal(premium!.cta, "Demander une démo");
   assert.equal(premium!.ctaHref, "/contact");

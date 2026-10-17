@@ -13,7 +13,10 @@ import {
   BookOpen,
   CheckCircle2,
   ClipboardCheck,
+  CreditCard,
   GraduationCap,
+  MessageCircleMore,
+  School,
   ShieldCheck,
   Sparkles,
   Ticket,
@@ -38,103 +41,98 @@ export default function Home() {
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-4 py-6 md:px-8 md:py-10">
         <MarketingHeader />
 
-        <header className="grid items-stretch gap-8 md:grid-cols-3">
-          <Reveal className="flex h-full min-h-0 flex-col justify-between space-y-5" delayMs={50}>
-            <div className="space-y-5">
-              <h1 className="text-4xl font-bold leading-tight tracking-tight text-[var(--accent)] md:text-5xl">
-                Pilotez votre école avec
-                <span className="text-[var(--primary)]"> plus de clarté</span>,
-                <span className="text-[var(--primary)]"> plus de confiance</span>,
-                <span className="text-[var(--primary)]"> plus de revenus</span>.
+        <header className="relative isolate grid min-w-0 items-start gap-x-6 gap-y-8 overflow-hidden rounded-[2rem] border border-white/80 px-5 py-10 shadow-[0_24px_70px_rgba(15,64,45,0.12)] sm:px-8 sm:py-12 lg:min-h-[690px] lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:px-10 lg:py-14 xl:px-12">
+          <Image
+            src="/hero_landscape.png"
+            alt="Des élèves devant leur établissement scolaire équipé avec Elima"
+            fill
+            priority
+            sizes="(max-width: 1152px) 100vw, 1152px"
+            className="-z-20 object-cover object-[64%_center] lg:object-center"
+          />
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-white/95 via-white/85 to-white/25 lg:bg-gradient-to-r lg:from-white lg:via-white/85 lg:to-transparent" />
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-1/3 bg-gradient-to-t from-emerald-950/10 to-transparent" />
+
+          <Reveal className="relative z-10 min-w-0 lg:col-start-1 lg:row-start-1" delayMs={50}>
+            <div className="min-w-0 max-w-2xl">
+              <h1 className="text-[2.7rem] font-bold leading-[1.03] tracking-[-0.04em] text-[var(--accent)] sm:text-[3.2rem] lg:text-[clamp(2.45rem,3.1vw,2.9rem)]">
+                <span className="block lg:whitespace-nowrap">Transformer l’éducation</span>
+                <span className="block text-[var(--primary)] lg:whitespace-nowrap">en Afrique à l’ère</span>
+                <span className="block text-[var(--primary)] lg:whitespace-nowrap">du numérique.</span>
               </h1>
 
-              <p className="max-w-xl text-base leading-7 text-slate-600">
-                Elima centralise la gestion des élèves, des absences, des bulletins, de la communication parents et des
-                paiements, des achats de fournitures dans une seule plateforme — enrichie par l&apos;IA pour mieux anticiper et décider.
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+                Avec Elima, simplifiez la gestion scolaire, fluidifiez la communication avec les familles, centralisez les paiements et offrez à chaque élève une révision personnalisée par l’IA.
               </p>
-            </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white hover:opacity-90"
-              >
-                Demander une démo
-              </Link>
-              <Link
-                href={platformLoginUrl}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-              >
-                Se connecter
-              </Link>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link
+                  href="/contact"
+                  className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-900/15 transition duration-300 hover:-translate-y-0.5 hover:brightness-105"
+                >
+                  Démarrer gratuitement
+                </Link>
+                <Link
+                  href={platformLoginUrl}
+                  className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-300/90 bg-white/90 px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:text-[var(--primary)]"
+                >
+                  Se connecter
+                </Link>
+              </div>
+
             </div>
-            <p className="text-sm text-slate-600">Vous êtes élève ? <Link href="/#revision" className="font-semibold text-[var(--primary)] underline">Découvrir Elima Révision</Link></p>
           </Reveal>
 
-          <Reveal className="relative flex h-full min-h-0 flex-col gap-4 md:col-span-2" delayMs={140}>
-            <div className="absolute -inset-4 -z-10 rounded-[32px] bg-gradient-to-br from-[var(--primary)]/25 to-[var(--secondary)]/25 blur-xl" />
-            <div className="flex h-full min-h-0 flex-1 flex-col gap-4 rounded-[32px] border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="relative min-h-[260px] w-full flex-1 overflow-hidden rounded-3xl border border-slate-200">
-                <video
-                  className="h-full w-full object-cover"
-                  src="/videos/5388900_Coll_wavebreak_Class_3840x2160.mp4"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
-              </div>
+          <Reveal className="relative z-0 min-h-[400px] min-w-0 w-full sm:min-h-[500px] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:min-h-[575px]" delayMs={140}>
+            <div aria-hidden className="absolute bottom-[-2%] left-[4%] h-[58%] w-[88%] rounded-full bg-gradient-to-r from-emerald-300/45 via-sky-200/35 to-violet-300/45 blur-3xl" />
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                {[
-                  { k: "Moins d'admin", v: "Des heures économisées chaque semaine sur les tâches répétitives." },
-                  { k: "Plus de revenus", v: "Un suivi des paiements et achats plus net pour réduire les impayés." },
-                  { k: "Parents engagés", v: "Une communication régulière via les canaux qu'ils utilisent déjà." },
-                ].map((stat) => (
-                  <div key={stat.v} className="rounded-2xl border border-slate-200/70 bg-white/70 p-4 shadow-sm">
-                    <p className="text-sm font-bold text-[var(--accent)]">{stat.k}</p>
-                    <p className="mt-1 text-xs font-medium text-slate-600">{stat.v}</p>
-                  </div>
-                ))}
-              </div>
+            <div className="absolute bottom-[3%] left-[1%] z-10 w-[84%] overflow-hidden rounded-xl border border-white/90 bg-white/95 p-1 shadow-[0_30px_70px_rgba(15,64,45,0.25)] ring-1 ring-emerald-100/70 backdrop-blur-sm transition duration-500 ease-out hover:-translate-y-2 hover:rotate-0 hover:shadow-[0_36px_85px_rgba(15,64,45,0.32)] sm:left-0 sm:w-[86%] sm:rounded-2xl sm:p-1.5 lg:bottom-[-8%] lg:w-[80%] lg:-rotate-2">
+              <Image
+                src="/web_view.png"
+                alt="Tableau de bord web Elima pour la gestion d’un établissement"
+                width={1536}
+                height={1080}
+                loading="eager"
+                sizes="(max-width: 1023px) 82vw, 44vw"
+                className="h-auto w-full rounded-[0.6rem] sm:rounded-xl"
+              />
+              <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-br from-white/25 via-transparent to-emerald-100/15" />
+            </div>
+
+            <div className="absolute bottom-0 right-[1%] z-20 w-[32%] overflow-hidden rounded-[1.15rem] border border-white bg-white/95 p-1 shadow-[0_30px_70px_rgba(76,29,149,0.28)] ring-1 ring-violet-200/70 backdrop-blur-sm transition duration-500 ease-out hover:-translate-y-3 hover:rotate-0 hover:scale-[1.03] hover:shadow-[0_38px_90px_rgba(76,29,149,0.34)] sm:right-0 sm:w-[32%] sm:rounded-[1.65rem] sm:p-1.5 lg:bottom-[-5%] lg:w-[34%] lg:rotate-3">
+              <Image
+                src="/mobiles_view.png"
+                alt="Vue mobile Elima de révision personnalisée pour les élèves"
+                width={768}
+                height={1024}
+                sizes="(max-width: 1023px) 25vw, 13vw"
+                className="h-auto w-full rounded-[0.85rem] sm:rounded-[1.25rem]"
+              />
+              <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-br from-white/30 via-transparent to-violet-100/20" />
+            </div>
+          </Reveal>
+
+          <Reveal className="relative z-10 min-w-0 lg:col-start-1 lg:row-start-2" delayMs={190}>
+            <div className="grid min-w-0 grid-cols-2 gap-3" aria-label="Les bénéfices Elima">
+              {[
+                { label: "Gestion scolaire", icon: School, tone: "bg-emerald-50 text-emerald-700" },
+                { label: "Communication familles", icon: MessageCircleMore, tone: "bg-amber-50 text-amber-700" },
+                { label: "Paiements simplifiés", icon: CreditCard, tone: "bg-blue-50 text-blue-700" },
+                { label: "Révision personnalisée par l’IA", icon: Sparkles, tone: "bg-violet-50 text-violet-700" },
+              ].map((benefit) => (
+                <div
+                  key={benefit.label}
+                  className="group flex min-h-20 min-w-0 items-center gap-3 rounded-2xl border border-white/90 bg-white/85 p-3 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur-md transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_34px_rgba(15,23,42,0.11)]"
+                >
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${benefit.tone}`}>
+                    <benefit.icon aria-hidden size={19} strokeWidth={2.2} />
+                  </span>
+                  <span className="min-w-0 text-xs font-bold leading-5 text-[var(--accent)] sm:text-sm">{benefit.label}</span>
+                </div>
+              ))}
             </div>
           </Reveal>
         </header>
-
-        <Reveal>
-          <section className="relative -mx-4 overflow-hidden md:-mx-8">
-            <div className="relative md:aspect-[21/9]">
-              <div className="relative aspect-[16/10] w-full sm:aspect-[16/9] md:absolute md:inset-0 md:aspect-auto">
-                <Image
-                  src="/illustration_web_2.png"
-                  alt="Elima: gestion scolaire, communication parents, paiements et achats de fournitures en une seule plateforme"
-                  fill
-                  priority
-                  sizes="100vw"
-                  className="object-cover object-[left_center] sm:object-[30%_center] md:object-[38%_center]"
-                />
-                <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-l from-white/85 via-white/40 to-transparent md:block" />
-              </div>
-              <div className="relative bg-white px-4 py-6 md:absolute md:inset-0 md:flex md:items-center md:bg-transparent md:px-0 md:py-0">
-                <div className="mx-auto w-full max-w-6xl md:px-8">
-                  <div className="w-full space-y-3 md:ml-auto md:w-1/3 md:rounded-2xl md:bg-white/90 md:p-6 md:shadow-sm md:backdrop-blur-sm">
-                    <p className="inline-flex items-center gap-2 rounded-full bg-[var(--secondary)]/15 px-3 py-1 text-xs font-semibold text-[var(--accent)] md:bg-white/80 md:shadow-sm">
-                      <span className="h-2 w-2 rounded-full bg-[var(--primary)]" />
-                      Une école connectée
-                    </p>
-                    <h2 className="text-2xl font-bold leading-tight text-[var(--accent)] md:text-3xl">
-                      De la direction aux familles, tout converge dans Elima.
-                    </h2>
-                    <p className="text-sm leading-relaxed text-slate-700 md:text-base">
-                      Pilotage scolaire, communication parents, paiements et achats de fournitures connectés dans une expérience pensée pour l'Afrique.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </Reveal>
 
         <section id="roles">
           <Reveal>

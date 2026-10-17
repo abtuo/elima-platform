@@ -39,8 +39,16 @@ test('Site conserve la landing et reste indépendant des applications métier', 
   const root = join(process.cwd(), 'src');
   function walk(dir: string): string[] { return readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)]); }
   const source = walk(root).filter(p => /\.(tsx?|mjs)$/.test(p) && !p.includes('__tests__')).map(p => readFileSync(p, 'utf8')).join('\n');
-  assert.match(source, /Pilotez votre école avec/);
-  assert.match(source, /Demander une démo/);
+  assert.match(source, /Transformer l’éducation/);
+  assert.match(source, /en Afrique à/);
+  assert.match(source, /l’ère/);
+  assert.match(source, /du numérique/);
+  assert.doesNotMatch(source, /L’éducation d’aujourd’hui, un meilleur demain/);
+  assert.match(source, /Démarrer gratuitement/);
+  assert.match(source, /hero_landscape\.png/);
+  assert.match(source, /web_view\.png/);
+  assert.match(source, /mobiles_view\.png/);
+  assert.doesNotMatch(readFileSync('src/app/page.tsx', 'utf8'), /<video|5388900_Coll_wavebreak/);
   assert.match(source, /Scanner de documents/);
   assert.doesNotMatch(source, /from\s+['"][^'"]*(apps\/(platform|mobile|revision)|@elima\/(auth|revision-core|revision-ui)|supabase)/);
   assert.doesNotMatch(source, /\.vercel\.app|document\.cookie|\/api\/auth\//);
