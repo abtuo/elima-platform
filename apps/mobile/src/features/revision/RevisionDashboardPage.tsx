@@ -150,6 +150,8 @@ export function RevisionDashboardPage() {
     <PageContainer><div className="mb-4 flex gap-4 text-sm font-semibold text-revision"><Link to="/student/documents">Scanner / documents</Link><Link to="/student/reviser/compte">Mes matières et abonnement</Link></div>
       <AppHeader title="Réviser" subtitle="QCM, parcours et fiches de révision" accent="#7C3AED" />
 
+      <Link to="/student/reviser/supports" className="card mb-5 flex items-center gap-4 p-4"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-100 text-emerald-700"><BookOpen className="h-5 w-5" /></span><span className="min-w-0 flex-1"><strong className="block text-accent">Supports de mes enseignants</strong><span className="text-xs text-gray-500">Cours, exercices et évaluations affectés</span></span><ChevronRight className="h-5 w-5 text-gray-300" /></Link>
+
       <div className="mb-5 grid grid-cols-3 rounded-2xl bg-gray-100 p-1" role="tablist" aria-label="Modes de révision">
         {MODES.map((item) => {
           const Icon = item.icon;

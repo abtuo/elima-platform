@@ -1,0 +1,320 @@
+{
+  "document": {
+    "id": "pedagogy.ci.math.3e.equations.v1",
+    "metadata": {
+      "schemaVersion": "1.0.0",
+      "title": "Équations du premier degré",
+      "description": "Fiche de révision, méthodes, exemples et huit exercices progressifs sur les équations du premier degré.",
+      "resourceType": "mixed_support",
+      "language": "fr",
+      "countryCode": "CI",
+      "educationSystem": "programme-ivoirien-a-verifier",
+      "level": "3e",
+      "subject": "Mathématiques",
+      "chapter": "Équations du premier degré",
+      "objectives": [
+        { "id": "obj.identifier", "label": "Reconnaître une équation du premier degré à une inconnue." },
+        { "id": "obj.resoudre", "label": "Résoudre une équation en conservant l’égalité." },
+        { "id": "obj.verifier", "label": "Vérifier une solution par substitution." },
+        { "id": "obj.modeliser", "label": "Mettre un problème en équation." }
+      ],
+      "competencies": [
+        { "id": "skill.transformer", "label": "Transformer une égalité par opérations équivalentes." },
+        { "id": "skill.calculer", "label": "Effectuer des calculs numériques exacts." },
+        { "id": "skill.modeliser", "label": "Traduire une situation par une équation." },
+        { "id": "skill.justifier", "label": "Présenter et vérifier une démarche." }
+      ],
+      "difficulty": "progressive",
+      "estimatedMinutes": 120,
+      "declaredTotalPoints": 20,
+      "references": [
+        {
+          "id": "ref.programme.ci.math.3e.pending",
+          "title": "Positionnement dans le programme ivoirien de Mathématiques 3e — référence officielle à rattacher",
+          "publisher": "Elima — brouillon éditorial",
+          "locator": "Équations du premier degré",
+          "status": "unverified"
+        }
+      ],
+      "validationStatus": "pending_expert_review",
+      "tags": ["équation", "algèbre", "3e", "côte-divoire"]
+    },
+    "blocks": [
+      {
+        "id": "block.title",
+        "type": "heading",
+        "level": 1,
+        "text": "Résoudre une équation du premier degré"
+      },
+      {
+        "id": "block.introduction",
+        "type": "rich_text",
+        "markdown": "Une équation traduit une égalité contenant une inconnue. La résoudre consiste à trouver toutes les valeurs qui rendent cette égalité vraie."
+      },
+      {
+        "id": "block.definition",
+        "type": "definition",
+        "term": "Équation du premier degré",
+        "markdown": "Une équation du premier degré à une inconnue peut être ramenée à la forme $ax+b=0$, avec $a\\neq 0$."
+      },
+      {
+        "id": "block.formula",
+        "type": "formula",
+        "latex": "ax+b=0 \\Longrightarrow x=-\\frac{b}{a},\\quad a\\neq 0",
+        "display": true,
+        "label": "Forme réduite et solution"
+      },
+      {
+        "id": "block.method",
+        "type": "callout",
+        "tone": "method",
+        "title": "Méthode",
+        "markdown": "1. Développer et réduire si nécessaire.\n2. Regrouper les termes en $x$ dans un membre.\n3. Regrouper les nombres dans l’autre membre.\n4. Diviser par le coefficient de $x$.\n5. Vérifier par substitution."
+      },
+      {
+        "id": "block.example",
+        "type": "worked_example",
+        "title": "Exemple guidé : résoudre $3x-5=16$",
+        "promptMarkdown": "On cherche la valeur de $x$ qui rend l’égalité vraie.",
+        "steps": [
+          { "id": "example.step.1", "title": "Isoler le terme en x", "markdown": "$3x-5+5=16+5$, donc $3x=21$." },
+          { "id": "example.step.2", "title": "Diviser", "markdown": "$x=21\\div3=7$." },
+          { "id": "example.step.3", "title": "Vérifier", "markdown": "$3\\times7-5=21-5=16$ : la solution est correcte." }
+        ],
+        "conclusionMarkdown": "L’ensemble des solutions est $S=\\{7\\}$."
+      },
+      {
+        "id": "block.q1",
+        "type": "question",
+        "question": {
+          "id": "math.q1",
+          "type": "single_choice",
+          "title": "Reconnaître une transformation correcte",
+          "promptMarkdown": "Pour passer de $x+7=12$ à une équation équivalente, quelle opération faut-il effectuer ?",
+          "difficulty": "easy",
+          "skillRefs": ["skill.transformer"],
+          "points": 1,
+          "documentRefs": [],
+          "options": [
+            { "id": "math.q1.a", "labelMarkdown": "Ajouter 7 aux deux membres" },
+            { "id": "math.q1.b", "labelMarkdown": "Soustraire 7 aux deux membres" },
+            { "id": "math.q1.c", "labelMarkdown": "Multiplier les deux membres par 7" },
+            { "id": "math.q1.d", "labelMarkdown": "Diviser les deux membres par 12" }
+          ],
+          "responseContract": { "kind": "selection", "minSelections": 1, "maxSelections": 1 },
+          "correctionMode": "deterministic"
+        }
+      },
+      {
+        "id": "block.q2",
+        "type": "question",
+        "question": {
+          "id": "math.q2",
+          "type": "numeric",
+          "title": "Équation immédiate",
+          "promptMarkdown": "Résous $x-9=4$.",
+          "difficulty": "easy",
+          "skillRefs": ["skill.transformer", "skill.calculer"],
+          "points": 1,
+          "documentRefs": [],
+          "responseContract": { "kind": "numeric", "precision": 0 },
+          "correctionMode": "deterministic"
+        }
+      },
+      {
+        "id": "block.q3",
+        "type": "question",
+        "question": {
+          "id": "math.q3",
+          "type": "numeric",
+          "title": "Coefficient de l’inconnue",
+          "promptMarkdown": "Résous $5x=35$.",
+          "difficulty": "easy",
+          "skillRefs": ["skill.transformer", "skill.calculer"],
+          "points": 2,
+          "documentRefs": [],
+          "responseContract": { "kind": "numeric", "precision": 0 },
+          "correctionMode": "deterministic"
+        }
+      },
+      {
+        "id": "block.q4",
+        "type": "question",
+        "question": {
+          "id": "math.q4",
+          "type": "step_resolution",
+          "title": "Deux opérations",
+          "promptMarkdown": "Résous et vérifie $4x+3=19$.",
+          "difficulty": "intermediate",
+          "skillRefs": ["skill.transformer", "skill.calculer", "skill.justifier"],
+          "points": 2,
+          "documentRefs": [],
+          "responseContract": { "kind": "steps", "minSteps": 2, "maxSteps": 5 },
+          "correctionMode": "ai_assisted"
+        }
+      },
+      {
+        "id": "block.q5",
+        "type": "question",
+        "question": {
+          "id": "math.q5",
+          "type": "numeric",
+          "title": "Course en taxi communal",
+          "promptMarkdown": "À Abidjan, une course est modélisée pour l’exercice par un forfait de 500 FCFA et 250 FCFA par kilomètre. Le montant payé est 2 000 FCFA. Quelle distance $x$, en kilomètres, a été parcourue ?",
+          "difficulty": "intermediate",
+          "skillRefs": ["skill.modeliser", "skill.calculer"],
+          "points": 3,
+          "documentRefs": [],
+          "responseContract": { "kind": "numeric", "unit": "km", "precision": 0 },
+          "correctionMode": "deterministic"
+        }
+      },
+      {
+        "id": "block.q6",
+        "type": "question",
+        "question": {
+          "id": "math.q6",
+          "type": "step_resolution",
+          "title": "Inconnue dans les deux membres",
+          "promptMarkdown": "Résous $7x-4=3x+20$ et vérifie la solution.",
+          "difficulty": "intermediate",
+          "skillRefs": ["skill.transformer", "skill.calculer", "skill.justifier"],
+          "points": 3,
+          "documentRefs": [],
+          "responseContract": { "kind": "steps", "minSteps": 3, "maxSteps": 7 },
+          "correctionMode": "ai_assisted"
+        }
+      },
+      {
+        "id": "block.q7",
+        "type": "question",
+        "question": {
+          "id": "math.q7",
+          "type": "step_resolution",
+          "title": "Périmètre d’un terrain",
+          "promptMarkdown": "Un terrain rectangulaire a une longueur supérieure de 8 m à sa largeur. Son périmètre est 64 m. Pose une équation puis détermine ses dimensions.",
+          "difficulty": "advanced",
+          "skillRefs": ["skill.modeliser", "skill.transformer", "skill.justifier"],
+          "points": 4,
+          "documentRefs": [],
+          "responseContract": { "kind": "steps", "minSteps": 4, "maxSteps": 8 },
+          "correctionMode": "ai_assisted"
+        }
+      },
+      {
+        "id": "block.q8",
+        "type": "question",
+        "question": {
+          "id": "math.q8",
+          "type": "step_resolution",
+          "title": "Budget d’une coopérative scolaire",
+          "promptMarkdown": "Une coopérative achète 12 cahiers identiques et paie 1 500 FCFA de transport, pour un total de 7 500 FCFA. Modélise la situation et trouve le prix d’un cahier.",
+          "difficulty": "advanced",
+          "skillRefs": ["skill.modeliser", "skill.transformer", "skill.calculer", "skill.justifier"],
+          "points": 4,
+          "documentRefs": [],
+          "responseContract": { "kind": "steps", "minSteps": 3, "maxSteps": 7 },
+          "correctionMode": "ai_assisted"
+        }
+      },
+      {
+        "id": "block.exercises",
+        "type": "exercise_group",
+        "title": "Huit exercices progressifs",
+        "introductionMarkdown": "Présente les calculs et vérifie les solutions des exercices rédigés.",
+        "questionIds": ["math.q1", "math.q2", "math.q3", "math.q4", "math.q5", "math.q6", "math.q7", "math.q8"]
+      },
+      {
+        "id": "block.assessment",
+        "type": "assessment",
+        "title": "Barème de la série",
+        "instructionsMarkdown": "La série est notée sur 20 points.",
+        "questionIds": ["math.q1", "math.q2", "math.q3", "math.q4", "math.q5", "math.q6", "math.q7", "math.q8"],
+        "declaredPoints": 20,
+        "scale": 20
+      },
+      {
+        "id": "block.errors",
+        "type": "summary",
+        "title": "Erreurs fréquentes à éviter",
+        "items": [
+          "Effectuer une opération dans un seul membre.",
+          "Changer un signe sans expliquer l’opération effectuée.",
+          "Diviser par zéro.",
+          "Oublier de vérifier la solution dans l’équation de départ.",
+          "Donner un nombre sans unité dans un problème contextualisé."
+        ]
+      }
+    ]
+  },
+  "secrets": {
+    "resourceId": "pedagogy.ci.math.3e.equations.v1",
+    "schemaVersion": "1.0.0",
+    "corrections": [
+      {
+        "questionId": "math.q1",
+        "answerKey": { "kind": "single_choice", "optionId": "math.q1.b" },
+        "correctionMarkdown": "Il faut soustraire 7 aux deux membres : $x+7-7=12-7$, donc $x=5$.",
+        "solutionSteps": [{ "id": "math.q1.s1", "markdown": "Appliquer la même soustraction aux deux membres conserve l’égalité." }],
+        "hints": [{ "id": "math.q1.h1", "level": 1, "markdown": "Cherche l’opération inverse de l’addition de 7." }],
+        "rubric": [{ "id": "math.q1.r1", "criterion": "Choix de la soustraction dans les deux membres", "points": 1 }]
+      },
+      {
+        "questionId": "math.q2",
+        "answerKey": { "kind": "numeric", "value": 13, "tolerance": 0 },
+        "correctionMarkdown": "$x-9=4$ donne $x=4+9=13$.",
+        "solutionSteps": [{ "id": "math.q2.s1", "markdown": "Ajouter 9 aux deux membres." }],
+        "hints": [{ "id": "math.q2.h1", "level": 1, "markdown": "Compense la soustraction de 9." }],
+        "rubric": [{ "id": "math.q2.r1", "criterion": "Valeur exacte", "points": 1 }]
+      },
+      {
+        "questionId": "math.q3",
+        "answerKey": { "kind": "numeric", "value": 7, "tolerance": 0 },
+        "correctionMarkdown": "On divise les deux membres par 5 : $x=35/5=7$.",
+        "solutionSteps": [{ "id": "math.q3.s1", "markdown": "$5x=35$" }, { "id": "math.q3.s2", "markdown": "$x=7$" }],
+        "hints": [{ "id": "math.q3.h1", "level": 1, "markdown": "Quelle opération annule la multiplication par 5 ?" }],
+        "rubric": [{ "id": "math.q3.r1", "criterion": "Division correcte", "points": 1 }, { "id": "math.q3.r2", "criterion": "Solution exacte", "points": 1 }]
+      },
+      {
+        "questionId": "math.q4",
+        "answerKey": { "kind": "steps", "finalAnswer": "x=4", "requiredSteps": ["Soustraire 3 aux deux membres pour obtenir $4x=16$.", "Diviser par 4 pour obtenir $x=4$.", "Vérifier : $4\\times4+3=19$."] },
+        "correctionMarkdown": "$4x+3=19\\Rightarrow4x=16\\Rightarrow x=4$. La substitution confirme la solution.",
+        "solutionSteps": [{ "id": "math.q4.s1", "markdown": "$4x=19-3=16$" }, { "id": "math.q4.s2", "markdown": "$x=16/4=4$" }, { "id": "math.q4.s3", "markdown": "$4\\times4+3=19$" }],
+        "hints": [{ "id": "math.q4.h1", "level": 1, "markdown": "Commence par isoler $4x$." }],
+        "rubric": [{ "id": "math.q4.r1", "criterion": "Transformation", "points": 1 }, { "id": "math.q4.r2", "criterion": "Solution et vérification", "points": 1 }]
+      },
+      {
+        "questionId": "math.q5",
+        "answerKey": { "kind": "numeric", "value": 6, "tolerance": 0, "unit": "km" },
+        "correctionMarkdown": "L’équation est $500+250x=2000$. Donc $250x=1500$ et $x=6$ km.",
+        "solutionSteps": [{ "id": "math.q5.s1", "markdown": "$500+250x=2000$" }, { "id": "math.q5.s2", "markdown": "$250x=1500$" }, { "id": "math.q5.s3", "markdown": "$x=6$ km" }],
+        "hints": [{ "id": "math.q5.h1", "level": 1, "markdown": "Retire d’abord le forfait du montant total." }],
+        "rubric": [{ "id": "math.q5.r1", "criterion": "Équation correcte", "points": 1 }, { "id": "math.q5.r2", "criterion": "Calcul", "points": 1 }, { "id": "math.q5.r3", "criterion": "Résultat avec unité", "points": 1 }]
+      },
+      {
+        "questionId": "math.q6",
+        "answerKey": { "kind": "steps", "finalAnswer": "x=6", "requiredSteps": ["Regrouper les termes en $x$ : $4x-4=20$.", "Ajouter 4 : $4x=24$.", "Diviser par 4 et vérifier."] },
+        "correctionMarkdown": "$7x-4=3x+20\\Rightarrow4x=24\\Rightarrow x=6$.",
+        "solutionSteps": [{ "id": "math.q6.s1", "markdown": "$7x-3x=20+4$" }, { "id": "math.q6.s2", "markdown": "$4x=24$" }, { "id": "math.q6.s3", "markdown": "$x=6$" }],
+        "hints": [{ "id": "math.q6.h1", "level": 1, "markdown": "Soustrais $3x$ aux deux membres." }],
+        "rubric": [{ "id": "math.q6.r1", "criterion": "Regroupement des termes", "points": 1 }, { "id": "math.q6.r2", "criterion": "Calcul de la solution", "points": 1 }, { "id": "math.q6.r3", "criterion": "Vérification", "points": 1 }]
+      },
+      {
+        "questionId": "math.q7",
+        "answerKey": { "kind": "steps", "finalAnswer": "largeur 12 m, longueur 20 m", "requiredSteps": ["Poser la largeur $x$ et la longueur $x+8$.", "Écrire $2x+2(x+8)=64$.", "Résoudre $4x+16=64$, donc $x=12$.", "Conclure et vérifier les dimensions."] },
+        "correctionMarkdown": "Si la largeur vaut $x$, la longueur vaut $x+8$. Le périmètre donne $2x+2(x+8)=64$, donc $4x=48$ et $x=12$. Les dimensions sont 12 m et 20 m.",
+        "solutionSteps": [{ "id": "math.q7.s1", "markdown": "$2x+2(x+8)=64$" }, { "id": "math.q7.s2", "markdown": "$4x+16=64$" }, { "id": "math.q7.s3", "markdown": "$x=12$" }, { "id": "math.q7.s4", "markdown": "La longueur vaut $20$ m et $2(12+20)=64$ m." }],
+        "hints": [{ "id": "math.q7.h1", "level": 1, "markdown": "Appelle $x$ la largeur." }, { "id": "math.q7.h2", "level": 2, "markdown": "Utilise $P=2L+2l$." }],
+        "rubric": [{ "id": "math.q7.r1", "criterion": "Choix de l’inconnue", "points": 1 }, { "id": "math.q7.r2", "criterion": "Mise en équation", "points": 1 }, { "id": "math.q7.r3", "criterion": "Résolution", "points": 1 }, { "id": "math.q7.r4", "criterion": "Conclusion et vérification", "points": 1 }]
+      },
+      {
+        "questionId": "math.q8",
+        "answerKey": { "kind": "steps", "finalAnswer": "500 FCFA", "requiredSteps": ["Poser $x$ le prix d’un cahier.", "Écrire $12x+1500=7500$.", "Résoudre $12x=6000$, donc $x=500$.", "Vérifier le total."] },
+        "correctionMarkdown": "$12x+1500=7500\\Rightarrow12x=6000\\Rightarrow x=500$. Un cahier coûte 500 FCFA.",
+        "solutionSteps": [{ "id": "math.q8.s1", "markdown": "$12x+1500=7500$" }, { "id": "math.q8.s2", "markdown": "$12x=6000$" }, { "id": "math.q8.s3", "markdown": "$x=500$ FCFA" }, { "id": "math.q8.s4", "markdown": "$12\\times500+1500=7500$ FCFA" }],
+        "hints": [{ "id": "math.q8.h1", "level": 1, "markdown": "Le coût des cahiers est $12x$." }],
+        "rubric": [{ "id": "math.q8.r1", "criterion": "Inconnue et équation", "points": 1 }, { "id": "math.q8.r2", "criterion": "Transformations", "points": 1 }, { "id": "math.q8.r3", "criterion": "Résultat avec unité monétaire", "points": 1 }, { "id": "math.q8.r4", "criterion": "Vérification", "points": 1 }]
+      }
+    ]
+  }
+}

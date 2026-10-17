@@ -1,0 +1,17 @@
+{
+  "name": "@elima/pedagogy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --experimental-strip-types --test ../../tests/packages/pedagogy.test.ts"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  }
+}

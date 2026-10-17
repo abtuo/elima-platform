@@ -13,6 +13,7 @@ import { QuizPage } from "@/features/revision/QuizPage";
 import { CoursesPage, CourseSheetDetailPage } from "@/features/revision/CoursesPage";
 import { LearningSolverPage } from "@/features/revision/LearningSolverPage";
 import { LearningResultsPage } from "@/features/revision/LearningResultsPage";
+import { PedagogicalSupportsPage } from "@/features/revision/PedagogicalSupportsPage";
 import { LegalPage } from "@/features/legal/LegalPage";
 import { RevisionShell } from "./RevisionShell";
 import { NativeRuntimeEffects } from "./components/NativeRuntimeEffects";
@@ -92,6 +93,8 @@ function ConfiguredRoutes() {
             <Route path="/student/reviser/quiz" element={<QuizPage />} />
             <Route path="/student/reviser/fiches" element={<CoursesPage />} />
             <Route path="/student/reviser/fiches/:id" element={<CourseSheetDetailPage />} />
+            <Route path="/student/reviser/supports" element={<PedagogicalSupportsPage />} />
+            <Route path="/student/reviser/supports/:publicationId" element={<PedagogicalSupportsPage />} />
             <Route path="/student/profil" element={<RevisionStudentProfilePage />} />
           </Route>
 

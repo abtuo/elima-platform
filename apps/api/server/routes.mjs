@@ -15,6 +15,13 @@ import registrationRequest from "./handlers/registration-request.mjs";
 import revisionDocumentAnalyze from "./handlers/revision-document-analyze.mjs";
 import revisionDocumentDelete from "./handlers/revision-document-delete.mjs";
 import revisionGenerate from "./handlers/revision-generate.mjs";
+import pedagogicalResources from "./handlers/pedagogical-resources.mjs";
+import pedagogicalVersions from "./handlers/pedagogical-versions.mjs";
+import pedagogicalValidation from "./handlers/pedagogical-validation.mjs";
+import pedagogicalPublications from "./handlers/pedagogical-publications.mjs";
+import pedagogicalGeneration from "./handlers/pedagogical-generation.mjs";
+import pedagogicalLearning from "./handlers/pedagogical-learning.mjs";
+import pedagogicalExport from "./handlers/pedagogical-export.mjs";
 
 const POST = ["POST"];
 
@@ -36,6 +43,13 @@ export const API_ROUTES = new Map([
   ["revision-generate", { methods: POST, handler: revisionGenerate }],
   ["revision-document-analyze", { methods: POST, handler: revisionDocumentAnalyze }],
   ["revision-document-delete", { methods: POST, handler: revisionDocumentDelete }],
+  ["pedagogical-resources", { methods: ["GET", "POST"], handler: pedagogicalResources }],
+  ["pedagogical-versions", { methods: ["GET", "POST"], handler: pedagogicalVersions }],
+  ["pedagogical-validation", { methods: ["GET", "POST"], handler: pedagogicalValidation }],
+  ["pedagogical-publications", { methods: ["GET", "POST"], handler: pedagogicalPublications }],
+  ["pedagogical-generation", { methods: ["GET", "POST"], handler: pedagogicalGeneration }],
+  ["pedagogical-learning", { methods: POST, handler: pedagogicalLearning }],
+  ["pedagogical-export", { methods: POST, handler: pedagogicalExport }],
 ]);
 
 export const API_ENDPOINTS = [...API_ROUTES.keys()];
@@ -55,6 +69,7 @@ export const REVISION_API_ENDPOINTS = [
   "revision-generate",
   "revision-document-analyze",
   "revision-document-delete",
+  "pedagogical-learning",
 ];
 
 export function resolveApiRoute(endpoint) {

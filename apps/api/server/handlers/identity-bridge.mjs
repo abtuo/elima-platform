@@ -1,4 +1,5 @@
 import { handleRevisionCors } from "../revisionCors.mjs";
+import { PLATFORM_ORIGIN } from '../platformOrigin.mjs';
 import { randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
@@ -51,7 +52,7 @@ export default async function handler(request, response) {
 
   let profile = null;
   try {
-    const profileResponse = await fetch("https://www.elima.ci/api/mobile/me", { headers: { Authorization: `Bearer ${accessToken}` } });
+    const profileResponse = await fetch(`${PLATFORM_ORIGIN}/api/mobile/me`, { headers: { Authorization: `Bearer ${accessToken}` } });
     if (profileResponse.ok) profile = await profileResponse.json();
   } catch { /* le profil minimal OIDC reste utilisable */ }
 

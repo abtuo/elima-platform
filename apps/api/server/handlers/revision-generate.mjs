@@ -41,11 +41,12 @@ export default async function handler(request, response) {
     const questions = await generateQuiz({ subject, topic, level, source, sourceContext });
     return response.status(200).json({ kind, subject, topic, level, source, questions });
   } catch (error) {
-    try { await refundFailedRevisionQuota(authorized?.admin,reservation,error); } catch (refundError) { error=refundError; }
-    const status = error?.statusCode ?? 500;
-    const message = error?.statusCode && error instanceof Error ? error.message : "La génération est momentanément indisponible.";
-    if (error?.retryAfter) response.setHeader("Retry-After", String(error.retryAfter));
-    return response.status(status).json({ code: error?.code ?? "revision_generation_error", error: message, message, ...(error?.code === "quota_exceeded" ? {feature: error.feature,plan: error.plan,resetAt: error.resetAt} : {}) });
+    let handledError = error;
+    try { await refundFailedRevisionQuota(authorized?.admin,reservation,error); } catch (refundError) { handledError = refundError; }
+    const status = handledError?.statusCode ?? 500;
+    const message = handledError?.statusCode && handledError instanceof Error ? handledError.message : "La génération est momentanément indisponible.";
+    if (handledError?.retryAfter) response.setHeader("Retry-After", String(handledError.retryAfter));
+    return response.status(status).json({ code: handledError?.code ?? "revision_generation_error", error: message, message, ...(handledError?.code === "quota_exceeded" ? {feature: handledError.feature,plan: handledError.plan,resetAt: handledError.resetAt} : {}) });
   }
 }
 

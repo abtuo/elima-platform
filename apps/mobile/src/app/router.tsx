@@ -26,6 +26,7 @@ import { LearningResultsPage } from "@/features/revision/LearningResultsPage";
 import {DocumentScannerPanel} from '@/features/revision/DocumentScannerPanel';
 import {RevisionBoundary} from '@/features/revision/RevisionBoundary';
 import {RevisionAccountPage} from '@/features/revision/RevisionAccountPage';
+import {PedagogicalSupportsPage} from '@/features/revision/PedagogicalSupportsPage';
 
 import { TeacherTodayPage } from "@/features/teacher/TeacherTodayPage";
 import { TeacherClassesPage } from "@/features/teacher/TeacherClassesPage";
@@ -95,6 +96,8 @@ export function AppRouter() {
               <Route path="reviser/quiz" element={<RevisionBoundary><QuizPage /></RevisionBoundary>} />
               <Route path="reviser/fiches" element={<RevisionBoundary><CoursesPage /></RevisionBoundary>} />
               <Route path="reviser/fiches/:id" element={<RevisionBoundary><CourseSheetDetailPage /></RevisionBoundary>} />
+              <Route path="reviser/supports" element={<RevisionBoundary><PedagogicalSupportsPage /></RevisionBoundary>} />
+              <Route path="reviser/supports/:publicationId" element={<RevisionBoundary><PedagogicalSupportsPage /></RevisionBoundary>} />
               <Route path="reviser/compte" element={<RevisionBoundary><RevisionAccountPage/></RevisionBoundary>} />
               <Route path="documents" element={<RevisionBoundary><DocumentScannerPanel /></RevisionBoundary>} />
               <Route path="messages" element={<StudentMessagesPage />} />

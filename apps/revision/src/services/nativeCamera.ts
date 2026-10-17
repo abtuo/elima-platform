@@ -38,6 +38,8 @@ export async function takeNativePhoto() {
   } catch (error) {
     const message = error instanceof Error ? error.message : String((error as { message?: string })?.message ?? "");
     if ((error as { code?: string })?.code === "OS-PLUG-CAMR-0006" || /cancel|annul/i.test(message)) return null;
-    throw new Error("Impossible d’ouvrir la caméra. Vérifie son autorisation ou importe une image.");
+    const failure = new Error("Impossible d’ouvrir la caméra. Vérifie son autorisation ou importe une image.") as Error & { cause?: unknown };
+    failure.cause = error;
+    throw failure;
   }
 }

@@ -1,0 +1,22 @@
+{
+  "country": "Côte d’Ivoire",
+  "countryCode": "CI",
+  "educationSystem": "Système éducatif ivoirien — référentiel à vérifier",
+  "language": "fr",
+  "level": "Terminale",
+  "track": "D",
+  "subject": "SVT",
+  "chapter": "Fonctionnement du tissu nerveux",
+  "objectives": ["Relier la structure du neurone à sa fonction", "Expliquer le potentiel d’action", "Interpréter une transmission synaptique"],
+  "competencies": ["Analyser des données scientifiques", "Interpréter une expérience", "Construire un raisonnement scientifique"],
+  "resourceType": "mixed_support",
+  "difficulty": "progressive",
+  "exerciseCount": 8,
+  "estimatedMinutes": 120,
+  "targetAudience": "student",
+  "detailLevel": "detailed",
+  "totalPoints": 20,
+  "difficultyDistribution": { "easy": 2, "intermediate": 4, "advanced": 2 },
+  "teacherInstructions": "Produire sept exercices progressifs et une situation-problème type BAC, avec tableaux, schémas déclaratifs et corrigés scientifiques détaillés.",
+  "references": []
+}

@@ -12,6 +12,7 @@
     "test": "node --experimental-strip-types --test ../../tests/packages/revision-ui.test.ts"
   },
   "dependencies": {
+    "@elima/pedagogy": "0.1.0",
     "@elima/revision-core": "0.1.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",

@@ -1,0 +1,22 @@
+{
+  "country": "Côte d’Ivoire",
+  "countryCode": "CI",
+  "educationSystem": "Système éducatif ivoirien — référentiel à vérifier",
+  "language": "fr",
+  "level": "3e",
+  "subject": "Mathématiques",
+  "chapter": "Équations du premier degré",
+  "objectives": ["Résoudre une équation du premier degré", "Mettre un problème en équation", "Vérifier une solution"],
+  "competencies": ["Transformer une égalité", "Calculer avec des nombres relatifs", "Modéliser une situation"],
+  "resourceType": "mixed_support",
+  "difficulty": "progressive",
+  "exerciseCount": 8,
+  "estimatedMinutes": 90,
+  "targetAudience": "student",
+  "detailLevel": "detailed",
+  "totalPoints": 20,
+  "difficultyDistribution": { "easy": 3, "intermediate": 3, "advanced": 2 },
+  "contextualExamples": ["Transport à Abidjan", "Achats en francs CFA"],
+  "teacherInstructions": "Inclure des méthodes, des formules LaTeX, des exemples résolus et une synthèse des erreurs fréquentes.",
+  "references": []
+}

@@ -65,8 +65,9 @@ export function createHandler(dependencies = {}) {
       if (inserted.error || !inserted.data) throw documentError(503, "document_storage_unavailable", "Impossible d’enregistrer l’analyse pour le moment.");
       return response.status(201).json({ id: inserted.data.id, createdAt: inserted.data.created_at, status: "ready", analysis });
     } catch (error) {
-      try { await refundFailedRevisionQuota(admin,reservation,error); } catch (refundError) { error=refundError; }
-      return applyRevisionApiError(response, error, "L’analyse du document est momentanément indisponible.");
+      let handledError = error;
+      try { await refundFailedRevisionQuota(admin,reservation,error); } catch (refundError) { handledError = refundError; }
+      return applyRevisionApiError(response, handledError, "L’analyse du document est momentanément indisponible.");
     } finally {
       if (admin && uploadedPath) {
         const removed = await admin.storage.from(UPLOAD_BUCKET).remove([uploadedPath]);

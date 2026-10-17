@@ -6,7 +6,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default defineConfig([
-  globalIgnores(["node_modules/**", "dist/**", "coverage/**", "public/**"]),
+  globalIgnores(["node_modules/**", "dist/**", "coverage/**", "public/**", "android/app/build/**"]),
   {
     files: ["src/**/*.{ts,tsx}", "vite*.ts"],
     extends: [js.configs.recommended, tseslint.configs.recommended],

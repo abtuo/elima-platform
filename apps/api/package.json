@@ -11,11 +11,18 @@
     "build": "node server/validate.mjs",
     "typecheck": "node server/validate.mjs",
     "test": "node --experimental-strip-types --test ../../tests/api/*.test.ts ../../tests/learning/*.test.ts",
-    "lint": "eslint api server --config eslint.config.mjs"
+    "lint": "eslint api server --config eslint.config.mjs",
+    "demo:pdf": "node --experimental-strip-types scripts/generate-pedagogical-pdf-demos.mjs",
+    "audit:pedagogy:performance": "node --experimental-strip-types scripts/measure-pedagogical-pilot.mjs",
+    "test:pedagogy:azure-live": "node --env-file-if-exists=../../.env --experimental-strip-types scripts/verify-pedagogical-azure-live.mjs"
   },
   "dependencies": {
+    "@elima/pedagogy": "0.1.0",
+    "@mathjax/src": "^4.0.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@supabase/supabase-js": "^2.110.5",
-    "google-auth-library": "^11.1.0"
+    "google-auth-library": "^11.1.0",
+    "pdf-lib": "^1.17.1"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",

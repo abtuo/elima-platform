@@ -1,0 +1,436 @@
+{
+  "document": {
+    "id": "pedagogy.ci.svt.terminale-d.tissu-nerveux.v1",
+    "metadata": {
+      "schemaVersion": "1.0.0",
+      "title": "Fonctionnement du tissu nerveux",
+      "description": "Cours structuré, documents scientifiques, sept exercices progressifs et une situation-problème de synthèse sur le neurone et la communication nerveuse.",
+      "resourceType": "mixed_support",
+      "language": "fr",
+      "countryCode": "CI",
+      "educationSystem": "programme-ivoirien-a-verifier",
+      "level": "Terminale",
+      "track": "D",
+      "subject": "SVT",
+      "chapter": "Fonctionnement du tissu nerveux",
+      "objectives": [
+        { "id": "obj.neurone", "label": "Relier l’organisation du neurone à ses fonctions." },
+        { "id": "obj.potentiel", "label": "Expliquer le potentiel de repos et le potentiel d’action." },
+        { "id": "obj.propagation", "label": "Interpréter la propagation du message nerveux." },
+        { "id": "obj.synapse", "label": "Expliquer les étapes d’une transmission synaptique chimique." },
+        { "id": "obj.experimenter", "label": "Analyser des résultats expérimentaux et argumenter." }
+      ],
+      "competencies": [
+        { "id": "skill.identifier-neurone", "label": "Identifier les structures fonctionnelles d’un neurone." },
+        { "id": "skill.interpreter-potentiel", "label": "Lire et interpréter une variation de potentiel membranaire." },
+        { "id": "skill.relier-ions", "label": "Relier flux ioniques et phases du potentiel d’action." },
+        { "id": "skill.expliquer-synapse", "label": "Ordonner et expliquer la transmission synaptique." },
+        { "id": "skill.analyser-experience", "label": "Exploiter un tableau ou une expérience témoin/test." },
+        { "id": "skill.argumenter", "label": "Construire une explication scientifique fondée sur des données." }
+      ],
+      "difficulty": "progressive",
+      "estimatedMinutes": 180,
+      "declaredTotalPoints": 20,
+      "references": [
+        {
+          "id": "ref.openstax.action-potential",
+          "title": "Anatomy and Physiology 2e — 12.4 The Action Potential",
+          "publisher": "OpenStax",
+          "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/12-4-the-action-potential",
+          "license": "OpenStax — conditions de réutilisation à vérifier avant publication",
+          "status": "unverified"
+        },
+        {
+          "id": "ref.openstax.synapse",
+          "title": "Anatomy and Physiology 2e — 12.5 Communication Between Neurons",
+          "publisher": "OpenStax",
+          "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/12-5-communication-between-neurons",
+          "license": "OpenStax — conditions de réutilisation à vérifier avant publication",
+          "status": "unverified"
+        },
+        {
+          "id": "ref.ncbi.neuron-action-potential",
+          "title": "Neuroanatomy, Neuron Action Potential",
+          "publisher": "NCBI Bookshelf / StatPearls",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK546639/",
+          "status": "unverified"
+        },
+        {
+          "id": "ref.programme.ci.svt.terminale-d.pending",
+          "title": "Positionnement dans le programme ivoirien de SVT Terminale D — référence officielle à rattacher",
+          "publisher": "Elima — brouillon éditorial",
+          "locator": "Fonctionnement du tissu nerveux",
+          "status": "unverified"
+        }
+      ],
+      "validationStatus": "pending_expert_review",
+      "tags": ["neurone", "potentiel-action", "synapse", "svt", "terminale-d", "côte-divoire"]
+    },
+    "blocks": [
+      {
+        "id": "block.title",
+        "type": "heading",
+        "level": 1,
+        "text": "Fonctionnement du tissu nerveux"
+      },
+      {
+        "id": "block.introduction",
+        "type": "rich_text",
+        "markdown": "Le tissu nerveux reçoit, traite et transmet des informations. Son unité fonctionnelle principale, le neurone, produit des signaux électriques le long de sa membrane et communique avec d’autres cellules au niveau des synapses."
+      },
+      {
+        "id": "block.neuron-definition",
+        "type": "definition",
+        "term": "Neurone",
+        "markdown": "Cellule excitable spécialisée comportant généralement des dendrites réceptrices, un corps cellulaire intégrateur et un axone conducteur se terminant par des boutons synaptiques."
+      },
+      {
+        "id": "doc.neuron-diagram",
+        "type": "diagram",
+        "diagramType": "anatomical",
+        "title": "Organisation fonctionnelle simplifiée d’un neurone",
+        "descriptionMarkdown": "Schéma conceptuel original Elima : le sens fonctionnel dominant va des dendrites vers le corps cellulaire, puis le long de l’axone jusqu’aux terminaisons synaptiques. Ce schéma doit être validé avant publication.",
+        "nodes": [
+          { "id": "neuron.dendrites", "label": "Dendrites", "description": "Réception de nombreux signaux." },
+          { "id": "neuron.soma", "label": "Corps cellulaire", "description": "Intégration des signaux reçus." },
+          { "id": "neuron.axon", "label": "Axone", "description": "Propagation du potentiel d’action." },
+          { "id": "neuron.terminals", "label": "Terminaisons synaptiques", "description": "Communication avec une cellule cible." }
+        ],
+        "edges": [
+          { "id": "neuron.edge.1", "from": "neuron.dendrites", "to": "neuron.soma", "label": "signaux entrants" },
+          { "id": "neuron.edge.2", "from": "neuron.soma", "to": "neuron.axon", "label": "déclenchement si seuil atteint" },
+          { "id": "neuron.edge.3", "from": "neuron.axon", "to": "neuron.terminals", "label": "propagation" }
+        ],
+        "caption": "Schéma fonctionnel non à l’échelle.",
+        "sourceRefIds": ["ref.openstax.action-potential", "ref.openstax.synapse"]
+      },
+      {
+        "id": "block.resting-potential",
+        "type": "definition",
+        "term": "Potentiel de repos",
+        "markdown": "Différence de potentiel électrique entre les deux faces de la membrane d’un neurone non stimulé. La face interne est négative par rapport à l’extérieur; une valeur voisine de $-70\\,\\text{mV}$ est un ordre de grandeur souvent utilisé, variable selon la cellule et les conditions."
+      },
+      {
+        "id": "doc.ion-table",
+        "type": "table",
+        "title": "Répartition qualitative des principaux ions au repos",
+        "columns": [
+          { "id": "ion", "label": "Ion" },
+          { "id": "inside", "label": "Concentration relative dans le neurone" },
+          { "id": "outside", "label": "Concentration relative hors du neurone" },
+          { "id": "role", "label": "Rôle simplifié" }
+        ],
+        "rows": [
+          { "id": "row.na", "cells": ["Na+", "faible", "élevée", "Entrée lors de la dépolarisation"] },
+          { "id": "row.k", "cells": ["K+", "élevée", "faible", "Sortie lors de la repolarisation"] },
+          { "id": "row.anions", "cells": ["Anions non diffusibles", "élevée", "faible", "Contribuent à la négativité interne"] }
+        ],
+        "caption": "Représentation qualitative : elle ne fournit pas de concentrations absolues.",
+        "sourceRefIds": ["ref.openstax.action-potential", "ref.ncbi.neuron-action-potential"]
+      },
+      {
+        "id": "block.action-potential",
+        "type": "definition",
+        "term": "Potentiel d’action",
+        "markdown": "Variation brève et stéréotypée du potentiel membranaire déclenchée lorsque la dépolarisation atteint un seuil. Elle comporte une dépolarisation, une repolarisation puis souvent une hyperpolarisation transitoire."
+      },
+      {
+        "id": "doc.action-potential-chart",
+        "type": "chart",
+        "chartType": "line",
+        "title": "Évolution schématique du potentiel membranaire",
+        "xAxis": { "label": "Temps", "unit": "ms", "values": [0, 1, 2, 3, 4, 5] },
+        "yAxis": { "label": "Potentiel membranaire", "unit": "mV" },
+        "series": [
+          { "id": "series.membrane-potential", "label": "Potentiel", "values": [-70, -55, 30, 0, -80, -70] }
+        ],
+        "caption": "Courbe schématique destinée à l’analyse des phases; les valeurs et durées exactes dépendent du neurone et des conditions.",
+        "sourceRefIds": ["ref.openstax.action-potential", "ref.ncbi.neuron-action-potential"]
+      },
+      {
+        "id": "block.propagation",
+        "type": "callout",
+        "tone": "method",
+        "title": "Propagation du message",
+        "markdown": "La dépolarisation d’une zone de membrane crée des courants locaux qui amènent la zone voisine au seuil. Un nouveau potentiel d’action y est alors déclenché. La période réfractaire contribue au sens de propagation. Dans un axone myélinisé, la conduction est dite saltatoire entre les nœuds de Ranvier."
+      },
+      {
+        "id": "doc.synapse-diagram",
+        "type": "diagram",
+        "diagramType": "flow",
+        "title": "Étapes d’une transmission synaptique chimique",
+        "descriptionMarkdown": "Schéma conceptuel original Elima des événements présynaptiques et postsynaptiques, à valider par un expert.",
+        "nodes": [
+          { "id": "synapse.ap", "label": "Arrivée du potentiel d’action" },
+          { "id": "synapse.ca", "label": "Ouverture de canaux Ca2+" },
+          { "id": "synapse.release", "label": "Libération du neurotransmetteur" },
+          { "id": "synapse.receptor", "label": "Fixation sur les récepteurs postsynaptiques" },
+          { "id": "synapse.response", "label": "Modification du potentiel postsynaptique" }
+        ],
+        "edges": [
+          { "id": "synapse.edge.1", "from": "synapse.ap", "to": "synapse.ca" },
+          { "id": "synapse.edge.2", "from": "synapse.ca", "to": "synapse.release" },
+          { "id": "synapse.edge.3", "from": "synapse.release", "to": "synapse.receptor" },
+          { "id": "synapse.edge.4", "from": "synapse.receptor", "to": "synapse.response" }
+        ],
+        "caption": "La réponse postsynaptique peut être excitatrice ou inhibitrice selon le neurotransmetteur et le récepteur.",
+        "sourceRefIds": ["ref.openstax.synapse"]
+      },
+      {
+        "id": "block.summary",
+        "type": "summary",
+        "title": "À retenir",
+        "items": [
+          "Le potentiel de repos dépend de gradients ioniques et de la perméabilité sélective de la membrane.",
+          "Le potentiel d’action obéit au principe du tout ou rien une fois le seuil atteint.",
+          "L’intensité d’une stimulation supraliminaire est notamment codée par la fréquence des potentiels d’action, pas par leur amplitude.",
+          "La synapse chimique transforme successivement un signal électrique en signal chimique puis en réponse électrique ou cellulaire."
+        ]
+      },
+      {
+        "id": "block.q1",
+        "type": "question",
+        "question": {
+          "id": "svt.q1",
+          "type": "single_choice",
+          "title": "Fonction de l’axone",
+          "promptMarkdown": "Quelle structure conduit principalement le potentiel d’action du corps cellulaire vers les terminaisons synaptiques ?",
+          "difficulty": "easy",
+          "skillRefs": ["skill.identifier-neurone"],
+          "points": 1,
+          "documentRefs": ["doc.neuron-diagram"],
+          "options": [
+            { "id": "svt.q1.a", "labelMarkdown": "La dendrite" },
+            { "id": "svt.q1.b", "labelMarkdown": "L’axone" },
+            { "id": "svt.q1.c", "labelMarkdown": "Le noyau" },
+            { "id": "svt.q1.d", "labelMarkdown": "La fente synaptique" }
+          ],
+          "responseContract": { "kind": "selection", "minSelections": 1, "maxSelections": 1 },
+          "correctionMode": "deterministic"
+        }
+      },
+      {
+        "id": "block.q2",
+        "type": "question",
+        "question": {
+          "id": "svt.q2",
+          "type": "true_false",
+          "title": "Principe du tout ou rien",
+          "promptMarkdown": "Vrai ou faux : une fois le seuil atteint, une stimulation plus intense augmente fortement l’amplitude de chaque potentiel d’action enregistré dans le même axone.",
+          "difficulty": "easy",
+          "skillRefs": ["skill.interpreter-potentiel"],
+          "points": 1,
+          "documentRefs": ["doc.action-potential-chart"],
+          "responseContract": { "kind": "boolean" },
+          "correctionMode": "deterministic"
+        }
+      },
+      {
+        "id": "block.q3",
+        "type": "question",
+        "question": {
+          "id": "svt.q3",
+          "type": "table_analysis",
+          "title": "Répartition ionique",
+          "promptMarkdown": "À partir du tableau, identifie les deux ions directement associés aux phases de dépolarisation et de repolarisation, puis précise le sens de leur déplacement simplifié.",
+          "difficulty": "intermediate",
+          "skillRefs": ["skill.relier-ions", "skill.analyser-experience"],
+          "points": 2,
+          "documentRefs": ["doc.ion-table"],
+          "responseContract": { "kind": "analysis", "expectedSections": ["dépolarisation", "repolarisation"] },
+          "correctionMode": "human"
+        }
+      },
+      {
+        "id": "block.q4",
+        "type": "question",
+        "question": {
+          "id": "svt.q4",
+          "type": "numeric",
+          "title": "Amplitude sur la courbe schématique",
+          "promptMarkdown": "Sur la courbe fournie, le potentiel passe de $-70$ mV à $+30$ mV. Calcule l’amplitude de cette variation.",
+          "difficulty": "intermediate",
+          "skillRefs": ["skill.interpreter-potentiel"],
+          "points": 2,
+          "documentRefs": ["doc.action-potential-chart"],
+          "responseContract": { "kind": "numeric", "unit": "mV", "precision": 0 },
+          "correctionMode": "deterministic"
+        }
+      },
+      {
+        "id": "block.q5",
+        "type": "question",
+        "question": {
+          "id": "svt.q5",
+          "type": "scientific_document_analysis",
+          "title": "Phases du potentiel d’action",
+          "promptMarkdown": "Décris les phases visibles sur la courbe et relie la dépolarisation et la repolarisation aux mouvements ioniques dominants du modèle étudié.",
+          "difficulty": "intermediate",
+          "skillRefs": ["skill.interpreter-potentiel", "skill.relier-ions", "skill.argumenter"],
+          "points": 3,
+          "documentRefs": ["doc.action-potential-chart", "doc.ion-table"],
+          "responseContract": { "kind": "analysis", "expectedSections": ["description", "interprétation ionique"] },
+          "correctionMode": "human"
+        }
+      },
+      {
+        "id": "doc.experiment-table",
+        "type": "table",
+        "title": "Effet expérimental simplifié du blocage de canaux membranaires",
+        "columns": [
+          { "id": "condition", "label": "Condition" },
+          { "id": "observation", "label": "Observation après stimulation supraliminaire" }
+        ],
+        "rows": [
+          { "id": "experiment.control", "cells": ["Témoin", "Potentiel d’action complet"] },
+          { "id": "experiment.na", "cells": ["Canaux Na+ voltage-dépendants bloqués", "Dépolarisation rapide supprimée"] },
+          { "id": "experiment.k", "cells": ["Canaux K+ voltage-dépendants bloqués", "Repolarisation fortement retardée"] }
+        ],
+        "caption": "Résultats qualitatifs simplifiés pour l’exercice; le protocole et les molécules réelles doivent être précisés avant usage expérimental.",
+        "sourceRefIds": ["ref.openstax.action-potential", "ref.ncbi.neuron-action-potential"]
+      },
+      {
+        "id": "block.q6",
+        "type": "question",
+        "question": {
+          "id": "svt.q6",
+          "type": "experiment_interpretation",
+          "title": "Rôle des canaux ioniques",
+          "promptMarkdown": "Compare chaque condition au témoin et déduis le rôle des canaux Na+ puis K+ dans le potentiel d’action.",
+          "difficulty": "advanced",
+          "skillRefs": ["skill.relier-ions", "skill.analyser-experience", "skill.argumenter"],
+          "points": 3,
+          "documentRefs": ["doc.experiment-table"],
+          "responseContract": { "kind": "analysis", "expectedSections": ["comparaison", "déduction"] },
+          "correctionMode": "human"
+        }
+      },
+      {
+        "id": "block.q7",
+        "type": "question",
+        "question": {
+          "id": "svt.q7",
+          "type": "long_text",
+          "title": "Transmission synaptique",
+          "promptMarkdown": "En t’appuyant sur le schéma, explique dans l’ordre comment l’arrivée d’un potentiel d’action présynaptique peut modifier le potentiel de la cellule postsynaptique.",
+          "difficulty": "advanced",
+          "skillRefs": ["skill.expliquer-synapse", "skill.argumenter"],
+          "points": 3,
+          "documentRefs": ["doc.synapse-diagram"],
+          "responseContract": { "kind": "text", "minLength": 120, "maxLength": 2000 },
+          "correctionMode": "human"
+        }
+      },
+      {
+        "id": "block.exercises",
+        "type": "exercise_group",
+        "title": "Sept exercices progressifs",
+        "introductionMarkdown": "Exploite les documents et justifie les réponses scientifiques.",
+        "questionIds": ["svt.q1", "svt.q2", "svt.q3", "svt.q4", "svt.q5", "svt.q6", "svt.q7"]
+      },
+      {
+        "id": "block.q8",
+        "type": "question",
+        "question": {
+          "id": "svt.q8",
+          "type": "scientific_document_analysis",
+          "title": "Situation-problème type BAC : perte transitoire de sensibilité",
+          "promptMarkdown": "Lors d’un soin, un anesthésique local bloque temporairement certains canaux Na+ voltage-dépendants des neurones sensitifs de la zone traitée. En mobilisant les documents, explique pourquoi le message douloureux atteint moins efficacement le système nerveux central, tout en précisant le caractère transitoire attendu de l’effet.",
+          "difficulty": "advanced",
+          "skillRefs": ["skill.relier-ions", "skill.interpreter-potentiel", "skill.argumenter", "skill.analyser-experience"],
+          "points": 5,
+          "documentRefs": ["doc.neuron-diagram", "doc.action-potential-chart", "doc.experiment-table"],
+          "responseContract": { "kind": "analysis", "expectedSections": ["mécanisme membranaire", "conséquence sur la propagation", "caractère transitoire"] },
+          "correctionMode": "human"
+        }
+      },
+      {
+        "id": "block.document-analysis",
+        "type": "document_analysis",
+        "title": "Exploitation des documents scientifiques",
+        "introductionMarkdown": "Les réponses doivent distinguer les observations fournies par les documents des interprétations biologiques.",
+        "documentRefs": ["doc.neuron-diagram", "doc.ion-table", "doc.action-potential-chart", "doc.synapse-diagram", "doc.experiment-table"],
+        "questionIds": ["svt.q3", "svt.q4", "svt.q5", "svt.q6", "svt.q7", "svt.q8"]
+      },
+      {
+        "id": "block.assessment",
+        "type": "assessment",
+        "title": "Barème global",
+        "instructionsMarkdown": "Les sept exercices et la situation-problème sont évalués sur 20 points.",
+        "questionIds": ["svt.q1", "svt.q2", "svt.q3", "svt.q4", "svt.q5", "svt.q6", "svt.q7", "svt.q8"],
+        "declaredPoints": 20,
+        "scale": 20
+      }
+    ]
+  },
+  "secrets": {
+    "resourceId": "pedagogy.ci.svt.terminale-d.tissu-nerveux.v1",
+    "schemaVersion": "1.0.0",
+    "corrections": [
+      {
+        "questionId": "svt.q1",
+        "answerKey": { "kind": "single_choice", "optionId": "svt.q1.b" },
+        "correctionMarkdown": "L’axone est la structure spécialisée dans la propagation du potentiel d’action vers les terminaisons synaptiques.",
+        "solutionSteps": [{ "id": "svt.q1.s1", "markdown": "Repérer le sens fonctionnel sur le schéma du neurone." }],
+        "hints": [{ "id": "svt.q1.h1", "level": 1, "markdown": "Cherche le long prolongement unique du neurone." }],
+        "rubric": [{ "id": "svt.q1.r1", "criterion": "Identification de l’axone", "points": 1 }]
+      },
+      {
+        "questionId": "svt.q2",
+        "answerKey": { "kind": "boolean", "value": false },
+        "correctionMarkdown": "C’est faux : au-dessus du seuil, l’amplitude du potentiel d’action reste globalement stéréotypée dans un même axone. L’intensité peut notamment être codée par la fréquence des potentiels d’action.",
+        "solutionSteps": [{ "id": "svt.q2.s1", "markdown": "Appliquer le principe du tout ou rien." }],
+        "hints": [{ "id": "svt.q2.h1", "level": 1, "markdown": "Distingue amplitude d’un potentiel d’action et fréquence des potentiels d’action." }],
+        "rubric": [{ "id": "svt.q2.r1", "criterion": "Réponse faux", "points": 1 }]
+      },
+      {
+        "questionId": "svt.q3",
+        "answerKey": { "kind": "scientific_analysis", "expectedObservations": ["Le tableau associe Na+ à la dépolarisation et K+ à la repolarisation."], "expectedInterpretation": ["Une entrée dominante de Na+ accompagne la dépolarisation.", "Une sortie dominante de K+ accompagne la repolarisation dans le modèle simplifié."] },
+        "correctionMarkdown": "La dépolarisation correspond principalement à une entrée de Na+; la repolarisation correspond principalement à une sortie de K+ dans le modèle étudié.",
+        "solutionSteps": [{ "id": "svt.q3.s1", "markdown": "Lire séparément les lignes Na+ et K+." }, { "id": "svt.q3.s2", "markdown": "Associer chaque flux à la phase indiquée." }],
+        "hints": [{ "id": "svt.q3.h1", "level": 1, "markdown": "Relève les verbes « entrée » et « sortie » dans la dernière colonne." }],
+        "rubric": [{ "id": "svt.q3.r1", "criterion": "Entrée de Na+", "points": 1 }, { "id": "svt.q3.r2", "criterion": "Sortie de K+", "points": 1 }]
+      },
+      {
+        "questionId": "svt.q4",
+        "answerKey": { "kind": "numeric", "value": 100, "tolerance": 0, "unit": "mV" },
+        "correctionMarkdown": "L’amplitude est $30-(-70)=100\\,\\text{mV}$.",
+        "solutionSteps": [{ "id": "svt.q4.s1", "markdown": "Calculer la différence entre la valeur maximale et la valeur initiale." }, { "id": "svt.q4.s2", "markdown": "$30+70=100\\,\\text{mV}$." }],
+        "hints": [{ "id": "svt.q4.h1", "level": 1, "markdown": "Soustraire un nombre négatif revient à l’ajouter." }],
+        "rubric": [{ "id": "svt.q4.r1", "criterion": "Calcul", "points": 1 }, { "id": "svt.q4.r2", "criterion": "Valeur avec unité", "points": 1 }]
+      },
+      {
+        "questionId": "svt.q5",
+        "answerKey": { "kind": "scientific_analysis", "expectedObservations": ["Repos autour de -70 mV, montée rapide, descente, hyperpolarisation puis retour au repos."], "expectedInterpretation": ["La dépolarisation est associée à une augmentation de perméabilité au Na+ et à son entrée.", "La repolarisation est associée à l’inactivation des canaux Na+ et à la sortie de K+ dans le modèle simplifié."] },
+        "correctionMarkdown": "La courbe montre successivement le repos, le franchissement du seuil, la dépolarisation, la repolarisation, une hyperpolarisation puis le retour au repos. Le modèle relie la montée à l’entrée de Na+ et la descente à la sortie de K+.",
+        "solutionSteps": [{ "id": "svt.q5.s1", "markdown": "Décrire la courbe sans l’interpréter." }, { "id": "svt.q5.s2", "markdown": "Associer ensuite les flux ioniques aux phases." }],
+        "hints": [{ "id": "svt.q5.h1", "level": 1, "markdown": "Commence par nommer les phases dans l’ordre chronologique." }],
+        "rubric": [{ "id": "svt.q5.r1", "criterion": "Description ordonnée", "points": 1 }, { "id": "svt.q5.r2", "criterion": "Rôle de Na+", "points": 1 }, { "id": "svt.q5.r3", "criterion": "Rôle de K+", "points": 1 }]
+      },
+      {
+        "questionId": "svt.q6",
+        "answerKey": { "kind": "scientific_analysis", "expectedObservations": ["Le blocage des canaux Na+ supprime la dépolarisation rapide.", "Le blocage des canaux K+ retarde la repolarisation."], "expectedInterpretation": ["Les canaux Na+ sont nécessaires à la phase ascendante rapide.", "Les canaux K+ participent au retour vers le potentiel de repos."] },
+        "correctionMarkdown": "Par comparaison au témoin, l’absence de dépolarisation rapide après blocage des canaux Na+ montre leur rôle dans la phase ascendante. Le retard de repolarisation après blocage des canaux K+ montre leur rôle dans la phase descendante.",
+        "solutionSteps": [{ "id": "svt.q6.s1", "markdown": "Comparer chaque test au témoin." }, { "id": "svt.q6.s2", "markdown": "Relier la modification observée au canal bloqué." }],
+        "hints": [{ "id": "svt.q6.h1", "level": 1, "markdown": "Une fonction qui disparaît après un blocage dépend du composant bloqué." }],
+        "rubric": [{ "id": "svt.q6.r1", "criterion": "Comparaison au témoin", "points": 1 }, { "id": "svt.q6.r2", "criterion": "Rôle des canaux Na+", "points": 1 }, { "id": "svt.q6.r3", "criterion": "Rôle des canaux K+", "points": 1 }]
+      },
+      {
+        "questionId": "svt.q7",
+        "answerKey": { "kind": "text", "expectedElements": ["Arrivée du potentiel d’action dans la terminaison présynaptique.", "Ouverture de canaux Ca2+ et entrée de calcium.", "Exocytose du neurotransmetteur dans la fente synaptique.", "Fixation sur des récepteurs postsynaptiques.", "Modification de la perméabilité et du potentiel postsynaptique."] },
+        "correctionMarkdown": "L’arrivée du potentiel d’action ouvre des canaux Ca2+. L’entrée de Ca2+ favorise l’exocytose du neurotransmetteur. Celui-ci diffuse, se fixe à des récepteurs postsynaptiques et modifie l’état électrique ou fonctionnel de la cellule cible.",
+        "solutionSteps": [{ "id": "svt.q7.s1", "markdown": "Suivre les flèches du schéma dans l’ordre." }, { "id": "svt.q7.s2", "markdown": "Distinguer signal électrique, médiateur chimique et réponse postsynaptique." }],
+        "hints": [{ "id": "svt.q7.h1", "level": 1, "markdown": "Repère à quel moment le signal devient chimique." }],
+        "rubric": [{ "id": "svt.q7.r1", "criterion": "Événements présynaptiques", "points": 1 }, { "id": "svt.q7.r2", "criterion": "Libération et fixation du neurotransmetteur", "points": 1 }, { "id": "svt.q7.r3", "criterion": "Réponse postsynaptique", "points": 1 }]
+      },
+      {
+        "questionId": "svt.q8",
+        "answerKey": { "kind": "scientific_analysis", "expectedObservations": ["Le blocage des canaux Na+ supprime la dépolarisation rapide dans le document expérimental."], "expectedInterpretation": ["Sans dépolarisation suffisante, le potentiel d’action ne se déclenche ou ne se propage pas normalement le long des neurones sensitifs.", "Le message douloureux est donc moins transmis vers le système nerveux central.", "L’effet est transitoire si le blocage est réversible et si l’anesthésique est éliminé localement."] },
+        "correctionMarkdown": "Le blocage temporaire des canaux Na+ empêche la phase rapide de dépolarisation nécessaire au potentiel d’action. La propagation dans les fibres sensitives devient inefficace et le message douloureux atteint moins le système nerveux central. Lorsque la molécule se dissocie des canaux et est éliminée, leur fonctionnement peut reprendre, ce qui explique le caractère transitoire attendu.",
+        "solutionSteps": [{ "id": "svt.q8.s1", "markdown": "Identifier la cible : les canaux Na+ voltage-dépendants." }, { "id": "svt.q8.s2", "markdown": "Relier leur blocage à la dépolarisation puis à la propagation." }, { "id": "svt.q8.s3", "markdown": "Relier la propagation réduite à la perception douloureuse." }, { "id": "svt.q8.s4", "markdown": "Expliquer prudemment la réversibilité par un blocage temporaire." }],
+        "hints": [{ "id": "svt.q8.h1", "level": 1, "markdown": "Utilise le résultat de la condition « canaux Na+ bloqués »." }, { "id": "svt.q8.h2", "level": 2, "markdown": "Sans potentiel d’action, que devient la propagation le long de l’axone sensitif ?" }],
+        "rubric": [{ "id": "svt.q8.r1", "criterion": "Rôle des canaux Na+", "points": 1 }, { "id": "svt.q8.r2", "criterion": "Conséquence sur le potentiel d’action", "points": 1 }, { "id": "svt.q8.r3", "criterion": "Conséquence sur la propagation", "points": 1 }, { "id": "svt.q8.r4", "criterion": "Lien avec la douleur", "points": 1 }, { "id": "svt.q8.r5", "criterion": "Caractère transitoire argumenté", "points": 1 }]
+      }
+    ]
+  }
+}
