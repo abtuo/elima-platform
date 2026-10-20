@@ -9,7 +9,8 @@ import { useStore } from "./StoreProvider";
 
 const links = [{ href: "/", label: "Accueil" }, { href: "/catalogue", label: "Catalogue" }, { href: "/kits", label: "Kits scolaires" }, { href: "/catalogue?promotions=1", label: "Promotions" }, { href: "/catalogue?tri=nouveautes", label: "Nouveautés" }, { href: "/mes-enfants", label: "Mes enfants" }];
 
-export function StoreHeader({ catalogMode }: { catalogMode: "database" | "demo" }) {
+export function StoreHeader(props: { catalogMode: "database" | "demo" }) {
+  void props.catalogMode;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const { cartCount, favorites } = useStore();
@@ -17,7 +18,7 @@ export function StoreHeader({ catalogMode }: { catalogMode: "database" | "demo" 
   const router = useRouter();
   function submit(event: FormEvent) { event.preventDefault(); router.push(`/catalogue?q=${encodeURIComponent(query)}`); setOpen(false); }
   return <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-    <div className="bg-[#173f2e] py-2 text-center text-xs font-semibold text-white">{catalogMode === "demo" ? "Aperçu de développement · Catalogue de démonstration" : "Catalogue Elima Store en préparation"} · Aucun paiement activé</div>
+    <div className="bg-[#173f2e] py-2 text-center text-xs font-semibold text-white">Livraison rapide · Paiement à la livraison</div>
     <div className="store-shell flex min-h-18 items-center gap-3 py-3">
       <Link href="/" className="shrink-0" aria-label="Accueil Elima Store"><Image src="/logo.png" alt="Elima" width={145} height={50} className="h-11 w-auto" priority /></Link>
       <span className="hidden border-l border-slate-200 pl-3 text-sm font-bold text-[#1a5f3f] sm:block">STORE</span>

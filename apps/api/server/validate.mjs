@@ -3,7 +3,7 @@ import { API_ENDPOINTS, API_ROUTES, REVISION_API_ENDPOINTS, resolveApiRoute } fr
 import { handleRevisionCors } from "./revisionCors.mjs";
 
 assert.equal(typeof handleRevisionCors, "function");
-assert.equal(API_ENDPOINTS.length, 26);
+assert.equal(API_ENDPOINTS.length, 27);
 assert.equal(REVISION_API_ENDPOINTS.length, 17);
 assert.equal(API_ROUTES.size, API_ENDPOINTS.length);
 

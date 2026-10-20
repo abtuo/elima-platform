@@ -1,31 +1,32 @@
 import { NextResponse } from "next/server";
-import { normalizeStoreLoginPhone } from "@/lib/phone";
 import { callElimaApi } from "@/lib/elima-api";
-import { createIdentityClient, isIdentityConfigured } from "@/lib/supabase-server";
+import { normalizeStoreLoginPhone } from "@/lib/phone";
+import { isIdentityConfigured } from "@/lib/supabase-server";
+
 export async function POST(request: Request) {
-  if (!isIdentityConfigured()) return NextResponse.json({ message: "Le service SMS n’est pas encore configuré pour Elima Store." }, { status: 503 });
-  const body = await request.json().catch(() => null) as { phone?: string; token?: string; requestToken?: string } | null;
-  const phone = normalizeStoreLoginPhone(String(body?.phone ?? "")); const token = String(body?.token ?? "").trim();
+  if (!isIdentityConfigured()) return NextResponse.json({ message: "La vérification du numéro est momentanément indisponible." }, { status: 503 });
+  const body = await request.json().catch(() => null) as { phone?: string; token?: string; requestToken?: string; flow?: string } | null;
+  const phone = normalizeStoreLoginPhone(String(body?.phone ?? ""));
+  const token = String(body?.token ?? "").trim();
   const requestToken = String(body?.requestToken ?? "");
-  if (!phone || !/^\d{4,10}$/.test(token) || requestToken.length < 32) return NextResponse.json({ message: "Numéro, demande ou code invalide." }, { status: 400 });
+  const flow = ["signup", "activation", "password_reset"].includes(String(body?.flow)) ? String(body?.flow) : "signup";
+  if (!phone || !/^\d{4,10}$/.test(token) || requestToken.length < 32) return NextResponse.json({ message: "Vérifiez le numéro et le code saisis." }, { status: 400 });
   try {
     const checked = await callElimaApi("/api/auth-verification-check", { phone, code: token, requestToken });
     const proof = await checked.json().catch(() => null) as { accountExists?: boolean; purpose?: string; authorization?: string; message?: string } | null;
     if (!checked.ok) return NextResponse.json({ message: proof?.message || "Code invalide ou expiré." }, { status: checked.status >= 400 && checked.status < 500 ? checked.status : 503 });
-    if (!proof?.accountExists || proof.purpose !== "phone_control" || !proof.authorization) return NextResponse.json({ message: "Aucun compte Elima existant n’est associé à ce numéro." }, { status: 404 });
-
-    const login = await callElimaApi("/api/elima-phone-login", { phone, authorization: proof.authorization });
-    const session = await login.json().catch(() => null) as { access_token?: string; refresh_token?: string; userId?: string; message?: string } | null;
-    if (!login.ok || !session?.access_token || !session.refresh_token || !session.userId) return NextResponse.json({ message: session?.message || "La session Elima n’a pas pu être ouverte." }, { status: login.status >= 400 && login.status < 500 ? login.status : 503 });
-
-    const supabase = await createIdentityClient();
-    const { data, error } = await supabase.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token });
-    if (error || data.user?.id !== session.userId) {
-      await supabase.auth.signOut({ scope: "local" });
-      return NextResponse.json({ message: "La session Elima n’a pas pu être vérifiée." }, { status: 503 });
+    if (!proof?.authorization) return NextResponse.json({ message: "Ce code ne permet pas de continuer. Demandez-en un nouveau." }, { status: 400 });
+    if (flow === "password_reset" && proof.purpose !== "password_reset") return NextResponse.json({ message: "Ce code ne permet pas de continuer. Demandez-en un nouveau." }, { status: 400 });
+    if (flow === "activation" && (!proof.accountExists || proof.purpose !== "phone_control")) return NextResponse.json({ message: "Après vérification, aucun accès existant ne peut être activé avec ce numéro." }, { status: 400 });
+    if (proof.purpose === "phone_control") {
+      const exchanged = await callElimaApi("/api/auth-password-reset", { action: "authorize", phone, authorization: proof.authorization });
+      const reset = await exchanged.json().catch(() => null) as { authorization?: string; message?: string } | null;
+      if (!exchanged.ok || !reset?.authorization) return NextResponse.json({ message: reset?.message || "Impossible de poursuivre pour le moment." }, { status: exchanged.status >= 400 && exchanged.status < 500 ? exchanged.status : 503 });
+      return NextResponse.json({ ok: true, authorization: reset.authorization, action: "set_password" }, { headers: { "Cache-Control": "no-store" } });
     }
-    return NextResponse.json({ ok: true, needsProfile: !data.user.user_metadata?.first_name || !data.user.user_metadata?.last_name }, { headers: { "Cache-Control": "no-store" } });
-  } catch {
-    return NextResponse.json({ message: "Le service de connexion Elima est momentanément indisponible." }, { status: 503 });
+    return NextResponse.json({ ok: true, authorization: proof.authorization, action: proof.purpose === "signup" ? "create_account" : "set_password" }, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    console.error("store_otp_check_failed", { code: error instanceof Error ? error.message : "unknown" });
+    return NextResponse.json({ message: "La vérification du numéro est momentanément indisponible." }, { status: 503 });
   }
 }

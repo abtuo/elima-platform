@@ -228,6 +228,39 @@ export function createSupabaseIdentityStore({ env = process.env, now = () => new
     return { userId: created.data.user.id, session };
   }
 
+  async function createCustomer(input) {
+    const email = phoneToSyntheticEmail(input.phone);
+    const fullName = `${input.firstName} ${input.lastName}`.trim();
+    const created = await admin.auth.admin.createUser({
+      email,
+      password: input.password,
+      email_confirm: true,
+      user_metadata: {
+        role: "PARENT",
+        full_name: fullName,
+        first_name: input.firstName,
+        last_name: input.lastName,
+        phone: input.phone,
+        cgu_accepted: true,
+        cgu_version: "2026-09",
+      },
+    });
+    if (created.error || !created.data.user) {
+      const duplicate = /already|exists|registered/i.test(String(created.error?.message ?? ""));
+      throw new AuthFlowError(duplicate ? "Ce numéro est déjà associé à un compte Elima." : "Création du compte impossible.", duplicate ? 409 : 503, duplicate ? "account_exists" : "identity_unavailable");
+    }
+    let session = null;
+    if (publicClient) {
+      const signedIn = await publicClient.auth.signInWithPassword({ email, password: input.password });
+      if (signedIn.data.session) session = {
+        access_token: signedIn.data.session.access_token,
+        refresh_token: signedIn.data.session.refresh_token,
+        expires_in: signedIn.data.session.expires_in,
+      };
+    }
+    return { userId: created.data.user.id, session };
+  }
+
   async function updatePassword(accountId, password) {
     const updated = await admin.auth.admin.updateUserById(accountId, { password });
     if (updated.error) throw new AuthFlowError("Modification du mot de passe impossible.", 503, "identity_unavailable");
@@ -255,5 +288,5 @@ export function createSupabaseIdentityStore({ env = process.env, now = () => new
     };
   }
 
-  return { registerAttempt, issueAuthorization, authorization, claimAuthorization, consumeAuthorization, releaseAuthorization, accountByPhone, createStudent, updatePassword, createSessionForAccount };
+  return { registerAttempt, issueAuthorization, authorization, claimAuthorization, consumeAuthorization, releaseAuthorization, accountByPhone, createStudent, createCustomer, updatePassword, createSessionForAccount };
 }

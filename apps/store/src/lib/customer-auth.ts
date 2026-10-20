@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createIdentityClient, isIdentityConfigured } from "./supabase-server";
 
 export async function requireCustomerApi() {
-  if (!isIdentityConfigured()) return { ok: false as const, status: 503, message: "Identité Supabase non configurée." };
+  if (!isIdentityConfigured()) return { ok: false as const, status: 503, message: "La connexion est momentanément indisponible." };
   const client = await createIdentityClient();
   const { data, error } = await client.auth.getUser();
   if (error || !data.user) return { ok: false as const, status: 401, message: "Connexion requise." };

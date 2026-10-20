@@ -4,12 +4,12 @@ import test from "node:test";
 import { API_ENDPOINTS, API_ROUTES, REVISION_API_ENDPOINTS } from "../../apps/api/server/routes.mjs";
 import catchAllHandler, { endpointFromRequest } from "../../apps/api/api/[...route].mjs";
 
-test("@elima/api possède vingt-six routes dont le login téléphone Store", () => {
+test("@elima/api possède vingt-sept routes dont les parcours Store", () => {
   assert.deepEqual(API_ENDPOINTS, [
     "revision-subscription", "google-play-rtdn",
     "account-delete",
     "activate-school", "auth-password-reset", "auth-verification-check", "auth-verification-request",
-    "elima-password-login", "elima-phone-login", "elima-session", "elima-profile", "elima-signup", "identity-bridge",
+    "elima-password-login", "elima-phone-login", "elima-session", "elima-profile", "elima-signup", "elima-store-signup", "identity-bridge",
     "learning", "registration-request", "revision-generate", "revision-quiz-attempt", "revision-document-analyze", "revision-document-delete",
     "pedagogical-resources", "pedagogical-versions", "pedagogical-validation", "pedagogical-publications", "pedagogical-generation", "pedagogical-learning", "pedagogical-export",
   ]);
@@ -19,7 +19,7 @@ test("@elima/api possède vingt-six routes dont le login téléphone Store", () 
 test("Vercel expose un seul routeur catch-all", async () => {
   const entries = (await readdir(new URL("../../apps/api/api/", import.meta.url))).filter((name) => name.endsWith(".mjs"));
   assert.deepEqual(entries, ["[...route].mjs"]);
-  assert.equal(API_ROUTES.size, 26);
+  assert.equal(API_ROUTES.size, 27);
   assert.equal(endpointFromRequest({ url: "/api/elima-signup" }), "elima-signup");
   assert.equal(endpointFromRequest({ url: "/api/revision-document-analyze?source=scanner" }), "revision-document-analyze");
   assert.equal(endpointFromRequest({ query: { route: ["identity-bridge"] } }), "identity-bridge");
@@ -71,7 +71,7 @@ test("les scripts racine délèguent à @elima/api", async () => {
 });
 
 test("signup, OTP et reset ne passent plus par Platform", async () => {
-  for (const name of ["auth-verification-request", "auth-verification-check", "auth-password-reset", "elima-signup"]) {
+  for (const name of ["auth-verification-request", "auth-verification-check", "auth-password-reset", "elima-signup", "elima-store-signup"]) {
     const source = await readFile(new URL(`../../apps/api/server/handlers/${name}.mjs`, import.meta.url), "utf8");
     assert.doesNotMatch(source, /www\.elima\.ci|VITE_WEB_BASE_URL|\/api\/auth\//, name);
   }

@@ -80,12 +80,16 @@ test("l'attribution store_admin exige le compte exact et une preuve Twilio recen
   assert.match(template, /rollback;/i);
 });
 
-test("le login Store reutilise la preuve Elima et ne cree pas de compte telephone natif", async () => {
+test("le Store sépare connexion par mot de passe et preuve OTP", async () => {
   const send = await readFile(new URL("app/api/auth/phone/send/route.ts", root), "utf8");
   const verify = await readFile(new URL("app/api/auth/phone/verify/route.ts", root), "utf8");
+  const login = await readFile(new URL("app/api/auth/password/login/route.ts", root), "utf8");
+  const complete = await readFile(new URL("app/api/auth/password/complete/route.ts", root), "utf8");
   assert.match(send, /auth-verification-request/);
   assert.match(verify, /auth-verification-check/);
-  assert.match(verify, /elima-phone-login/);
-  assert.match(verify, /auth\.setSession/);
-  assert.doesNotMatch(`${send}\n${verify}`, /signInWithOtp|shouldCreateUser/);
+  assert.match(login, /elima-password-login/);
+  assert.match(login, /auth\.setSession/);
+  assert.match(complete, /elima-store-signup/);
+  assert.match(complete, /auth-password-reset/);
+  assert.doesNotMatch(`${send}\n${verify}\n${login}\n${complete}`, /signInWithOtp|shouldCreateUser/);
 });

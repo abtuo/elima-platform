@@ -141,6 +141,28 @@ export function createAuthFlowService({ store, twilio, now = () => new Date() })
       }
     },
 
+    async signupCustomer(input) {
+      const phone = normalizeWhatsAppPhone(input.phone);
+      const firstName = String(input.firstName ?? "").trim();
+      const lastName = String(input.lastName ?? "").trim();
+      const password = String(input.password ?? "");
+      if (!firstName || !lastName) throw new AuthFlowError("Prénom et nom requis.", 400, "invalid_profile");
+      if (password.length < 8) throw new AuthFlowError("Le mot de passe doit contenir au moins 8 caractères.", 400, "invalid_password");
+      const claim = await store.claimAuthorization(input.authorization, phone, "signup");
+      try {
+        if (await store.accountByPhone(phone)) {
+          await store.consumeAuthorization(claim);
+          throw new AuthFlowError("Ce numéro est déjà associé à un compte Elima.", 409, "account_exists");
+        }
+        const created = await store.createCustomer({ phone, firstName, lastName, password });
+        await store.consumeAuthorization(claim);
+        return { ok: true, userId: created.userId, session: created.session ?? null };
+      } catch (error) {
+        if (error?.code !== "account_exists") await store.releaseAuthorization(claim);
+        throw error;
+      }
+    },
+
     async resetPassword({ phone: rawPhone, authorization, password, ip = null }) {
       const phone = normalizeWhatsAppPhone(rawPhone);
       if (String(password ?? "").length < 8) throw new AuthFlowError("Le mot de passe doit contenir au moins 8 caractères.", 400, "invalid_password");

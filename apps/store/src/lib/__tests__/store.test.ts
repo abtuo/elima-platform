@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { products } from "../catalog.ts";
 import { formatMoney } from "../domain.ts";
-import { normalizeIvorianPhone, normalizeStoreLoginPhone } from "../phone.ts";
+import { formatPhoneNational, normalizeCountryPhone, normalizeIvorianPhone, normalizeStoreLoginPhone } from "../phone.ts";
 import { addCartItem, parseStoredCart, updateCartQuantity } from "../cart.ts";
 import { parseCatalogQuery, toWebSearchQuery } from "../catalog-query.ts";
 import { validateProductInput } from "../admin-product-input.ts";
@@ -30,6 +30,13 @@ test("Store login accepts E.164 numbers while keeping local Ivorian input", () =
   assert.equal(normalizeStoreLoginPhone("07 08 09 10 11"), "+2250708091011");
   assert.equal(normalizeStoreLoginPhone("+012345678"), null);
   assert.equal(normalizeStoreLoginPhone("33656802188"), null);
+});
+
+test("phone field normalizes Côte d’Ivoire and France", () => {
+  assert.equal(normalizeCountryPhone("CI", "07 08 09 10 11"), "+2250708091011");
+  assert.equal(normalizeCountryPhone("FR", "06 56 80 21 88"), "+33656802188");
+  assert.equal(normalizeCountryPhone("FR", "00 00"), null);
+  assert.equal(formatPhoneNational("FR", "+33656802188"), "6 56 80 21 88");
 });
 
 test("cart adds, merges, caps and removes items", () => {

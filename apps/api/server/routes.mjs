@@ -10,6 +10,7 @@ import elimaPhoneLogin from "./handlers/elima-phone-login.mjs";
 import elimaSession from "./handlers/elima-session.mjs";
 import elimaProfile from "./handlers/elima-profile.mjs";
 import elimaSignup from "./handlers/elima-signup.mjs";
+import elimaStoreSignup from "./handlers/elima-store-signup.mjs";
 import identityBridge from "./handlers/identity-bridge.mjs";
 import learning from "./handlers/learning.mjs";
 import registrationRequest from "./handlers/registration-request.mjs";
@@ -40,6 +41,7 @@ export const API_ROUTES = new Map([
   ["elima-session", { methods: ["POST", "DELETE"], handler: elimaSession }],
   ["elima-profile", { methods: ["GET"], handler: elimaProfile }],
   ["elima-signup", { methods: POST, handler: elimaSignup }],
+  ["elima-store-signup", { methods: POST, handler: elimaStoreSignup }],
   ["identity-bridge", { methods: POST, handler: identityBridge }],
   ["learning", { methods: POST, handler: learning }],
   ["registration-request", { methods: POST, handler: registrationRequest }],

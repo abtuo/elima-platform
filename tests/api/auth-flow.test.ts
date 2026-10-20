@@ -49,6 +49,7 @@ class FakeStore {
   async releaseAuthorization(row: ReturnType<FakeStore["row"]>) { if (!row.consumed) row.claimed = false; }
   async accountByPhone(value: string) { this.accountLookups += 1; return this.accounts.get(value) ?? null; }
   async createStudent(input: { phone: string; password: string }) { this.created += 1; const account = { id: `user-${this.created}`, password: input.password }; this.accounts.set(input.phone, account); return { userId: account.id, session: { access_token: "access" } }; }
+  async createCustomer(input: { phone: string; password: string }) { this.created += 1; const account = { id: `customer-${this.created}`, password: input.password }; this.accounts.set(input.phone, account); return { userId: account.id, session: { access_token: "access", refresh_token: "refresh" } }; }
   async updatePassword(id: string, password: string) { const account = [...this.accounts.values()].find((value) => value.id === id); if (!account) throw new Error("missing"); account.password = password; }
   async createSessionForAccount(id: string, value: string) {
     const account = this.accounts.get(value);
@@ -143,6 +144,16 @@ test("signup valide crée le compte et interdit la réutilisation", async () => 
   assert.equal(result.ok, true);
   assert.equal(store.created, 1);
   await assert.rejects(service.signup(input), /invalide|expirée/);
+});
+
+test("inscription Store vérifiée crée un client sans doublon", async () => {
+  const { service, store } = fixture();
+  const proof = await verifiedSignup(service);
+  const input = { phone, authorization: proof.authorization, firstName: "Awa", lastName: "Koné", password: "motdepasse" };
+  const result = await service.signupCustomer(input);
+  assert.equal(result.userId, "customer-1");
+  assert.equal(store.accounts.get(phone)?.password, "motdepasse");
+  await assert.rejects(service.signupCustomer(input), /invalide|expirée/);
 });
 
 test("signup refuse un numéro devenu existant", async () => {
