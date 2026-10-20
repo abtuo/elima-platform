@@ -4,7 +4,6 @@ import test from 'node:test';
 import {readFile} from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
 import {GOOGLE_PLAY_WIF,createGooglePlayAuthClient,createGooglePlayClient,isGooglePlayBillingEnabled,isGooglePlayPurchaseConfigured,isGooglePlayServerConfigured,isGooglePlayWifConfigured,normalizePlaySubscription,obfuscatedAccountId,resolveGooglePlayAuthMode} from '../../apps/api/server/googlePlayBilling.mjs';
-import {createGooglePlayBillingDiagnosticHandler} from '../../apps/api/server/handlers/google-play-billing-diagnostic.mjs';
 import {verifyRevisionPurchase,consumeRevisionQuota} from '../../apps/api/server/revisionEntitlement.mjs';
 
 const identity='00000000-0000-4000-8000-000000000001';
@@ -79,31 +78,6 @@ test('subscription verification stays server-side and fails closed until Billing
   assert.doesNotMatch(handler,/plan\s*=\s*['"](?:standard|premium)/);
 });
 
-test('production diagnostic is secret-protected, read-only and independent from RTDN',async()=>{
-  const diagnosticSecret='d'.repeat(48);
-  const diagnosticEnv={
-    VERCEL:'1',VERCEL_ENV:'production',GOOGLE_PLAY_DIAGNOSTIC_ENABLED:'true',GOOGLE_PLAY_DIAGNOSTIC_SECRET:diagnosticSecret,
-    GOOGLE_PLAY_PACKAGE_NAME:'ci.elima.revision',GOOGLE_PLAY_ACCOUNT_HASH_SECRET:'x'.repeat(32),
-    GCP_PROJECT_ID:GOOGLE_PLAY_WIF.projectId,GCP_PROJECT_NUMBER:GOOGLE_PLAY_WIF.projectNumber,
-    GCP_WORKLOAD_IDENTITY_POOL_ID:GOOGLE_PLAY_WIF.poolId,GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID:'elima-vercel-prod',
-    GCP_SERVICE_ACCOUNT_EMAIL:GOOGLE_PLAY_WIF.serviceAccountEmail,
-  };
-  let googleReads=0;
-  const handler=createGooglePlayBillingDiagnosticHandler({env:diagnosticEnv,createGooglePlayClient:()=>({async listSubscriptions(){googleReads++;return {subscriptions:[
-    {productId:'elima_revision_standard',basePlans:[{basePlanId:'monthly'}]},
-    {productId:'elima_revision_premium',basePlans:[{basePlanId:'monthly'}]},
-  ]};}})});
-  const response=()=>({statusCode:200,body:null as any,setHeader(){return this;},status(code:number){this.statusCode=code;return this;},json(body:any){this.body=body;return this;}});
-  const denied=response();
-  await handler({method:'POST',headers:{authorization:'Bearer wrong'}},denied);
-  assert.equal(denied.statusCode,404);
-  assert.equal(googleReads,0);
-  const allowed=response();
-  await handler({method:'POST',headers:{authorization:`Bearer ${diagnosticSecret}`}},allowed);
-  assert.equal(allowed.statusCode,200);
-  assert.deepEqual(allowed.body,{ok:true,target:'revision',oidcProductionAccess:true,expectedCatalogReady:true,rtdnConfigured:false,billingActivationEnabled:false});
-  assert.equal(googleReads,1);
-});
 function googlePurchase(plan='standard',state='SUBSCRIPTION_STATE_ACTIVE',trial=false) {
   return {subscriptionState:state,acknowledgementState:'ACKNOWLEDGEMENT_STATE_PENDING',startTime:new Date().toISOString(),externalAccountIdentifiers:{obfuscatedExternalAccountId:accountId},lineItems:[{productId:`elima_revision_${plan}`,latestSuccessfulOrderId:'GPA.fixture',expiryTime:new Date(Date.now()+86400000).toISOString(),autoRenewingPlan:{autoRenewEnabled:true},offerDetails:{basePlanId:'monthly',...(trial?{offerId:'trial-1-month'}:{})},offerPhase:trial?{freeTrial:{}}:{basePrice:{}}}]};
 }

@@ -4,9 +4,9 @@ import test from "node:test";
 import { API_ENDPOINTS, API_ROUTES, REVISION_API_ENDPOINTS } from "../../apps/api/server/routes.mjs";
 import catchAllHandler, { endpointFromRequest } from "../../apps/api/api/[...route].mjs";
 
-test("@elima/api possède vingt-six routes dont la remise sécurisée des QCM", () => {
+test("@elima/api possède vingt-cinq routes dont la remise sécurisée des QCM", () => {
   assert.deepEqual(API_ENDPOINTS, [
-    "revision-subscription", "google-play-rtdn", "google-play-billing-diagnostic",
+    "revision-subscription", "google-play-rtdn",
     "account-delete",
     "activate-school", "auth-password-reset", "auth-verification-check", "auth-verification-request",
     "elima-password-login", "elima-session", "elima-profile", "elima-signup", "identity-bridge",
@@ -19,7 +19,7 @@ test("@elima/api possède vingt-six routes dont la remise sécurisée des QCM", 
 test("Vercel expose un seul routeur catch-all", async () => {
   const entries = (await readdir(new URL("../../apps/api/api/", import.meta.url))).filter((name) => name.endsWith(".mjs"));
   assert.deepEqual(entries, ["[...route].mjs"]);
-  assert.equal(API_ROUTES.size, 26);
+  assert.equal(API_ROUTES.size, 25);
   assert.equal(endpointFromRequest({ url: "/api/elima-signup" }), "elima-signup");
   assert.equal(endpointFromRequest({ url: "/api/revision-document-analyze?source=scanner" }), "revision-document-analyze");
   assert.equal(endpointFromRequest({ query: { route: ["identity-bridge"] } }), "identity-bridge");
@@ -57,7 +57,9 @@ test("learning résout le corpus racine et Vercel l'inclut", async () => {
   const learning = await readFile(new URL("../../apps/api/server/handlers/learning.mjs", import.meta.url), "utf8");
   const vercel = JSON.parse(await readFile(new URL("../../apps/api/vercel.json", import.meta.url), "utf8"));
   assert.match(learning, /\.\.\/\.\.\/\.\.\/\.\.\/data\/exams/);
-  assert.equal(vercel.functions["api/*.mjs"].includeFiles, "../../data/exams/**");
+  assert.match(vercel.functions["api/*.mjs"].includeFiles, /\.\.\/\.\.\/data\/exams\/\*\*/);
+  assert.match(vercel.functions["api/*.mjs"].includeFiles, /\.\.\/\.\.\/packages\/pedagogy\/\*\*/);
+  assert.match(vercel.functions["api/*.mjs"].includeFiles, /mathjax-newcm-font\/\*\*/);
   await access(new URL("../../data/exams/6eme-maths-guided-sessions-v3.json", import.meta.url));
 });
 

@@ -1,7 +1,6 @@
 import accountDelete from "./handlers/account-delete.mjs";
 import revisionSubscription from "./handlers/revision-subscription.mjs";
 import googlePlayRtdn from "./handlers/google-play-rtdn.mjs";
-import googlePlayBillingDiagnostic from "./handlers/google-play-billing-diagnostic.mjs";
 import activateSchool from "./handlers/activate-school.mjs";
 import authPasswordReset from "./handlers/auth-password-reset.mjs";
 import authVerificationCheck from "./handlers/auth-verification-check.mjs";
@@ -30,7 +29,6 @@ const POST = ["POST"];
 export const API_ROUTES = new Map([
   ["revision-subscription", { methods: ["GET", "POST"], handler: revisionSubscription }],
   ["google-play-rtdn", { methods: ["POST"], handler: googlePlayRtdn }],
-  ["google-play-billing-diagnostic", { methods: ["POST"], handler: googlePlayBillingDiagnostic }],
   ["account-delete", { methods: POST, handler: accountDelete }],
   ["activate-school", { methods: POST, handler: activateSchool }],
   ["auth-password-reset", { methods: POST, handler: authPasswordReset }],

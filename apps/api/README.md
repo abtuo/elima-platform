@@ -161,12 +161,5 @@ Contrôles avant déploiement :
   exécution explicitement autorisée dans Vercel Production. Il effectue uniquement
   `monetization.subscriptions.list` et résume la présence des produits/base plans.
 
-Si une commande ponctuelle ne peut pas être lancée dans le runtime Vercel, la route
-temporaire `POST /api/google-play-billing-diagnostic` exécute le même GET Google.
-Elle exige `VERCEL=1`, `VERCEL_ENV=production`,
-`GOOGLE_PLAY_DIAGNOSTIC_ENABLED=true` et un Bearer égal au secret dédié d'au moins
-32 caractères. Elle refuse de fonctionner si Billing est déjà activé et ne renvoie
-que des booléens de préparation. Désactiver puis supprimer le secret après le test.
-
 Références : https://developer.android.com/google/play/billing/subscriptions
 et https://developers.google.com/android-publisher/api-ref/rest/v3/purchases.subscriptionsv2.
