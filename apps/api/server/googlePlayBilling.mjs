@@ -47,6 +47,16 @@ export function isGooglePlayServerConfigured(env=process.env) {
 export function isGooglePlayBillingEnabled(env=process.env) {
   return env.GOOGLE_PLAY_BILLING_ENABLED==='true' && isGooglePlayServerConfigured(env);
 }
+export function classifyGooglePlayReadError(error) {
+  const url=String(error?.config?.url??error?.response?.config?.url??'');
+  const status=Number(error?.response?.status??0);
+  if(url.includes('sts.googleapis.com')) return 'oidc_sts_exchange_failed';
+  if(url.includes('iamcredentials.googleapis.com')) return 'service_account_impersonation_failed';
+  if(status===401) return 'google_auth_rejected';
+  if(status===403) return 'google_play_permission_denied';
+  if(status===404) return 'google_play_app_not_found';
+  return 'google_play_read_check_failed';
+}
 export function obfuscatedAccountId(identity,env=process.env) {
   if (!env.GOOGLE_PLAY_ACCOUNT_HASH_SECRET) throw billingError('billing_configuration_missing');
   return createHmac('sha256',env.GOOGLE_PLAY_ACCOUNT_HASH_SECRET).update(identity).digest('hex');
@@ -112,7 +122,7 @@ export function createGooglePlayClient(env=process.env,dependencies={}) {
     },
     async listSubscriptions() {
       try { const client=await getAuthClient();return (await client.request({url:monetizationBase,params:{pageSize:100},timeout:15000})).data; }
-      catch { throw billingError('billing_permission_check_failed',503); }
+      catch(error) { throw billingError(classifyGooglePlayReadError(error),503); }
     },
   };
 }

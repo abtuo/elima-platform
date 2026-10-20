@@ -43,8 +43,17 @@ export function createGooglePlayBillingDiagnosticHandler(dependencies={}) {
         rtdnConfigured:isGooglePlayRtdnConfigured(env),
         billingActivationEnabled:false,
       });
-    } catch {
-      return response.status(503).json({ok:false,code:'google_play_read_check_failed'});
+    } catch(error) {
+      const allowedCodes=new Set([
+        'oidc_sts_exchange_failed',
+        'service_account_impersonation_failed',
+        'google_auth_rejected',
+        'google_play_permission_denied',
+        'google_play_app_not_found',
+        'google_play_read_check_failed',
+      ]);
+      const code=allowedCodes.has(error?.code)?error.code:'google_play_read_check_failed';
+      return response.status(503).json({ok:false,code});
     }
   };
 }
