@@ -2,7 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/*.mjs": {
-      "includeFiles": "../../data/exams/**",
+      "includeFiles": [
+        "../../data/exams/**",
+        "../../packages/pedagogy/**",
+        "../../packages/branding/public/logo.png"
+      ],
       "maxDuration": 60
     }
   }
