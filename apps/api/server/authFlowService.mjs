@@ -99,6 +99,21 @@ export function createAuthFlowService({ store, twilio, now = () => new Date() })
       }
     },
 
+    async loginWithPhoneControl({ phone: rawPhone, authorization }) {
+      const phone = normalizeWhatsAppPhone(rawPhone);
+      const claim = await store.claimAuthorization(authorization, phone, "phone_control");
+      try {
+        const account = await store.accountByPhone(phone);
+        if (!account?.id) throw new AuthFlowError("Compte Elima introuvable.", 400, "account_not_found");
+        const session = await store.createSessionForAccount(account.id, phone);
+        await store.consumeAuthorization(claim);
+        return { ok: true, ...session };
+      } catch (error) {
+        await store.releaseAuthorization(claim);
+        throw error;
+      }
+    },
+
     async signup(input) {
       const phone = normalizeWhatsAppPhone(input.phone);
       const firstName = String(input.firstName ?? "").trim();

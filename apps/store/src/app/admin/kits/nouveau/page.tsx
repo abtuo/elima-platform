@@ -1,0 +1,2 @@
+import{AdminPageHeader}from"@/components/admin/AdminUI";import{KitEditor}from"@/components/admin/KitEditor";import{catalogRoles,requireStorePage}from"@/lib/admin-auth";import{kitOptions}from"@/lib/admin-kit-options";
+export default async function NewKitPage(){const{client}=await requireStorePage(catalogRoles);const options=await kitOptions(client);return <><AdminPageHeader title="Nouveau kit" description="Sélectionnez les variantes et quantités qui composent le kit." back="/admin/kits"/><KitEditor {...options}/></>}

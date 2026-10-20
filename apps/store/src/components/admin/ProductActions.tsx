@@ -1,0 +1,8 @@
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+export function ProductActions({ id, status }: { id: string; status: string }) { const router = useRouter(); const [busy,setBusy] = useState(false); async function change(next: string) { const question = next === "archived" ? "Archiver ce produit ? Il sera retiré du catalogue public." : next === "active" ? "Publier ce produit dans la boutique ?" : "Dépublier ce produit ?"; if (!window.confirm(question)) return; setBusy(true); const response = await fetch(`/api/admin/products/${id}/status`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ status: next }) }); const data = await response.json(); setBusy(false); if (!response.ok) return window.alert(data.message || "Action impossible."); router.refresh(); }
+  return <div className="flex flex-wrap gap-2"><Link href={`/admin/produits/${id}`} className="rounded-lg border px-2.5 py-1.5 text-xs font-bold">Modifier</Link>{status !== "active" && status !== "archived" && <button disabled={busy} onClick={() => change("active")} className="rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-bold text-emerald-700">Publier</button>}{status === "active" && <button disabled={busy} onClick={() => change("draft")} className="rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-700">Dépublier</button>}{status !== "archived" && <button disabled={busy} onClick={() => change("archived")} className="rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-bold text-slate-600">Archiver</button>}</div>;
+}

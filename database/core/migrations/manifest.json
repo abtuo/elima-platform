@@ -1,0 +1,39 @@
+{
+  "project": "core",
+  "projectRef": "nnsgvnjzfrcmbxfwlyow",
+  "description": "Core School / Identity. Only explicitly listed deployable migrations are staged by the guarded CLI script.",
+  "deployable": [
+    {
+      "version": "20261020120000",
+      "source": "supabase/migrations/20261020120000_store_catalog_phase_2a.sql",
+      "dependsOn": []
+    },
+    {
+      "version": "20261020130000",
+      "source": "supabase/migrations/20261020130000_store_catalog_admin_phase_2b.sql",
+      "dependsOn": ["20261020120000"]
+    },
+    {
+      "version": "20261020140000",
+      "source": "supabase/migrations/20261020140000_store_catalog_import_phase_2c.sql",
+      "dependsOn": ["20261020130000"]
+    },
+    {
+      "version": "20261020150000",
+      "source": "supabase/migrations/20261020150000_store_commerce_orders_phase_3.sql",
+      "dependsOn": ["20261020140000"]
+    }
+  ],
+  "historicalSources": [
+    "apps/platform/supabase/migrations/*.sql",
+    "supabase/migrations/20260713090000_mobile_role_access.sql",
+    "supabase/migrations/20260713103000_mobile_messaging_rls_fix.sql",
+    "supabase/migrations/20260713120000_mobile_timetable_access.sql",
+    "supabase/migrations/20260715110000_messaging_access_v2.sql",
+    "supabase/migrations/20260715120000_communications_split_and_user_delete.sql",
+    "supabase/migrations/20260715140000_demo_timetable_structure.sql",
+    "supabase/migrations/20260715150000_teacher_attendance_sync.sql",
+    "supabase/migrations/20260715151000_reload_attendance_sync_schema.sql",
+    "supabase/migrations/20260927090000_twilio_verify_auth_flows.sql"
+  ]
+}

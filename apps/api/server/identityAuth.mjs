@@ -233,5 +233,27 @@ export function createSupabaseIdentityStore({ env = process.env, now = () => new
     if (updated.error) throw new AuthFlowError("Modification du mot de passe impossible.", 503, "identity_unavailable");
   }
 
-  return { registerAttempt, issueAuthorization, authorization, claimAuthorization, consumeAuthorization, releaseAuthorization, accountByPhone, createStudent, updatePassword };
+  async function createSessionForAccount(accountId, phone) {
+    const expectedEmail = phoneToSyntheticEmail(phone);
+    const existing = await admin.auth.admin.getUserById(accountId);
+    if (existing.error || !existing.data.user || existing.data.user.id !== accountId || existing.data.user.email?.toLowerCase() !== expectedEmail.toLowerCase()) {
+      throw new AuthFlowError("Compte Elima introuvable.", 400, "account_not_found");
+    }
+    const generated = await admin.auth.admin.generateLink({ type: "magiclink", email: expectedEmail });
+    if (generated.error || generated.data.user?.id !== accountId || !generated.data.properties?.hashed_token) {
+      throw new AuthFlowError("Connexion Elima momentanément indisponible.", 503, "identity_unavailable");
+    }
+    const verified = await publicClient.auth.verifyOtp({ token_hash: generated.data.properties.hashed_token, type: "magiclink" });
+    if (verified.error || verified.data.user?.id !== accountId || !verified.data.session?.access_token || !verified.data.session.refresh_token) {
+      throw new AuthFlowError("Connexion Elima momentanément indisponible.", 503, "identity_unavailable");
+    }
+    return {
+      userId: accountId,
+      access_token: verified.data.session.access_token,
+      refresh_token: verified.data.session.refresh_token,
+      expires_in: verified.data.session.expires_in,
+    };
+  }
+
+  return { registerAttempt, issueAuthorization, authorization, claimAuthorization, consumeAuthorization, releaseAuthorization, accountByPhone, createStudent, updatePassword, createSessionForAccount };
 }

@@ -1,0 +1,38 @@
+@import "tailwindcss";
+@import "@elima/branding/tokens.css";
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-ink: var(--foreground);
+  --font-sans: var(--font-body);
+}
+
+:root { --store-green: #1a5f3f; --store-mint: #eaf6ef; --store-gold: #ffd700; --store-cream: #fffaf0; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: #f7f8f5; color: var(--foreground); font-family: var(--font-body), sans-serif; }
+h1,h2,h3,h4 { font-family: var(--font-heading), sans-serif; letter-spacing: -.02em; }
+button, a, input, select { -webkit-tap-highlight-color: transparent; }
+button, a { transition: color .2s ease, background-color .2s ease, border-color .2s ease, transform .2s ease; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--primary) 35%, transparent); outline-offset: 2px; }
+.store-shell { width: min(1180px, calc(100% - 2rem)); margin-inline: auto; }
+.store-card { border: 1px solid #e7e9e4; border-radius: 1.5rem; background: white; box-shadow: 0 12px 36px rgba(31, 41, 55, .055); }
+.admin-panel { border: 1px solid #e2e8f0; border-radius: 1rem; background: white; padding: 1.25rem; box-shadow: 0 4px 18px rgba(15, 23, 42, .035); }
+.admin-panel-title { margin-bottom: 1rem; font-size: 1.05rem; font-weight: 700; color: #173f2e; }
+.admin-label { font-size: .8rem; font-weight: 700; color: #475569; }
+.admin-input { min-height: 2.75rem; width: 100%; border: 1px solid #cbd5e1; border-radius: .75rem; background: white; padding-inline: .75rem; color: #0f172a; }
+.admin-input:focus { border-color: #2e8b57; outline: 3px solid rgba(46,139,87,.14); }
+.admin-primary, .admin-secondary { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .5rem; border-radius: .75rem; padding: .65rem 1rem; font-size: .875rem; font-weight: 700; }
+.admin-primary { background: #2e8b57; color: white; }
+.admin-primary:hover { background: #247548; }
+.admin-secondary { border: 1px solid #cbd5e1; background: white; color: #334155; }
+.admin-primary:disabled, .admin-secondary:disabled { cursor: not-allowed; opacity: .55; }
+.product-art { background: radial-gradient(circle at 32% 25%, #fff 0 8%, transparent 9%), linear-gradient(145deg, #edf8f1, #fff8d7); }
+.store-hero { background-color: #fbfcf8; background-image: url('/hero_elima_store.png'); background-position: 70% bottom; background-repeat: no-repeat; background-size: auto 58%; }
+.store-hero-overlay { background: linear-gradient(180deg, rgba(255,255,252,.98) 0%, rgba(255,255,252,.94) 48%, rgba(255,255,252,0) 72%); }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@media (min-width: 768px) {
+  .store-hero { min-height: 560px; background-position: center; background-size: cover; }
+  .store-hero-overlay { background: linear-gradient(90deg, rgba(255,255,252,.98) 0%, rgba(255,255,252,.9) 42%, rgba(255,255,252,.22) 64%, rgba(255,255,252,0) 78%); }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }

@@ -1,0 +1,2 @@
+import Link from "next/link";
+export function SectionTitle({ eyebrow, title, href }: { eyebrow?: string; title: string; href?: string }) { return <div className="mb-6 flex items-end justify-between gap-4"><div>{eyebrow && <p className="mb-2 text-xs font-bold uppercase tracking-[.2em] text-[#2e8b57]">{eyebrow}</p>}<h2 className="text-2xl font-bold text-slate-950 md:text-3xl">{title}</h2></div>{href && <Link href={href} className="shrink-0 text-sm font-bold text-[#2e8b57] hover:underline">Tout voir →</Link>}</div>; }

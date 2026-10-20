@@ -6,6 +6,7 @@ import authPasswordReset from "./handlers/auth-password-reset.mjs";
 import authVerificationCheck from "./handlers/auth-verification-check.mjs";
 import authVerificationRequest from "./handlers/auth-verification-request.mjs";
 import elimaPasswordLogin from "./handlers/elima-password-login.mjs";
+import elimaPhoneLogin from "./handlers/elima-phone-login.mjs";
 import elimaSession from "./handlers/elima-session.mjs";
 import elimaProfile from "./handlers/elima-profile.mjs";
 import elimaSignup from "./handlers/elima-signup.mjs";
@@ -35,6 +36,7 @@ export const API_ROUTES = new Map([
   ["auth-verification-check", { methods: POST, handler: authVerificationCheck }],
   ["auth-verification-request", { methods: POST, handler: authVerificationRequest }],
   ["elima-password-login", { methods: POST, handler: elimaPasswordLogin }],
+  ["elima-phone-login", { methods: POST, handler: elimaPhoneLogin }],
   ["elima-session", { methods: ["POST", "DELETE"], handler: elimaSession }],
   ["elima-profile", { methods: ["GET"], handler: elimaProfile }],
   ["elima-signup", { methods: POST, handler: elimaSignup }],
@@ -62,6 +64,7 @@ export const REVISION_API_ENDPOINTS = [
   "identity-bridge",
   "elima-profile",
   "elima-password-login",
+  "elima-phone-login",
   "elima-session",
   "elima-signup",
   "auth-verification-check",

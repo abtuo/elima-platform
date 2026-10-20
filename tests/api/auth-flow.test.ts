@@ -50,6 +50,11 @@ class FakeStore {
   async accountByPhone(value: string) { this.accountLookups += 1; return this.accounts.get(value) ?? null; }
   async createStudent(input: { phone: string; password: string }) { this.created += 1; const account = { id: `user-${this.created}`, password: input.password }; this.accounts.set(input.phone, account); return { userId: account.id, session: { access_token: "access" } }; }
   async updatePassword(id: string, password: string) { const account = [...this.accounts.values()].find((value) => value.id === id); if (!account) throw new Error("missing"); account.password = password; }
+  async createSessionForAccount(id: string, value: string) {
+    const account = this.accounts.get(value);
+    if (!account || account.id !== id) throw new AuthFlowError("Compte Elima introuvable.", 400, "account_not_found");
+    return { userId: id, access_token: `access-${id}`, refresh_token: `refresh-${id}`, expires_in: 3600 };
+  }
   expire(token: string) { const row = this.authorizations.get(token); if (row) row.expiresAt = new Date(this.now.getTime() - 1); }
 }
 
@@ -176,6 +181,17 @@ test("compte existant passe du signup au reset sans second OTP", async () => {
   assert.equal(calls.send, 1);
   assert.equal(calls.check, 1);
   assert.equal(store.accounts.get(phone)?.password, "nouveaupasse");
+});
+
+test("compte historique ouvre une session du meme UUID apres une seule preuve OTP", async () => {
+  const { service, calls } = fixture({ existing: true });
+  const proof = await verifiedSignup(service);
+  const session = await service.loginWithPhoneControl({ phone, authorization: proof.authorization });
+  assert.equal(session.userId, "existing");
+  assert.equal(session.access_token, "access-existing");
+  assert.equal(calls.send, 1);
+  assert.equal(calls.check, 1);
+  await assert.rejects(service.loginWithPhoneControl({ phone, authorization: proof.authorization }), /invalide|expir/);
 });
 
 test("Twilio Verify envoie sur WhatsApp et n’approuve que status=approved", async () => {

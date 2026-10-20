@@ -1,0 +1,3 @@
+import { NextResponse } from "next/server";
+import { catalogRoles, requireStoreApi } from "@/lib/admin-auth";
+export async function POST(request:Request,{params}:{params:Promise<{id:string}>}){const{id}=await params;const auth=await requireStoreApi(catalogRoles);if(!auth.ok)return NextResponse.json({message:auth.message},{status:auth.status});const body=await request.json().catch(()=>null) as {status?:string}|null;const status=String(body?.status??"");if(!["draft","active","archived"].includes(status))return NextResponse.json({message:"Statut invalide."},{status:400});const{error}=await auth.client.rpc("set_store_product_publication",{p_product_id:id,p_status:status});return error?NextResponse.json({message:error.message},{status:400}):NextResponse.json({ok:true});}
