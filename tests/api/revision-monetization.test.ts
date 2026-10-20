@@ -4,7 +4,7 @@ import test from 'node:test';
 import {readFile} from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
 import {GOOGLE_PLAY_WIF,createGooglePlayAuthClient,createGooglePlayClient,isGooglePlayBillingEnabled,isGooglePlayPurchaseConfigured,isGooglePlayServerConfigured,isGooglePlayWifConfigured,normalizePlaySubscription,obfuscatedAccountId,resolveGooglePlayAuthMode} from '../../apps/api/server/googlePlayBilling.mjs';
-import {verifyRevisionPurchase,consumeRevisionQuota} from '../../apps/api/server/revisionEntitlement.mjs';
+import {verifyRevisionPurchase,consumeRevisionQuota,refreshRevisionSubscription,REVISION_ENTITLEMENT_MAX_STALE_MS,REVISION_ENTITLEMENT_REVALIDATION_MS} from '../../apps/api/server/revisionEntitlement.mjs';
 
 const identity='00000000-0000-4000-8000-000000000001';
 const env={GOOGLE_PLAY_ACCOUNT_HASH_SECRET:'test-only-secret'};
@@ -19,6 +19,7 @@ test('Google Play server configuration fails closed without exposing configurati
   };
   assert.equal(isGooglePlayPurchaseConfigured(purchaseConfig),true);
   assert.equal(isGooglePlayServerConfigured(purchaseConfig),false);
+  assert.equal(isGooglePlayBillingEnabled({...purchaseConfig,GOOGLE_PLAY_BILLING_ENABLED:'true'}),true);
   const fullConfig={...purchaseConfig,GOOGLE_PLAY_RTDN_AUDIENCE:'https://api.example.test/api/google-play-rtdn',GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL:'push@example.test'};
   assert.equal(isGooglePlayServerConfigured(fullConfig),true);
   assert.equal(isGooglePlayBillingEnabled(fullConfig),false);
@@ -158,5 +159,20 @@ test('invalid Google purchase never writes entitlement or acknowledges',async()=
   const google={async get(){return {...googlePurchase(),externalAccountIdentifiers:{obfuscatedExternalAccountId:'other-account'}};},async acknowledge(){acks++;}};
   await assert.rejects(verifyRevisionPurchase(admin,identity,'invalid-token',{google,env}),{code:'purchase_owner_mismatch'});
   assert.equal(writes,0);assert.equal(acks,0);
+});
+
+test('sans RTDN, la revalidation est bornée et une panne Google ne prolonge jamais les droits indéfiniment',async()=>{
+  const now=Date.parse('2030-01-02T12:00:00Z');
+  const row=(age:number)=>({purchase_token:'purchase-token',current_period_end:'2030-02-01T00:00:00Z',verified_at:new Date(now-age).toISOString()});
+  const admin=(data:any)=>({from(){const chain:any={select(){return chain;},eq(){return chain;},async maybeSingle(){return {data,error:null};}};return chain;}});
+  let reads=0;
+  const unavailable={async get(){reads++;throw Object.assign(new Error('temporary'),{code:'billing_unavailable',statusCode:503});}};
+  await refreshRevisionSubscription(admin(row(REVISION_ENTITLEMENT_REVALIDATION_MS-1)),identity,{google:unavailable,env,now});
+  assert.equal(reads,0);
+  await refreshRevisionSubscription(admin(row(2*60*60*1000)),identity,{google:unavailable,env,now});
+  assert.equal(reads,1);
+  await assert.rejects(refreshRevisionSubscription(admin(row(REVISION_ENTITLEMENT_MAX_STALE_MS+1)),identity,{google:unavailable,env,now}),{code:'billing_unavailable'});
+  await refreshRevisionSubscription(admin(row(1)),identity,{google:unavailable,env,now,force:true});
+  assert.equal(reads,3);
 });
  

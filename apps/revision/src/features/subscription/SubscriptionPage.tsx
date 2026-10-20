@@ -27,6 +27,16 @@ const planFeatures: Record<Plan, string[]> = {
   premium: ["500 quiz IA par jour", "200 fiches et 100 scans par jour", "1 000 indices IA par jour"],
 };
 
+function withTimeout<T>(promise: Promise<T>, milliseconds: number, message: string) {
+  let timeoutId: number | undefined;
+  const timeout = new Promise<T>((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new Error(message)), milliseconds);
+  });
+  return Promise.race<T>([promise, timeout]).finally(() => {
+    if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+  });
+}
+
 function effectiveLimit(item: Entitlement["usage"][Feature]) {
   if (item.limit !== null) return item.limit;
   const inferred = item.used + item.remaining;
@@ -85,7 +95,7 @@ export function SubscriptionPage() {
   const loadRights = useCallback(async () => {
     setRightsLoading(true);
     setRightsError("");
-    try { setData(await subscriptionRequest()); }
+    try { setData(await withTimeout(subscriptionRequest(), 12_000, "Impossible de charger tes droits pour le moment.")); }
     catch (error) { setRightsError(error instanceof Error ? error.message : "Droits indisponibles pour le moment."); }
     finally { setRightsLoading(false); }
   }, []);
@@ -95,12 +105,12 @@ export function SubscriptionPage() {
     setCatalogLoading(true);
     setCatalogError("");
     try {
-      const result = await PlayBilling.catalog();
+      const result = await withTimeout(PlayBilling.catalog(), 12_000, "Impossible de récupérer les offres pour le moment.");
       setProducts(result.products);
       const missing = ["elima_revision_standard", "elima_revision_premium"].filter((id) => !result.products.some((product) => product.productId === id));
       if (missing.length) setCatalogError("Certaines offres ne sont pas disponibles pour ce compte Google Play.");
     } catch {
-      setCatalogError("Offres Google Play indisponibles. Vérifie l’installation depuis Google Play, le compte test et la connexion.");
+      setCatalogError("Impossible de récupérer les offres pour le moment.");
     } finally { setCatalogLoading(false); }
   }, [native]);
 
@@ -111,20 +121,27 @@ export function SubscriptionPage() {
     setBusy(true); setActionError(""); setMessage("");
     try {
       const current = await subscriptionRequest(); setData(current);
-      if (!current.billingAvailable || !current.accountId) throw new Error("La vérification Google Play n’est pas encore configurée côté serveur.");
+      if (!current.billingAvailable || !current.accountId) throw new Error("Les achats ne sont pas encore disponibles.");
       const offer = choosePlayOffer(products.find((product) => product.productId === productId), current.trialUsed, current.plan);
       if (!offer || offer.token !== offerToken) throw new Error("Les offres ont changé. Recharge les tarifs et réessaie.");
       const result = await PlayBilling.purchase({ productId, offerToken, accountId: current.accountId });
-      if (!result.purchases.length) { setMessage("Achat en attente de validation par Google Play. Restaure tes achats après confirmation."); return; }
+      if (!result.purchases.length) { setMessage("Ton achat est en cours de confirmation. Tu pourras le restaurer dès sa validation par Google Play."); return; }
       for (const item of result.purchases) await subscriptionRequest({ action: "verify", purchaseToken: item.purchaseToken });
-      setData(await subscriptionRequest()); setMessage("Abonnement vérifié. Tes droits sont à jour.");
-    } catch (error) { setActionError(error instanceof Error ? error.message : "Achat indisponible."); }
+      setData(await subscriptionRequest()); setMessage("Ton abonnement a été activé.");
+    } catch (error) {
+      if ((error as {code?:string})?.code === "purchase_canceled") setMessage("Ton achat a été annulé. Aucun paiement n’a été effectué.");
+      else setActionError(error instanceof Error ? error.message : "Achat indisponible.");
+    }
     finally { setBusy(false); }
   }
 
   async function restore() {
     setBusy(true); setActionError(""); setMessage("");
-    try { setData(await restorePlayPurchases()); setMessage("Achats restaurés et vérifiés."); }
+    try {
+      const restored=await withTimeout(restorePlayPurchases(), 20_000, "La restauration prend trop de temps. Réessaie dans un instant.");
+      setData(restored.entitlement);
+      setMessage(restored.restoredCount ? "Tes achats ont été restaurés." : "Aucun achat à restaurer.");
+    }
     catch (error) { setActionError(error instanceof Error ? error.message : "Restauration indisponible."); }
     finally { setBusy(false); }
   }
@@ -184,7 +201,7 @@ export function SubscriptionPage() {
                 <>
                   <p className="mb-3 text-xs text-gray-500">Abonnement mensuel renouvelé automatiquement. Annulation possible dans Google Play.</p>
                   <button type="button" disabled={!canBuy} onClick={() => offer && void purchase(productId, offer.token)} className="w-full rounded-2xl bg-revision px-4 py-3 text-sm font-semibold text-white disabled:opacity-40">
-                    {data?.plan === plan ? "Offre actuelle" : `Passer à ${plan === "standard" ? "Standard" : "Premium"}`}
+                    {data?.plan === plan ? "Offre actuelle" : busy ? "Validation en cours…" : `Passer à ${plan === "standard" ? "Standard" : "Premium"}`}
                   </button>
                 </>
               )}

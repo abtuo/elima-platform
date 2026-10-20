@@ -18,4 +18,7 @@
 
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Capacitor discovers plugin methods from runtime annotations. Keep only the
+# application plugin bridge; library consumer rules cover Capacitor/Billing.
+-keepattributes RuntimeVisibleAnnotations,AnnotationDefault,SourceFile,LineNumberTable
+-keep class ci.elima.revision.RevisionBillingPlugin { *; }

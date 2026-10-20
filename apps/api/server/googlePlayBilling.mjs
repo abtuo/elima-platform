@@ -45,7 +45,7 @@ export function isGooglePlayServerConfigured(env=process.env) {
   return isGooglePlayPurchaseConfigured(env) && isGooglePlayRtdnConfigured(env);
 }
 export function isGooglePlayBillingEnabled(env=process.env) {
-  return env.GOOGLE_PLAY_BILLING_ENABLED==='true' && isGooglePlayServerConfigured(env);
+  return env.GOOGLE_PLAY_BILLING_ENABLED==='true' && isGooglePlayPurchaseConfigured(env);
 }
 export function classifyGooglePlayReadError(error) {
   const url=String(error?.config?.url??error?.response?.config?.url??'');

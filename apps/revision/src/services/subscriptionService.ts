@@ -20,5 +20,5 @@ export const subscriptionRequest=createSubscriptionApi(apiFetch,async()=>(await 
 export async function restorePlayPurchases() {
   const owned=await PlayBilling.restore();
   for(const purchase of owned.purchases) await subscriptionRequest({action:'restore',purchaseToken:purchase.purchaseToken});
-  return subscriptionRequest();
+  return {entitlement:await subscriptionRequest(),restoredCount:owned.purchases.length};
 }
