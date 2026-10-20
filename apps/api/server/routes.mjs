@@ -1,6 +1,7 @@
 import accountDelete from "./handlers/account-delete.mjs";
 import revisionSubscription from "./handlers/revision-subscription.mjs";
 import googlePlayRtdn from "./handlers/google-play-rtdn.mjs";
+import googlePlayBillingDiagnostic from "./handlers/google-play-billing-diagnostic.mjs";
 import activateSchool from "./handlers/activate-school.mjs";
 import authPasswordReset from "./handlers/auth-password-reset.mjs";
 import authVerificationCheck from "./handlers/auth-verification-check.mjs";
@@ -15,6 +16,7 @@ import registrationRequest from "./handlers/registration-request.mjs";
 import revisionDocumentAnalyze from "./handlers/revision-document-analyze.mjs";
 import revisionDocumentDelete from "./handlers/revision-document-delete.mjs";
 import revisionGenerate from "./handlers/revision-generate.mjs";
+import revisionQuizAttempt from "./handlers/revision-quiz-attempt.mjs";
 import pedagogicalResources from "./handlers/pedagogical-resources.mjs";
 import pedagogicalVersions from "./handlers/pedagogical-versions.mjs";
 import pedagogicalValidation from "./handlers/pedagogical-validation.mjs";
@@ -28,6 +30,7 @@ const POST = ["POST"];
 export const API_ROUTES = new Map([
   ["revision-subscription", { methods: ["GET", "POST"], handler: revisionSubscription }],
   ["google-play-rtdn", { methods: ["POST"], handler: googlePlayRtdn }],
+  ["google-play-billing-diagnostic", { methods: ["POST"], handler: googlePlayBillingDiagnostic }],
   ["account-delete", { methods: POST, handler: accountDelete }],
   ["activate-school", { methods: POST, handler: activateSchool }],
   ["auth-password-reset", { methods: POST, handler: authPasswordReset }],
@@ -41,6 +44,7 @@ export const API_ROUTES = new Map([
   ["learning", { methods: POST, handler: learning }],
   ["registration-request", { methods: POST, handler: registrationRequest }],
   ["revision-generate", { methods: POST, handler: revisionGenerate }],
+  ["revision-quiz-attempt", { methods: POST, handler: revisionQuizAttempt }],
   ["revision-document-analyze", { methods: POST, handler: revisionDocumentAnalyze }],
   ["revision-document-delete", { methods: POST, handler: revisionDocumentDelete }],
   ["pedagogical-resources", { methods: ["GET", "POST"], handler: pedagogicalResources }],
@@ -67,6 +71,7 @@ export const REVISION_API_ENDPOINTS = [
   "auth-password-reset",
   "learning",
   "revision-generate",
+  "revision-quiz-attempt",
   "revision-document-analyze",
   "revision-document-delete",
   "pedagogical-learning",

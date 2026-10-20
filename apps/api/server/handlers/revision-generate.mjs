@@ -2,6 +2,7 @@ import { handleRevisionCors } from "../revisionCors.mjs";
 import { azureChat } from "../azureOpenAi.mjs";
 import { authorizeRevisionRequest, consumeRevisionAiQuota } from "../revisionAiQuota.mjs";
 import { reserveRevisionQuota, refundFailedRevisionQuota } from "../revisionEntitlement.mjs";
+import { createGeneratedQuizAttempt } from "../revisionQuizAttempts.mjs";
 
 const DEFAULT_HINT = "Repère l’idée clé du cours et élimine les propositions incompatibles avant de calculer.";
 const DEFAULT_EXPLANATION = "Reprends l’énoncé étape par étape et applique la règle du chapitre.";
@@ -39,7 +40,10 @@ export default async function handler(request, response) {
     }
 
     const questions = await generateQuiz({ subject, topic, level, source, sourceContext });
-    return response.status(200).json({ kind, subject, topic, level, source, questions });
+    const attempt = await createGeneratedQuizAttempt(authorized.admin, authorized.user.id, {
+      subject, topic, source, sourceDocumentId: body.sourceDocumentId,
+    }, questions);
+    return response.status(200).json({ kind, subject, topic, level, source, ...attempt });
   } catch (error) {
     let handledError = error;
     try { await refundFailedRevisionQuota(authorized?.admin,reservation,error); } catch (refundError) { handledError = refundError; }

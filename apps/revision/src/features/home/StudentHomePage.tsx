@@ -102,7 +102,7 @@ export function StudentHomePage() {
       if (score !== undefined) current.scores.push(score);
       subjects.set(subject, current);
     };
-    data.attempts.filter(attempt => !data.preferredSubjects.length || data.preferredSubjects.includes(subjectIdFromLabel(attempt.subject))).forEach((attempt) => add(attempt.subject, attempt.score));
+    data.attempts.filter(attempt => !data.preferredSubjects.length || data.preferredSubjects.includes(subjectIdFromLabel(attempt.subject))).forEach((attempt) => add(attempt.subject, attempt.scoreTrust === "server_verified" ? attempt.score : undefined));
     data.learningAttempts.filter(attempt => !data.preferredSubjects.length || !attempt.subject || data.preferredSubjects.includes(subjectIdFromLabel(attempt.subject))).forEach((attempt) => add(attempt.subject, attempt.score));
     return [...subjects.entries()]
       .map(([subject, summary]) => ({
@@ -135,7 +135,7 @@ export function StudentHomePage() {
     .reduce((total, attempt) => total + attempt.elapsedSeconds, 0);
   const inProgress = preferredLearningAttempts.find((attempt) => attempt.status === "in_progress");
   const continueActivity = selectContinueActivity(preferredAttempts, preferredLearningAttempts, preferredSheets);
-  const lowScoreQuiz = preferredAttempts.find((attempt) => attempt.score < 70 && quizHref(attempt));
+  const lowScoreQuiz = preferredAttempts.find((attempt) => attempt.scoreTrust === "server_verified" && attempt.score < 70 && quizHref(attempt));
   const discoveryQuiz = quizzes.find(quiz => preferred(quiz.subject));
 
   return (

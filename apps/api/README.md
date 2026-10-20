@@ -97,11 +97,17 @@ réponses IA produites et limites anti-abus ne sont pas remboursées.
 Les quiz catalogue ne consomment rien. Les indices et évaluations
 ouvertes assistées par IA utilisent `ai_hint` ; la validation déterministe reste libre.
 
-Configurer exclusivement côté API les variables `GOOGLE_PLAY_*` du `.env.example`.
-`GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` contient les credentials du compte de service
-autorisé dans Play Console. Ne jamais envoyer ce JSON au frontend ni le committer.
+Configurer exclusivement côté API les variables `GOOGLE_PLAY_*` et `GCP_*` du
+`.env.example`. En production Vercel, `@vercel/oidc` fournit le jeton de la Function ;
+`google-auth-library` l'échange auprès de STS puis utilise l'impersonation du compte
+`elima-play-billing@elima-production.iam.gserviceaccount.com`. Aucun jeton OIDC ou
+Google n'est persisté ou journalisé. `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` est un repli
+local historique uniquement et est refusé lorsque `VERCEL_ENV=production`.
 `GOOGLE_PLAY_ACCOUNT_HASH_SECRET` est un secret aléatoire stable (au moins 32 octets) :
 sa rotation exige une stratégie de migration des identifiants obfusqués existants.
+`GOOGLE_PLAY_BILLING_ENABLED` doit rester à `false` jusqu'au succès du diagnostic
+OIDC Production. Tant qu'il n'est pas exactement égal à `true`, le client reçoit
+`billingAvailable: false` et aucune vérification d'achat ne peut être lancée.
 Les `REVISION_SUPABASE_*` existantes restent nécessaires. Aucun nouveau secret VITE.
 
 Endpoints dans le catch-all unique :
@@ -146,6 +152,21 @@ les droits sont consultables mais aucun achat n'est simulé et aucun essai n'est
 Upgrade vers Premium : WITH_TIME_PRORATION. Downgrade vers Standard : DEFERRED.
 Le plugin interroge les achats possédés et fournit l'ancien token à Google ; il ne
 crée pas délibérément un second abonnement concurrent.
+
+Contrôles avant déploiement :
+
+- `npm run billing:check:revision --workspace @elima/api` valide la configuration
+  statique sans récupérer ni afficher de jeton ;
+- `npm run billing:check:revision:live --workspace @elima/api` est réservé à une
+  exécution explicitement autorisée dans Vercel Production. Il effectue uniquement
+  `monetization.subscriptions.list` et résume la présence des produits/base plans.
+
+Si une commande ponctuelle ne peut pas être lancée dans le runtime Vercel, la route
+temporaire `POST /api/google-play-billing-diagnostic` exécute le même GET Google.
+Elle exige `VERCEL=1`, `VERCEL_ENV=production`,
+`GOOGLE_PLAY_DIAGNOSTIC_ENABLED=true` et un Bearer égal au secret dédié d'au moins
+32 caractères. Elle refuse de fonctionner si Billing est déjà activé et ne renvoie
+que des booléens de préparation. Désactiver puis supprimer le secret après le test.
 
 Références : https://developer.android.com/google/play/billing/subscriptions
 et https://developers.google.com/android-publisher/api-ref/rest/v3/purchases.subscriptionsv2.

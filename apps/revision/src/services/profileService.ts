@@ -1,6 +1,7 @@
 import type { SchoolPlan, UserProfile, UserRole } from "../types/roles";
 import { mainDbClient } from "./mainDbClient";
 import { getCachedElimaIdentityProfile } from "./elimaIdentityService";
+import { inferSchoolCycle } from "@elima/revision-core";
 
 export async function fetchUserProfile(userId: string): Promise<UserProfile | null> {
   if (!mainDbClient) return null;
@@ -34,7 +35,7 @@ export async function fetchUserProfile(userId: string): Promise<UserProfile | nu
   }
 
   const { data: studentProfile } = userRow.role === "STUDENT"
-    ? await mainDbClient.from("student_profiles").select("school_membership_status, declared_school_name, declared_school_city, school_level_id").eq("id", userId).maybeSingle()
+    ? await mainDbClient.from("student_profiles").select("school_membership_status, declared_school_name, declared_school_city, school_level_id, school_cycle, onboarding_completed_at, guardian_acknowledged_at").eq("id", userId).maybeSingle()
     : { data: null };
   const { data: linkedStudent } = userRow.role === "STUDENT"
     ? await mainDbClient.from("students").select("class:classes(name, level)").eq("user_id", userId).maybeSingle()
@@ -44,6 +45,7 @@ export async function fetchUserProfile(userId: string): Promise<UserProfile | nu
   schoolName = schoolName ?? centralProfile?.schoolName ?? null;
   schoolLogoUrl = schoolLogoUrl ?? centralProfile?.schoolLogoUrl ?? null;
 
+  const resolvedLevel = studentProfile?.school_level_id || centralProfile?.schoolLevel || schoolClass?.level || null;
   return {
     id: userRow.id,
     email: userRow.email ?? "",
@@ -58,7 +60,10 @@ export async function fetchUserProfile(userId: string): Promise<UserProfile | nu
     schoolMembershipStatus: studentProfile?.school_membership_status === "linked" || userRow.school_id || centralProfile?.schoolId ? "linked" : "standalone",
     declaredSchoolName: studentProfile?.declared_school_name ?? null,
     declaredSchoolCity: studentProfile?.declared_school_city ?? null,
-    schoolLevelId: studentProfile?.school_level_id || centralProfile?.schoolLevel || schoolClass?.level || null,
+    schoolLevelId: resolvedLevel,
+    schoolCycle: studentProfile?.school_cycle ?? inferSchoolCycle(resolvedLevel),
+    onboardingCompleted: Boolean(studentProfile?.onboarding_completed_at || inferSchoolCycle(resolvedLevel)),
+    guardianAcknowledged: Boolean(studentProfile?.guardian_acknowledged_at),
     className: centralProfile?.schoolClassName || schoolClass?.name || studentProfile?.school_level_id || null,
   };
 }

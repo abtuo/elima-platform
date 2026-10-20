@@ -84,7 +84,7 @@ export function RevisionDocumentScanner({profile,documentsService,subjectsServic
         `Points clés : ${selected.analysis.keyPoints.join(" ; ")}`,
         `Explications : ${selected.analysis.explanations.join(" ; ")}`,
       ].filter((value) => !value.endsWith(": ")).join("\n");
-      const generated = await generateRealtimeQuiz({ subject: selected.subject, topic: `Révision des notions · ${selected.title}`, level: profile.className || profile.schoolLevelId || "Collège / lycée", source: "document", sourceContext }, `${profile.id}|${crypto.randomUUID()}`);
+      const generated = await generateRealtimeQuiz({ subject: selected.subject, topic: `Révision des notions · ${selected.title}`, level: profile.className || profile.schoolLevelId || "Collège / lycée", source: "document", sourceContext, sourceDocumentId: selected.id }, `${profile.id}|${crypto.randomUUID()}`);
       await attachDocumentQuiz(selected.id, generated.id);
       onOpenQuiz({id:generated.id,subject:selected.subject,topic:`Révision des notions · ${selected.title}`,source:"document",documentId:selected.id});
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Création du quiz impossible."); }

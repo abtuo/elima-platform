@@ -3,10 +3,13 @@ export {
 } from "@elima/revision-ui";
 
 import { REVISION_SUBJECT_OPTIONS } from "@elima/revision-ui";
+import { subjectsForEducation, type SchoolCycle } from "@elima/revision-core";
 
 export function revisionSubjectsForLevel(level: string) {
-  const lowerSecondary = /^(6|5|4|3)/.test(level.trim());
-  return lowerSecondary
-    ? REVISION_SUBJECT_OPTIONS.filter((subject) => !["philosophie", "ses"].includes(subject.id))
-    : REVISION_SUBJECT_OPTIONS;
+  return revisionSubjectsForEducation("secondary", level);
+}
+
+export function revisionSubjectsForEducation(cycle: SchoolCycle, level: string) {
+  const uiById = new Map(REVISION_SUBJECT_OPTIONS.map((subject) => [subject.id, subject]));
+  return subjectsForEducation(cycle, level).map((subject) => ({ ...subject, ...uiById.get(subject.id) }));
 }

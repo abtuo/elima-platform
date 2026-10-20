@@ -18,6 +18,7 @@ tmp/revision-qa/
 tmp/revision-smoke.mjs
 supabase/generated/
 supabase/backups/
+database/reports/*.json
 build/
 coverage/
 .env
@@ -36,3 +37,5 @@ Thumbs.db
 *.pfx
 keystore.properties
 keystore.local.properties
+
+.vercel

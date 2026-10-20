@@ -7,7 +7,7 @@ export { choosePlayOffer, type PlayProduct, type PlayOffer } from './playOffers'
 export type Plan = 'free' | 'standard' | 'premium';
 export type Feature = 'ai_quiz' | 'ai_flashcard' | 'document_scan' | 'ai_hint';
 export type Usage = {used:number;limit:number|null;remaining:number;unlimited:boolean;resetAt:string;period:'day'|'week'};
-export type Entitlement = {plan:Plan;status:string;trialUsed:boolean;currentPeriodEnd:string|null;autoRenewing:boolean;accountId:string;usage:Record<Feature,Usage>};
+export type Entitlement = {plan:Plan;status:string;trialUsed:boolean;currentPeriodEnd:string|null;autoRenewing:boolean;billingAvailable:boolean;accountId:string|null;usage:Record<Feature,Usage>};
 type Purchases = {purchases:{purchaseToken:string;products:string[]}[]};
 export const PlayBilling = registerPlugin<{
   addListener(event:'purchasesUpdated',listener:()=>void):Promise<PluginListenerHandle>;

@@ -1,4 +1,5 @@
 import type { UserProfile } from "@/types/roles";
+import { inferSchoolCycle } from "@elima/revision-core";
 
 export const revisionDemoAccounts = [
   { label: "Élève Awa", email: "eleve.awa@elima.school", password: "ElimaSeed!2026", fullName: "Awa Koné", role: "STUDENT" as const, className: "6ème B" },
@@ -25,6 +26,9 @@ export function getRevisionDemoProfile(email?: string): UserProfile {
     declaredSchoolName: null,
     declaredSchoolCity: null,
     schoolLevelId: account.className,
+    schoolCycle: inferSchoolCycle(account.className),
+    onboardingCompleted: true,
+    guardianAcknowledged: false,
     className: account.className,
   };
 }

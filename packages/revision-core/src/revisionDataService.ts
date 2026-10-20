@@ -1,5 +1,5 @@
 import type {SupabaseClient} from '@supabase/supabase-js';
-import {applyQuizScore,cleanAnswerText,createRevisionGenerationService,pickQuizItem,readGeneratedQuiz,type HintUsage,type RevisionGenerationInput} from './index.ts';
+import {applyQuizScore,cleanAnswerText,createRevisionGenerationService,pickQuizItem,readGeneratedQuiz,readGeneratedQuizAttemptId,type HintUsage,type RevisionGenerationInput} from './index.ts';
 import type {RevisionProgress,QuizAttemptSummary,QuizItem,CourseSheet,QuizQuestion} from './types.ts';
 import {demoRevisionProgress,demoQuizzes,demoCourseSheets,demoQuizAttempts,demoQuizQuestions} from './demoData.ts';
 import {seededShuffle} from './random.ts';
@@ -110,19 +110,19 @@ async function getRevisionProgress(userId?: string): Promise<RevisionProgress> {
 
   const { data, error } = await revisionDbClient
     .from("user_progress")
-    .select("xp, streak_days, completed_quiz_count, average_score")
+    .select("verified_xp, verified_streak_days, verified_completed_quiz_count, verified_average_score")
     .eq("user_id", userId)
     .maybeSingle();
 
   if (error || !data) return { xp: 0, level: 1, streakDays: 0, completedQuizCount: 0, averageScore: 0 };
 
-  const xp = Number(data.xp ?? 0);
+  const xp = Number(data.verified_xp ?? 0);
   return {
     xp,
     level: Math.floor(xp / 100) + 1,
-    streakDays: Number(data.streak_days ?? 0),
-    completedQuizCount: Number(data.completed_quiz_count ?? 0),
-    averageScore: Number(data.average_score ?? 0),
+    streakDays: Number(data.verified_streak_days ?? 0),
+    completedQuizCount: Number(data.verified_completed_quiz_count ?? 0),
+    averageScore: Number(data.verified_average_score ?? 0),
   };
 }
 
@@ -137,24 +137,6 @@ async function recordQuizCompletion(input: {
   source?: "catalog" | "generated" | "document";
   sourceDocumentId?: string;
 }) {
-  if (revisionDbClient && !isDemoModeActive()) {
-    const { data: attemptData, error } = await revisionDbClient.rpc("record_quiz_attempt", {
-      p_quiz_ref: input.quizRef,
-      p_subject_label: input.subject,
-      p_score: input.score,
-      p_total_questions: input.totalQuestions,
-      p_correct_answers: input.correctAnswers,
-      p_completed_at: new Date().toISOString(),
-    });
-    if (error) throw error;
-    const attemptId = attemptData && typeof attemptData === "object" && "id" in attemptData ? String(attemptData.id) : "";
-    if (attemptId && (input.topic || input.source)) {
-      await revisionDbClient.from("quiz_attempts").update({ topic: input.topic || null, source: input.source ?? (input.quizRef.startsWith("generated:") ? "generated" : "catalog"), source_document_id: input.sourceDocumentId || null }).eq("id", attemptId);
-    }
-    const { data } = await revisionDbClient.auth.getUser();
-    return getRevisionProgress(data.user?.id);
-  }
-
   if (!isDemoModeActive()) throw new Error('Session Révision requise.');
   const progress = applyQuizScore(readLocalProgress(), input.score);
   writeLocalProgress(progress);
@@ -162,6 +144,47 @@ async function recordQuizCompletion(input: {
   attempts.unshift({ id: crypto.randomUUID(), quizRef: input.quizRef, subject: input.subject, topic: input.topic, score: input.score, totalQuestions: input.totalQuestions, correctAnswers: input.correctAnswers, completedAt: new Date().toISOString(), source: input.source, sourceDocumentId: input.sourceDocumentId });
   localStorage.setItem(attemptsKey(input.userId), JSON.stringify(attempts.slice(0, 50)));
   return progress;
+}
+
+async function accessToken() {
+  if (!revisionDbClient) return undefined;
+  return (await revisionDbClient.auth.getSession()).data.session?.access_token;
+}
+
+async function quizAttemptRequest(body: Record<string, unknown>) {
+  const token = await accessToken();
+  if (!token) throw new Error("Ta session a expiré. Reconnecte-toi puis réessaie.");
+  const response = await apiFetch("/api/revision-quiz-attempt", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
+  if (!response.ok) throw new Error(String(payload.message ?? "Le quiz est momentanément indisponible."));
+  return payload;
+}
+
+async function startQuizAttempt(input: { quizRef?: string; shuffleSeed?: string }) {
+  const quizRef = input.quizRef;
+  if (isDemoModeActive()) return { attemptId: `demo:${crypto.randomUUID()}`, questions: await getQuizQuestions(quizRef, input.shuffleSeed) };
+  if (quizRef?.startsWith("generated:")) {
+    const questions = readGeneratedQuiz(browserSessionAuthStorage, quizRef);
+    const attemptId = readGeneratedQuizAttemptId(browserSessionAuthStorage, quizRef);
+    if (!attemptId || !questions.length) throw new Error("Cette session générée n’est plus disponible. Relance le quiz.");
+    return { attemptId, questions };
+  }
+  const payload = await quizAttemptRequest({ action: "start", quizRef: quizRef ?? "daily" });
+  return { attemptId: String(payload.attemptId ?? ""), questions: (payload.questions ?? []) as QuizQuestion[] };
+}
+
+type VerifiedQuizResult = {
+  attemptId: string; sessionId: string; score: number; totalQuestions: number;
+  correctAnswers: number; earnedXp: number; scoreTrust: "server_verified";
+  corrections: Array<{ questionId: string; correctAnswerId: string; explanation: string }>;
+};
+
+async function submitQuizAttempt(input: { attemptId: string; answers: Array<{ questionId: string; answerId: string }> }): Promise<VerifiedQuizResult> {
+  return await quizAttemptRequest({ action: "submit", ...input }) as unknown as VerifiedQuizResult;
 }
 
 async function submitQuizFeedback(input: {
@@ -205,13 +228,13 @@ async function getQuizAttempts(userId?: string): Promise<QuizAttemptSummary[]> {
   const local = readLocalAttempts(userId);
   if (isDemoModeActive()) return [...local, ...demoQuizAttempts.filter((demo) => !local.some((attempt) => attempt.id === demo.id))].slice(0, 50);
   if (revisionDbClient && userId) {
-    const { data } = await revisionDbClient.from("quiz_attempts").select("id, quiz_ref, subject_label, topic, source, source_document_id, score, total_questions, correct_answers, completed_at").eq("user_id", userId).order("completed_at", { ascending: false }).limit(50);
+    const { data } = await revisionDbClient.from("quiz_attempts").select("id, quiz_ref, subject_label, topic, source, source_document_id, score, total_questions, correct_answers, completed_at, score_trust").eq("user_id", userId).order("completed_at", { ascending: false }).limit(50);
     if (data?.length) {
       const quizzes = await getAvailableQuizzes();
       return data.map((row) => {
         const quizRef = String(row.quiz_ref ?? "");
         const quiz = quizzes.find((item) => item.id === quizRef);
-        return { id: String(row.id), quizRef: quizRef || undefined, subject: String(row.subject_label ?? "Quiz"), topic: row.topic ? String(row.topic) : quiz?.topic, source: row.source ? String(row.source) as QuizAttemptSummary["source"] : undefined, sourceDocumentId: row.source_document_id ? String(row.source_document_id) : undefined, score: Number(row.score ?? 0), totalQuestions: Number(row.total_questions ?? 0) || undefined, correctAnswers: Number(row.correct_answers ?? 0), completedAt: String(row.completed_at) };
+        return { id: String(row.id), quizRef: quizRef || undefined, subject: String(row.subject_label ?? "Quiz"), topic: row.topic ? String(row.topic) : quiz?.topic, source: row.source ? String(row.source) as QuizAttemptSummary["source"] : undefined, sourceDocumentId: row.source_document_id ? String(row.source_document_id) : undefined, score: Number(row.score ?? 0), totalQuestions: Number(row.total_questions ?? 0) || undefined, correctAnswers: Number(row.correct_answers ?? 0), completedAt: String(row.completed_at), scoreTrust: row.score_trust === "server_verified" ? "server_verified" : "legacy_client_reported" };
       });
     }
   }
@@ -350,21 +373,7 @@ async function getQuizQuestions(quizSetId?: string, shuffleSeed = "guest"): Prom
       return { ...question, options: answers.map((answer) => cleanAnswerText(answer.text)), correctIndex: answers.findIndex((answer) => answer.correct) };
     });
   }
-  let selectedId = quizSetId;
-  if (!selectedId) {
-    const { data } = await revisionDbClient.from("quiz_sets").select("id").order("created_at", { ascending: false }).limit(1).maybeSingle();
-    selectedId = data?.id ? String(data.id) : undefined;
-  }
-  if (!selectedId) return [];
-  const { data, error } = await revisionDbClient.from("quiz_questions").select("id, prompt, hint, explanation, answers:quiz_answers(id, answer_text, is_correct, answer_order)").eq("quiz_set_id", selectedId).order("question_order");
-  if (error || !data) return [];
-  return data.map((row: Record<string, unknown>) => {
-    const answers = seededShuffle(
-      ((row.answers ?? []) as Array<{ answer_text: string; is_correct: boolean; answer_order: number }>).sort((a, b) => a.answer_order - b.answer_order),
-      `${shuffleSeed}|${String(row.id)}`,
-    );
-    return { id: String(row.id), question: String(row.prompt), options: answers.map((answer) => cleanAnswerText(answer.answer_text)), correctIndex: Math.max(0, answers.findIndex((answer) => answer.is_correct)), hint: row.hint ? String(row.hint) : undefined, explanation: row.explanation ? String(row.explanation) : undefined };
-  });
+  throw new Error("Les questions connectées doivent être préparées par le serveur.");
 }
 
 function localHintKey(userId?: string) {
@@ -405,5 +414,5 @@ function markDailyQuizCompleted(userId?: string) {
   localStorage.setItem(key, new Date().toISOString().slice(0, 10));
 }
 
-return {getStudentRevisionLevel,generateRealtimeQuiz,generateRealtimeSheet,getRevisionProgress,recordQuizCompletion,submitQuizFeedback,getQuizAttempts,getLearningAttempts,getAvailableQuizzes,pickQuiz,getCourseSheets,getQuizQuestions,getDailyHintUsage,consumeDailyHint,isDailyQuizCompleted,markDailyQuizCompleted};
+return {getStudentRevisionLevel,generateRealtimeQuiz,generateRealtimeSheet,getRevisionProgress,recordQuizCompletion,startQuizAttempt,submitQuizAttempt,submitQuizFeedback,getQuizAttempts,getLearningAttempts,getAvailableQuizzes,pickQuiz,getCourseSheets,getQuizQuestions,getDailyHintUsage,consumeDailyHint,isDailyQuizCompleted,markDailyQuizCompleted};
 }

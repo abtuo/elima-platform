@@ -21,20 +21,35 @@ test('Web billing never simulates payment; native verifies/restores server-side 
   assert.match(service,/Capacitor\.isNativePlatform\(\)/);
   assert.match(service,/action:'restore'/);
   const page=await source('apps/revision/src/features/subscription/SubscriptionPage.tsx');
-  assert.match(page,/action:'verify'/);
-  assert.match(page,/disabled=\{!native\|\|!offer/);
+  assert.match(page,/action: "verify"/);
+  assert.match(page,/billingAvailable/);
+  assert.match(page,/disabled=\{!canBuy\}/);
   assert.doesNotMatch(service+page,/GOOGLE_PLAY_SERVICE_ACCOUNT_JSON|GOOGLE_PLAY_ACCOUNT_HASH_SECRET|private_key|1500|3000/);
   const quiz=await source('apps/revision/src/features/revision/QuizPage.tsx');
   assert.match(quiz,/getDailyHintUsage\(profile.id\)\.catch/);
   const plugin=await source('apps/revision/android/app/src/main/java/ci/elima/revision/RevisionBillingPlugin.java');
   assert.match(plugin,/setObfuscatedAccountId/);
   assert.match(plugin,/p\.put\("price", phase\.getFormattedPrice\(\)\)/);
-  assert.match(page,/offer\.phases\.at\(-1\)\?\.price/);
+  assert.match(page,/paidPhase\.price/);
   assert.doesNotMatch(page,/1500|3000|1\s500|3\s000|Intl\.NumberFormat/);
   assert.match(plugin,/setOldPurchaseToken/);
   assert.match(plugin,/WITH_TIME_PRORATION/);
   assert.match(plugin,/DEFERRED/);
   assert.doesNotMatch(plugin,/acknowledgePurchase\(/);
+});
+
+test('subscription screen exposes honest limits and resilient loading/error states',async()=>{
+  const page=await source('apps/revision/src/features/subscription/SubscriptionPage.tsx');
+  assert.match(page,/500 quiz IA par jour/);
+  assert.match(page,/200 fiches et 100 scans par jour/);
+  assert.doesNotMatch(page,/Illimit[ée]/i);
+  assert.doesNotMatch(page,/UTC|anti-abus/i);
+  assert.match(page,/rightsLoading/);
+  assert.match(page,/catalogLoading/);
+  assert.match(page,/Recharger les tarifs/);
+  assert.match(page,/sm:flex-row sm:flex-wrap/);
+  assert.match(page,/trial &&/);
+  assert.match(page,/managesPlaySubscription/);
 });
 
 test('paid offers preserve Google formatted amount and currency without local conversion',()=>{

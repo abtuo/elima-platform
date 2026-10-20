@@ -1,4 +1,5 @@
 import type { AppRole } from "@elima/shared-domain/roles";
+import type { SchoolCycle } from "@elima/revision-core";
 
 export type UserRole = AppRole;
 
@@ -21,6 +22,9 @@ export type UserProfile = {
   declaredSchoolName: string | null;
   declaredSchoolCity: string | null;
   schoolLevelId: string | null;
+  schoolCycle: SchoolCycle | null;
+  onboardingCompleted: boolean;
+  guardianAcknowledged: boolean;
   className: string | null;
 };
 

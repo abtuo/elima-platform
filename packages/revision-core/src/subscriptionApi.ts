@@ -1,7 +1,7 @@
 export type RevisionPlan='free'|'standard'|'premium';
 export type SubscriptionFeature='ai_quiz'|'ai_flashcard'|'document_scan'|'ai_hint';
 export type SubscriptionUsage={used:number;limit:number|null;remaining:number;unlimited:boolean;resetAt:string;period:'day'|'week'};
-export type RevisionEntitlement={plan:RevisionPlan;status:string;trialUsed:boolean;currentPeriodEnd:string|null;autoRenewing:boolean;accountId:string;usage:Record<SubscriptionFeature,SubscriptionUsage>};
+export type RevisionEntitlement={plan:RevisionPlan;status:string;trialUsed:boolean;currentPeriodEnd:string|null;autoRenewing:boolean;billingAvailable:boolean;accountId:string|null;usage:Record<SubscriptionFeature,SubscriptionUsage>};
 export function createSubscriptionApi(apiFetch:(path:string,init?:RequestInit)=>Promise<Response>,getToken:()=>Promise<string|undefined>){
  return async(body?:Record<string,unknown>):Promise<RevisionEntitlement>=>{
   const token=await getToken();if(!token)throw new Error('Reconnecte-toi pour consulter ton abonnement.');

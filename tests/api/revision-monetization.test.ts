@@ -3,12 +3,107 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFile} from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
-import {normalizePlaySubscription,obfuscatedAccountId} from '../../apps/api/server/googlePlayBilling.mjs';
+import {GOOGLE_PLAY_WIF,createGooglePlayAuthClient,createGooglePlayClient,isGooglePlayBillingEnabled,isGooglePlayPurchaseConfigured,isGooglePlayServerConfigured,isGooglePlayWifConfigured,normalizePlaySubscription,obfuscatedAccountId,resolveGooglePlayAuthMode} from '../../apps/api/server/googlePlayBilling.mjs';
+import {createGooglePlayBillingDiagnosticHandler} from '../../apps/api/server/handlers/google-play-billing-diagnostic.mjs';
 import {verifyRevisionPurchase,consumeRevisionQuota} from '../../apps/api/server/revisionEntitlement.mjs';
 
 const identity='00000000-0000-4000-8000-000000000001';
 const env={GOOGLE_PLAY_ACCOUNT_HASH_SECRET:'test-only-secret'};
 const accountId=obfuscatedAccountId(identity,env);
+
+test('Google Play server configuration fails closed without exposing configuration values',()=>{
+  assert.equal(isGooglePlayServerConfigured({}),false);
+  const purchaseConfig={
+    GOOGLE_PLAY_PACKAGE_NAME:'ci.elima.revision',
+    GOOGLE_PLAY_ACCOUNT_HASH_SECRET:'x'.repeat(32),
+    GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:JSON.stringify({client_email:'billing@example.test',private_key:'private'}),
+  };
+  assert.equal(isGooglePlayPurchaseConfigured(purchaseConfig),true);
+  assert.equal(isGooglePlayServerConfigured(purchaseConfig),false);
+  const fullConfig={...purchaseConfig,GOOGLE_PLAY_RTDN_AUDIENCE:'https://api.example.test/api/google-play-rtdn',GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL:'push@example.test'};
+  assert.equal(isGooglePlayServerConfigured(fullConfig),true);
+  assert.equal(isGooglePlayBillingEnabled(fullConfig),false);
+  assert.equal(isGooglePlayBillingEnabled({...fullConfig,GOOGLE_PLAY_BILLING_ENABLED:'true'}),true);
+  assert.equal(isGooglePlayServerConfigured({
+    GOOGLE_PLAY_PACKAGE_NAME:'ci.elima.identity',
+    GOOGLE_PLAY_ACCOUNT_HASH_SECRET:'x'.repeat(32),
+    GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:JSON.stringify({client_email:'billing@example.test',private_key:'private'}),
+    GOOGLE_PLAY_RTDN_AUDIENCE:'https://api.example.test/api/google-play-rtdn',
+    GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL:'push@example.test',
+  }),false);
+});
+
+test('Vercel OIDC WIF uses the pinned Elima provider and refuses static JSON in production',async()=>{
+  const wif={
+    VERCEL_ENV:'production',
+    GOOGLE_PLAY_PACKAGE_NAME:'ci.elima.revision',
+    GOOGLE_PLAY_ACCOUNT_HASH_SECRET:'x'.repeat(32),
+    GCP_PROJECT_ID:GOOGLE_PLAY_WIF.projectId,
+    GCP_PROJECT_NUMBER:GOOGLE_PLAY_WIF.projectNumber,
+    GCP_WORKLOAD_IDENTITY_POOL_ID:GOOGLE_PLAY_WIF.poolId,
+    GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID:GOOGLE_PLAY_WIF.providerId,
+    GCP_SERVICE_ACCOUNT_EMAIL:GOOGLE_PLAY_WIF.serviceAccountEmail,
+  };
+  assert.equal(isGooglePlayWifConfigured(wif),true);
+  assert.equal(resolveGooglePlayAuthMode(wif),'vercel_oidc');
+  assert.equal(isGooglePlayPurchaseConfigured(wif),true);
+  assert.equal(resolveGooglePlayAuthMode({...wif,GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:JSON.stringify({client_email:'legacy@example.test',private_key:'secret'})}),null);
+  const requested:string[]=[];
+  const client=await createGooglePlayAuthClient(wif,{getOidcToken:async(options)=>{requested.push(String(options?.expirationBufferMs));return 'vercel-request-context-token';}});
+  assert.equal(await client.retrieveSubjectToken(),'vercel-request-context-token');
+  assert.deepEqual(requested,[String(5*60*1000)]);
+  assert.equal(client.scopes?.includes('https://www.googleapis.com/auth/androidpublisher'),true);
+  const requests:any[]=[];
+  const google=createGooglePlayClient(wif,{authClient:{async request(options:any){requests.push(options);return {data:{subscriptions:[]}};}}});
+  assert.deepEqual(await google.listSubscriptions(),{subscriptions:[]});
+  assert.match(requests[0].url,/\/applications\/ci\.elima\.revision\/subscriptions$/);
+  assert.deepEqual(requests[0].params,{pageSize:100});
+  assert.equal(requests[0].method,undefined);
+});
+
+test('billing predeployment check is explicit, Revision-only and never prints secrets',async()=>{
+  const script=await readFile(new URL('../../apps/api/scripts/check-revision-billing-config.mjs',import.meta.url),'utf8');
+  assert.match(script,/rydnrvvmwixrkmnvpajf/);
+  assert.match(script,/ci\.elima\.revision/);
+  assert.match(script,/isGooglePlayPurchaseConfigured/);
+  assert.match(script,/isGooglePlayRtdnConfigured/);
+  assert.match(script,/--live/);
+  assert.match(script,/listSubscriptions/);
+  assert.doesNotMatch(script,/console\.(?:log|error)\([^\n]*(?:SERVICE_ACCOUNT_JSON|HASH_SECRET|private_key)/);
+});
+
+test('subscription verification stays server-side and fails closed until Billing is explicitly enabled',async()=>{
+  const handler=await readFile(new URL('../../apps/api/server/handlers/revision-subscription.mjs',import.meta.url),'utf8');
+  assert.match(handler,/if\(!isGooglePlayBillingEnabled\(\)\) throw billingError\('billing_configuration_missing'\)/);
+  assert.match(handler,/verifyRevisionPurchase/);
+  assert.doesNotMatch(handler,/plan\s*=\s*['"](?:standard|premium)/);
+});
+
+test('production diagnostic is secret-protected, read-only and independent from RTDN',async()=>{
+  const diagnosticSecret='d'.repeat(48);
+  const diagnosticEnv={
+    VERCEL:'1',VERCEL_ENV:'production',GOOGLE_PLAY_DIAGNOSTIC_ENABLED:'true',GOOGLE_PLAY_DIAGNOSTIC_SECRET:diagnosticSecret,
+    GOOGLE_PLAY_PACKAGE_NAME:'ci.elima.revision',GOOGLE_PLAY_ACCOUNT_HASH_SECRET:'x'.repeat(32),
+    GCP_PROJECT_ID:GOOGLE_PLAY_WIF.projectId,GCP_PROJECT_NUMBER:GOOGLE_PLAY_WIF.projectNumber,
+    GCP_WORKLOAD_IDENTITY_POOL_ID:GOOGLE_PLAY_WIF.poolId,GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID:'elima-vercel-prod',
+    GCP_SERVICE_ACCOUNT_EMAIL:GOOGLE_PLAY_WIF.serviceAccountEmail,
+  };
+  let googleReads=0;
+  const handler=createGooglePlayBillingDiagnosticHandler({env:diagnosticEnv,createGooglePlayClient:()=>({async listSubscriptions(){googleReads++;return {subscriptions:[
+    {productId:'elima_revision_standard',basePlans:[{basePlanId:'monthly'}]},
+    {productId:'elima_revision_premium',basePlans:[{basePlanId:'monthly'}]},
+  ]};}})});
+  const response=()=>({statusCode:200,body:null as any,setHeader(){return this;},status(code:number){this.statusCode=code;return this;},json(body:any){this.body=body;return this;}});
+  const denied=response();
+  await handler({method:'POST',headers:{authorization:'Bearer wrong'}},denied);
+  assert.equal(denied.statusCode,404);
+  assert.equal(googleReads,0);
+  const allowed=response();
+  await handler({method:'POST',headers:{authorization:`Bearer ${diagnosticSecret}`}},allowed);
+  assert.equal(allowed.statusCode,200);
+  assert.deepEqual(allowed.body,{ok:true,target:'revision',oidcProductionAccess:true,expectedCatalogReady:true,rtdnConfigured:false,billingActivationEnabled:false});
+  assert.equal(googleReads,1);
+});
 function googlePurchase(plan='standard',state='SUBSCRIPTION_STATE_ACTIVE',trial=false) {
   return {subscriptionState:state,acknowledgementState:'ACKNOWLEDGEMENT_STATE_PENDING',startTime:new Date().toISOString(),externalAccountIdentifiers:{obfuscatedExternalAccountId:accountId},lineItems:[{productId:`elima_revision_${plan}`,latestSuccessfulOrderId:'GPA.fixture',expiryTime:new Date(Date.now()+86400000).toISOString(),autoRenewingPlan:{autoRenewEnabled:true},offerDetails:{basePlanId:'monthly',...(trial?{offerId:'trial-1-month'}:{})},offerPhase:trial?{freeTrial:{}}:{basePrice:{}}}]};
 }

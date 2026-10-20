@@ -3,6 +3,11 @@ import test from "node:test";
 import {
   applyQuizScore,
   createLearningApi,
+  createRevisionOnboardingService,
+  compatibleSubjectIds,
+  gradesForCycle,
+  inferSchoolCycle,
+  subjectsForEducation,
   createLocalLearningSession,
   learningSessionScore,
   mapGeneratedQuizQuestions,
@@ -80,4 +85,28 @@ test("revision-core injecte le client API et préserve le contrat Learning", asy
   assert.equal(request?.endpoint, "/api/learning");
   assert.equal((request?.init?.headers as Record<string, string>).Authorization, "Bearer token");
   assert.match(String(request?.init?.body), /"demo":true/);
+});
+
+test("le référentiel scolaire sépare primaire et secondaire sans casser les anciens niveaux", () => {
+  assert.deepEqual(gradesForCycle("primary").map((grade) => grade.label), ["CM1", "CM2"]);
+  assert.ok(gradesForCycle("secondary").some((grade) => grade.label === "Terminale C"));
+  assert.equal(inferSchoolCycle("CM2"), "primary");
+  assert.equal(inferSchoolCycle("3ème A"), "secondary");
+  assert.equal(subjectsForEducation("primary", "CM1").find((subject) => subject.id === "sciences-technologie")?.availability, "planned");
+  assert.deepEqual(compatibleSubjectIds("primary", "CM2", ["maths", "svt", "francais", "maths"]), ["maths", "francais"]);
+});
+
+test("la sauvegarde d'onboarding utilise une RPC atomique et refuse une session absente", async () => {
+  const calls: Array<{ name: string; input: Record<string, unknown> }> = [];
+  const client = {
+    auth: { async getUser() { return { data: { user: { id: "student-1" } } }; } },
+    async rpc(name: string, input: Record<string, unknown>) { calls.push({ name, input }); return { data: { onboardingCompleted: true }, error: null }; },
+  };
+  const save = createRevisionOnboardingService({ mainDbClient: client as never });
+  await save({ cycle: "primary", schoolLevelId: "CM1", subjectIds: ["maths"], guardianAcknowledged: true });
+  assert.equal(calls[0].name, "save_revision_onboarding");
+  assert.deepEqual(calls[0].input.p_subject_ids, ["maths"]);
+
+  const unauthorized = createRevisionOnboardingService({ mainDbClient: { auth: { async getUser() { return { data: { user: null } }; } } } as never });
+  await assert.rejects(unauthorized({ cycle: "secondary", schoolLevelId: "3ème", subjectIds: ["maths"], guardianAcknowledged: false }), /Session expirée/);
 });

@@ -18,8 +18,14 @@ const SERVER_ENV_KEYS = [
   "GOOGLE_PLAY_PACKAGE_NAME",
   "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON",
   "GOOGLE_PLAY_ACCOUNT_HASH_SECRET",
+  "GOOGLE_PLAY_BILLING_ENABLED",
   "GOOGLE_PLAY_RTDN_AUDIENCE",
   "GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL",
+  "GCP_PROJECT_ID",
+  "GCP_PROJECT_NUMBER",
+  "GCP_WORKLOAD_IDENTITY_POOL_ID",
+  "GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID",
+  "GCP_SERVICE_ACCOUNT_EMAIL",
   "REVISION_ALLOWED_ORIGINS",
   "VITE_SUPABASE_URL",
   "VITE_SUPABASE_PUBLISHABLE_KEY",
@@ -53,7 +59,7 @@ const SERVER_ENV_KEYS = [
 ] as const;
 
 const LOCAL_API_HANDLERS = ["identity-bridge", "elima-profile", "activate-school", "elima-password-login", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "registration-request", "learning"] as const;
-const REVISION_API_HANDLERS = ["revision-subscription", "account-delete", "identity-bridge", "elima-profile", "elima-password-login", "elima-session", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "learning", "revision-document-analyze", "revision-document-delete"] as const;
+const REVISION_API_HANDLERS = ["revision-subscription", "revision-quiz-attempt", "account-delete", "identity-bridge", "elima-profile", "elima-password-login", "elima-session", "elima-signup", "auth-verification-request", "auth-verification-check", "auth-password-reset", "learning", "revision-document-analyze", "revision-document-delete"] as const;
 
 function localServerlessApis(enabled: boolean, endpoints: readonly string[]): Plugin {
   return {

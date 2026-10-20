@@ -100,19 +100,21 @@ test("la page Réviser conserve ses QCM, fiches et historique et affiche Scanner
   assert.doesNotMatch(page, /id: "parcours", label: "Parcours"/);
 });
 
-test("l’onboarding exige et sauvegarde au moins une matière canonique", async () => {
+test("l’onboarding sépare cycle, classe, matières et sauvegarde atomiquement", async () => {
   const registration = await readFile(new URL("../../apps/revision/src/features/auth/RegistrationPage.tsx", import.meta.url), "utf8");
-  assert.match(registration, /revisionSubjectsForLevel\(form\.schoolLevel\)\.map/);
-  assert.match(registration, /Dans quelles matières souhaites-tu progresser/);
-  assert.match(registration, /if \(!subjectIds\.length\).*Choisis au moins une matière/);
-  assert.match(registration, /await saveSubjectPreferences\(subjectIds\)/);
+  for (const step of ["welcome", "cycle", "class", "subjects", "confirmation"]) assert.match(registration, new RegExp(`"${step}"`));
+  assert.match(registration, /Tu es dans quel cycle scolaire/);
+  assert.match(registration, /revisionSubjectsForEducation\(cycle, form\.schoolLevel\)/);
+  assert.match(registration, /Bientôt disponible/);
+  assert.match(registration, /await saveRevisionOnboarding/);
+  assert.match(registration, /accountCreated/);
 });
 
 test("le profil permet de modifier les matières sans toucher aux historiques", async () => {
   const profile = await readFile(new URL("../../apps/revision/src/RevisionStudentProfilePage.tsx", import.meta.url), "utf8");
   const service = await readFile(new URL("../../packages/revision-core/src/subjectPreferencesService.ts", import.meta.url), "utf8");
   assert.match(profile, /Modifier mes matières/);
-  assert.match(profile, /saveSubjectPreferences\(subjectIds\)/);
+  assert.match(profile, /saveRevisionOnboarding/);
   assert.match(service, /student_revision_subject_preferences/);
   assert.doesNotMatch(service, /quiz_attempts|learning_attempts|user_course_summaries/);
 });

@@ -12,9 +12,10 @@ import { QuizProgress, QuizQuestionContent } from "@elima/revision-ui";
 import {
   consumeDailyHint,
   getDailyHintUsage,
-  getQuizQuestions,
   markDailyQuizCompleted,
   recordQuizCompletion,
+  startQuizAttempt,
+  submitQuizAttempt,
   submitQuizFeedback,
 } from "@/services/revisionDataService";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -27,10 +28,15 @@ export function QuizPage() {
   const [params] = useSearchParams();
   const [sessionAttemptId] = useState(() => crypto.randomUUID());
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [attemptId, setAttemptId] = useState("");
+  const [answers, setAnswers] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
+  const [verifiedResult, setVerifiedResult] = useState<{ score: number; correctAnswers: number; totalQuestions: number } | null>(null);
+  const [submitBusy, setSubmitBusy] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [done, setDone] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [hintOpen, setHintOpen] = useState(false);
@@ -51,11 +57,12 @@ export function QuizPage() {
   useEffect(() => {
     const quizId = params.get("id") ?? undefined;
     Promise.all([
-      getQuizQuestions(quizId, `${profile.id}|${sessionAttemptId}`),
+      startQuizAttempt({ quizRef: quizId, shuffleSeed: `${profile.id}|${sessionAttemptId}` }),
       // Billing availability never blocks a catalog/random quiz.
       getDailyHintUsage(profile.id).catch(() => ({ used: 0, limit: 0, remaining: 0 })),
-    ]).then(([nextQuestions, usage]) => {
-      setQuestions(nextQuestions);
+    ]).then(([attempt, usage]) => {
+      setAttemptId(attempt.attemptId);
+      setQuestions(attempt.questions);
       setHintRemaining(usage.remaining);
     }).finally(() => setLoading(false));
   }, [params, profile.id, sessionAttemptId]);
@@ -68,6 +75,7 @@ export function QuizPage() {
   function answer(option: number) {
     if (showResult) return;
     setSelected(option);
+    setAnswers((current) => ({ ...current, [question.id]: option }));
     setShowResult(true);
     if (option === question.correctIndex) setScore((value) => value + 1);
   }
@@ -93,20 +101,36 @@ export function QuizPage() {
       setHintOpen(false);
       return;
     }
+    setSubmitBusy(true);
+    setSubmitError("");
     try {
-      await recordQuizCompletion({
-        userId: profile.id,
-        quizRef: params.get("id") ?? "daily",
-        subject,
-        topic: topic ?? undefined,
-        score: Math.round((score / questions.length) * 100),
-        totalQuestions: questions.length,
-        correctAnswers: score,
-        source,
-        sourceDocumentId,
-      });
+      if (attemptId.startsWith("demo:")) {
+        await recordQuizCompletion({
+          userId: profile.id,
+          quizRef: params.get("id") ?? "daily",
+          subject,
+          topic: topic ?? undefined,
+          score: Math.round((score / questions.length) * 100),
+          totalQuestions: questions.length,
+          correctAnswers: score,
+          source,
+          sourceDocumentId,
+        });
+      } else {
+        const result = await submitQuizAttempt({
+          attemptId,
+          answers: questions.map((item) => ({
+            questionId: item.id,
+            answerId: item.optionIds?.[answers[item.id]] ?? "",
+          })),
+        });
+        setVerifiedResult(result);
+      }
     } catch (error) {
-      console.warn("Enregistrement du résultat du quiz :", error);
+      setSubmitError(error instanceof Error ? error.message : "Impossible d’enregistrer le résultat. Réessaie.");
+      return;
+    } finally {
+      setSubmitBusy(false);
     }
     markDailyQuizCompleted(profile.id);
     setDone(true);
@@ -125,14 +149,17 @@ export function QuizPage() {
   }
 
   if (done) {
-    const percentage = Math.round((score / questions.length) * 100);
+    const finalCorrect = verifiedResult?.correctAnswers ?? score;
+    const finalTotal = verifiedResult?.totalQuestions ?? questions.length;
+    const percentage = verifiedResult?.score ?? Math.round((score / questions.length) * 100);
     return (
       <PageContainer>
         <div className="card flex flex-col items-center px-5 py-10 text-center">
           <CheckCircle2 className="h-16 w-16 text-primary" />
           <h2 className="mt-4 font-title text-2xl font-bold text-accent">Quiz terminé !</h2>
           <p className="mt-2 text-4xl font-bold text-primary">{percentage}%</p>
-          <p className="mt-1 text-sm text-gray-500">{score}/{questions.length} bonnes réponses</p>
+          <p className="mt-1 text-sm text-gray-500">{finalCorrect}/{finalTotal} bonnes réponses</p>
+          {!attemptId.startsWith("demo:") ? <p className="mt-2 text-xs font-semibold text-primary">Résultat vérifié par Elima</p> : null}
           <div className="mt-7 w-full max-w-md rounded-3xl bg-gray-50 p-5">
             {feedbackSent ? (
               <div className="py-4"><CheckCircle2 className="mx-auto h-8 w-8 text-primary" /><p className="mt-2 font-semibold text-accent">Merci pour ton avis !</p></div>
@@ -195,27 +222,29 @@ export function QuizPage() {
 
         <div className="mt-5 space-y-3">
           {question.options.map((option, optionIndex) => {
+            const correctionAvailable = question.correctIndex !== undefined;
             const correct = optionIndex === question.correctIndex;
             const chosen = optionIndex === selected;
-            const style = showResult && correct ? "border-green-400 bg-green-50 text-green-900" : showResult && chosen ? "border-red-400 bg-red-50 text-red-900" : showResult ? "border-gray-200 bg-gray-50 text-gray-400" : "border-gray-200 bg-white hover:border-revision/50";
+            const style = showResult && correctionAvailable && correct ? "border-green-400 bg-green-50 text-green-900" : showResult && correctionAvailable && chosen ? "border-red-400 bg-red-50 text-red-900" : showResult && chosen ? "border-revision bg-revision/5 text-revision" : showResult ? "border-gray-200 bg-gray-50 text-gray-400" : "border-gray-200 bg-white hover:border-revision/50";
             return (
               <button key={`${question.id}-${optionIndex}`} type="button" disabled={showResult} onClick={() => answer(optionIndex)} className={`tap flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-2xl border-2 px-4 py-3 text-left text-sm transition ${style}`}>
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-500">{optionIndex + 1}</span>
-                {showResult && correct ? <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" /> : showResult && chosen ? <XCircle className="h-4 w-4 shrink-0 text-red-600" /> : null}
+                {showResult && correctionAvailable && correct ? <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" /> : showResult && correctionAvailable && chosen ? <XCircle className="h-4 w-4 shrink-0 text-red-600" /> : null}
                 <MarkdownMathText content={option} inline className="min-w-0 flex-1" />
               </button>
             );
           })}
         </div>
 
-        {showResult ? (
+        {showResult && question.correctIndex !== undefined ? (
           <div className={`mt-4 rounded-2xl p-4 text-sm ${selected === question.correctIndex ? "bg-green-50 text-green-900" : "bg-red-50 text-red-900"}`}>
             <p className="mb-1 font-semibold">{selected === question.correctIndex ? "Bonne réponse" : "Presque !"}</p>
             {question.explanation ? <MarkdownMathText content={question.explanation} /> : null}
           </div>
-        ) : null}
+        ) : showResult ? <div className="mt-4 rounded-2xl bg-revision/5 p-4 text-sm text-revision"><p className="font-semibold">Réponse enregistrée</p><p className="mt-1 text-xs">Le corrigé sera calculé et autorisé par le serveur à la fin du quiz.</p></div> : null}
 
-        {showResult ? <button type="button" onClick={next} className="tap mt-4 w-full rounded-2xl bg-primary py-3 text-sm font-semibold text-white">{index < questions.length - 1 ? "Question suivante" : "Terminer le quiz"}</button> : null}
+        {submitError ? <p role="alert" className="mt-3 rounded-2xl bg-red-50 p-3 text-sm text-red-700">{submitError}</p> : null}
+        {showResult ? <button type="button" disabled={submitBusy} onClick={next} className="tap mt-4 w-full rounded-2xl bg-primary py-3 text-sm font-semibold text-white disabled:opacity-50">{submitBusy ? "Vérification…" : index < questions.length - 1 ? "Question suivante" : "Terminer le quiz"}</button> : null}
       </div>
     </PageContainer>
   );

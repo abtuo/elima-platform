@@ -25,6 +25,7 @@ test("Android cible SDK 36 et interdit HTTP et permissions non necessaires", asy
   const app = await source("apps/revision/android/app/build.gradle");
   assert.match(app, /applicationId "ci\.elima\.revision"/);
   const manifest = await source("apps/revision/android/app/src/main/AndroidManifest.xml");
+  assert.match(manifest, /android:allowBackup="false"/);
   assert.match(manifest, /android:usesCleartextTraffic="false"/);
   assert.match(manifest, /android\.permission\.INTERNET/);
   assert.doesNotMatch(manifest, /android\.permission\.(?:CAMERA|READ_EXTERNAL_STORAGE|WRITE_EXTERNAL_STORAGE|MANAGE_EXTERNAL_STORAGE|ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION|RECORD_AUDIO)/);

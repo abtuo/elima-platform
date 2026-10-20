@@ -186,7 +186,8 @@ export type QuizQuestion = {
   id: string;
   question: string;
   options: string[];
-  correctIndex: number;
+  optionIds?: string[];
+  correctIndex?: number;
   hint?: string;
   explanation?: string;
 };
@@ -202,6 +203,7 @@ export type QuizAttemptSummary = {
   completedAt: string;
   source?: "catalog" | "generated" | "document";
   sourceDocumentId?: string;
+  scoreTrust?: "legacy_client_reported" | "server_verified";
 };
 
 export type RevisionGenerationInput = {
@@ -210,5 +212,6 @@ export type RevisionGenerationInput = {
   level: string;
   source?: "topic" | "document";
   sourceContext?: string;
+  sourceDocumentId?: string;
 };
 export type HintUsage = { used: number; limit: number; remaining: number };

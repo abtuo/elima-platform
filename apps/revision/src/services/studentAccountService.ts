@@ -1,5 +1,8 @@
 import { mainDbClient } from "./mainDbClient";
 import { getValidElimaIdentityAccessToken } from "./elimaIdentityService";
+import { createRevisionOnboardingService } from "@elima/revision-core";
+
+export const saveRevisionOnboarding = createRevisionOnboardingService({ mainDbClient });
 
 export async function updateStandaloneStudentProfile(input: {
   schoolLevelId: string;

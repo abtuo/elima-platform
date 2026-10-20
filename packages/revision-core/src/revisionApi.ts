@@ -20,6 +20,16 @@ export function cleanAnswerText(value: string) {
 export function mapGeneratedQuizQuestions(rawQuestions: Array<Record<string, unknown>>, shuffleSeed: string): QuizQuestion[] {
   return rawQuestions.map((raw, questionIndex) => {
     const options = Array.isArray(raw.options) ? raw.options.map((value) => cleanAnswerText(String(value))) : [];
+    const optionIds = Array.isArray(raw.optionIds) ? raw.optionIds.map(String) : [];
+    if (optionIds.length === options.length && options.length > 0) {
+      return {
+        id: String(raw.id ?? `generated-${questionIndex + 1}`),
+        question: String(raw.question ?? ""),
+        options,
+        optionIds,
+        hint: raw.hint ? String(raw.hint) : undefined,
+      };
+    }
     const correctIndex = Number(raw.correctIndex);
     const shuffled = seededShuffle(options.map((text, index) => ({ text, correct: index === correctIndex })), `${shuffleSeed}|generated-${questionIndex}`);
     return {
@@ -30,7 +40,7 @@ export function mapGeneratedQuizQuestions(rawQuestions: Array<Record<string, unk
       hint: raw.hint ? String(raw.hint) : undefined,
       explanation: raw.explanation ? String(raw.explanation) : undefined,
     };
-  }).filter((question) => question.question && question.options.length === 4 && question.correctIndex >= 0);
+  }).filter((question) => question.question && question.options.length === 4 && (question.optionIds?.length === 4 || (question.correctIndex ?? -1) >= 0));
 }
 
 export function createRevisionGenerationService(dependencies: RevisionGenerationDependencies) {
@@ -55,8 +65,9 @@ export function createRevisionGenerationService(dependencies: RevisionGeneration
       const rawQuestions = Array.isArray(payload.questions) ? payload.questions as Array<Record<string, unknown>> : [];
       const questions = mapGeneratedQuizQuestions(rawQuestions, shuffleSeed);
       if (!questions.length) throw new Error("Aucune question valide n’a été générée.");
-      const id = `${GENERATED_QUIZ_PREFIX}${dependencies.randomUUID()}`;
-      dependencies.sessionStorage.setItem(`${GENERATED_QUIZ_KEY}${id}`, JSON.stringify(questions));
+      const attemptId = String(payload.attemptId ?? "");
+      const id = String(payload.quizRef ?? (attemptId ? `${GENERATED_QUIZ_PREFIX}${attemptId}` : `${GENERATED_QUIZ_PREFIX}${dependencies.randomUUID()}`));
+      dependencies.sessionStorage.setItem(`${GENERATED_QUIZ_KEY}${id}`, JSON.stringify({ attemptId, questions }));
       return { id, questions };
     },
     async generateSheet(input: RevisionGenerationInput) {
@@ -70,7 +81,18 @@ export function createRevisionGenerationService(dependencies: RevisionGeneration
 
 export function readGeneratedQuiz(storage: AuthStorage, quizSetId: string): QuizQuestion[] {
   if (!quizSetId.startsWith(GENERATED_QUIZ_PREFIX)) return [];
-  try { return JSON.parse(storage.getItem(`${GENERATED_QUIZ_KEY}${quizSetId}`) ?? "[]") as QuizQuestion[]; } catch { return []; }
+  try {
+    const parsed = JSON.parse(storage.getItem(`${GENERATED_QUIZ_KEY}${quizSetId}`) ?? "[]") as QuizQuestion[] | { questions?: QuizQuestion[] };
+    return Array.isArray(parsed) ? parsed : parsed.questions ?? [];
+  } catch { return []; }
+}
+
+export function readGeneratedQuizAttemptId(storage: AuthStorage, quizSetId: string): string | undefined {
+  if (!quizSetId.startsWith(GENERATED_QUIZ_PREFIX)) return undefined;
+  try {
+    const parsed = JSON.parse(storage.getItem(`${GENERATED_QUIZ_KEY}${quizSetId}`) ?? "{}") as { attemptId?: unknown };
+    return typeof parsed.attemptId === "string" && parsed.attemptId ? parsed.attemptId : quizSetId.slice(GENERATED_QUIZ_PREFIX.length);
+  } catch { return undefined; }
 }
 
 export function pickQuizItem(quizzes: QuizItem[], options: { subject?: string; topic?: string; random?: boolean }, random = Math.random): QuizItem | null {

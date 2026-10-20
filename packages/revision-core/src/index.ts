@@ -13,3 +13,5 @@ export * from './learningService.ts';
 export * from './subscriptionApi.ts';
 export * from './quizResult.ts';
 export * from './pedagogicalLearningApi.ts';
+export * from './educationCatalog.ts';
+export * from './onboardingService.ts';
