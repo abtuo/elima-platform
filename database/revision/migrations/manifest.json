@@ -1,0 +1,68 @@
+{
+  "project": "revision",
+  "projectRef": "rydnrvvmwixrkmnvpajf",
+  "description": "Elima Revision. Current remote structure is captured by the baseline; no historical migration is automatically deployable.",
+  "deployable": [
+    {
+      "version": "20261019120000",
+      "source": "supabase/migrations/20261019120000_revision_primary_onboarding.sql",
+      "dependsOn": [],
+      "backupPolicy": "transactional-structural-snapshot",
+      "authorizedFindings": [
+        "drop-constraint",
+        "access-exclusive-lock",
+        "bounded-update",
+        "security-definer-function"
+      ]
+    },
+    {
+      "version": "20261020180000",
+      "source": "supabase/migrations/20261020180000_revision_verified_quiz_attempts.sql",
+      "dependsOn": ["20261019120000"],
+      "backupPolicy": "transactional-structural-snapshot",
+      "authorizedFindings": [
+        "drop-constraint",
+        "access-exclusive-lock",
+        "security-definer-function"
+      ]
+    },
+    {
+      "version": "20261028120000",
+      "source": "supabase/migrations/20261028120000_revision_quiz_immediate_feedback.sql",
+      "dependsOn": ["20261020180000"],
+      "backupPolicy": "transactional-structural-snapshot",
+      "authorizedFindings": [
+        "security-definer-function"
+      ]
+    }
+  ],
+  "historicalSources": [
+    "supabase/migrations/20260713090000_mobile_role_access.sql",
+    "supabase/migrations/20260713103000_mobile_messaging_rls_fix.sql",
+    "supabase/migrations/20260713120000_mobile_timetable_access.sql",
+    "supabase/migrations/20260715100000_unified_revision_schema.sql",
+    "supabase/migrations/20260715110000_messaging_access_v2.sql",
+    "supabase/migrations/20260715120000_communications_split_and_user_delete.sql",
+    "supabase/migrations/20260715130000_quiz_feedback.sql",
+    "supabase/migrations/20260715140000_demo_timetable_structure.sql",
+    "supabase/migrations/20260715150000_teacher_attendance_sync.sql",
+    "supabase/migrations/20260715151000_reload_attendance_sync_schema.sql",
+    "supabase/migrations/20260715160000_standalone_students_and_school_activation.sql",
+    "supabase/migrations/20260715170000_elima_identity_links.sql",
+    "supabase/migrations/20260716090000_school_registration_requests.sql",
+    "supabase/migrations/20260719120000_student_class_profile_access.sql",
+    "supabase/migrations/20260719150000_learning_assignments.sql",
+    "supabase/migrations/20260719160000_learning_discovery_and_ai.sql",
+    "supabase/migrations/20260719170000_guided_sessions_v3.sql",
+    "supabase/migrations/20260725120000_unified_tenant_foundation.sql",
+    "supabase/migrations/20260927090000_twilio_verify_auth_flows.sql",
+    "supabase/migrations/20260928120000_revision_subject_preferences_and_documents.sql",
+    "supabase/migrations/20260928180000_revision_ai_quotas_and_uploads.sql",
+    "supabase/migrations/20260930090000_revision_document_deletion.sql",
+    "supabase/migrations/20261003160000_revision_monetization.sql",
+    "supabase/migrations/20261003170000_revision_quota_refunds.sql",
+    "supabase/migrations/20261010120000_pedagogical_authoring_backend.sql",
+    "supabase/migrations/20261010130000_pedagogical_generation_jobs.sql",
+    "supabase/migrations/20261010140000_pedagogical_revision_delivery.sql"
+  ]
+}

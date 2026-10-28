@@ -112,6 +112,33 @@ export async function createCatalogQuizAttempt(admin, userId, input, dependencie
   return { attemptId: sessionId, quizRef, questions: publicQuestions(snapshot) };
 }
 
+export async function checkQuizAnswer(admin, userId, input) {
+  const attemptId = clean(input.attemptId, 100);
+  const questionId = clean(input.questionId, 100);
+  const answerId = clean(input.answerId, 100);
+  if (!UUID.test(attemptId) || !questionId || !answerId) {
+    throw new RevisionApiError("Réponse invalide.", 400, "invalid_quiz_answer");
+  }
+
+  const checked = await admin.rpc("check_revision_quiz_answer", {
+    p_session_id: attemptId,
+    p_user_id: userId,
+    p_question_id: questionId,
+    p_answer_id: answerId,
+  });
+  if (checked.error || !checked.data) {
+    const message = String(checked.error?.message ?? "");
+    const missing = /not found/i.test(message);
+    const invalid = /invalid/i.test(message);
+    throw new RevisionApiError(
+      missing ? "Tentative introuvable." : invalid ? "Réponse invalide." : "Impossible de vérifier cette réponse.",
+      missing ? 404 : invalid ? 400 : 503,
+      missing ? "quiz_attempt_not_found" : invalid ? "invalid_quiz_answer" : "quiz_answer_check_failed",
+    );
+  }
+  return checked.data;
+}
+
 export async function submitQuizAttempt(admin, userId, input) {
   const attemptId = clean(input.attemptId, 100);
   if (!UUID.test(attemptId) || !Array.isArray(input.answers)) throw new RevisionApiError("Remise invalide.", 400, "invalid_quiz_submission");

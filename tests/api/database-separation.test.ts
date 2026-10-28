@@ -33,7 +33,7 @@ test("le plan Core ne peut contenir que les quatre migrations Store ordonnées",
   assert.equal(revision.projectRef, "rydnrvvmwixrkmnvpajf");
   assert.deepEqual(
     revision.deployable.map((migration: { version: string }) => migration.version),
-    ["20261019120000", "20261020180000"],
+    ["20261019120000", "20261020180000", "20261028120000"],
   );
   assert.match(core.deployable.at(-1).source, /store_commerce_orders_phase_3\.sql$/);
 });

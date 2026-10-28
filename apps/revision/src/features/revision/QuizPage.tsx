@@ -11,6 +11,7 @@ import { SubjectIcon } from "@/components/revision/SubjectIcon";
 import { QuizProgress, QuizQuestionContent } from "@elima/revision-ui";
 import {
   consumeDailyHint,
+  checkQuizAnswer,
   getDailyHintUsage,
   markDailyQuizCompleted,
   recordQuizCompletion,
@@ -33,6 +34,8 @@ export function QuizPage() {
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
+  const [answerResult, setAnswerResult] = useState<{ correct: boolean; correctIndex: number; explanation: string } | null>(null);
+  const [answerBusy, setAnswerBusy] = useState(false);
   const [score, setScore] = useState(0);
   const [verifiedResult, setVerifiedResult] = useState<{ score: number; correctAnswers: number; totalQuestions: number } | null>(null);
   const [submitBusy, setSubmitBusy] = useState(false);
@@ -72,12 +75,39 @@ export function QuizPage() {
 
   const question = questions[index];
 
-  function answer(option: number) {
-    if (showResult) return;
+  async function answer(option: number) {
+    if (showResult || answerBusy) return;
     setSelected(option);
-    setAnswers((current) => ({ ...current, [question.id]: option }));
-    setShowResult(true);
-    if (option === question.correctIndex) setScore((value) => value + 1);
+    setSubmitError("");
+    const answerId = question.optionIds?.[option];
+    if (attemptId.startsWith("demo:")) {
+      const correct = option === question.correctIndex;
+      setAnswers((current) => ({ ...current, [question.id]: option }));
+      setAnswerResult({ correct, correctIndex: question.correctIndex ?? -1, explanation: question.explanation ?? "" });
+      setShowResult(true);
+      if (correct) setScore((value) => value + 1);
+      return;
+    }
+    if (!answerId) {
+      setSelected(null);
+      setSubmitError("Cette réponse n’est pas disponible. Relance le quiz.");
+      return;
+    }
+    setAnswerBusy(true);
+    try {
+      const result = await checkQuizAnswer({ attemptId, questionId: question.id, answerId });
+      const correctIndex = question.optionIds?.indexOf(result.correctAnswerId) ?? -1;
+      if (correctIndex < 0) throw new Error("Le corrigé reçu est incompatible avec cette question.");
+      setAnswers((current) => ({ ...current, [question.id]: option }));
+      setAnswerResult({ correct: result.correct, correctIndex, explanation: result.explanation });
+      setShowResult(true);
+      if (result.correct) setScore((value) => value + 1);
+    } catch (error) {
+      setSelected(null);
+      setSubmitError(error instanceof Error ? error.message : "Impossible de vérifier cette réponse. Réessaie.");
+    } finally {
+      setAnswerBusy(false);
+    }
   }
 
   async function revealHint() {
@@ -97,6 +127,7 @@ export function QuizPage() {
     if (index < questions.length - 1) {
       setIndex((value) => value + 1);
       setSelected(null);
+      setAnswerResult(null);
       setShowResult(false);
       setHintOpen(false);
       return;
@@ -222,12 +253,12 @@ export function QuizPage() {
 
         <div className="mt-5 space-y-3">
           {question.options.map((option, optionIndex) => {
-            const correctionAvailable = question.correctIndex !== undefined;
-            const correct = optionIndex === question.correctIndex;
+            const correctionAvailable = answerResult !== null;
+            const correct = optionIndex === answerResult?.correctIndex;
             const chosen = optionIndex === selected;
             const style = showResult && correctionAvailable && correct ? "border-green-400 bg-green-50 text-green-900" : showResult && correctionAvailable && chosen ? "border-red-400 bg-red-50 text-red-900" : showResult && chosen ? "border-revision bg-revision/5 text-revision" : showResult ? "border-gray-200 bg-gray-50 text-gray-400" : "border-gray-200 bg-white hover:border-revision/50";
             return (
-              <button key={`${question.id}-${optionIndex}`} type="button" disabled={showResult} onClick={() => answer(optionIndex)} className={`tap flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-2xl border-2 px-4 py-3 text-left text-sm transition ${style}`}>
+              <button key={`${question.id}-${optionIndex}`} type="button" disabled={showResult || answerBusy} onClick={() => answer(optionIndex)} className={`tap flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-2xl border-2 px-4 py-3 text-left text-sm transition ${style}`}>
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-500">{optionIndex + 1}</span>
                 {showResult && correctionAvailable && correct ? <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" /> : showResult && correctionAvailable && chosen ? <XCircle className="h-4 w-4 shrink-0 text-red-600" /> : null}
                 <MarkdownMathText content={option} inline className="min-w-0 flex-1" />
@@ -236,14 +267,15 @@ export function QuizPage() {
           })}
         </div>
 
-        {showResult && question.correctIndex !== undefined ? (
-          <div className={`mt-4 rounded-2xl p-4 text-sm ${selected === question.correctIndex ? "bg-green-50 text-green-900" : "bg-red-50 text-red-900"}`}>
-            <p className="mb-1 font-semibold">{selected === question.correctIndex ? "Bonne réponse" : "Presque !"}</p>
-            {question.explanation ? <MarkdownMathText content={question.explanation} /> : null}
+        {showResult && answerResult ? (
+          <div className={`mt-4 rounded-2xl p-4 text-sm ${answerResult.correct ? "bg-green-50 text-green-900" : "bg-red-50 text-red-900"}`}>
+            <p className="mb-1 font-semibold">{answerResult.correct ? "Bonne réponse" : "Presque !"}</p>
+            {answerResult.explanation ? <MarkdownMathText content={answerResult.explanation} /> : null}
           </div>
         ) : showResult ? <div className="mt-4 rounded-2xl bg-revision/5 p-4 text-sm text-revision"><p className="font-semibold">Réponse enregistrée</p><p className="mt-1 text-xs">Le corrigé sera calculé et autorisé par le serveur à la fin du quiz.</p></div> : null}
 
         {submitError ? <p role="alert" className="mt-3 rounded-2xl bg-red-50 p-3 text-sm text-red-700">{submitError}</p> : null}
+        {answerBusy ? <p className="mt-3 text-center text-sm font-semibold text-revision">Vérification de ta réponse…</p> : null}
         {showResult ? <button type="button" disabled={submitBusy} onClick={next} className="tap mt-4 w-full rounded-2xl bg-primary py-3 text-sm font-semibold text-white disabled:opacity-50">{submitBusy ? "Vérification…" : index < questions.length - 1 ? "Question suivante" : "Terminer le quiz"}</button> : null}
       </div>
     </PageContainer>

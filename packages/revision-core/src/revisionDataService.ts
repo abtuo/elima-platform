@@ -183,6 +183,17 @@ type VerifiedQuizResult = {
   corrections: Array<{ questionId: string; correctAnswerId: string; explanation: string }>;
 };
 
+type CheckedQuizAnswer = {
+  questionId: string;
+  correct: boolean;
+  correctAnswerId: string;
+  explanation: string;
+};
+
+async function checkQuizAnswer(input: { attemptId: string; questionId: string; answerId: string }): Promise<CheckedQuizAnswer> {
+  return await quizAttemptRequest({ action: "answer", ...input }) as unknown as CheckedQuizAnswer;
+}
+
 async function submitQuizAttempt(input: { attemptId: string; answers: Array<{ questionId: string; answerId: string }> }): Promise<VerifiedQuizResult> {
   return await quizAttemptRequest({ action: "submit", ...input }) as unknown as VerifiedQuizResult;
 }
@@ -414,5 +425,5 @@ function markDailyQuizCompleted(userId?: string) {
   localStorage.setItem(key, new Date().toISOString().slice(0, 10));
 }
 
-return {getStudentRevisionLevel,generateRealtimeQuiz,generateRealtimeSheet,getRevisionProgress,recordQuizCompletion,startQuizAttempt,submitQuizAttempt,submitQuizFeedback,getQuizAttempts,getLearningAttempts,getAvailableQuizzes,pickQuiz,getCourseSheets,getQuizQuestions,getDailyHintUsage,consumeDailyHint,isDailyQuizCompleted,markDailyQuizCompleted};
+return {getStudentRevisionLevel,generateRealtimeQuiz,generateRealtimeSheet,getRevisionProgress,recordQuizCompletion,startQuizAttempt,checkQuizAnswer,submitQuizAttempt,submitQuizFeedback,getQuizAttempts,getLearningAttempts,getAvailableQuizzes,pickQuiz,getCourseSheets,getQuizQuestions,getDailyHintUsage,consumeDailyHint,isDailyQuizCompleted,markDailyQuizCompleted};
 }

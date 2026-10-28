@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { PGlite } from "@electric-sql/pglite";
-import { createGeneratedQuizAttempt, generatedQuestionSnapshot, submitQuizAttempt } from "../../apps/api/server/revisionQuizAttempts.mjs";
+import { checkQuizAnswer, createGeneratedQuizAttempt, generatedQuestionSnapshot, submitQuizAttempt } from "../../apps/api/server/revisionQuizAttempts.mjs";
 
 const student = "00000000-0000-4000-8000-000000000201";
 const other = "00000000-0000-4000-8000-000000000202";
@@ -45,6 +45,8 @@ async function quizDatabase(context: { after(callback: () => unknown): void }) {
   `);
   const migration = await readFile(new URL("../../supabase/migrations/20261020180000_revision_verified_quiz_attempts.sql", import.meta.url), "utf8");
   await db.exec(migration);
+  const feedbackMigration = await readFile(new URL("../../supabase/migrations/20261028120000_revision_quiz_immediate_feedback.sql", import.meta.url), "utf8");
+  await db.exec(feedbackMigration);
   return db;
 }
 
@@ -56,9 +58,17 @@ test("PostgreSQL: score recalculé, historique legacy conservé et remise idempo
   ] });
   await db.query("insert into quiz_attempt_sessions(id,user_id,quiz_ref,subject_label,question_snapshot) values($1,$2,'catalog','Mathématiques',$3::jsonb)", [session, student, snapshot]);
 
-  const answers = JSON.stringify([{ questionId: "q1", answerId: "a2" }, { questionId: "q2", answerId: "b2" }]);
-  const first = await db.query<{ result: { score: number; correctAnswers: number; earnedXp: number } }>("select submit_revision_quiz_attempt($1,$2,$3::jsonb) result", [session, student, answers]);
-  const second = await db.query<{ result: { score: number; correctAnswers: number; earnedXp: number } }>("select submit_revision_quiz_attempt($1,$2,$3::jsonb) result", [session, student, answers]);
+  const firstAnswer = await db.query<{ result: { correct: boolean; correctAnswerId: string } }>("select check_revision_quiz_answer($1,$2,'q1','a2') result", [session, student]);
+  const repeatedAnswer = await db.query<{ result: { correct: boolean; correctAnswerId: string } }>("select check_revision_quiz_answer($1,$2,'q1','a1') result", [session, student]);
+  await db.query("select check_revision_quiz_answer($1,$2,'q2','b2')", [session, student]);
+  assert.equal(firstAnswer.rows[0].result.correct, false);
+  assert.deepEqual(repeatedAnswer.rows[0].result, firstAnswer.rows[0].result);
+
+  // The client now knows that a1 was correct, but changing its final payload
+  // cannot replace the first answer already locked by the server.
+  const forgedFinalAnswers = JSON.stringify([{ questionId: "q1", answerId: "a1" }, { questionId: "q2", answerId: "b2" }]);
+  const first = await db.query<{ result: { score: number; correctAnswers: number; earnedXp: number } }>("select submit_revision_quiz_attempt($1,$2,$3::jsonb) result", [session, student, forgedFinalAnswers]);
+  const second = await db.query<{ result: { score: number; correctAnswers: number; earnedXp: number } }>("select submit_revision_quiz_attempt($1,$2,$3::jsonb) result", [session, student, forgedFinalAnswers]);
   assert.deepEqual(second.rows[0].result, first.rows[0].result);
   assert.equal(first.rows[0].result.score, 50);
   assert.equal(first.rows[0].result.correctAnswers, 1);
@@ -78,6 +88,8 @@ test("PostgreSQL: autre utilisateur, option forgée et accès client aux corrig�
   const db = await quizDatabase(context);
   const snapshot = JSON.stringify({ questions: [{ id: "q1", prompt: "?", options: [{ id: "a1", text: "Oui" }, { id: "a2", text: "Non" }], correctAnswerId: "a1" }] });
   await db.query("insert into quiz_attempt_sessions(id,user_id,quiz_ref,question_snapshot) values($1,$2,'catalog',$3::jsonb)", [session, student, snapshot]);
+  await assert.rejects(db.query("select check_revision_quiz_answer($1,$2,'q1','a1')", [session, other]), /not found/i);
+  await assert.rejects(db.query("select check_revision_quiz_answer($1,$2,'q1','forged')", [session, student]), /invalid answer option/i);
   await assert.rejects(db.query("select submit_revision_quiz_attempt($1,$2,$3::jsonb)", [session, other, JSON.stringify([{ questionId: "q1", answerId: "a1" }])]), /not found/i);
   await assert.rejects(db.query("select submit_revision_quiz_attempt($1,$2,$3::jsonb)", [session, student, JSON.stringify([{ questionId: "q1", answerId: "forged" }])]), /invalid answer option/i);
 
@@ -85,12 +97,14 @@ test("PostgreSQL: autre utilisateur, option forgée et accès client aux corrig�
   assert.deepEqual(policies.rows.map((row) => row.tablename), ["quiz_answers", "quiz_questions"]);
   assert.ok(policies.rows.every((row) => /^\(?false\)?$/i.test(row.qual.replace(/\s+/g, ""))));
   const authenticatedExecute = await db.query<{ allowed: boolean }>("select has_function_privilege('authenticated','public.submit_revision_quiz_attempt(uuid,uuid,jsonb)','execute') allowed");
+  const authenticatedCheckExecute = await db.query<{ allowed: boolean }>("select has_function_privilege('authenticated','public.check_revision_quiz_answer(uuid,uuid,text,text)','execute') allowed");
   const legacyExecute = await db.query<{ allowed: boolean }>("select has_function_privilege('authenticated','public.record_quiz_attempt(text,text,integer,integer,integer,timestamptz)','execute') allowed");
   assert.equal(authenticatedExecute.rows[0].allowed, false);
+  assert.equal(authenticatedCheckExecute.rows[0].allowed, false);
   assert.equal(legacyExecute.rows[0].allowed, false);
 });
 
-test("API: aucun score déclaré ni corrigé n'est accepté ou renvoyé avant remise", async () => {
+test("API: aucun score déclaré ni corrigé n'est renvoyé avant réponse, puis seule la question répondue est corrigée", async () => {
   const snapshot = generatedQuestionSnapshot([{ question: "2+2", options: ["3", "4", "5", "6"], correctIndex: 1, explanation: "Quatre" }], () => 0);
   assert.equal(snapshot.questions[0].correctAnswerId.length > 0, true);
   let inserted: Record<string, unknown> | undefined;
@@ -102,6 +116,27 @@ test("API: aucun score déclaré ni corrigé n'est accepté ou renvoyé avant re
   assert.equal("correctIndex" in started.questions[0], false);
   assert.equal("explanation" in started.questions[0], false);
   assert.equal(JSON.stringify(inserted).includes("correctAnswerId"), true);
+
+  const answerAdmin = {
+    async rpc(_name: string, args: Record<string, unknown>) {
+      if (args.p_user_id !== student) return { data: null, error: { message: "Quiz attempt not found" } };
+      if (args.p_answer_id === "forged") return { data: null, error: { message: "Invalid answer option" } };
+      return { data: { questionId: "generated-1", correct: true, correctAnswerId: "generated-1-option-2", explanation: "Quatre" }, error: null };
+    },
+  };
+  const checked = await checkQuizAnswer(answerAdmin, student, {
+    attemptId: session,
+    questionId: "generated-1",
+    answerId: "generated-1-option-2",
+  });
+  assert.deepEqual(checked, {
+    questionId: "generated-1",
+    correct: true,
+    correctAnswerId: "generated-1-option-2",
+    explanation: "Quatre",
+  });
+  await assert.rejects(checkQuizAnswer(answerAdmin, student, { attemptId: session, questionId: "generated-1", answerId: "forged" }), /invalide/i);
+  await assert.rejects(checkQuizAnswer(answerAdmin, other, { attemptId: session, questionId: "generated-1", answerId: "generated-1-option-2" }), /introuvable/i);
 
   let rpcArgs: Record<string, unknown> = {};
   admin.rpc = async (_name: string, args: Record<string, unknown>) => { rpcArgs = args; return { data: { score: 100, scoreTrust: "server_verified" }, error: null, args }; };
