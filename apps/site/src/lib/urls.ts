@@ -13,8 +13,10 @@ export function playStoreUrl(value?: string) {
   } catch { return null; }
 }
 
+export const DEFAULT_REVISION_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=ci.elima.revision&pcampaignid=web_share';
+
 export const platformUrl = publicOrigin(process.env.NEXT_PUBLIC_PLATFORM_URL, 'https://app.elima.ci');
 export const mobileUrl = publicOrigin(process.env.NEXT_PUBLIC_MOBILE_URL, 'https://m.elima.ci');
 export const revisionUrl = publicOrigin(process.env.NEXT_PUBLIC_REVISION_URL, 'https://revision.elima.ci');
-export const revisionPlayStoreUrl = playStoreUrl(process.env.NEXT_PUBLIC_REVISION_PLAY_STORE_URL);
+export const revisionPlayStoreUrl = playStoreUrl(process.env.NEXT_PUBLIC_REVISION_PLAY_STORE_URL) ?? DEFAULT_REVISION_PLAY_STORE_URL;
 export const platformLoginUrl = `${platformUrl}/login`;

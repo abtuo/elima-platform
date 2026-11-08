@@ -106,7 +106,7 @@ export function SiteFooter() { return (        <footer className="pb-10 pt-2 tex
                     <li><Link href="/#produit">Fonctionnalités</Link></li>
                     <li><Link href="/#revision">Elima Révision</Link></li>
                     <li><a href={revisionUrl}>Essayer sur le web</a></li>
-                    {revisionPlayStoreUrl && <li><a href={revisionPlayStoreUrl}>Télécharger l’app</a></li>}
+                    <li><a href={revisionPlayStoreUrl} target="_blank" rel="noopener noreferrer">Télécharger sur Play Store</a></li>
                     <li><a href={`${revisionUrl}/legal/terms`}>CGU Révision</a></li>
                     <li><a href={`${revisionUrl}/legal/account-deletion`}>Suppression de compte Révision</a></li>
                   </ul>

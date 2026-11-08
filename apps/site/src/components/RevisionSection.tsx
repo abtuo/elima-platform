@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BookOpen, FileText, ScanLine, TrendingUp } from 'lucide-react';
+import { BookOpen, Download, FileText, ScanLine, TrendingUp } from 'lucide-react';
 import { revisionUrl, revisionPlayStoreUrl } from '@/lib/urls';
 
 export function RevisionSection() {
@@ -17,7 +17,15 @@ export function RevisionSection() {
     ].map(({icon: Icon, title, text}) => <div key={title} className="min-w-0 rounded-2xl bg-violet-50 p-4"><Icon aria-hidden className="mb-3 text-violet-700" /><h3 className="font-semibold">{title}</h3><p className="mt-2 text-sm text-slate-600">{text}</p></div>)}</div>
     <div className="flex flex-wrap items-center gap-3">
       <Link href={revisionUrl} className="rounded-xl bg-violet-700 px-5 py-3 text-sm font-semibold text-white">Essayer sur le web</Link>
-      {revisionPlayStoreUrl ? <a href={revisionPlayStoreUrl} className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold">Télécharger l’application <span className="block text-xs font-normal">Sur Google Play</span></a> : <span className="text-sm text-slate-500">Application Android : bientôt disponible</span>}
+      <a
+        href={revisionPlayStoreUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-violet-200 bg-white px-5 py-3 text-sm font-semibold text-violet-800 transition hover:border-violet-400 hover:bg-violet-50"
+      >
+        <Download aria-hidden size={18} />
+        Télécharger sur Play Store
+      </a>
     </div>
   </section>;
 }

@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { platformLoginUrl, revisionUrl, mobileUrl, playStoreUrl } from '../urls';
+import { DEFAULT_REVISION_PLAY_STORE_URL, platformLoginUrl, revisionUrl, mobileUrl, playStoreUrl, revisionPlayStoreUrl } from '../urls';
 import { submitDemoRequest } from '../demo-request';
 
-test('CTA vers les domaines finaux ; téléchargement uniquement si Google Play configuré', () => {
+test('CTA vers les domaines finaux et téléchargement Google Play disponible par défaut', () => {
   assert.equal(platformLoginUrl, 'https://app.elima.ci/login');
   assert.equal(revisionUrl, 'https://revision.elima.ci');
   assert.equal(mobileUrl, 'https://m.elima.ci');
+  assert.equal(revisionPlayStoreUrl, DEFAULT_REVISION_PLAY_STORE_URL);
   assert.equal(playStoreUrl(), null);
   assert.equal(playStoreUrl('javascript:alert(1)'), null);
   assert.equal(playStoreUrl('https://play.google.com.evil.example/store'), null);
@@ -53,6 +54,6 @@ test('Site conserve la landing et reste indépendant des applications métier', 
   assert.doesNotMatch(source, /from\s+['"][^'"]*(apps\/(platform|mobile|revision)|@elima\/(auth|revision-core|revision-ui)|supabase)/);
   assert.doesNotMatch(source, /\.vercel\.app|document\.cookie|\/api\/auth\//);
   assert.match(readFileSync('src/app/layout.tsx', 'utf8'), /metadataBase: new URL\("https:\/\/elima.ci"\)/);
-  assert.match(readFileSync('src/components/RevisionSection.tsx', 'utf8'), /revisionPlayStoreUrl \?/);
+  assert.match(readFileSync('src/components/RevisionSection.tsx', 'utf8'), /Télécharger sur Play Store/);
   assert.doesNotMatch(readFileSync('vercel.json', 'utf8'), /ignoreCommand/);
 });
